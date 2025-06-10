@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@clockworklabs/spacetimedb-sdk@^1.1.0": "1.1.0_undici@6.21.3",
     "npm:@types/node@20": "20.19.0",
     "npm:solid-js@^1.9.7": "1.9.7_seroval@1.3.2",
     "npm:vite-plugin-solid@^2.11.6": "2.11.6_solid-js@1.9.7__seroval@1.3.2_vite@6.3.5__picomatch@4.0.2_@babel+core@7.27.4_@types+node@20.19.0",
@@ -147,6 +148,12 @@
       "dependencies": [
         "@babel/helper-string-parser",
         "@babel/helper-validator-identifier"
+      ]
+    },
+    "@clockworklabs/spacetimedb-sdk@1.1.0_undici@6.21.3": {
+      "integrity": "sha512-eFX53sP4+IEgsIx0xDbkv+oK3KEnyPBRRTBbIwLFpnPcEZO0d98up9v8GQyAdMNpZ1ptTyvhwdytAvXUdpQlTA==",
+      "dependencies": [
+        "undici"
       ]
     },
     "@esbuild/aix-ppc64@0.25.5": {
@@ -673,6 +680,9 @@
     "undici-types@6.21.0": {
       "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
     },
+    "undici@6.21.3": {
+      "integrity": "sha512-gBLkYIlEnSp8pFbT64yFgGE6UIB9tAkhukC23PmMDCe5Nd+cRqKxSjw5y54MK2AZMgZfJWMaNE4nYUHgi1XEOw=="
+    },
     "update-browserslist-db@1.1.3_browserslist@4.25.0": {
       "integrity": "sha512-UxhIZQ+QInVdunkDAaiazvvT/+fXL5Osr0JZlJulepYu6Jd7qJtDZjlur0emRlT71EN3ScPoE7gvsuIKKNavKw==",
       "dependencies": [
@@ -774,6 +784,7 @@
     "members": {
       "app": {
         "dependencies": [
+          "npm:@clockworklabs/spacetimedb-sdk@^1.1.0",
           "npm:solid-js@^1.9.7",
           "npm:vite-plugin-solid@^2.11.6",
           "npm:vite@^6.3.5",
