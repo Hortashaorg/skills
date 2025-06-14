@@ -1,5 +1,5 @@
 {
-    "workspace": ["./app", "./packages/database"],
+    "workspace": ["./app", "./packages/database", "./packages/shared"],
     "nodeModulesDir": "auto",
     "imports": {
         "@std/fs": "jsr:@std/fs@^1.0.18",
@@ -19,6 +19,7 @@
     },
     "tasks": {
         "db:generate": "deno run -A scripts/task.ts '@package/database' generate",
-        "db:migrate": "deno run -A scripts/task.ts '@package/database' migrate"
+        "db:migrate": "deno run -A scripts/task.ts '@package/database' migrate",
+        "cache": "deno run -A zero-cache-dev -p ./packages/shared/schema.ts"
     }
 }

@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates cur
 
 FROM base AS local
 
+ENV ZERO_REPLICA_FILE=/tmp/sync-replica.db
+ENV ZERO_UPSTREAM_DB=postgresql://root:root@localhost:5432/root
+
 # Install git
 RUN apt-get update && \
     apt-get install -y git openssh-server && \
