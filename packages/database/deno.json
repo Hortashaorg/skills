@@ -1,7 +1,6 @@
 {
     "name": "@package/database",
     "exports": "./mod.ts",
-    "nodeModulesDir": "auto",
     "imports": {
         "drizzle-kit": "npm:drizzle-kit@^0.31.1",
         "drizzle-orm": "npm:drizzle-orm@^0.44.1",

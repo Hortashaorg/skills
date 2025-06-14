@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@std/fs@^1.0.18": "1.0.18",
     "jsr:@std/path@^1.1.0": "1.1.0",
+    "npm:@rocicorp/zero@~0.20.2025052100": "0.20.2025052100_@opentelemetry+api@1.9.0_typedoc@0.28.5__typescript@5.8.3",
     "npm:@types/node@20": "20.19.0",
     "npm:drizzle-kit@*": "0.31.1_esbuild@0.25.5",
     "npm:drizzle-kit@~0.31.1": "0.31.1_esbuild@0.25.5",
@@ -3291,6 +3292,7 @@
     "members": {
       "app": {
         "dependencies": [
+          "npm:@rocicorp/zero@0.20.2025052100",
           "npm:solid-js@^1.9.7",
           "npm:vite-plugin-solid@^2.11.6",
           "npm:vite@^6.3.5",
