@@ -1,5 +1,4 @@
 {
-    "name": "@monorepo/skills",
     "workspace": ["./app"],
     "nodeModulesDir": "auto",
     "tasks": {

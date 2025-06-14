@@ -1,4 +1,4 @@
-FROM rust:slim-bookworm AS base
+FROM debian:12.9-slim AS base
 
 WORKDIR /skills
 
@@ -34,7 +34,3 @@ RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 RUN echo "Port 2221" >> /etc/ssh/sshd_config
-
-# Add Spacetime
-RUN curl -sSf https://install.spacetimedb.com | sh -s -- --yes
-ENV PATH="/root/.local/bin:$PATH"
