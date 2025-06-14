@@ -1,9 +1,11 @@
 {
     "name": "@package/database",
     "exports": "./mod.ts",
+    "nodeModulesDir": "auto",
     "imports": {
         "drizzle-kit": "npm:drizzle-kit@^0.31.1",
         "drizzle-orm": "npm:drizzle-orm@^0.44.1",
+        "drizzle-zero": "npm:drizzle-zero@^0.10.8",
         "postgres": "npm:postgres@^3.4.7",
         "@db/": "./"
     },
@@ -12,6 +14,8 @@
         "lint": "deno lint .",
         "fmt": "deno fmt .",
         "generate": "deno run -A --node-modules-dir --unstable-temporal npm:drizzle-kit generate",
+        "bzero:generate": "drizzle-zero generate -h",
+        "zero:generate": "drizzle-zero generate -s ./drizzle.config.ts -t ./tsconfig.json -f",
         "migrate": "deno run -A --node-modules-dir npm:drizzle-kit migrate"
     },
     "compilerOptions": {

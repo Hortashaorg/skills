@@ -19,6 +19,7 @@
     },
     "tasks": {
         "db:generate": "deno run -A scripts/task.ts '@package/database' generate",
-        "db:migrate": "deno run -A scripts/task.ts '@package/database' migrate"
+        "db:migrate": "deno run -A scripts/task.ts '@package/database' migrate",
+        "zero:generate": "deno run -A scripts/task.ts '@package/database' zero:generate"
     }
 }
