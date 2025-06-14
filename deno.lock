@@ -3316,13 +3316,7 @@
         "dependencies": [
           "npm:@rocicorp/zero@0.20.2025052100",
           "npm:zero-deploy-permissions@1"
-        ],
-        "packageJson": {
-          "dependencies": [
-            "npm:@rocicorp/zero@~0.20.2025052100",
-            "npm:@types/node@20"
-          ]
-        }
+        ]
       }
     }
   }
