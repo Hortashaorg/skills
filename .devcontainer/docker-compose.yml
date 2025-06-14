@@ -1,30 +1,62 @@
 services:
-  local:
-    container_name: skills_local
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: local
-    network_mode: host
-    volumes:
-      - ./..:/skills
-      - ~/.ssh:/root/.ssh
-    command: bash -c "service ssh start && sleep infinity"
+    local:
+        container_name: skills_local
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: local
+        network_mode: host
+        volumes:
+            - ./..:/skills
+            - ~/.ssh:/root/.ssh
+        command: bash -c "service ssh start && sleep infinity"
 
-  spacetimedb:
-    container_name: skills_spacetimedb
-    image: clockworklabs/spacetime
-    ports:
-      - "3000:3000"
-    networks:
-      - skillz_network
-    volumes:
-      - spacetimedb_data:/stdb
-    command: start --data-dir=/stdb
+    postgres:
+        container_name: skills_postgres
+        image: postgres:16.3
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_DB=root
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=root
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U root"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
 
-networks:
-  skillz_network:
-    driver: bridge
-
+    pgadmin:
+        container_name: skills_pgadmin
+        image: dpage/pgadmin4
+        restart: always
+        environment:
+            PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+            PGADMIN_DEFAULT_PASSWORD: "root"
+            PGADMIN_SERVER_JSON_FILE: /servers.json
+        ports:
+            - "8080:80"
+        volumes:
+            - "./servers.json:/servers.json"
+        depends_on:
+            - postgres
+    otel:
+        container_name: skills_otel
+        image: grafana/otel-lgtm
+        ports:
+            - "4317:4317"
+            - "4318:4318"
+            - "3000:3000"
+        volumes:
+            - grafana_data:/data/grafana
+            - prometheus_data:/data/prometheus
+            - loki_data:/data/loki
+        environment:
+            - GF_PATHS_DATA=/data/grafana
 volumes:
-  spacetimedb_data:
+    postgres_data:
+    grafana_data:
+    prometheus_data:
+    loki_data:
