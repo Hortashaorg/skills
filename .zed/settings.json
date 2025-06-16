@@ -1,12 +1,10 @@
 {
 	"format_on_save": "on",
 	"lsp": {
-		"vtsls": {
+		"deno": {
 			"settings": {
-				"typescript": {
-					"experimental": {
-						"useTsgo": true
-					}
+				"deno": {
+					"enable": false
 				}
 			}
 		}

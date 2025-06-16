@@ -25,6 +25,8 @@
 		"strictNullChecks": true,
 		"suppressExcessPropertyErrors": false,
 		"suppressImplicitAnyIndexErrors": false,
-		"useUnknownInCatchVariables": true
+		"useUnknownInCatchVariables": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js"
 	}
 }
