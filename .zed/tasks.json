@@ -40,5 +40,19 @@
     "use_new_terminal": true,
     "allow_concurrent_runs": false,
     "reveal": "never"
+  },
+  {
+    "label": "Zed Open Remote (Tools)",
+    "command": "zeditor ssh://root@0.0.0.0:2220/skills",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": true,
+    "reveal": "always"
+  },
+  {
+    "label": "Clean SSH Keys (Tools)",
+    "command": "ssh-keygen -R '[0.0.0.0]:2220'",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "never"
   }
 ]
