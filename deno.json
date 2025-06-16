@@ -1,25 +1,25 @@
 {
-    "workspace": ["./app", "./packages/database", "./packages/shared"],
-    "nodeModulesDir": "auto",
-    "imports": {
-        "@std/fs": "jsr:@std/fs@^1.0.18",
-        "@std/path": "jsr:@std/path@^1.1.0"
-    },
-    "compilerOptions": {
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "noImplicitThis": true,
-        "noUncheckedIndexedAccess": true
-    },
-    "tasks": {
-        "db:generate": "deno run -A scripts/task.ts '@package/database' generate",
-        "db:migrate": "deno run -A scripts/task.ts '@package/database' migrate",
-        "cache": "deno run -A zero-cache-dev -p ./packages/shared/schema.ts"
-    }
+	"workspace": ["./app", "./packages/database", "./packages/shared"],
+	"nodeModulesDir": "auto",
+	"imports": {
+		"@std/fs": "jsr:@std/fs@^1.0.18",
+		"@std/path": "jsr:@std/path@^1.1.0"
+	},
+	"compilerOptions": {
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictPropertyInitialization": true,
+		"noImplicitThis": true,
+		"noUncheckedIndexedAccess": true
+	},
+	"tasks": {
+		"db:generate": "deno run -A scripts/task.ts '@package/database' generate",
+		"db:migrate": "deno run -A scripts/task.ts '@package/database' migrate",
+		"cache": "deno run -A zero-cache-dev -p ./packages/shared/schema.ts"
+	}
 }

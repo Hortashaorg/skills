@@ -1,29 +1,29 @@
 {
-    "tasks": {
-        "dev": "deno run -A --node-modules-dir npm:vite",
-        "build": "deno run -A --node-modules-dir npm:vite build",
-        "preview": "deno run -A --node-modules-dir npm:vite preview"
-    },
-    "imports": {
-        "@rocicorp/zero": "npm:@rocicorp/zero@0.20.2025052100",
-        "solid-js": "npm:solid-js@^1.9.7",
-        "vite": "npm:vite@^6.3.5",
-        "vite-plugin-solid": "npm:vite-plugin-solid@^2.11.6",
-        "zod": "npm:zod@^3.25.56"
-    },
-    "compilerOptions": {
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "strictPropertyInitialization": true,
-        "noImplicitThis": true,
-        "noUncheckedIndexedAccess": true,
-        "jsx": "precompile",
-        "jsxImportSource": "solid-js",
-        "lib": ["DOM", "DOM.Iterable", "ESNext"]
-    }
+	"tasks": {
+		"dev": "deno run -A --node-modules-dir npm:vite",
+		"build": "deno run -A --node-modules-dir npm:vite build",
+		"preview": "deno run -A --node-modules-dir npm:vite preview"
+	},
+	"imports": {
+		"@rocicorp/zero": "npm:@rocicorp/zero@0.20.2025052100",
+		"solid-js": "npm:solid-js@^1.9.7",
+		"vite": "npm:vite@^6.3.5",
+		"vite-plugin-solid": "npm:vite-plugin-solid@^2.11.6",
+		"zod": "npm:zod@^3.25.56"
+	},
+	"compilerOptions": {
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictPropertyInitialization": true,
+		"noImplicitThis": true,
+		"noUncheckedIndexedAccess": true,
+		"jsx": "precompile",
+		"jsxImportSource": "solid-js",
+		"lib": ["DOM", "DOM.Iterable", "ESNext"]
+	}
 }

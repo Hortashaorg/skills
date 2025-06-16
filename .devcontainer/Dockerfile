@@ -8,8 +8,10 @@ RUN apt-get update && \
 
 # Install curl
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y curl wget && \
     rm -rf /var/lib/apt/lists/*
+
+RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 
 
 # Install Doppler
