@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates cur
     echo "deb [signed-by=/usr/share/keyrings/doppler-archive-keyring.gpg] https://packages.doppler.com/public/cli/deb/debian any-version main" | tee /etc/apt/sources.list.d/doppler-cli.list && \
     apt-get update && apt-get install doppler
 
+FROM base AS local
+
 # Install git
 RUN apt-get update && \
     apt-get install -y git openssh-server && \
@@ -28,4 +30,4 @@ RUN mkdir -p /var/run/sshd
 RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-RUN echo "Port 2220" >> /etc/ssh/sshd_config
+RUN echo "Port 2221" >> /etc/ssh/sshd_config
