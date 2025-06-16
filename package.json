@@ -3,12 +3,14 @@
 	"private": "true",
 	"version": "1.0.0",
 	"scripts": {
+		"typecheck": "tsc",
 		"check": "biome check",
 		"format": "biome format --write"
 	},
 	"author": "Martin Eide",
 	"packageManager": "pnpm@10.12.1",
 	"devDependencies": {
-		"@biomejs/biome": "2.0.0-beta.6"
+		"@biomejs/biome": "2.0.0-beta.6",
+		"@typescript/native-preview": "7.0.0-dev.20250616.1"
 	}
 }

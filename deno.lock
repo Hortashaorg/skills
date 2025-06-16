@@ -7,6 +7,7 @@
     "npm:@rocicorp/zero@0.20.2025052100": "0.20.2025052100_@opentelemetry+api@1.9.0_typedoc@0.28.5__typescript@5.8.3",
     "npm:@rocicorp/zero@~0.20.2025052100": "0.20.2025052100_@opentelemetry+api@1.9.0_typedoc@0.28.5__typescript@5.8.3",
     "npm:@types/node@20": "20.19.0",
+    "npm:@typescript/native-preview@7.0.0-dev.20250616.1": "7.0.0-dev.20250616.1",
     "npm:drizzle-kit@*": "0.31.1_esbuild@0.25.5",
     "npm:drizzle-kit@~0.31.1": "0.31.1_esbuild@0.25.5",
     "npm:drizzle-orm@~0.44.1": "0.44.2_postgres@3.4.7",
@@ -1806,6 +1807,54 @@
     "@types/unist@3.0.3": {
       "integrity": "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="
     },
+    "@typescript/native-preview-darwin-arm64@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-haYnxxPID2L5Daw1c1FY0aW0TRbX4K45cAV4w7VbIZLc1nhUrXfeCJBFsqB15r6SrFZ2/4TVjUpZFaMumNgH5g==",
+      "os": ["darwin"],
+      "cpu": ["arm64"]
+    },
+    "@typescript/native-preview-darwin-x64@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-cQD2ip5JIsGukZASKsBldIA5O6Iy+4lw5BhDWWy/0rTa/zcjieTb2ayJjIeBP/m2D28730Xj7c3QppJhH32M8A==",
+      "os": ["darwin"],
+      "cpu": ["x64"]
+    },
+    "@typescript/native-preview-linux-arm64@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-LCi5DGPEzEycYqmUkmGjKmpXCddLG0WZHkTtkrOlYiXi6fBDzKDTKQfWE1r849u+rqhvfZaUrCg1r5WLaKAcyQ==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@typescript/native-preview-linux-arm@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-CPhcknNWX+dEBGodtARHghueHfJIa/gnYMCgS3QuP9ZvgDZrDu94H3jvCrLRP3JlFb2SHE3qDWIO7GPLoaNm5A==",
+      "os": ["linux"],
+      "cpu": ["arm"]
+    },
+    "@typescript/native-preview-linux-x64@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-iLltoD9SvMoFYcISGWedzg3l5fBv2EY7kpbdUzvIHCTNufOJBwW0AX3V+bRlqEPUfO3ZgBuWLkkJzYjpcsfQrQ==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@typescript/native-preview-win32-arm64@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-y7SCT5LrYx5JfAOUZJFKcaARcVBnrzVhwD+Ems70OTEAqqccB6onXuDL+huFV7EW/KhcoqXt2xL/NdInb4UaYg==",
+      "os": ["win32"],
+      "cpu": ["arm64"]
+    },
+    "@typescript/native-preview-win32-x64@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-JGYU0OVZPNRdOO0BmIO8CX/SCZLc24cWspIMfWCDJ0+UR5wPpSw3Om6dfCNs2viZuQW8gr4EwNqPoW4YVrCzrQ==",
+      "os": ["win32"],
+      "cpu": ["x64"]
+    },
+    "@typescript/native-preview@7.0.0-dev.20250616.1": {
+      "integrity": "sha512-KDPNgIKZIt1x8H+Mb/JgRvr2vZZTE3nzuJH8DO9WOjdXo7/RhoIUgVhb1TjQc0co7k8i/TxZxV+xGE2CUMJaXg==",
+      "optionalDependencies": [
+        "@typescript/native-preview-darwin-arm64",
+        "@typescript/native-preview-darwin-x64",
+        "@typescript/native-preview-linux-arm",
+        "@typescript/native-preview-linux-arm64",
+        "@typescript/native-preview-linux-x64",
+        "@typescript/native-preview-win32-arm64",
+        "@typescript/native-preview-win32-x64"
+      ],
+      "bin": true
+    },
     "abstract-logging@2.0.1": {
       "integrity": "sha512-2BjRTZxTPvheOvGbBslFSYOUkr+SjPtOnrLP33f+VIWLzezQpZcqVg7ja3L4dBXmzzgwT+a029jRx5PCi3JuiA=="
     },
@@ -3351,7 +3400,8 @@
     ],
     "packageJson": {
       "dependencies": [
-        "npm:@biomejs/biome@2.0.0-beta.6"
+        "npm:@biomejs/biome@2.0.0-beta.6",
+        "npm:@typescript/native-preview@7.0.0-dev.20250616.1"
       ]
     },
     "members": {

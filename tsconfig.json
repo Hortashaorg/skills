@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"skipLibCheck": true,
 		"allowJs": true,
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
@@ -11,7 +12,8 @@
 		"noImplicitOverride": true,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,
-		"noImplicitUseStrict": true,
+		"noEmit": true,
+		"allowImportingTsExtensions": true,
 		"noStrictGenericChecks": false,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,

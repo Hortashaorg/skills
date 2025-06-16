@@ -1,5 +1,16 @@
 {
 	"format_on_save": "on",
+	"lsp": {
+		"vtsls": {
+			"settings": {
+				"typescript": {
+					"experimental": {
+						"useTsgo": true
+					}
+				}
+			}
+		}
+	},
 	"languages": {
 		"JavaScript": {
 			"formatter": { "language_server": { "name": "biome" } },
