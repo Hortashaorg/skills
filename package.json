@@ -10,7 +10,7 @@
 	"author": "Martin Eide",
 	"packageManager": "pnpm@10.12.1",
 	"devDependencies": {
-		"@biomejs/biome": "2.0.0-beta.6",
-		"@typescript/native-preview": "7.0.0-dev.20250616.1"
+		"@biomejs/biome": "2.0.0",
+		"@typescript/native-preview": "7.0.0-dev.20250617.1"
 	}
 }
