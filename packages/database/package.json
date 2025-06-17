@@ -5,7 +5,8 @@
 	"scripts": {
 		"generate": "drizzle-kit generate",
 		"migrate": "drizzle-kit migrate",
-		"zero": "drizzle-zero generate --format"
+		"zero": "drizzle-zero generate --format",
+		"sync": "npx zero-deploy-permissions --schema-path ./schema.ts --upstream-db postgresql://root:root@localhost:5432/root"
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
@@ -13,6 +14,7 @@
 		"drizzle-kit": "^0.31.1"
 	},
 	"dependencies": {
+		"@rocicorp/zero": "^0.20.2025052100",
 		"drizzle-orm": "^0.44.2",
 		"drizzle-zero": "^0.10.8",
 		"postgres": "^3.4.7"
