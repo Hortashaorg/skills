@@ -1,0 +1,6 @@
+1. Package.json in packages/database
+2. Test out the conversion to zero schema again
+3. Be able to configure zero-sync server with this generated schema.
+4. Init new solid application with solid shadui (Tailwind 4 hopefully).
+5. Make sure we have a smooth conversion from zed schema to solid signals
+6. Test "chat" feature for POC
