@@ -3,7 +3,7 @@
 	"private": "true",
 	"version": "1.0.0",
 	"scripts": {
-		"typecheck": "tsc",
+		"typecheck": "tsgo",
 		"check": "biome check",
 		"format": "biome format --write"
 	},
