@@ -1,6 +1,7 @@
 {
 	"name": "@package/database",
 	"version": "1.0.0",
+	"type": "module",
 	"scripts": {
 		"generate": "drizzle-kit generate",
 		"migrate": "drizzle-kit migrate",
@@ -8,6 +9,7 @@
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
+		"@types/node": "^24.0.3",
 		"drizzle-kit": "^0.31.1"
 	},
 	"dependencies": {
