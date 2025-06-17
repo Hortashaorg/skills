@@ -3,15 +3,16 @@
 	"version": "1.0.0",
 	"scripts": {
 		"generate": "drizzle-kit generate",
-		"migrate": "drizzle-kit migrate"
+		"migrate": "drizzle-kit migrate",
+		"zero": "drizzle-zero generate --format"
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"drizzle-kit": "^0.31.1",
-		"drizzle-zero": "^0.10.8"
+		"drizzle-kit": "^0.31.1"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.44.2",
+		"drizzle-zero": "^0.10.8",
 		"postgres": "^3.4.7"
 	}
 }
