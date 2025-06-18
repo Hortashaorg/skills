@@ -17,6 +17,9 @@ importers:
 
   apps/skills:
     dependencies:
+      '@package/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       solid-js:
         specifier: ^1.9.7
         version: 1.9.7

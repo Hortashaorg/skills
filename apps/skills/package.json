@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"typecheck": "tsgo",
-		"start": "vite",
+		"start": "npx serve ./dist",
 		"dev": "vite",
 		"build": "vite build",
 		"serve": "vite preview"
@@ -16,6 +16,7 @@
 		"vite-plugin-solid": "^2.11.6"
 	},
 	"dependencies": {
-		"solid-js": "^1.9.7"
+		"solid-js": "^1.9.7",
+		"@package/database": "workspace:*"
 	}
 }
