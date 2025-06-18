@@ -1,0 +1,23 @@
+{
+	"name": "@app/skills",
+	"version": "0.0.0",
+	"description": "",
+	"type": "module",
+	"scripts": {
+		"typecheck": "tsgo",
+		"start": "vite",
+		"dev": "vite",
+		"build": "vite build",
+		"serve": "vite preview"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@tailwindcss/vite": "^4.1.10",
+		"tailwindcss": "^4.1.10",
+		"vite": "^6.3.5",
+		"vite-plugin-solid": "^2.11.6"
+	},
+	"dependencies": {
+		"solid-js": "^1.9.7"
+	}
+}

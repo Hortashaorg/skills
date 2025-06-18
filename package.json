@@ -3,7 +3,7 @@
 	"private": "true",
 	"version": "1.0.0",
 	"scripts": {
-		"typecheck": "tsgo",
+		"typecheck": "pnpm -r --paralell typecheck",
 		"check": "biome check",
 		"format": "biome format --write",
 		"zero": "pnpm --filter '@package/database' zero"
@@ -11,6 +11,6 @@
 	"author": "Martin Eide",
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0",
-		"@typescript/native-preview": "7.0.0-dev.20250617.1"
+		"@typescript/native-preview": "7.0.0-dev.20250618.1"
 	}
 }
