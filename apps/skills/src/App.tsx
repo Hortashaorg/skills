@@ -1,4 +1,4 @@
-import { test } from "@package/database";
+import { test } from '@package/database/client';
 import type { Component } from 'solid-js';
 
 const App: Component = () => {

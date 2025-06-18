@@ -15,7 +15,7 @@
 		"drizzle-kit": "^0.31.1"
 	},
 	"exports": {
-		".": "./client.ts"
+		"./client": "./client.ts"
 	},
 	"dependencies": {
 		"@rocicorp/zero": "^0.20.2025052100",
