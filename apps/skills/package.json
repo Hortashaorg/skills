@@ -1,7 +1,6 @@
 {
 	"name": "@app/skills",
 	"version": "0.0.0",
-	"description": "",
 	"type": "module",
 	"scripts": {
 		"typecheck": "tsgo",
@@ -10,7 +9,6 @@
 		"build": "vite build",
 		"serve": "vite preview"
 	},
-	"license": "MIT",
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.1.10",
 		"tailwindcss": "^4.1.10",
