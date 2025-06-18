@@ -1,5 +1,10 @@
 {
 	"format_on_save": "on",
+	"formatter": {
+		"language_server": {
+			"name": "biome"
+		}
+	},
 	"lsp": {
 		"deno": {
 			"settings": {
@@ -14,7 +19,7 @@
 			"formatter": { "language_server": { "name": "biome" } },
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
-				"source.organizeImports.biome": true
+				"source.organizeImports": true
 			}
 		},
 		"TypeScript": {
@@ -22,21 +27,22 @@
 			"language_servers": ["tsgo", "vtsls"],
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
-				"source.organizeImports.biome": true
+				"source.organizeImports": true
 			}
 		},
 		"JSX": {
 			"formatter": { "language_server": { "name": "biome" } },
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
-				"source.organizeImports.biome": true
+				"source.organizeImports": true
 			}
 		},
 		"TSX": {
 			"formatter": { "language_server": { "name": "biome" } },
+			"language_servers": ["tsgo", "vtsls"],
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
-				"source.organizeImports.biome": true
+				"source.organizeImports": true
 			}
 		},
 		"JSON": { "formatter": { "language_server": { "name": "biome" } } },
