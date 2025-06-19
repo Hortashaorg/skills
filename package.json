@@ -12,6 +12,6 @@
 	"author": "Martin Eide",
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0",
-		"@typescript/native-preview": "7.0.0-dev.20250618.1"
+		"@typescript/native-preview": "7.0.0-dev.20250619.1"
 	}
 }
