@@ -2,7 +2,7 @@ import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class", '[data-kb-theme="dark"]'],
-	content: ["src/routes/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+	content: ["src/**/*.{ts,tsx}"],
 	prefix: "",
 	theme: {
 		container: {

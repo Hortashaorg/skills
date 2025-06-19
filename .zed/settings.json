@@ -15,7 +15,10 @@
 		},
 		"tailwindcss-language-server": {
 			"settings": {
-				"classFunctions": ["tw", "cva", "clsx"]
+				"classFunctions": ["tw", "cva", "clsx", "cn"],
+				"experimental": {
+					"classRegex": ["\\bclass:\\s*['\"]([^'\"]*)['\"]"]
+				}
 			}
 		}
 	},
@@ -29,7 +32,7 @@
 		},
 		"TypeScript": {
 			"formatter": { "language_server": { "name": "biome" } },
-			"language_servers": ["tsgo", "vtsls"],
+			"language_servers": ["tsgo", "vtsls", "tailwindcss-language-server"],
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
 				"source.organizeImports": true
@@ -44,7 +47,7 @@
 		},
 		"TSX": {
 			"formatter": { "language_server": { "name": "biome" } },
-			"language_servers": ["tsgo", "vtsls"],
+			"language_servers": ["tsgo", "vtsls", "tailwindcss-language-server"],
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
 				"source.organizeImports": true
