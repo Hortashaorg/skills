@@ -16,7 +16,11 @@
 		"vite-plugin-solid": "^2.11.6"
 	},
 	"dependencies": {
+		"@package/database": "workspace:*",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
 		"solid-js": "^1.9.7",
-		"@package/database": "workspace:*"
+		"tailwind-merge": "^3.3.1",
+		"tailwindcss-animate": "^1.0.7"
 	}
 }
