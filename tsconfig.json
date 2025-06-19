@@ -27,6 +27,8 @@
 		"suppressImplicitAnyIndexErrors": false,
 		"useUnknownInCatchVariables": true,
 		"jsx": "preserve",
-		"jsxImportSource": "solid-js"
+		"jsxImportSource": "solid-js",
+		"moduleResolution": "nodenext",
+    "module": "NodeNext"
 	}
 }

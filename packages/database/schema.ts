@@ -4,7 +4,7 @@ import {
     type Row,
 } from "@rocicorp/zero";
 
-import { type Schema, schema } from "./zero-schema.gen";
+import { type Schema, schema } from "./zero-schema.gen.ts";
 
 export { schema, type Schema };
 
