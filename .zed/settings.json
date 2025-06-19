@@ -12,6 +12,11 @@
 					"enable": false
 				}
 			}
+		},
+		"tailwindcss-language-server": {
+			"settings": {
+				"classFunctions": ["tw", "cva", "clsx"]
+			}
 		}
 	},
 	"languages": {
