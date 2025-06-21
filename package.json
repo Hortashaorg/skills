@@ -7,7 +7,7 @@
 		"app": "pnpm --filter '@app/skills'",
 		"check": "biome check",
 		"format": "biome format --write",
-		"zero": "pnpm --filter '@package/database' zero"
+		"database": "pnpm --filter '@package/database'"
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
