@@ -7,7 +7,8 @@
 		"start": "npx serve ./dist",
 		"dev": "vite",
 		"build": "vite build",
-		"serve": "vite preview"
+		"serve": "vite preview",
+		"component": "pnpm dlx shadcn-solid@latest add"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.4.21",
@@ -17,6 +18,7 @@
 		"vite-plugin-solid": "^2.11.6"
 	},
 	"dependencies": {
+		"@kobalte/core": "^0.13.10",
 		"@package/database": "workspace:*",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
