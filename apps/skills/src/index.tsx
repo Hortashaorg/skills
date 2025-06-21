@@ -1,8 +1,8 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
-import App from "./App.tsx";
+import { App } from "./App.tsx";
 import "./index.css";
-import { createZero, schema } from "@package/database/client";
+import { createZero, schema, type Zero } from "@package/database/client";
 
 const root = document.getElementById("root");
 
@@ -17,6 +17,6 @@ const z = createZero({
     userID: "anon",
     server: "http://localhost:4848",
     schema,
-});
+}) as Zero<typeof schema>;
 
 render(() => <App z={z} />, root);
