@@ -1,16 +1,13 @@
-import {
-    createQuery,
-    type Mutators,
-    type Schema,
-    type Zero,
-} from "@package/database/client";
+import { createQuery, type Schema, type Zero } from "@package/database/client";
 import { For } from "solid-js";
 import { Button } from "@/components/ui/button";
 
 const App = ({ z }: { z: Zero<Schema> }) => {
     const [messages] = createQuery(() => z.query.message, { ttl: "5m" });
 
+    const uuid = crypto.randomUUID();
     z.mutate.message.insert({
+        id: uuid,
         message: "hello world",
     });
 

@@ -23,6 +23,9 @@ importers:
       '@package/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@std/uuid':
+        specifier: jsr:^1.0.9
+        version: '@jsr/std__uuid@1.0.9'
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -628,6 +631,15 @@ packages:
 
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
+
+  '@jsr/std__bytes@1.0.6':
+    resolution: {integrity: sha512-St6yKggjFGhxS52IFLJWvkchRFbAKg2Xh8UxA4S1EGz7GJ2Ui+ssDDldj/w2c8vCxvl6qgR0HaYbKeFJNqujmA==, tarball: https://npm.jsr.io/~/11/@jsr/std__bytes/1.0.6.tgz}
+
+  '@jsr/std__crypto@1.0.5':
+    resolution: {integrity: sha512-iqFCkjeGeQccLgmxH9m1d7abjZcFMW0XrYZu1itNz8vVHzH9crObalonjVQaVDdKHCrNNOklMN1t0u3k46dirA==, tarball: https://npm.jsr.io/~/11/@jsr/std__crypto/1.0.5.tgz}
+
+  '@jsr/std__uuid@1.0.9':
+    resolution: {integrity: sha512-hyTTOsmUTnLuah/OMnkYfZ8fSqYbB113idHZfIYlhN26PdpMGTqTUZkFCA1Q6oBhW8d8N82RG0PnRohQ0peqhA==, tarball: https://npm.jsr.io/~/11/@jsr/std__uuid/1.0.9.tgz}
 
   '@kobalte/core@0.13.10':
     resolution: {integrity: sha512-lzP64ThxZqZB6O6MnMq6w7DxK38o2ClbW3Ob6afUI6p86cUMz5Hb4rdysvYI6m1TKYlOAlFODKkoRznqybQohw==}
@@ -3454,6 +3466,15 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.0
 
   '@js-sdsl/ordered-map@4.4.2': {}
+
+  '@jsr/std__bytes@1.0.6': {}
+
+  '@jsr/std__crypto@1.0.5': {}
+
+  '@jsr/std__uuid@1.0.9':
+    dependencies:
+      '@jsr/std__bytes': 1.0.6
+      '@jsr/std__crypto': 1.0.5
 
   '@kobalte/core@0.13.10(solid-js@1.9.7)':
     dependencies:
