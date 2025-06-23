@@ -1,5 +1,5 @@
 {
-	"name": "@app/skills",
+	"name": "@service/skills",
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {

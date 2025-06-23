@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"scripts": {
 		"typecheck": "pnpm -r --paralell typecheck",
-		"app": "pnpm --filter '@app/skills'",
+		"app": "pnpm --filter '@service/skills'",
 		"check": "biome check",
 		"format": "biome format --write",
 		"database": "pnpm --filter '@package/database'"
