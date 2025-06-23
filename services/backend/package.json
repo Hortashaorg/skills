@@ -1,0 +1,12 @@
+{
+	"name": "@service/backend",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"typecheck": "tsgo",
+		"dev": "node --watch --experimental-strip-types ./index.ts"
+	},
+	"dependencies": {
+		"hono": "^4.8.2"
+	}
+}

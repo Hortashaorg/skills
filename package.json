@@ -5,6 +5,7 @@
 	"scripts": {
 		"typecheck": "pnpm -r --paralell typecheck",
 		"frontend": "pnpm --filter '@service/frontend'",
+		"backend": "pnpm --filter '@service/backend'",
 		"check": "biome check",
 		"format": "biome format --write",
 		"database": "pnpm --filter '@package/database'"
