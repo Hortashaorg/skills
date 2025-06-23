@@ -62,7 +62,7 @@ services:
             - ZERO_AUTH_SECRET=test-secret
             - ZERO_REPLICA_FILE=/zero_data/skills_replica.db
             - ZERO_PORT=4848
-            - ZERO_PUSH_URL=http://localhost:4000
+            - ZERO_PUSH_URL=http://localhost:4000/api/push
         depends_on:
             - postgres
         volumes:
