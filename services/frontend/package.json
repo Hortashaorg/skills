@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"typecheck": "tsgo",
+		"typecheck": "tsc",
 		"start": "npx serve ./dist",
 		"dev": "vite",
 		"build": "vite build",

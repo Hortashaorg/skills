@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"typecheck": "tsgo",
+		"typecheck": "tsc",
 		"generate": "drizzle-kit generate",
 		"migrate": "drizzle-kit migrate",
 		"zero": "drizzle-zero generate --format",

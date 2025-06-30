@@ -1,3 +1,4 @@
 1. Login flow. (Need to create a server)
 2. Auth with zero
 3. How to do custom mutations.
+4. Might need to consider using typescript instead of tsgo. (Because tsgo extension do not seem to work)

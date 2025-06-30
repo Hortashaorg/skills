@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"typecheck": "tsgo",
+		"typecheck": "tsc",
 		"dev": "node --watch --experimental-strip-types ./index.ts"
 	},
 	"dependencies": {

@@ -25,106 +25,106 @@ type ZeroSchema = DrizzleToZeroSchema<typeof drizzleSchema, "snake_case">;
  * This type is auto-generated from your Drizzle schema definition.
  */
 export const schema = {
-    tables: {
-        account: {
-            name: "account",
-            columns: {
-                id: {
-                    type: "string",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "account",
-                        "id"
-                    >,
-                },
-                email: {
-                    type: "string",
-                    optional: false,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "account",
-                        "email"
-                    >,
-                },
-                name: {
-                    type: "string",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "account",
-                        "name"
-                    >,
-                },
-                createdAt: {
-                    type: "number",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "account",
-                        "createdAt"
-                    >,
-                    serverName: "created_at",
-                },
-                updatedAt: {
-                    type: "number",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "account",
-                        "updatedAt"
-                    >,
-                    serverName: "updated_at",
-                },
-            },
-            primaryKey: ["id"],
-        },
-        message: {
-            name: "message",
-            columns: {
-                id: {
-                    type: "string",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "message",
-                        "id"
-                    >,
-                },
-                message: {
-                    type: "string",
-                    optional: false,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "message",
-                        "message"
-                    >,
-                },
-                createdAt: {
-                    type: "number",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "message",
-                        "createdAt"
-                    >,
-                    serverName: "created_at",
-                },
-                updatedAt: {
-                    type: "number",
-                    optional: true,
-                    customType: null as unknown as ZeroCustomType<
-                        ZeroSchema,
-                        "message",
-                        "updatedAt"
-                    >,
-                    serverName: "updated_at",
-                },
-            },
-            primaryKey: ["id"],
-        },
-    },
-    relationships: {},
+	tables: {
+		account: {
+			name: "account",
+			columns: {
+				id: {
+					type: "string",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"account",
+						"id"
+					>,
+				},
+				email: {
+					type: "string",
+					optional: false,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"account",
+						"email"
+					>,
+				},
+				name: {
+					type: "string",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"account",
+						"name"
+					>,
+				},
+				createdAt: {
+					type: "number",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"account",
+						"createdAt"
+					>,
+					serverName: "created_at",
+				},
+				updatedAt: {
+					type: "number",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"account",
+						"updatedAt"
+					>,
+					serverName: "updated_at",
+				},
+			},
+			primaryKey: ["id"],
+		},
+		message: {
+			name: "message",
+			columns: {
+				id: {
+					type: "string",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"message",
+						"id"
+					>,
+				},
+				message: {
+					type: "string",
+					optional: false,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"message",
+						"message"
+					>,
+				},
+				createdAt: {
+					type: "number",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"message",
+						"createdAt"
+					>,
+					serverName: "created_at",
+				},
+				updatedAt: {
+					type: "number",
+					optional: true,
+					customType: null as unknown as ZeroCustomType<
+						ZeroSchema,
+						"message",
+						"updatedAt"
+					>,
+					serverName: "updated_at",
+				},
+			},
+			primaryKey: ["id"],
+		},
+	},
+	relationships: {},
 } as const;
 
 /**
