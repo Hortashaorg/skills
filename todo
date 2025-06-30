@@ -1,3 +1,5 @@
+To handle auth code properly we have to introduce a router to solid.
+
 1. Login into frontend - Done
 2. Auth code request to backend
 3. Return refresh token http only cookie and access token
