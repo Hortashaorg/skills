@@ -11,16 +11,16 @@
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"@types/node": "^24.0.3",
-		"drizzle-kit": "^0.31.1"
+		"@types/node": "^24.0.10",
+		"drizzle-kit": "^0.31.4"
 	},
 	"exports": {
 		"./client": "./client.ts"
 	},
 	"dependencies": {
-		"@rocicorp/zero": "^0.20.2025052100",
+		"@rocicorp/zero": "^0.21.2025070200",
 		"drizzle-orm": "^0.44.2",
-		"drizzle-zero": "^0.10.8",
+		"drizzle-zero": "^0.12.0",
 		"postgres": "^3.4.7"
 	}
 }
