@@ -14,7 +14,13 @@ export const App = ({ z }: { z: Zero<Schema> }) => {
 
 	return (
 		<div>
-			<Skeleton class="w-100 h-20" />
+			<div class="flex flex-col gap-1">
+				<Skeleton class="w-100 h-5" />
+				<Skeleton class="w-100 h-5" />
+				<Skeleton class="w-100 h-5" />
+				<Skeleton class="w-100 h-5" />
+				<Skeleton class="w-100 h-5" />
+			</div>
 			<Button>Hello world</Button>
 			<a href={import.meta.env.VITE_URL}>Login</a>
 			<For each={messages()}>{(m) => <p>{m.message}</p>}</For>
