@@ -1,8 +1,10 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
-import { App } from "./App.tsx";
+import { Home } from "./Home.tsx";
 import "./index.css";
-import { createZero, schema, type Zero } from "@package/database/client";
+import { Route, Router } from "@solidjs/router";
+import { Callback } from "./auth/callback/Callback.tsx";
+import { ZeroProvider } from "./utils/zero-context-provider.tsx";
 
 const root = document.getElementById("root");
 
@@ -14,10 +16,14 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 
 if (!root) throw new Error("Root element not found");
 
-const z = createZero({
-	userID: "anon",
-	server: "http://localhost:4848",
-	schema,
-}) as Zero<typeof schema>;
-
-render(() => <App z={z} />, root);
+render(
+	() => (
+		<ZeroProvider>
+			<Router>
+				<Route path="/" component={Home} />
+				<Route path="/auth/callback" component={Callback} />
+			</Router>
+		</ZeroProvider>
+	),
+	root,
+);
