@@ -86,6 +86,7 @@ export const ZeroProvider: ParentComponent = (props) => {
 	};
 
 	const login = () => {
+		fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/login`);
 		console.log("login");
 	};
 
