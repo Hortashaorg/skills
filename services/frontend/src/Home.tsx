@@ -16,7 +16,7 @@ export const Home = () => {
 				<Skeleton class="w-100 h-5" />
 			</Show>
 			<Show when={zero.authState() === "authenticated"}>
-				<div>Authenticated</div>
+				<div>{zero.authState()}</div>
 			</Show>
 		</div>
 	);

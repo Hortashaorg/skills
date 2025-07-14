@@ -9,3 +9,7 @@ To handle auth code properly we have to introduce a router to solid.
 7. Send new refresh and access token to frontend
 8. Auth with zero using access token
 9. How to do custom mutations.
+
+
+Other
+- Need to fix the context to be way simpler (We can't have a union type context here)

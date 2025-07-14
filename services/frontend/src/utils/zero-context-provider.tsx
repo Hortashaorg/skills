@@ -116,8 +116,10 @@ export const ZeroProvider: ParentComponent = (props) => {
 		}
 	};
 
+	const logout = async () => {};
+
 	if (authState() === "unauthenticated") {
-		const contextValue: ZeroContextType = {
+		const contextValue: Unauthenticated = {
 			authState: authState as Accessor<"unauthenticated">,
 			login,
 		};
@@ -128,9 +130,26 @@ export const ZeroProvider: ParentComponent = (props) => {
 		);
 	}
 
-	const contextValue: ZeroContextType = {
-		authState: authState as Accessor<"loading">,
+	if (authState() === "loading") {
+		const contextValue: Loading = {
+			authState: authState as Accessor<"loading">,
+		};
+		return (
+			<ZeroContext.Provider value={contextValue}>
+				{props.children}
+			</ZeroContext.Provider>
+		);
+	}
+
+	const contextValue: Authenticated = {
+		authState: authState as Accessor<"authenticated">,
+		accessToken:
+			accessToken() ??
+			throwError("Access token missing in authenticated state"),
+		logout,
+		z: z() ?? throwError("Zero instance missing in authenticated state"),
 	};
+
 	return (
 		<ZeroContext.Provider value={contextValue}>
 			{props.children}
