@@ -1,5 +1,4 @@
 import { Show } from "solid-js";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useZero } from "./utils/zero-context-provider";
 
@@ -13,18 +12,11 @@ export const Home = () => {
 				<a href={import.meta.env.VITE_URL}>Login</a>
 			</Show>
 			<Show when={zero.authState() === "loading"}>
-				<p>Loading...</p>
+				<Skeleton class="w-100 h-5" />
+				<Skeleton class="w-100 h-5" />
 			</Show>
 			<Show when={zero.authState() === "authenticated"}>
-				<div class="flex flex-col gap-1">
-					<Skeleton class="w-100 h-5" />
-					<Skeleton class="w-100 h-5" />
-					<Skeleton class="w-100 h-5" />
-					<Skeleton class="w-100 h-5" />
-					<Skeleton class="w-100 h-5" />
-				</div>
-				<Button>Hello world</Button>
-				<a href={import.meta.env.VITE_URL}>Login</a>
+				<div>Authenticated</div>
 			</Show>
 		</div>
 	);

@@ -16,6 +16,7 @@ export type Unauthenticated = {
 
 export type Authenticated = {
 	z: Zero<typeof schema>;
+	accessToken: string;
 	authState: () => "authenticated";
 	logout: () => void;
 };
@@ -32,7 +33,8 @@ export const ZeroProvider: ParentComponent = (props) => {
 	const [z, setZ] = createSignal<Zero<typeof schema> | null>(null);
 	const [authState, setAuthState] = createSignal<
 		"loading" | "unauthenticated" | "authenticated"
-	>("unauthenticated");
+	>("loading");
+	const [accessToken, setAccessToken] = createSignal<string | null>(null);
 
 	// Initialize auth and Zero instance
 	createEffect(() => {
@@ -42,27 +44,34 @@ export const ZeroProvider: ParentComponent = (props) => {
 	const initializeAuth = async () => {
 		try {
 			// Check for existing access token
-			const accessToken = localStorage.getItem("access_token");
+			const token = accessToken();
 
-			if (accessToken) {
-				// Verify token is still valid (you might want to call an API endpoint)
-				if (await isTokenValid(accessToken)) {
-					initializeZero(accessToken);
-					setAuthState("authenticated");
-					return;
-				}
+			if (token) {
+				initializeZero(token);
+				setAuthState("authenticated");
+				return;
 			}
 
-			// Try to refresh token
-			const refreshToken = localStorage.getItem("refresh_token");
-			if (refreshToken) {
-				const newToken = await refreshAccessToken(refreshToken);
-				if (newToken) {
-					localStorage.setItem("access_token", newToken);
-					initializeZero(newToken);
-					setAuthState("authenticated");
-					return;
-				}
+			const res = await fetch(
+				`${import.meta.env.VITE_BACKEND_BASE_URL}/refresh`,
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			);
+
+			if (res.ok) {
+				const result = await res.json();
+				const access_token =
+					result.access_token ?? throwError("Access token not found");
+
+				setAccessToken(access_token);
+				initializeZero(access_token);
+				setAuthState("authenticated");
+				return;
 			}
 
 			// No valid token, user needs to login
@@ -85,13 +94,13 @@ export const ZeroProvider: ParentComponent = (props) => {
 		setZ(zeroInstance);
 	};
 
-	const login = () => {
+	const login = async () => {
 		const url = new URL(globalThis.location.href);
 
 		const code =
 			url.searchParams.get("code") ??
 			throwError("No code provided in search params");
-		fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/login`, {
+		const res = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/login`, {
 			method: "POST",
 			credentials: "include",
 			headers: {
@@ -99,43 +108,13 @@ export const ZeroProvider: ParentComponent = (props) => {
 			},
 			body: JSON.stringify({ code }),
 		});
+
+		if (res.ok) {
+			const data = await res.json();
+			setAccessToken(data.access_token);
+			setAuthState("authenticated");
+		}
 	};
-
-	const logout = () => {
-		localStorage.removeItem("access_token");
-		localStorage.removeItem("refresh_token");
-		setZ(null);
-		setAuthState("unauthenticated");
-	};
-
-	// Helper functions (implement these based on your auth system)
-	const isTokenValid = async (_token: string): Promise<boolean> => {
-		// Implement token validation logic
-		// This could be a simple expiry check or an API call
-		return true; // Placeholder
-	};
-
-	const refreshAccessToken = async (
-		_refreshToken: string,
-	): Promise<string | null> => {
-		// Implement token refresh logic
-		// Make API call to refresh endpoint
-		return null; // Placeholder
-	};
-
-	if (authState() === "authenticated") {
-		const contextValue: ZeroContextType = {
-			z: z() ?? throwError("Should be authenticated"),
-			authState: authState as Accessor<"authenticated">,
-			logout,
-		};
-
-		return (
-			<ZeroContext.Provider value={contextValue}>
-				{props.children}
-			</ZeroContext.Provider>
-		);
-	}
 
 	if (authState() === "unauthenticated") {
 		const contextValue: ZeroContextType = {

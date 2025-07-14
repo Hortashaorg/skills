@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { environment } from "./environment.ts";
 
@@ -14,6 +14,46 @@ app.use(
 		credentials: true,
 	}),
 );
+
+app.post("/refresh", async (c) => {
+	const refreshToken = getCookie(c, "refresh_token");
+
+	if (!refreshToken) {
+		return c.json(
+			{
+				error: "No refresh token",
+			},
+			400,
+		);
+	}
+
+	const params = new URLSearchParams({
+		client_id: environment.CLIENT_ID,
+		client_secret: environment.CLIENT_SECRET,
+		grant_type: "refresh_token",
+		refresh_token: refreshToken,
+	});
+
+	const res = await fetch(`https://oauth2.googleapis.com/token`, {
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		method: "POST",
+		body: params,
+	});
+	if (res.ok) {
+		const result = await res.json();
+
+		return c.json({
+			access_token: result.access_token,
+		});
+	} else {
+		console.log(res.statusText);
+		res.statusText;
+	}
+
+	return c.text("Login");
+});
 
 app.post("/login", async (c) => {
 	const { code } = await c.req.json();
