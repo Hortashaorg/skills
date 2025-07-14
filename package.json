@@ -3,7 +3,7 @@
 	"private": "true",
 	"version": "1.0.0",
 	"scripts": {
-		"typecheck": "pnpm -r --paralell typecheck",
+		"all": "pnpm -r --paralell",
 		"frontend": "pnpm --filter '@service/frontend'",
 		"backend": "pnpm --filter '@service/backend'",
 		"check": "biome check",
@@ -12,7 +12,7 @@
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"@biomejs/biome": "2.0.6",
+		"@biomejs/biome": "2.1.1",
 		"typescript": "^5.8.3"
 	}
 }

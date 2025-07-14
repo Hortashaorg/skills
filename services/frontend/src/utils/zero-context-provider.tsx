@@ -1,3 +1,4 @@
+import { throwError } from "@package/common";
 import { createZero, schema, type Zero } from "@package/database/client";
 import {
 	type Accessor,
@@ -7,7 +8,6 @@ import {
 	type ParentComponent,
 	useContext,
 } from "solid-js";
-import { throwError } from "./error";
 
 export type Unauthenticated = {
 	authState: () => "unauthenticated";
@@ -86,8 +86,19 @@ export const ZeroProvider: ParentComponent = (props) => {
 	};
 
 	const login = () => {
-		fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/login`);
-		console.log("login");
+		const url = new URL(globalThis.location.href);
+
+		const code =
+			url.searchParams.get("code") ??
+			throwError("No code provided in search params");
+		fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/login`, {
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ code }),
+		});
 	};
 
 	const logout = () => {
