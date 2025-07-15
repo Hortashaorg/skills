@@ -5,5 +5,5 @@ export const Callback = () => {
 
 	zero.login();
 
-	return <div>YOLO</div>;
+	return <div>Logging in...</div>;
 };

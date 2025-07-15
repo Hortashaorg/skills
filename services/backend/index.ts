@@ -58,8 +58,6 @@ app.post("/refresh", async (c) => {
 app.post("/login", async (c) => {
 	const { code } = await c.req.json();
 
-	// Test
-
 	if (!code) throwError("Code not provided");
 
 	const params = new URLSearchParams({
@@ -83,11 +81,9 @@ app.post("/login", async (c) => {
 	if (res.ok) {
 		const result = await res.json();
 
-		console.log(result);
-
 		// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
 		setCookie(c as any, "refresh_token", result.refresh_token, {
-			maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // ~6 months in milliseconds
+			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
 			httpOnly: true,
 			secure: environment.NODE_ENV !== "local",
 			sameSite: "lax",

@@ -24,12 +24,14 @@ export const ZeroProvider: ParentComponent = (props) => {
 	>("loading");
 	const [accessToken, setAccessToken] = createSignal<string | null>(null);
 
+	// Login function to be exposed
 	const login = async () => {
 		const url = new URL(globalThis.location.href);
 
 		const code =
 			url.searchParams.get("code") ??
 			throwError("No code provided in search params");
+
 		const res = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/login`, {
 			method: "POST",
 			credentials: "include",
@@ -43,18 +45,19 @@ export const ZeroProvider: ParentComponent = (props) => {
 			const data = await res.json();
 			setAccessToken(data.access_token);
 			setAuthState("authenticated");
+			globalThis.location.href = "/";
 		}
 	};
 
+	// Logout function to be exposed
 	const logout = async () => {};
 
+	// Builds the context when called
 	const getContext = () => {
 		const zeroInstance = createZero({
-			userID: "anon", // You might want to get this from the token
+			userID: "anon",
 			server: "http://localhost:4848",
 			schema,
-			// Add auth headers if needed
-			// headers: { Authorization: `Bearer ${token}` }
 		}) as Zero<typeof schema>;
 
 		return {
@@ -65,6 +68,7 @@ export const ZeroProvider: ParentComponent = (props) => {
 		};
 	};
 
+	// Check for or attempt to fetch access token on app load
 	const initializeAuth = async () => {
 		try {
 			// Check for existing access token
@@ -121,7 +125,6 @@ export const ZeroProvider: ParentComponent = (props) => {
 
 export const useZero = <T extends ZeroContextType>() => {
 	const context = useContext(ZeroContext);
-	console.log("useZero", context);
 	if (!context) {
 		throw new Error("useZero must be used within a ZeroProvider");
 	}
