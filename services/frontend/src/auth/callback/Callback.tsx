@@ -1,7 +1,7 @@
-import { type Unauthenticated, useZero } from "@/utils/zero-context-provider";
+import { useZero } from "@/utils/zero-context-provider";
 
 export const Callback = () => {
-	const zero = useZero<Unauthenticated>();
+	const zero = useZero();
 
 	zero.login();
 

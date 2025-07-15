@@ -1,98 +1,28 @@
 import { throwError } from "@package/common";
 import { createZero, schema, type Zero } from "@package/database/client";
 import {
-	type Accessor,
 	createContext,
-	createEffect,
+	createResource,
 	createSignal,
 	type ParentComponent,
+	Show,
 	useContext,
 } from "solid-js";
 
-export type Unauthenticated = {
-	authState: () => "unauthenticated";
+export type ZeroContextType = {
+	z: Zero<typeof schema>;
+	authState: () => "authenticated" | "unauthenticated" | "loading";
+	logout: () => void;
 	login: () => void;
 };
-
-export type Authenticated = {
-	z: Zero<typeof schema>;
-	accessToken: string;
-	authState: () => "authenticated";
-	logout: () => void;
-};
-
-export type Loading = {
-	authState: () => "loading";
-};
-
-export type ZeroContextType = Unauthenticated | Authenticated | Loading;
 
 const ZeroContext = createContext<ZeroContextType>();
 
 export const ZeroProvider: ParentComponent = (props) => {
-	const [z, setZ] = createSignal<Zero<typeof schema> | null>(null);
 	const [authState, setAuthState] = createSignal<
 		"loading" | "unauthenticated" | "authenticated"
 	>("loading");
 	const [accessToken, setAccessToken] = createSignal<string | null>(null);
-
-	// Initialize auth and Zero instance
-	createEffect(() => {
-		initializeAuth();
-	});
-
-	const initializeAuth = async () => {
-		try {
-			// Check for existing access token
-			const token = accessToken();
-
-			if (token) {
-				initializeZero(token);
-				setAuthState("authenticated");
-				return;
-			}
-
-			const res = await fetch(
-				`${import.meta.env.VITE_BACKEND_BASE_URL}/refresh`,
-				{
-					method: "POST",
-					credentials: "include",
-					headers: {
-						"Content-Type": "application/json",
-					},
-				},
-			);
-
-			if (res.ok) {
-				const result = await res.json();
-				const access_token =
-					result.access_token ?? throwError("Access token not found");
-
-				setAccessToken(access_token);
-				initializeZero(access_token);
-				setAuthState("authenticated");
-				return;
-			}
-
-			// No valid token, user needs to login
-			setAuthState("unauthenticated");
-		} catch (error) {
-			console.error("Auth initialization failed:", error);
-			setAuthState("unauthenticated");
-		}
-	};
-
-	const initializeZero = (_token: string) => {
-		const zeroInstance = createZero({
-			userID: "anon", // You might want to get this from the token
-			server: "http://localhost:4848",
-			schema,
-			// Add auth headers if needed
-			// headers: { Authorization: `Bearer ${token}` }
-		}) as Zero<typeof schema>;
-
-		setZ(zeroInstance);
-	};
 
 	const login = async () => {
 		const url = new URL(globalThis.location.href);
@@ -118,47 +48,80 @@ export const ZeroProvider: ParentComponent = (props) => {
 
 	const logout = async () => {};
 
-	if (authState() === "unauthenticated") {
-		const contextValue: Unauthenticated = {
-			authState: authState as Accessor<"unauthenticated">,
-			login,
-		};
-		return (
-			<ZeroContext.Provider value={contextValue}>
-				{props.children}
-			</ZeroContext.Provider>
-		);
-	}
+	const getContext = () => {
+		const zeroInstance = createZero({
+			userID: "anon", // You might want to get this from the token
+			server: "http://localhost:4848",
+			schema,
+			// Add auth headers if needed
+			// headers: { Authorization: `Bearer ${token}` }
+		}) as Zero<typeof schema>;
 
-	if (authState() === "loading") {
-		const contextValue: Loading = {
-			authState: authState as Accessor<"loading">,
+		return {
+			z: zeroInstance,
+			authState: authState,
+			logout: logout,
+			login: login,
 		};
-		return (
-			<ZeroContext.Provider value={contextValue}>
-				{props.children}
-			</ZeroContext.Provider>
-		);
-	}
-
-	const contextValue: Authenticated = {
-		authState: authState as Accessor<"authenticated">,
-		accessToken:
-			accessToken() ??
-			throwError("Access token missing in authenticated state"),
-		logout,
-		z: z() ?? throwError("Zero instance missing in authenticated state"),
 	};
 
+	const initializeAuth = async () => {
+		try {
+			// Check for existing access token
+			const token = accessToken();
+
+			if (token) {
+				setAuthState("authenticated");
+				return getContext();
+			}
+
+			const res = await fetch(
+				`${import.meta.env.VITE_BACKEND_BASE_URL}/refresh`,
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			);
+
+			if (res.ok) {
+				const result = await res.json();
+				const access_token =
+					result.access_token ?? throwError("Access token not found");
+
+				setAccessToken(access_token);
+				setAuthState("authenticated");
+				return getContext();
+			}
+
+			// No valid token, user needs to login
+			setAuthState("unauthenticated");
+			return getContext();
+		} catch (error) {
+			console.error("Auth initialization failed:", error);
+			setAuthState("unauthenticated");
+			return getContext();
+		}
+	};
+
+	const [provider] = createResource<ZeroContextType>(async () => {
+		return initializeAuth();
+	});
+
 	return (
-		<ZeroContext.Provider value={contextValue}>
-			{props.children}
-		</ZeroContext.Provider>
+		<Show when={provider()} fallback={<div>Loading...</div>}>
+			<ZeroContext.Provider value={provider()}>
+				{props.children}
+			</ZeroContext.Provider>
+		</Show>
 	);
 };
 
 export const useZero = <T extends ZeroContextType>() => {
 	const context = useContext(ZeroContext);
+	console.log("useZero", context);
 	if (!context) {
 		throw new Error("useZero must be used within a ZeroProvider");
 	}
