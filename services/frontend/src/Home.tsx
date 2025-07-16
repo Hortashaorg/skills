@@ -4,7 +4,10 @@ import { useZero } from "./utils/zero-context-provider";
 export const Home = () => {
 	const zero = useZero();
 
-	zero.z.mutate.test.create("hello my man");
+	zero.z.mutate.message.insert({
+		id: crypto.randomUUID(),
+		message: "new test",
+	});
 
 	return (
 		<div>
