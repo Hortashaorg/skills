@@ -47,12 +47,18 @@ importers:
       '@package/common':
         specifier: workspace:*
         version: link:../../packages/common
+      '@package/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@types/node':
         specifier: ^24.0.13
         version: 24.0.13
       hono:
         specifier: ^4.8.5
         version: 4.8.5
+      postgres:
+        specifier: ^3.4.7
+        version: 3.4.7
 
   services/frontend:
     dependencies:

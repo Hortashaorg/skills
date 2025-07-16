@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { environment } from "./environment.ts";
+import { handlePush } from "./push.ts";
 
 const app = new Hono();
 
@@ -98,6 +99,10 @@ app.post("/login", async (c) => {
 	}
 
 	return c.text("Login");
+});
+
+app.post("/api/push", async (c) => {
+	return c.json(await handlePush(c.req.raw));
 });
 
 serve({

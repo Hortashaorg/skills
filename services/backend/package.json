@@ -9,7 +9,9 @@
 	"dependencies": {
 		"@hono/node-server": "^1.16.0",
 		"@package/common": "workspace:*",
+		"@package/database": "workspace:*",
 		"@types/node": "^24.0.13",
-		"hono": "^4.8.5"
+		"hono": "^4.8.5",
+		"postgres": "^3.4.7"
 	}
 }

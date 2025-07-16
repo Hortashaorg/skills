@@ -8,4 +8,7 @@ export const environment = {
 		process.env.CLIENT_ID ?? throwError("Env Variable: CLIENT_ID not found"),
 	NODE_ENV:
 		process.env.NODE_ENV ?? throwError("Env Variable: NODE_ENV not found"),
+	ZERO_UPSTREAM_DB:
+		process.env.ZERO_UPSTREAM_DB ??
+		throwError("Env Variable: ZERO_UPSTREAM_DB not found"),
 } as const;
