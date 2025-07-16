@@ -4,6 +4,8 @@ import { useZero } from "./utils/zero-context-provider";
 export const Home = () => {
 	const zero = useZero();
 
+	zero.z.mutate.test.create("hello my man");
+
 	return (
 		<div>
 			<Show when={zero.authState() === "unauthenticated"}>

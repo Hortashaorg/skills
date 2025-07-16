@@ -1,12 +1,11 @@
 import type { CustomMutatorDefs } from "@rocicorp/zero";
-import type { Message, schema } from "./schema.ts";
+import type { schema } from "./schema.ts";
 
 export function createMutators() {
 	return {
 		test: {
-			async create(tx, message: Message) {
-				console.log("create");
-				await tx.mutate.message.insert(message);
+			async create(_tx, message: string) {
+				console.log("create", message);
 			},
 		},
 	} as const satisfies CustomMutatorDefs<typeof schema>;

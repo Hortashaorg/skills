@@ -1,5 +1,11 @@
 import { throwError } from "@package/common";
-import { createZero, schema, type Zero } from "@package/database/client";
+import {
+	createMutators,
+	createZero,
+	type Mutators,
+	schema,
+	type Zero,
+} from "@package/database/client";
 import {
 	createContext,
 	createResource,
@@ -10,7 +16,7 @@ import {
 } from "solid-js";
 
 export type ZeroContextType = {
-	z: Zero<typeof schema>;
+	z: Zero<typeof schema, Mutators>;
 	authState: () => "authenticated" | "unauthenticated" | "loading";
 	logout: () => void;
 	login: () => void;
@@ -58,7 +64,8 @@ export const ZeroProvider: ParentComponent = (props) => {
 			userID: "anon",
 			server: "http://localhost:4848",
 			schema,
-		}) as Zero<typeof schema>;
+			mutators: createMutators(),
+		}) as Zero<typeof schema, Mutators>;
 
 		return {
 			z: zeroInstance,
