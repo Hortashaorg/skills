@@ -3,11 +3,7 @@ import { useZero } from "./utils/zero-context-provider";
 
 export const Home = () => {
 	const zero = useZero();
-
-	zero.z.mutate.message.insert({
-		id: crypto.randomUUID(),
-		message: "new test",
-	});
+	zero.z.mutate.test.create("testing something else");
 
 	return (
 		<div>

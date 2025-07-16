@@ -1,89 +1,92 @@
 services:
-    local:
-        container_name: skills_local
-        build:
-            context: .
-            dockerfile: Dockerfile
-            target: local
-        network_mode: host
-        volumes:
-            - ./..:/skills
-            - ~/.ssh:/root/.ssh
-        command: bash -c "service ssh start && sleep infinity"
+  local:
+    container_name: skills_local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    ports:
+      - "4321:4321"
+      - "4000:4000"
+      - "2221:2221"
+    volumes:
+      - ./..:/skills
+      - ~/.ssh:/root/.ssh
+    command: bash -c "service ssh start && sleep infinity"
 
-    postgres:
-        container_name: skills_postgres
-        image: postgres:16.3
-        ports:
-            - "5432:5432"
-        command: |
-            postgres
-            -c wal_level=logical
-            -c max_wal_senders=10
-            -c max_replication_slots=5
-            -c hot_standby=on
-            -c hot_standby_feedback=on
-        environment:
-            - POSTGRES_DB=root
-            - POSTGRES_USER=root
-            - POSTGRES_PASSWORD=root
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U root"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
+  postgres:
+    container_name: skills_postgres
+    image: postgres:16.3
+    ports:
+      - "5432:5432"
+    command: |
+      postgres
+      -c wal_level=logical
+      -c max_wal_senders=10
+      -c max_replication_slots=5
+      -c hot_standby=on
+      -c hot_standby_feedback=on
+    environment:
+      - POSTGRES_DB=root
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-    pgadmin:
-        container_name: skills_pgadmin
-        image: dpage/pgadmin4
-        restart: always
-        environment:
-            PGADMIN_DEFAULT_EMAIL: "admin@example.com"
-            PGADMIN_DEFAULT_PASSWORD: "root"
-            PGADMIN_SERVER_JSON_FILE: /servers.json
-        ports:
-            - "8080:80"
-        volumes:
-            - "./servers.json:/servers.json"
-        depends_on:
-            - postgres
+  pgadmin:
+    container_name: skills_pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "root"
+      PGADMIN_SERVER_JSON_FILE: /servers.json
+    ports:
+      - "8080:80"
+    volumes:
+      - "./servers.json:/servers.json"
+    depends_on:
+      - postgres
 
-    zero-cache:
-        container_name: skills_zero
-        image: rocicorp/zero:0.21.2025061100
-        ports:
-            - "4848:4848"
-        environment:
-            - ZERO_UPSTREAM_DB=postgresql://root:root@postgres:5432/root
-            - ZERO_CVR_DB=postgresql://root:root@postgres:5432/root
-            - ZERO_CHANGE_DB=postgresql://root:root@postgres:5432/root
-            - ZERO_AUTH_SECRET=test-secret
-            - ZERO_REPLICA_FILE=/zero_data/skills_replica.db
-            - ZERO_PORT=4848
-            - ZERO_PUSH_URL=http://localhost:4000/api/push
-        depends_on:
-            - postgres
-        volumes:
-            - "replica:/zero_data"
+  zero-cache:
+    container_name: skills_zero
+    image: rocicorp/zero:0.21.2025061100
+    ports:
+      - "4848:4848"
+    environment:
+      - ZERO_UPSTREAM_DB=postgresql://root:root@postgres:5432/root
+      - ZERO_CVR_DB=postgresql://root:root@postgres:5432/root
+      - ZERO_CHANGE_DB=postgresql://root:root@postgres:5432/root
+      - ZERO_AUTH_SECRET=test-secret
+      - ZERO_REPLICA_FILE=/zero_data/skills_replica.db
+      - ZERO_PORT=4848
+      - ZERO_PUSH_URL=http://local:4000/api/push
+    depends_on:
+      - postgres
+    volumes:
+      - "replica:/zero_data"
 
-    otel:
-        container_name: skills_otel
-        image: grafana/otel-lgtm
-        ports:
-            - "4317:4317"
-            - "4318:4318"
-            - "3000:3000"
-        volumes:
-            - grafana_data:/data/grafana
-            - prometheus_data:/data/prometheus
-            - loki_data:/data/loki
-        environment:
-            - GF_PATHS_DATA=/data/grafana
+  otel:
+    container_name: skills_otel
+    image: grafana/otel-lgtm
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "3000:3000"
+    volumes:
+      - grafana_data:/data/grafana
+      - prometheus_data:/data/prometheus
+      - loki_data:/data/loki
+    environment:
+      - GF_PATHS_DATA=/data/grafana
 volumes:
-    postgres_data:
-    grafana_data:
-    prometheus_data:
-    loki_data:
-    replica:
+  postgres_data:
+  grafana_data:
+  prometheus_data:
+  loki_data:
+  replica:

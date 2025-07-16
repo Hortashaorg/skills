@@ -7,7 +7,7 @@
 		"generate": "drizzle-kit generate",
 		"migrate": "drizzle-kit migrate",
 		"zero": "drizzle-zero generate --format",
-		"sync": "npx zero-deploy-permissions --schema-path ./schema.ts --upstream-db postgresql://root:root@localhost:5432/root"
+		"sync": "npx zero-deploy-permissions --schema-path ./schema.ts --upstream-db postgresql://root:root@postgres:5432/root"
 	},
 	"author": "Martin Eide",
 	"devDependencies": {

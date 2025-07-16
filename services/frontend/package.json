@@ -5,7 +5,7 @@
 	"scripts": {
 		"typecheck": "tsc",
 		"start": "npx serve ./dist",
-		"dev": "vite",
+		"dev": "vite --host",
 		"build": "vite build",
 		"serve": "vite preview",
 		"component": "pnpm dlx shadcn-solid@latest add"
