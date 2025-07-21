@@ -11,7 +11,7 @@
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"@types/node": "^24.0.14",
+		"@types/node": "^24.0.15",
 		"drizzle-kit": "^0.31.4"
 	},
 	"exports": {
