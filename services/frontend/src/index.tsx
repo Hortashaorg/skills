@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
-import { Home } from "./Home.tsx";
+import { Home } from "./routes/Home.tsx";
 import "./index.css";
 import { Route, Router } from "@solidjs/router";
 import { Callback } from "./auth/callback/Callback.tsx";
