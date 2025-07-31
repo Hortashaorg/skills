@@ -8,16 +8,18 @@
 		"dev": "vite --host",
 		"build": "vite build",
 		"serve": "vite preview",
-		"component": "pnpm dlx shadcn-solid@latest add"
+		"component": "pnpm dlx solidui-cli@latest add"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.4.21",
 		"tailwindcss": "^4.1.11",
+		"tw-animate-css": "^1.3.6",
 		"vite": "^7.0.6",
 		"vite-plugin-solid": "^2.11.8"
 	},
 	"dependencies": {
 		"@kobalte/core": "^0.13.11",
+		"@kobalte/tailwindcss": "^0.9.0",
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
 		"@solidjs/router": "^0.15.3",
@@ -26,6 +28,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"solid-js": "^1.9.7",
-		"tailwind-merge": "^3.3.1"
+		"tailwind-merge": "^3.3.1",
+		"tailwindcss-animate": "^1.0.7"
 	}
 }
