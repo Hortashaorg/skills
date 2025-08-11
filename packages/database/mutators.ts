@@ -4,8 +4,8 @@ import type { schema } from "./schema.ts";
 export function createMutators() {
 	return {
 		test: {
-			async create(tx, message: string) {
-				await tx.mutate.message.insert({ id: crypto.randomUUID(), message });
+			async create(_tx, message: string) {
+				console.log(message);
 			},
 		},
 	} as const satisfies CustomMutatorDefs<typeof schema>;
