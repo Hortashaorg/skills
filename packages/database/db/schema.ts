@@ -4,6 +4,7 @@ import {
 	pgTable,
 	primaryKey,
 	text,
+	timestamp,
 	uuid,
 	varchar,
 } from "drizzle-orm/pg-core";
@@ -12,8 +13,8 @@ export const account = pgTable("account", {
 	id: uuid().primaryKey(),
 	email: varchar({ length: 100 }).notNull().unique(),
 	name: varchar({ length: 50 }).unique(),
-	createdAt: date().notNull().default(sql`now()`),
-	updatedAt: date().notNull().default(sql`now()`),
+	createdAt: timestamp().notNull().default(sql`now()`),
+	updatedAt: timestamp().notNull().default(sql`now()`),
 });
 
 export const tech = pgTable("technology", {
@@ -22,16 +23,16 @@ export const tech = pgTable("technology", {
 	description: text(),
 	github: varchar({ length: 255 }),
 	website: varchar({ length: 255 }),
-	createdAt: date().notNull().default(sql`now()`),
-	updatedAt: date().notNull().default(sql`now()`),
+	createdAt: timestamp().notNull().default(sql`now()`),
+	updatedAt: timestamp().notNull().default(sql`now()`),
 });
 
 export const tag = pgTable("tag", {
 	id: uuid().primaryKey(),
 	name: varchar({ length: 100 }).notNull(),
 	description: text(),
-	createdAt: date().notNull().default(sql`now()`),
-	updatedAt: date().notNull().default(sql`now()`),
+	createdAt: timestamp().notNull().default(sql`now()`),
+	updatedAt: timestamp().notNull().default(sql`now()`),
 });
 
 export const tagToTech = pgTable(
