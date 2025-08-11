@@ -73,6 +73,7 @@ export const ZeroProvider: ParentComponent = (props) => {
 			zeroInstance = createZero({
 				auth: accessToken() as string,
 				userID: userId() as string,
+				server: "http://localhost:4848",
 				schema,
 				mutators: createMutators(),
 			});
