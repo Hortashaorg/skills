@@ -1,11 +1,6 @@
-To handle auth code properly we have to introduce a router to solid.
-
-1. Login into frontend - Done
-2. Auth code request to backend - Done
-3. Return refresh token http only cookie and access token - Done
-4. Ask to refresh token with refresh endpoint in backend.
-5. Backend use refresh token in http only cookie to provide new access_token.
-6. Possibly also push refresh token timer - Set to 6 months for now - Done
-7. Send new refresh and access token to frontend
-8. Auth with zero using access token
-9. How to do custom mutations.
+1. Create a backend private key for signing JWT tokens. (sub, email)
+2. Change access token sent to frontend
+3. Init correct zero instance in frontend.
+4. Verify that token is correctly validated
+5. Permissions correctly for mutations/queries
+6. Permissions correctly for custom mutations
