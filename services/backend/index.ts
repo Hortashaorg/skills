@@ -3,10 +3,25 @@ import { throwError } from "@package/common";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
-import { decode } from "hono/jwt";
+import { decode, sign } from "hono/jwt";
 import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
 import { handlePush } from "./push.ts";
+
+const userToken = async (sub: string, email: string) => {
+	const now = Math.floor(Date.now() / 1000);
+
+	const token = await sign(
+		{
+			sub,
+			email,
+			iat: now,
+			exp: now + 10 * 60,
+		},
+		environment.AUTH_PRIVATE_KEY,
+	);
+	return token;
+};
 
 const app = new Hono();
 
@@ -48,7 +63,7 @@ app.post("/login", async (c) => {
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
 		const user = await ensureUser(email);
-		console.log("login", user);
+		const token = await userToken(user.id, user.email);
 
 		// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
 		setCookie(c as any, "refresh_token", result.refresh_token, {
@@ -59,7 +74,8 @@ app.post("/login", async (c) => {
 		});
 
 		return c.json({
-			access_token: result.access_token,
+			access_token: token,
+			sub: user.id,
 		});
 	} else {
 		console.log(res.statusText);
@@ -102,10 +118,11 @@ app.post("/refresh", async (c) => {
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
 		const user = await ensureUser(email);
-		console.log("refresh", user);
+		const token = await userToken(user.id, user.email);
 
 		return c.json({
-			access_token: result.access_token,
+			access_token: token,
+			sub: user.id,
 		});
 	} else {
 		console.log(res.statusText);

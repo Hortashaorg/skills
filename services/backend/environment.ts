@@ -11,4 +11,7 @@ export const environment = {
 	ZERO_UPSTREAM_DB:
 		process.env.ZERO_UPSTREAM_DB ??
 		throwError("Env Variable: ZERO_UPSTREAM_DB not found"),
+	AUTH_PRIVATE_KEY:
+		process.env.AUTH_PRIVATE_KEY ??
+		throwError("Env Variable: AUTH_PRIVATE_KEY not found"),
 } as const;

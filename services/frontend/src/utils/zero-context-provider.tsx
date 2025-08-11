@@ -29,6 +29,7 @@ export const ZeroProvider: ParentComponent = (props) => {
 		"loading" | "unauthenticated" | "authenticated"
 	>("loading");
 	const [accessToken, setAccessToken] = createSignal<string | null>(null);
+	const [userId, setUserId] = createSignal<string | null>(null);
 
 	// Login function to be exposed
 	const login = async () => {
@@ -50,6 +51,7 @@ export const ZeroProvider: ParentComponent = (props) => {
 		if (res.ok) {
 			const data = await res.json();
 			setAccessToken(data.access_token);
+			setUserId(data.sub);
 			setAuthState("authenticated");
 			globalThis.location.href = "/";
 		}
@@ -60,12 +62,21 @@ export const ZeroProvider: ParentComponent = (props) => {
 
 	// Builds the context when called
 	const getContext = () => {
-		const zeroInstance = createZero({
+		let zeroInstance = createZero({
 			userID: "anon",
 			server: "http://localhost:4848",
 			schema,
 			mutators: createMutators(),
 		}) as Zero<typeof schema, Mutators>;
+
+		if (accessToken()) {
+			zeroInstance = createZero({
+				auth: accessToken() as string,
+				userID: userId() as string,
+				schema,
+				mutators: createMutators(),
+			});
+		}
 
 		return {
 			z: zeroInstance,
@@ -99,10 +110,8 @@ export const ZeroProvider: ParentComponent = (props) => {
 
 			if (res.ok) {
 				const result = await res.json();
-				const access_token =
-					result.access_token ?? throwError("Access token not found");
-
-				setAccessToken(access_token);
+				setAccessToken(result.access_token);
+				setUserId(result.sub);
 				setAuthState("authenticated");
 				return getContext();
 			}
