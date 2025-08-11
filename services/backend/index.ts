@@ -1,8 +1,14 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
+import {
+	PostgresJSConnection,
+	schema,
+	ZQLDatabase,
+} from "@package/database/server";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
+import postgres from "postgres";
 import { environment } from "./environment.ts";
 import { handlePush } from "./push.ts";
 
@@ -103,6 +109,33 @@ app.post("/login", async (c) => {
 
 app.post("/api/push", async (c) => {
 	return c.json(await handlePush(c.req.raw));
+});
+
+app.get("/test", async (c) => {
+	console.log("test");
+
+	const db = new ZQLDatabase(
+		new PostgresJSConnection(postgres(environment.ZERO_UPSTREAM_DB)),
+		schema,
+	);
+
+	db.transaction(
+		async (tx) => {
+			await tx.mutate.account.insert({
+				email: "test@example.com",
+				id: crypto.randomUUID(),
+			});
+		},
+		{
+			clientGroupID: "unused",
+			clientID: "unused",
+			mutationID: 42,
+			upstreamSchema: "unused",
+		},
+	);
+	return c.json({
+		message: "test",
+	});
 });
 
 serve({
