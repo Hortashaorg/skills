@@ -1,19 +1,7 @@
-import {
-	createMutators,
-	PostgresJSConnection,
-	PushProcessor,
-	schema,
-	ZQLDatabase,
-} from "@package/database/server";
-import postgres from "postgres";
-import { environment } from "./environment.ts";
+import { createMutators, PushProcessor } from "@package/database/server";
+import { db } from "./util.ts";
 
-const processor = new PushProcessor(
-	new ZQLDatabase(
-		new PostgresJSConnection(postgres(environment.ZERO_UPSTREAM_DB)),
-		schema,
-	),
-);
+const processor = new PushProcessor(db);
 
 export async function handlePush(request: Request) {
 	return await processor.process(createMutators(), request);
