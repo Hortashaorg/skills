@@ -1,6 +1,7 @@
 import {
-	ANYONE_CAN_DO_ANYTHING,
 	definePermissions,
+	type ExpressionBuilder,
+	type PermissionsConfig,
 	type Row,
 } from "@rocicorp/zero";
 
@@ -10,11 +11,24 @@ export { schema, type Schema };
 
 export type Account = Row<Schema["tables"]["account"]>;
 
-export const permissions = definePermissions<Record<string, never>, Schema>(
-	schema,
-	() => {
-		return {
-			account: ANYONE_CAN_DO_ANYTHING,
-		};
-	},
-);
+type AuthData = {
+	sub: string;
+	email: string;
+};
+
+const isUser = (
+	auth: AuthData,
+	{ cmp }: ExpressionBuilder<Schema, "account">,
+) => {
+	return cmp("id", auth.sub);
+};
+
+export const permissions = definePermissions<AuthData, Schema>(schema, () => {
+	return {
+		account: {
+			row: {
+				select: [isUser],
+			},
+		},
+	} satisfies PermissionsConfig<AuthData, Schema>;
+});

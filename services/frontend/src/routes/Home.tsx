@@ -1,10 +1,16 @@
+import { useQuery } from "@package/database/client";
 import { Show } from "solid-js";
 import { Layout } from "@/layout/Layout";
 import { useZero } from "@/utils/zero-context-provider";
 
 export const Home = () => {
 	const zero = useZero();
-	zero.z.mutate.test.create("testing something else");
+
+	const [accounts] = useQuery(() => {
+		zero.z.mutate.test.create("testing something else");
+
+		return zero.z.query.account;
+	});
 
 	return (
 		<Layout>
@@ -15,6 +21,11 @@ export const Home = () => {
 			<Show when={zero.authState() === "authenticated"}>
 				<div>{zero.authState()}</div>
 			</Show>
+			<div>
+				{accounts().map((account) => (
+					<div>{account.id}</div>
+				))}
+			</div>
 		</Layout>
 	);
 };
