@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noUnknownAtRules: This is tailwind css. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@kobalte/tailwindcss";
