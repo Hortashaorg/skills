@@ -2,6 +2,7 @@ import { useQuery } from "@package/database/client";
 import { For } from "solid-js";
 import { useZero } from "@/utils/zero-context-provider";
 
+
 export const Authenticated = () => {
 	const zero = useZero();
 
@@ -11,7 +12,8 @@ export const Authenticated = () => {
 
 			return zero.z.query.account;
 		});
-		return <For each={accounts()}>{(account) => <div>{account.id}</div>}</For>;
+		return <For each={accounts()}>{(account) => <div>{account.id}</div>}</For>
+
 	}
 
 	return <p>Not logged in</p>;
