@@ -140,7 +140,6 @@ app.post(
 	"/api/push",
 	validator("header", (v) => {
 		const auth = v.authorization;
-		console.log(auth);
 		if (!auth) {
 			return undefined;
 		}
