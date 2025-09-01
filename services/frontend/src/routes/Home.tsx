@@ -1,16 +1,10 @@
-import { useQuery } from "@package/database/client";
-import { For, Show } from "solid-js";
+import { Show } from "solid-js";
 import { Layout } from "@/layout/Layout";
 import { useZero } from "@/utils/zero-context-provider";
+import { Authenticated } from "./Authenticated";
 
 export const Home = () => {
 	const zero = useZero();
-
-	const [accounts] = useQuery(() => {
-		zero.z.mutate.test.create("testing something else");
-
-		return zero.z.query.account;
-	});
 
 	return (
 		<Layout>
@@ -20,8 +14,8 @@ export const Home = () => {
 			</Show>
 			<Show when={zero.authState() === "authenticated"}>
 				<div>{zero.authState()}</div>
+				<Authenticated />
 			</Show>
-			<For each={accounts()}>{(account) => <div>{account.id}</div>}</For>
 		</Layout>
 	);
 };

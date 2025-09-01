@@ -1,12 +1,16 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
+import { validateAndDecodeAuthData } from "@package/database/server";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { decode, sign } from "hono/jwt";
+import { validator } from "hono/validator";
 import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
 import { handlePush } from "./push.ts";
+
+const secretKey = new TextEncoder().encode(environment.AUTH_PRIVATE_KEY);
 
 const userToken = async (sub: string, email: string) => {
 	const now = Math.floor(Date.now() / 1000);
@@ -132,9 +136,30 @@ app.post("/refresh", async (c) => {
 	return c.text("Login");
 });
 
-app.post("/api/push", async (c) => {
-	return c.json(await handlePush(c.req.raw));
-});
+app.post(
+	"/api/push",
+	validator("header", (v) => {
+		const auth = v.authorization;
+		console.log(auth);
+		if (!auth) {
+			return undefined;
+		}
+		const parts = /^Bearer (.+)$/.exec(auth);
+		if (!parts) {
+			throw new Error(
+				"Invalid Authorization header - should start with 'Bearer '",
+			);
+		}
+		const [, jwt] = parts;
+		if (!jwt) {
+			throw new Error("jwt missing");
+		}
+		return validateAndDecodeAuthData(jwt, secretKey);
+	}),
+	async (c) => {
+		return c.json(await handlePush(c.req.valid("header"), c.req.raw));
+	},
+);
 
 serve({
 	fetch: app.fetch,

@@ -2,6 +2,7 @@ import { throwError } from "@package/common";
 import {
 	createMutators,
 	createZero,
+	decodeAuthData,
 	type Mutators,
 	schema,
 	type Zero,
@@ -62,22 +63,20 @@ export const ZeroProvider: ParentComponent = (props) => {
 
 	// Builds the context when called
 	const getContext = () => {
-		let zeroInstance = createZero({
-			userID: "anon",
-			server: "http://localhost:4848",
-			schema,
-			mutators: createMutators(),
-		}) as Zero<typeof schema, Mutators>;
-
-		if (accessToken()) {
-			zeroInstance = createZero({
-				auth: accessToken() as string,
-				userID: userId() as string,
-				server: "http://localhost:4848",
-				schema,
-				mutators: createMutators(),
-			});
-		}
+		const zeroInstance: Zero<typeof schema, Mutators> = accessToken()
+			? createZero({
+					auth: accessToken() as string,
+					userID: userId() as string,
+					server: "http://localhost:4848",
+					schema,
+					mutators: createMutators(decodeAuthData(accessToken() as string)),
+				})
+			: createZero({
+					userID: "anon",
+					server: "http://localhost:4848",
+					schema,
+					mutators: createMutators(undefined),
+				});
 
 		return {
 			z: zeroInstance,

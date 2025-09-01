@@ -28,9 +28,15 @@ importers:
       drizzle-zero:
         specifier: ^0.13.3
         version: 0.13.3(@rocicorp/zero@0.22.2025081301(@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0))(typescript@5.9.2))(@types/pg@8.15.4)(drizzle-orm@0.44.5(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(postgres@3.4.7))(postgres@3.4.7)(prettier@3.6.2)
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
+      zod:
+        specifier: ^4.1.5
+        version: 4.1.5
     devDependencies:
       '@types/node':
         specifier: ^24.3.0
@@ -2177,6 +2183,9 @@ packages:
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
+  jose@6.1.0:
+    resolution: {integrity: sha512-TTQJyoEoKcC1lscpVDCSsVgYzUDg/0Bt3WE//WiTPK6uOCQC2KZS4MpugbMWt/zyjkopgZoXhZuCi00gLudfUA==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -2946,6 +2955,9 @@ packages:
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
+
+  zod@4.1.5:
+    resolution: {integrity: sha512-rcUUZqlLJgBC33IT3PNMgsCq6TzLQEG/Ei/KTCU0PedSWRMAXoOUN+4t/0H+Q8bdnLPdqUYnvboJT0bn/229qg==}
 
 snapshots:
 
@@ -5060,6 +5072,8 @@ snapshots:
 
   jose@5.10.0: {}
 
+  jose@6.1.0: {}
+
   js-tokens@4.0.0: {}
 
   js-xxhash@4.0.0: {}
@@ -5740,3 +5754,5 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  zod@4.1.5: {}
