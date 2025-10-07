@@ -37,10 +37,28 @@ export class AuthService {
 	}
 
 	/**
-	 * Placeholder for login - will implement in Step 3
+	 * Exchanges OAuth code for access token
+	 * Returns AuthData on successful login
 	 */
 	async login(code: string): Promise<AuthData> {
-		throw new Error("Login not implemented yet");
+		const res = await fetch(`${this.baseUrl}/login`, {
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ code }),
+		});
+
+		if (!res.ok) {
+			throw new Error("Login failed");
+		}
+
+		const data = await res.json();
+		return {
+			accessToken: data.access_token,
+			userId: data.sub,
+		};
 	}
 
 	/**
