@@ -1,5 +1,4 @@
 import type { CustomMutatorDefs } from "@rocicorp/zero";
-import type { schema } from "./schema.ts";
 import type { AuthData } from "./utils.ts";
 
 export function createMutators(authData: AuthData | undefined) {
@@ -10,7 +9,7 @@ export function createMutators(authData: AuthData | undefined) {
 				console.log(message);
 			},
 		},
-	} as const satisfies CustomMutatorDefs<typeof schema>;
+	} as const satisfies CustomMutatorDefs;
 }
 
 function mustBeLoggedIn(authData: AuthData | undefined): AuthData {

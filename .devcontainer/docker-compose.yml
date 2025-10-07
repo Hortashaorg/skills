@@ -55,7 +55,7 @@ services:
 
     zero-cache:
         container_name: skills_zero
-        image: rocicorp/zero:0.22.2025080200
+        image: rocicorp/zero:0.23.2025090100
         ports:
             - "4848:4848"
         environment:
@@ -73,7 +73,7 @@ services:
 
     otel:
         container_name: skills_otel
-        image: grafana/otel-lgtm
+        image: grafana/otel-lgtm:0.11.10
         ports:
             - "4317:4317"
             - "4318:4318"
