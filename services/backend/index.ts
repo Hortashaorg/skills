@@ -137,7 +137,7 @@ app.post("/refresh", async (c) => {
 });
 
 app.post(
-	"/api/push",
+	"/api/mutate",
 	validator("header", (v) => {
 		const auth = v.authorization;
 		if (!auth) {
