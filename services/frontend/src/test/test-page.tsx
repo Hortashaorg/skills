@@ -3,15 +3,7 @@ import { useZero } from "./context/use-zero";
 import { NestedComponentLevel1 } from "./nested-component-level1";
 
 export const TestPage: Component = () => {
-	const { authState, authData, login } = useZero();
-
-	const handleLogin = async () => {
-		try {
-			await login();
-		} catch (error) {
-			console.error("Login error:", error);
-		}
-	};
+	const { authState, authData } = useZero();
 
 	return (
 		<div style={{ padding: "20px", border: "2px solid red" }}>
@@ -24,12 +16,6 @@ export const TestPage: Component = () => {
 					<a href={import.meta.env.VITE_URL}>
 						<button type="button">Login with OAuth</button>
 					</a>
-					<p style={{ "font-size": "12px", color: "#666" }}>
-						After OAuth redirect, click button below:
-					</p>
-					<button type="button" onClick={handleLogin}>
-						Complete Login
-					</button>
 				</div>
 			</Show>
 

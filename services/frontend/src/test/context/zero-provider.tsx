@@ -45,16 +45,38 @@ export const ZeroProvider: ParentComponent = (props) => {
 	};
 
 	const initializeContext = async (): Promise<ZeroContextType> => {
-		// Try to refresh token to restore session
-		const data = await authService.refresh();
+		// Check if we have an OAuth code in the URL
+		const url = new URL(window.location.href);
+		const code = url.searchParams.get("code");
+
+		let authDataResult: AuthData | null = null;
+
+		if (code) {
+			// We have an OAuth code - exchange it for tokens
+			try {
+				authDataResult = await authService.login(code);
+				setAuthData(authDataResult);
+				setAuthState("authenticated");
+				// Clear the code from URL
+				window.history.replaceState({}, "", window.location.pathname);
+			} catch (error) {
+				console.error("Login with code failed:", error);
+			}
+		}
+
+		// If we didn't just login, try to refresh token to restore session
+		if (!authDataResult) {
+			authDataResult = await authService.refresh();
+			if (authDataResult) {
+				setAuthData(authDataResult);
+				setAuthState("authenticated");
+			}
+		}
 
 		let zeroInstance: Zero<typeof schema, Mutators>;
 
-		if (data) {
-			// Successfully restored session
-			setAuthData(data);
-			setAuthState("authenticated");
-			zeroInstance = zeroFactory.createAuthenticated(data);
+		if (authDataResult) {
+			zeroInstance = zeroFactory.createAuthenticated(authDataResult);
 		} else {
 			// No valid session
 			setAuthState("unauthenticated");
