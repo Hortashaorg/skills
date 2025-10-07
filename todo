@@ -1,6 +1,19 @@
-1. Create a backend private key for signing JWT tokens. (sub, email)
-2. Change access token sent to frontend
-3. Init correct zero instance in frontend.
-4. Verify that token is correctly validated
-5. Permissions correctly for mutations/queries
-6. Permissions correctly for custom mutations
+## Zero Context Provider - Code Review & Onboarding
+- Review zero-provider architecture and folder structure
+- Understand auth state management flow
+- Review ZeroFactory and instance creation logic
+- Understand initialization sequence (refresh → code detection → login)
+- Review error handling and edge cases
+- Ensure code is maintainable and well-documented
+
+## Zero Context Provider - Missing Features
+- Re-create Zero instance when auth state changes (after login)
+- Add logout functionality
+- Test Zero queries with useQuery() in components
+- Test Zero mutations and UI reactivity
+- Build real-world component (list + form) to stress-test
+- Handle Zero instance updates reactively
+- Test multiple components using Zero simultaneously
+
+## Backend & Permissions
+- Support logout endpoint (clear refresh token cookie)
