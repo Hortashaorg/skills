@@ -1,5 +1,5 @@
 import { useContext } from "solid-js";
-import { ZeroContext, type ZeroContextType } from "./zero-provider";
+import { ZeroContext } from "./zero-provider";
 
 export const useZero = () => {
 	const context = useContext(ZeroContext);

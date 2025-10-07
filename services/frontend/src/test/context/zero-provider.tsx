@@ -1,3 +1,4 @@
+import type { Mutators, schema, Zero } from "@package/database/client";
 import {
 	createContext,
 	createResource,
@@ -7,11 +8,13 @@ import {
 import { AuthService } from "../auth/auth-service";
 import { createAuthState } from "../auth/auth-state";
 import type { AuthData, AuthState } from "../types";
+import { ZeroFactory } from "../zero/zero-factory";
 
 export type ZeroContextType = {
 	authState: () => AuthState;
 	authData: () => AuthData | null;
 	login: () => Promise<void>;
+	z: Zero<typeof schema, Mutators>;
 };
 
 export const ZeroContext = createContext<ZeroContextType>();
@@ -19,6 +22,7 @@ export const ZeroContext = createContext<ZeroContextType>();
 export const ZeroProvider: ParentComponent = (props) => {
 	const { authState, setAuthState, authData, setAuthData } = createAuthState();
 	const authService = new AuthService();
+	const zeroFactory = new ZeroFactory();
 
 	const login = async () => {
 		const url = new URL(window.location.href);
@@ -44,19 +48,24 @@ export const ZeroProvider: ParentComponent = (props) => {
 		// Try to refresh token to restore session
 		const data = await authService.refresh();
 
+		let zeroInstance: Zero<typeof schema, Mutators>;
+
 		if (data) {
 			// Successfully restored session
 			setAuthData(data);
 			setAuthState("authenticated");
+			zeroInstance = zeroFactory.createAuthenticated(data);
 		} else {
 			// No valid session
 			setAuthState("unauthenticated");
+			zeroInstance = zeroFactory.createAnonymous();
 		}
 
 		return {
 			authState,
 			authData,
 			login,
+			z: zeroInstance,
 		};
 	};
 

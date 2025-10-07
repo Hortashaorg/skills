@@ -22,12 +22,14 @@ export const TestPage: Component = () => {
 				<div>
 					<p>You are not logged in.</p>
 					<a href={import.meta.env.VITE_URL}>
-						<button>Login with OAuth</button>
+						<button type="button">Login with OAuth</button>
 					</a>
 					<p style={{ "font-size": "12px", color: "#666" }}>
 						After OAuth redirect, click button below:
 					</p>
-					<button onClick={handleLogin}>Complete Login</button>
+					<button type="button" onClick={handleLogin}>
+						Complete Login
+					</button>
 				</div>
 			</Show>
 
