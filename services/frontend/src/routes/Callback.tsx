@@ -1,12 +1,12 @@
 import { useNavigate } from "@solidjs/router";
 import { type Component, onMount } from "solid-js";
 
-export const TestCallback: Component = () => {
+export const Callback: Component = () => {
 	const navigate = useNavigate();
 
 	onMount(() => {
 		// The OAuth provider redirects here with ?code=...
-		// Our ZeroProvider will automatically detect the code and login
+		// Our AuthProvider will automatically detect the code and login
 		// Once that's done, redirect to home
 		// Small delay to let the provider process the code
 		setTimeout(() => {

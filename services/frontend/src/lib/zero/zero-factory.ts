@@ -6,7 +6,7 @@ import {
 	schema,
 	type Zero,
 } from "@package/database/client";
-import type { AuthData } from "../types";
+import type { AuthData } from "../auth/types";
 
 export class ZeroFactory {
 	private serverUrl: string;

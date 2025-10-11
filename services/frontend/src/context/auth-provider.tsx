@@ -1,29 +1,24 @@
-import type { Mutators, schema, Zero } from "@package/database/client";
-import { ZeroProvider as RocicorpZeroProvider } from "@package/database/client";
 import {
 	createContext,
 	createResource,
 	type ParentComponent,
 	Show,
 } from "solid-js";
-import { AuthService } from "../auth/auth-service";
-import { createAuthState } from "../auth/auth-state";
-import type { AuthData, AuthState } from "../types";
-import { ZeroFactory } from "../zero/zero-factory";
+import { AuthService } from "@/lib/auth/auth-service";
+import { createAuthState } from "@/lib/auth/auth-state";
+import type { AuthData, AuthState } from "@/lib/auth/types";
 
-export type ZeroContextType = {
+export type AuthContextType = {
 	authState: () => AuthState;
 	authData: () => AuthData | null;
 	login: () => Promise<void>;
-	z: Zero<typeof schema, Mutators>;
 };
 
-export const ZeroContext = createContext<ZeroContextType>();
+export const AuthContext = createContext<AuthContextType>();
 
-export const ZeroProvider: ParentComponent = (props) => {
+export const AuthProvider: ParentComponent = (props) => {
 	const { authState, setAuthState, authData, setAuthData } = createAuthState();
 	const authService = new AuthService();
-	const zeroFactory = new ZeroFactory();
 
 	const login = async () => {
 		const url = new URL(window.location.href);
@@ -45,7 +40,7 @@ export const ZeroProvider: ParentComponent = (props) => {
 		}
 	};
 
-	const initializeContext = async (): Promise<ZeroContextType> => {
+	const initializeAuth = async (): Promise<AuthContextType> => {
 		// Check if we have an OAuth code in the URL
 		const url = new URL(window.location.href);
 		const code = url.searchParams.get("code");
@@ -74,36 +69,28 @@ export const ZeroProvider: ParentComponent = (props) => {
 			}
 		}
 
-		let zeroInstance: Zero<typeof schema, Mutators>;
-
-		if (authDataResult) {
-			zeroInstance = zeroFactory.createAuthenticated(authDataResult);
-		} else {
-			// No valid session
+		// If still no auth data, set as unauthenticated
+		if (!authDataResult) {
 			setAuthState("unauthenticated");
-			zeroInstance = zeroFactory.createAnonymous();
 		}
 
 		return {
 			authState,
 			authData,
 			login,
-			z: zeroInstance,
 		};
 	};
 
-	const [contextValue] = createResource<ZeroContextType>(initializeContext);
+	const [contextValue] = createResource<AuthContextType>(initializeAuth);
 
 	return (
 		<Show
 			when={contextValue()}
-			fallback={<div>Initializing application...</div>}
+			fallback={<div>Initializing authentication...</div>}
 		>
-			<ZeroContext.Provider value={contextValue()}>
-				<RocicorpZeroProvider zero={contextValue()!.z}>
-					{props.children}
-				</RocicorpZeroProvider>
-			</ZeroContext.Provider>
+			<AuthContext.Provider value={contextValue()}>
+				{props.children}
+			</AuthContext.Provider>
 		</Show>
 	);
 };

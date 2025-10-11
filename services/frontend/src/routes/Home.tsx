@@ -1,19 +1,19 @@
 import { Show } from "solid-js";
+import { useAuth } from "@/context/use-auth";
 import { Layout } from "@/layout/Layout";
-import { useZero } from "@/test/context/use-zero";
 import { Authenticated } from "./Authenticated";
 
 export const Home = () => {
-	const zero = useZero();
+	const auth = useAuth();
 
 	return (
 		<Layout>
-			<Show when={zero.authState() === "unauthenticated"}>
+			<Show when={auth.authState() === "unauthenticated"}>
 				<p>unauthenticated</p>
 				<a href={import.meta.env.VITE_URL}>Login</a>
 			</Show>
-			<Show when={zero.authState() === "authenticated"}>
-				<div>{zero.authState()}</div>
+			<Show when={auth.authState() === "authenticated"}>
+				<div>{auth.authState()}</div>
 				<Authenticated />
 			</Show>
 		</Layout>

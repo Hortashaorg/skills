@@ -2,7 +2,8 @@ import { throwError } from "@package/common";
 import { useQuery } from "@package/database/client";
 import { For } from "solid-js";
 import { Button } from "@/components/ui/button";
-import { useZero } from "@/test/context/use-zero";
+import { useAuth } from "@/context/use-auth";
+import { useZeroInstance } from "@/context/use-zero-instance";
 
 function MyForm() {
 	const handleSubmit = (e: SubmitEvent) => {
@@ -24,15 +25,16 @@ function MyForm() {
 }
 
 export const Authenticated = () => {
-	const { z, authState } = useZero();
+	const auth = useAuth();
+	const zero = useZeroInstance();
 
-	// Always call hooks at top level - useQuery works with Rocicorp's ZeroProvider
+	// Use zero instance for queries - properly typed with single hook call!
 	const [accounts] = useQuery(() => {
-		z.mutate.test.create("testing something else");
-		return z.query.account;
+		zero.mutate.test.create("testing something else");
+		return zero.query.account;
 	});
 
-	if (authState() !== "authenticated") {
+	if (auth.authState() !== "authenticated") {
 		return <p>Not logged in</p>;
 	}
 

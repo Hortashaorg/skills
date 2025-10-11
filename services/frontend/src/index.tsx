@@ -1,7 +1,11 @@
 /* @refresh reload */
+import { Route, Router } from "@solidjs/router";
 import { render } from "solid-js/web";
 import "./index.css";
-import { TestRouter } from "./test/test-router.tsx";
+import { AuthProvider } from "./context/auth-provider";
+import { ZeroWrapper } from "./context/zero-wrapper";
+import { Callback } from "./routes/Callback";
+import { Home } from "./routes/Home";
 
 const root = document.getElementById("root");
 
@@ -13,4 +17,16 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 
 if (!root) throw new Error("Root element not found");
 
-render(() => <TestRouter />, root);
+render(
+	() => (
+		<AuthProvider>
+			<ZeroWrapper>
+				<Router>
+					<Route path="/" component={Home} />
+					<Route path="/auth/callback" component={Callback} />
+				</Router>
+			</ZeroWrapper>
+		</AuthProvider>
+	),
+	root,
+);
