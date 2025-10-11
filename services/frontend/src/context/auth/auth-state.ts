@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import type { AuthData, AuthState } from "../types";
+import type { AuthData, AuthState } from "./types";
 
 export const createAuthState = () => {
 	const [authState, setAuthState] = createSignal<AuthState>("loading");

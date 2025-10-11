@@ -1,4 +1,4 @@
-import type { AuthData } from "../types";
+import type { AuthData } from "./types";
 
 export class AuthService {
 	private baseUrl: string;
@@ -7,10 +7,6 @@ export class AuthService {
 		this.baseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
 	}
 
-	/**
-	 * Attempts to refresh the access token using the refresh token cookie
-	 * Returns AuthData if successful, null if no valid session
-	 */
 	async refresh(): Promise<AuthData | null> {
 		try {
 			const res = await fetch(`${this.baseUrl}/refresh`, {
@@ -36,10 +32,6 @@ export class AuthService {
 		}
 	}
 
-	/**
-	 * Exchanges OAuth code for access token
-	 * Returns AuthData on successful login
-	 */
 	async login(code: string): Promise<AuthData> {
 		const res = await fetch(`${this.baseUrl}/login`, {
 			method: "POST",
@@ -61,9 +53,6 @@ export class AuthService {
 		};
 	}
 
-	/**
-	 * Placeholder for logout - will implement in Step 6
-	 */
 	async logout(): Promise<void> {
 		throw new Error("Logout not implemented yet");
 	}

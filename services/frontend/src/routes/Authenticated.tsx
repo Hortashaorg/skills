@@ -14,7 +14,6 @@ function MyForm() {
 			throwError("Event does not have a target");
 		const formData = new FormData(target);
 		console.log(formData);
-		// Handle form data here
 	};
 
 	return (
@@ -28,7 +27,6 @@ export const Authenticated = () => {
 	const auth = useAuth();
 	const zero = useZeroInstance();
 
-	// Use zero instance for queries - properly typed with single hook call!
 	const [accounts] = useQuery(() => {
 		zero.mutate.test.create("testing something else");
 		return zero.query.account;

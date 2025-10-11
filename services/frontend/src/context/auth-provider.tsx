@@ -4,9 +4,9 @@ import {
 	type ParentComponent,
 	Show,
 } from "solid-js";
-import { AuthService } from "@/lib/auth/auth-service";
-import { createAuthState } from "@/lib/auth/auth-state";
-import type { AuthData, AuthState } from "@/lib/auth/types";
+import { AuthService } from "./auth/auth-service";
+import { createAuthState } from "./auth/auth-state";
+import type { AuthData, AuthState } from "./auth/types";
 
 export type AuthContextType = {
 	authState: () => AuthState;
@@ -41,26 +41,22 @@ export const AuthProvider: ParentComponent = (props) => {
 	};
 
 	const initializeAuth = async (): Promise<AuthContextType> => {
-		// Check if we have an OAuth code in the URL
 		const url = new URL(window.location.href);
 		const code = url.searchParams.get("code");
 
 		let authDataResult: AuthData | null = null;
 
 		if (code) {
-			// We have an OAuth code - exchange it for tokens
 			try {
 				authDataResult = await authService.login(code);
 				setAuthData(authDataResult);
 				setAuthState("authenticated");
-				// Clear the code from URL
 				window.history.replaceState({}, "", window.location.pathname);
 			} catch (error) {
 				console.error("Login with code failed:", error);
 			}
 		}
 
-		// If we didn't just login, try to refresh token to restore session
 		if (!authDataResult) {
 			authDataResult = await authService.refresh();
 			if (authDataResult) {
@@ -69,7 +65,6 @@ export const AuthProvider: ParentComponent = (props) => {
 			}
 		}
 
-		// If still no auth data, set as unauthenticated
 		if (!authDataResult) {
 			setAuthState("unauthenticated");
 		}
