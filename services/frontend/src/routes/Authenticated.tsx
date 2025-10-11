@@ -2,7 +2,7 @@ import { throwError } from "@package/common";
 import { useQuery } from "@package/database/client";
 import { For } from "solid-js";
 import { Button } from "@/components/ui/button";
-import { useZero } from "@/utils/zero-context-provider";
+import { useZero } from "@/test/context/use-zero";
 
 function MyForm() {
 	const handleSubmit = (e: SubmitEvent) => {
@@ -24,21 +24,22 @@ function MyForm() {
 }
 
 export const Authenticated = () => {
-	const zero = useZero();
+	const { z, authState } = useZero();
 
-	if (zero.authState() === "authenticated") {
-		const [accounts] = useQuery(() => {
-			zero.z.mutate.test.create("testing something else");
+	// Always call hooks at top level - useQuery works with Rocicorp's ZeroProvider
+	const [accounts] = useQuery(() => {
+		z.mutate.test.create("testing something else");
+		return z.query.account;
+	});
 
-			return zero.z.query.account;
-		});
-		return (
-			<>
-				<MyForm />
-				<For each={accounts()}>{(account) => <div>{account.id}</div>}</For>
-			</>
-		);
+	if (authState() !== "authenticated") {
+		return <p>Not logged in</p>;
 	}
 
-	return <p>Not logged in</p>;
+	return (
+		<>
+			<MyForm />
+			<For each={accounts()}>{(account) => <div>{account.id}</div>}</For>
+		</>
+	);
 };

@@ -1,6 +1,6 @@
 import { Show } from "solid-js";
 import { Layout } from "@/layout/Layout";
-import { useZero } from "@/utils/zero-context-provider";
+import { useZero } from "@/test/context/use-zero";
 import { Authenticated } from "./Authenticated";
 
 export const Home = () => {

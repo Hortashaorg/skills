@@ -1,4 +1,5 @@
 import type { Mutators, schema, Zero } from "@package/database/client";
+import { ZeroProvider as RocicorpZeroProvider } from "@package/database/client";
 import {
 	createContext,
 	createResource,
@@ -99,7 +100,9 @@ export const ZeroProvider: ParentComponent = (props) => {
 			fallback={<div>Initializing application...</div>}
 		>
 			<ZeroContext.Provider value={contextValue()}>
-				{props.children}
+				<RocicorpZeroProvider zero={contextValue()!.z}>
+					{props.children}
+				</RocicorpZeroProvider>
 			</ZeroContext.Provider>
 		</Show>
 	);
