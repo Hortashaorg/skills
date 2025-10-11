@@ -1,17 +1,19 @@
 import { useNavigate } from "@solidjs/router";
-import { type Component, onMount } from "solid-js";
+import { type Component, createEffect } from "solid-js";
+import { useAuth } from "@/context/use-auth";
 
 export const Callback: Component = () => {
 	const navigate = useNavigate();
+	const auth = useAuth();
 
-	onMount(() => {
-		// The OAuth provider redirects here with ?code=...
-		// Our AuthProvider will automatically detect the code and login
-		// Once that's done, redirect to home
-		// Small delay to let the provider process the code
-		setTimeout(() => {
+	createEffect(() => {
+		const state = auth.authState();
+		if (state === "authenticated") {
 			navigate("/", { replace: true });
-		}, 100);
+		} else if (state === "unauthenticated") {
+			console.error("Authentication failed, redirecting to home");
+			navigate("/", { replace: true });
+		}
 	});
 
 	return <div>Completing login...</div>;

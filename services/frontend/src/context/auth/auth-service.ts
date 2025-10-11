@@ -4,7 +4,13 @@ export class AuthService {
 	private baseUrl: string;
 
 	constructor() {
-		this.baseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
+		const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
+		if (!baseUrl) {
+			throw new Error(
+				"VITE_BACKEND_BASE_URL environment variable is not defined. Please check your .env file.",
+			);
+		}
+		this.baseUrl = baseUrl;
 	}
 
 	async refresh(): Promise<AuthData | null> {
@@ -17,40 +23,74 @@ export class AuthService {
 				},
 			});
 
-			if (res.ok) {
-				const result = await res.json();
-				return {
-					accessToken: result.access_token,
-					userId: result.sub,
-				};
+			if (!res.ok) {
+				console.warn(
+					`Token refresh failed with status ${res.status}: ${res.statusText}`,
+				);
+				return null;
 			}
 
-			return null;
+			const result = await res.json();
+
+			if (!result.access_token || !result.sub) {
+				console.error(
+					"Token refresh response missing required fields:",
+					result,
+				);
+				return null;
+			}
+
+			return {
+				accessToken: result.access_token,
+				userId: result.sub,
+			};
 		} catch (error) {
-			console.error("Token refresh failed:", error);
+			console.error("Token refresh failed with error:", error);
 			return null;
 		}
 	}
 
 	async login(code: string): Promise<AuthData> {
-		const res = await fetch(`${this.baseUrl}/login`, {
-			method: "POST",
-			credentials: "include",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ code }),
-		});
+		try {
+			const res = await fetch(`${this.baseUrl}/login`, {
+				method: "POST",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ code }),
+			});
 
-		if (!res.ok) {
-			throw new Error("Login failed");
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error(
+					`Login failed with status ${res.status}: ${res.statusText}`,
+					errorText,
+				);
+				throw new Error(
+					`Login failed with status ${res.status}: ${res.statusText}`,
+				);
+			}
+
+			const data = await res.json();
+
+			if (!data.access_token || !data.sub) {
+				console.error("Login response missing required fields:", data);
+				throw new Error("Login response missing required fields");
+			}
+
+			return {
+				accessToken: data.access_token,
+				userId: data.sub,
+			};
+		} catch (error) {
+			if (error instanceof Error) {
+				console.error("Login failed:", error.message);
+			} else {
+				console.error("Login failed with unknown error:", error);
+			}
+			throw error;
 		}
-
-		const data = await res.json();
-		return {
-			accessToken: data.access_token,
-			userId: data.sub,
-		};
 	}
 
 	async logout(): Promise<void> {

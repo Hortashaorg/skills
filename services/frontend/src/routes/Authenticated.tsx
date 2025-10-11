@@ -6,6 +6,8 @@ import { useAuth } from "@/context/use-auth";
 import { useZeroInstance } from "@/context/use-zero-instance";
 
 function MyForm() {
+	const zero = useZeroInstance();
+
 	const handleSubmit = (e: SubmitEvent) => {
 		if (e.target === null) throwError("");
 		e.preventDefault();
@@ -14,11 +16,13 @@ function MyForm() {
 			throwError("Event does not have a target");
 		const formData = new FormData(target);
 		console.log(formData);
+
+		zero.mutate.test.create("Example mutation from button click");
 	};
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<Button type="submit">Submit</Button>
+			<Button type="submit">Submit (Example Mutation)</Button>
 		</form>
 	);
 }
@@ -27,10 +31,7 @@ export const Authenticated = () => {
 	const auth = useAuth();
 	const zero = useZeroInstance();
 
-	const [accounts] = useQuery(() => {
-		zero.mutate.test.create("testing something else");
-		return zero.query.account;
-	});
+	const [accounts] = useQuery(() => zero.query.account);
 
 	if (auth.authState() !== "authenticated") {
 		return <p>Not logged in</p>;
