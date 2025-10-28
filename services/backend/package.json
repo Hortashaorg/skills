@@ -10,8 +10,8 @@
 		"@hono/node-server": "^1.19.5",
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
-		"@types/node": "^24.7.2",
-		"hono": "^4.9.12",
+		"@types/node": "^24.9.2",
+		"hono": "^4.10.3",
 		"postgres": "^3.4.7"
 	}
 }

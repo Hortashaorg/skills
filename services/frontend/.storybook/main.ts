@@ -1,29 +1,19 @@
-import { resolve } from "node:path";
-import type { StorybookConfig } from "storybook-solidjs";
+import { defineMain } from "storybook-solidjs-vite";
 
-const config: StorybookConfig = {
-	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-	addons: [
-		"@storybook/addon-essentials",
-		"@storybook/addon-interactions",
-		"@storybook/addon-a11y",
-	],
+export default defineMain({
 	framework: {
-		name: "storybook-solidjs",
+		name: "storybook-solidjs-vite",
 		options: {},
 	},
-	core: {
-		builder: "@storybook/builder-vite",
-	},
-	async viteFinal(config) {
-		if (config.resolve) {
-			config.resolve.alias = {
-				...config.resolve.alias,
-				"@": resolve(__dirname, "../src"),
-			};
-		}
-		return config;
-	},
-};
-
-export default config;
+	addons: [
+		"@storybook/addon-onboarding",
+		"@storybook/addon-docs",
+		"@storybook/addon-a11y",
+		"@storybook/addon-links",
+		"@storybook/addon-vitest",
+	],
+	stories: [
+		"../stories/**/*.mdx",
+		"../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+	],
+});
