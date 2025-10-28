@@ -6,10 +6,6 @@ dist
 .vinxi
 app.config.timestamp_*.js
 
-# Environment
-.env
-.env*.local
-
 # dependencies
 /node_modules
 
