@@ -4,7 +4,7 @@ import { db } from "./util.ts";
 export const ensureUser = async (email: string) => {
 	const account = await db.transaction(
 		async (tx) => {
-			const [account] = await tx.query.account.where("email", "=", email);
+			const [account] = await tx.query.account.where("email", "=", email).run();
 			if (account) {
 				return account;
 			}
@@ -18,11 +18,9 @@ export const ensureUser = async (email: string) => {
 
 			await tx.mutate.account.insert(accountData);
 
-			const [insertedAccount] = await tx.query.account.where(
-				"email",
-				"=",
-				email,
-			);
+			const [insertedAccount] = await tx.query.account
+				.where("email", "=", email)
+				.run();
 
 			return insertedAccount ?? throwError("Failed to get account");
 		},
