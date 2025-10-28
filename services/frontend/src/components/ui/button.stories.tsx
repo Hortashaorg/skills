@@ -1,27 +1,49 @@
-import addonA11y from "@storybook/addon-a11y";
-import addonDocs from "@storybook/addon-docs";
-import { definePreview } from "storybook-solidjs-vite";
+import preview from "@sb/preview";
+import { fn } from "storybook/test";
+import { Button } from "./button.tsx";
 
-export default definePreview({
-	addons: [addonDocs(), addonA11y()],
+// More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
+const meta = preview.meta({
+	title: "Example/Button",
+	component: Button,
 	parameters: {
-		// automatically create action args for all props that start with 'on'
-		actions: {
-			argTypesRegex: "^on.*",
-		},
-		controls: {
-			matchers: {
-				color: /(background|color)$/i,
-				date: /Date$/i,
-			},
-		},
-		a11y: {
-			// 'todo' - show a11y violations in the test UI only
-			// 'error' - fail CI on a11y violations
-			// 'off' - skip a11y checks entirely
-			test: "todo",
-		},
+		// Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
+		layout: "centered",
 	},
-	// All components will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
-	// tags: ['autodocs'],
+	// This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
+	tags: ["autodocs"],
+	// More on argTypes: https://storybook.js.org/docs/api/argtypes
+	argTypes: {
+		backgroundColor: { control: "color" },
+	},
+	// Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#story-args
+	args: { onClick: fn() },
+});
+
+// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
+export const Primary = meta.story({
+	args: {
+		primary: true,
+		label: "Button",
+	},
+});
+
+export const Secondary = meta.story({
+	args: {
+		label: "Button",
+	},
+});
+
+export const Large = meta.story({
+	args: {
+		size: "large",
+		label: "Button",
+	},
+});
+
+export const Small = meta.story({
+	args: {
+		size: "small",
+		label: "Button",
+	},
 });

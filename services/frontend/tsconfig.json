@@ -3,7 +3,8 @@
 		"module": "Preserve",
 		"moduleResolution": "bundler",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@sb/*": ["./.storybook/*"]
 		}
 	},
 	"exclude": ["dist"],

@@ -12,8 +12,5 @@ export default defineMain({
 		"@storybook/addon-links",
 		"@storybook/addon-vitest",
 	],
-	stories: [
-		"../stories/**/*.mdx",
-		"../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
-	],
+	stories: ["../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
 });

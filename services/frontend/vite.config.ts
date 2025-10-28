@@ -19,6 +19,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": resolve(__dirname, "./src"),
+			"@sb": resolve(__dirname, "./.storybook"),
 		},
 	},
 	test: {
