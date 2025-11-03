@@ -1,6 +1,7 @@
 import addonA11y from "@storybook/addon-a11y";
 import addonDocs from "@storybook/addon-docs";
 import { definePreview } from "storybook-solidjs-vite";
+import "../src/index.css";
 
 export default definePreview({
 	addons: [addonDocs(), addonA11y()],
