@@ -1,4 +1,4 @@
-FROM node:24.9.0-slim AS base
+FROM node:25.1.0-slim AS base
 
 WORKDIR /skills
 
