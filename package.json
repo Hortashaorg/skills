@@ -1,26 +1,26 @@
 {
-	"name": "skills",
-	"private": "true",
-	"version": "1.0.0",
-	"scripts": {
-		"all": "pnpm -r --paralell",
-		"frontend": "pnpm --filter '@service/frontend'",
-		"backend": "pnpm --filter '@service/backend'",
-		"check": "biome check",
-		"format": "biome format --write",
-		"database": "pnpm --filter '@package/database'"
-	},
-	"author": "Martin Eide",
-	"devDependencies": {
-		"@biomejs/biome": "2.3.3",
-		"typescript": "^5.9.3"
-	},
-	"trustedDependencies": [
-		"@rocicorp/zero-sqlite3"
-	],
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@rocicorp/zero-sqlite3"
-		]
-	}
+  "name": "skills",
+  "private": "true",
+  "version": "1.0.0",
+  "scripts": {
+    "all": "pnpm -r --paralell",
+    "frontend": "pnpm --filter '@service/frontend'",
+    "backend": "pnpm --filter '@service/backend'",
+    "check": "biome check",
+    "format": "biome format --write",
+    "database": "pnpm --filter '@package/database'"
+  },
+  "author": "Martin Eide",
+  "devDependencies": {
+    "@biomejs/biome": "2.3.3",
+    "typescript": "^5.9.3"
+  },
+  "trustedDependencies": [
+    "@rocicorp/zero-sqlite3"
+  ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@rocicorp/zero-sqlite3"
+    ]
+  }
 }
