@@ -27,7 +27,7 @@ RUN apt-get update && \
     apt-get install -y git openssh-server && \
     rm -rf /var/lib/apt/lists/*
 
-
+# Install Claude
 RUN npm install -g @anthropic-ai/claude-code
 
 # Configure SSH
