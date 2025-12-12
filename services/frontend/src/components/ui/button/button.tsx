@@ -124,10 +124,8 @@ const buttonVariants = cva(
 );
 
 export type ButtonProps = JSX.IntrinsicElements["button"] &
-	ButtonRootProps<"button"> & {
-		variant?: VariantProps<typeof buttonVariants>["variant"];
-		size?: VariantProps<typeof buttonVariants>["size"];
-	};
+	ButtonRootProps<"button"> &
+	VariantProps<typeof buttonVariants>;
 
 export const Button = (props: ButtonProps) => {
 	const [local, others] = splitProps(props, ["variant", "size", "class"]);
