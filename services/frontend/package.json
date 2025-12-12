@@ -11,7 +11,8 @@
     "component": "pnpm dlx solidui-cli@latest add",
     "storybook": "storybook dev -p 6006 --no-open",
     "build-storybook": "storybook build",
-    "test": "vitest --run --update"
+    "test": "vitest --run --update",
+    "playwright-setup": "pnpm exec playwright install --with-deps chromium"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "4.1.3",

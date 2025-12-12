@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
 	[
 		"whitespace-nowrap",
-		"rounded-[var(--radius-radius)]",
+		"rounded-radius",
 		"border",
 		"font-medium",
 		"tracking-wide",
