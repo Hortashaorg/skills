@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates cur
 
 FROM base AS local
 
-# Install git
+# Install git, openssh-server Python, and build tools for native modules. Python and other dependencies are needed for zero-sqlite3 install script
 RUN apt-get update && \
-    apt-get install -y git openssh-server && \
+    apt-get install -y git openssh-server python3 build-essential libreadline-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Claude
