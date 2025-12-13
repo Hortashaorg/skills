@@ -6,6 +6,7 @@ import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/use-auth";
 import { Layout } from "@/layout/Layout";
+import { getAuthorizationUrl } from "@/lib/auth-url";
 import { Authenticated } from "./Authenticated";
 
 export const Home = () => {
@@ -25,10 +26,10 @@ export const Home = () => {
 									Please sign in to continue
 								</Text>
 								<a
-									href={import.meta.env.VITE_URL}
+									href={getAuthorizationUrl()}
 									class="inline-flex items-center justify-center whitespace-nowrap rounded-radius border font-medium tracking-wide transition hover:opacity-75 text-center focus-visible:outline-2 focus-visible:outline-offset-2 active:opacity-100 active:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-primary border-primary text-on-primary focus-visible:outline-primary dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark dark:focus-visible:outline-primary-dark text-sm px-4 py-2 w-full"
 								>
-									Sign In
+									Sign In with Zitadel
 								</a>
 							</Stack>
 						</Card>
