@@ -1,8 +1,8 @@
 import {
-	createMutators,
 	createZero,
-	decodeAuthData,
+	mutators,
 	type Mutators,
+	queries,
 	schema,
 	type Zero,
 } from "@package/database/client";
@@ -16,14 +16,13 @@ export class ZeroFactory {
 	}
 
 	createAuthenticated(authData: AuthData): Zero<typeof schema, Mutators> {
-		const decodedAuth = decodeAuthData(authData.accessToken);
-
 		return createZero({
 			auth: authData.accessToken,
 			userID: authData.userId,
 			server: this.serverUrl,
 			schema,
-			mutators: createMutators(decodedAuth),
+			queries,
+			mutators,
 		});
 	}
 
@@ -32,7 +31,8 @@ export class ZeroFactory {
 			userID: "anon",
 			server: this.serverUrl,
 			schema,
-			mutators: createMutators(undefined),
+			queries,
+			mutators,
 		});
 	}
 }

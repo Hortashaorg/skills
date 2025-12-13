@@ -1,22 +1,18 @@
-import type { CustomMutatorDefs } from "@rocicorp/zero";
-import type { AuthData } from "./utils.ts";
+import { defineMutator, defineMutators } from "@rocicorp/zero";
+import { z } from "zod";
+import "./types/context.ts";
 
-export function createMutators(authData: AuthData | undefined) {
-	return {
-		test: {
-			async create(_tx, message: string) {
-				mustBeLoggedIn(authData);
-				console.log(message);
+export const mutators = defineMutators({
+	test: {
+		create: defineMutator(
+			z.object({ message: z.string() }),
+			async ({ ctx, args }) => {
+				// ctx.userID is automatically injected from ZeroContext
+				// Authentication is implicitly required since context is needed
+				console.log(`[User ${ctx.userID}]:`, args.message);
 			},
-		},
-	} as const satisfies CustomMutatorDefs;
-}
+		),
+	},
+});
 
-function mustBeLoggedIn(authData: AuthData | undefined): AuthData {
-	if (authData === undefined) {
-		throw new Error("Must be logged in");
-	}
-	return authData;
-}
-
-export type Mutators = ReturnType<typeof createMutators>;
+export type Mutators = typeof mutators;

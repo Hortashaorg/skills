@@ -9,6 +9,7 @@ import { validator } from "hono/validator";
 import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
 import { handlePush } from "./push.ts";
+import { handleQuery } from "./query.ts";
 
 const secretKey = new TextEncoder().encode(environment.AUTH_PRIVATE_KEY);
 
@@ -157,6 +158,31 @@ app.post(
 	}),
 	async (c) => {
 		return c.json(await handlePush(c.req.valid("header"), c.req.raw));
+	},
+);
+
+app.post(
+	"/api/query",
+	validator("header", (v) => {
+		const auth = v.authorization;
+		if (!auth) {
+			return undefined;
+		}
+		const parts = /^Bearer (.+)$/.exec(auth);
+		if (!parts) {
+			throw new Error(
+				"Invalid Authorization header - should start with 'Bearer '",
+			);
+		}
+		const [, jwt] = parts;
+		if (!jwt) {
+			throw new Error("jwt missing");
+		}
+		return validateAndDecodeAuthData(jwt, secretKey);
+	}),
+	async (c) => {
+		const result = await handleQuery(c.req.valid("header"), c.req.raw);
+		return c.json(result);
 	},
 );
 

@@ -1,15 +1,16 @@
 import {
 	type AuthData,
-	createMutators,
+	mutators,
 	PushProcessor,
 } from "@package/database/server";
 import { db } from "./util.ts";
-
-const processor = new PushProcessor(db);
 
 export async function handlePush(
 	authData: AuthData | undefined,
 	request: Request,
 ) {
-	return await processor.process(createMutators(authData), request);
+	// Context (userID) is now passed to the PushProcessor constructor
+	const context = authData ? { userID: authData.sub } : undefined;
+	const processor = new PushProcessor(db, context);
+	return await processor.process(mutators, request);
 }
