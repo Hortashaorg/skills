@@ -39,7 +39,7 @@ describe("Container", () => {
 			<Container size="xl">Content</Container>
 		));
 		const div = container.querySelector("div");
-		expect(div).toHaveClass("max-w-[1400px]");
+		expect(div).toHaveClass("max-w-350");
 	});
 
 	test("applies full size", () => {
