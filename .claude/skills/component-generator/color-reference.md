@@ -169,76 +169,14 @@ These colors remain the same in both light and dark modes. **Do NOT add `dark:` 
 "dark:text-on-surface"    // Dark text in dark mode
 ```
 
-## Complete Variant Examples
+## Complete Variant Reference
 
-### Standard Button Variants
+**All variants follow the patterns shown above.**
 
-**primary:**
-```tsx
-[
-  "bg-primary",
-  "border-primary",
-  "text-on-primary",
-  "focus-visible:outline-primary",
-  "dark:bg-primary-dark",
-  "dark:border-primary-dark",
-  "dark:text-on-primary-dark",
-  "dark:focus-visible:outline-primary-dark"
-]
-```
+**Theme color variants:** primary, secondary, alternate, inverse → Use Pattern 1 (with dark mode)
+**Shared color variants:** info, success, warning, danger → Use Pattern 2 (no dark mode)
 
-**secondary:**
-```tsx
-[
-  "bg-secondary",
-  "border-secondary",
-  "text-on-secondary",
-  "focus-visible:outline-primary",  // Note: focus uses primary!
-  "dark:bg-secondary-dark",
-  "dark:border-secondary-dark",
-  "dark:text-on-secondary-dark",
-  "dark:focus-visible:outline-secondary-dark"
-]
-```
-
-**alternate:**
-```tsx
-[
-  "bg-surface-alt",
-  "border-surface-alt",
-  "text-on-surface-strong",
-  "focus-visible:outline-surface-alt",
-  "dark:bg-surface-dark-alt",
-  "dark:border-surface-dark-alt",
-  "dark:text-on-surface-dark-strong",
-  "dark:focus-visible:outline-surface-dark-alt"
-]
-```
-
-**inverse:**
-```tsx
-[
-  "bg-surface-dark",     // Dark in light mode
-  "border-surface-dark",
-  "text-on-surface-dark",
-  "focus-visible:outline-surface-dark",
-  "dark:bg-surface",     // Light in dark mode
-  "dark:border-surface",
-  "dark:text-on-surface",
-  "dark:focus-visible:outline-surface"
-]
-```
-
-**Semantic variants (info/success/warning/danger):**
-```tsx
-[
-  "bg-danger",
-  "border-danger",
-  "text-on-danger",
-  "focus-visible:outline-danger"
-  // No dark: variants!
-]
-```
+For full examples, see Button component at `/skills/services/frontend/src/components/ui/button/button.tsx`
 
 ## Important Rules
 

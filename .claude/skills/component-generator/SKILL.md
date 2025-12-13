@@ -321,6 +321,25 @@ Would you like me to make any adjustments?
 
 **CRITICAL:** Read `/skills/.claude/skills/component-generator/color-reference.md` for complete color token guide.
 
+### Color Usage Rule (MUST FOLLOW)
+
+**You MUST use theme color tokens. Default Tailwind colors are FORBIDDEN.**
+
+❌ NEVER USE (breaks theme consistency):
+- `bg-gray-100`, `bg-blue-500`, `bg-red-600`, `bg-zinc-*`, `bg-slate-*`
+- `text-gray-900`, `text-blue-700`, `text-neutral-*`
+- `border-gray-300`, `border-slate-200`
+- ANY default Tailwind color names (gray, slate, zinc, neutral, stone, red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose)
+
+✅ ALWAYS USE (maintains theme):
+- **Backgrounds:** `bg-surface`, `bg-surface-alt`, `bg-primary`, `bg-secondary`
+- **Text:** `text-on-surface`, `text-on-surface-strong`, `text-on-primary`, `text-on-secondary`
+- **Borders:** `border-outline`, `border-outline-strong`
+- **Semantic:** `bg-info`, `bg-success`, `bg-warning`, `bg-danger`
+- **Dark mode:** Add `dark:` prefix with `-dark` suffix for theme colors
+
+**Exception:** Opacity modifiers on theme colors are allowed (e.g., `bg-primary/90`, `hover:bg-primary/80`)
+
 When generating base classes and variant classes, use these patterns:
 
 ### Base Classes (all components)
@@ -346,82 +365,13 @@ When generating base classes and variant classes, use these patterns:
 3. Always pair: `bg-{color}` + `border-{color}` + `text-on-{color}`
 4. Focus outlines should match the variant color: `focus-visible:outline-{color}`
 
-**Standard Variant Pattern (Theme Colors):**
-```tsx
-variant: {
-  primary: [
-    "bg-primary",
-    "border-primary",
-    "text-on-primary",
-    "focus-visible:outline-primary",
-    "dark:bg-primary-dark",
-    "dark:border-primary-dark",
-    "dark:text-on-primary-dark",
-    "dark:focus-visible:outline-primary-dark"
-  ],
-  secondary: [
-    "bg-secondary",
-    "border-secondary",
-    "text-on-secondary",
-    "focus-visible:outline-primary",  // Note: can use primary for focus
-    "dark:bg-secondary-dark",
-    "dark:border-secondary-dark",
-    "dark:text-on-secondary-dark",
-    "dark:focus-visible:outline-secondary-dark"
-  ],
-  alternate: [
-    "bg-surface-alt",
-    "border-surface-alt",
-    "text-on-surface-strong",
-    "focus-visible:outline-surface-alt",
-    "dark:bg-surface-dark-alt",
-    "dark:border-surface-dark-alt",
-    "dark:text-on-surface-dark-strong",
-    "dark:focus-visible:outline-surface-dark-alt"
-  ],
-  inverse: [
-    "bg-surface-dark",
-    "border-surface-dark",
-    "text-on-surface-dark",
-    "focus-visible:outline-surface-dark",
-    "dark:bg-surface",
-    "dark:border-surface",
-    "dark:text-on-surface",
-    "dark:focus-visible:outline-surface"
-  ]
-}
-```
+**Variant Patterns:**
 
-**Semantic Variant Pattern (Shared Colors - NO dark mode variants):**
-```tsx
-variant: {
-  info: [
-    "bg-info",
-    "border-info",
-    "text-on-info",
-    "focus-visible:outline-info"
-    // NO dark: variants!
-  ],
-  success: [
-    "bg-success",
-    "border-success",
-    "text-on-success",
-    "focus-visible:outline-success"
-  ],
-  warning: [
-    "bg-warning",
-    "border-warning",
-    "text-on-warning",
-    "focus-visible:outline-warning"
-  ],
-  danger: [
-    "bg-danger",
-    "border-danger",
-    "text-on-danger",
-    "focus-visible:outline-danger"
-  ]
-}
-```
+See `/skills/.claude/skills/component-generator/color-reference.md` for complete variant pattern examples.
+
+**Quick pattern:**
+- Theme colors (primary, secondary, alternate, inverse): Include dark mode with `-dark` suffix
+- Shared colors (info, success, warning, danger): No dark mode variants needed
 
 ### Available Color Tokens
 
@@ -532,83 +482,42 @@ You should read these files to understand patterns:
 ```
 User: Create a Badge component
 
-Agent: I'll help you create a Badge component! Let me ask a few questions:
+Agent: I'll help you create a Badge component!
 
-Which tier should this component be in?
-- ui (interactive, styled components)
-- composite (combination of ui components)
-- feature (domain-specific components)
-- primitives (layout & base elements)
+Which tier? (ui/composite/feature/primitives)
 
 User: ui
 
-Agent: Great! What's the purpose of this Badge component?
+Agent: What's the purpose of this Badge?
 
 User: A small label for displaying status, counts, or categories
 
-Agent: Based on your description, I don't see a direct Kobalte primitive match for badges. Would you like to use plain HTML with Tailwind styling?
-
-User: Yes, plain HTML is fine
-
-Agent: Perfect! What color variants would you like?
-Suggested: primary, secondary, success, danger, warning
-
-User: Use the suggestions
-
-Agent: What size variants?
-Suggested: sm, md, lg
-
-User: Just sm and md
-
-Agent: Any additional props or behavior?
-
-User: No, keep it simple
-
-Agent: Excellent! Here's what I'll create:
-
-**Badge Component Summary:**
-- Tier: ui
-- Base: Plain HTML (span)
-- Variants:
-  - Color: primary, secondary, success, danger, warning
-  - Size: sm, md
-- Files: 4 (component, index, stories, tests)
-
-**File Locations:**
-- /skills/services/frontend/src/components/ui/badge/index.ts
-- /skills/services/frontend/src/components/ui/badge/badge.tsx
-- /skills/services/frontend/src/components/ui/badge/badge.stories.tsx
-- /skills/services/frontend/src/components/ui/badge/badge.test.tsx
-
-Shall I generate the component?
+Agent: No direct Kobalte match for badges. Use plain HTML?
 
 User: Yes
 
-Agent: ✅ Generated Badge component successfully!
+Agent: Color variants? Suggested: primary, secondary, info, success, warning, danger
 
-**Files created:**
-- /skills/services/frontend/src/components/ui/badge/index.ts
-- /skills/services/frontend/src/components/ui/badge/badge.tsx
-- /skills/services/frontend/src/components/ui/badge/badge.stories.tsx
-- /skills/services/frontend/src/components/ui/badge/badge.test.tsx
+User: Use suggestions
 
-**Next steps:**
-1. Review the generated component
-2. Run `pnpm test` to verify tests pass
-3. Run `pnpm storybook` to preview in Storybook
-4. Customize styling/behavior as needed
+Agent: Size variants? Suggested: sm, md
 
-**Import usage:**
-```tsx
-import { Badge } from "@/components/ui/badge";
+User: sm and md
 
-// Example:
-<Badge variant="primary" size="sm">
-  New
-</Badge>
-```
+Agent: Summary:
+- Tier: ui | Base: span | Variants: 6 colors, 2 sizes
+- Files: index.ts, badge.tsx, badge.stories.tsx, badge.test.tsx
 
-Would you like me to make any adjustments?
+Generate? (Yes/No)
+
+User: Yes
+
+Agent: ✅ Generated Badge successfully!
+
+Import: `import { Badge } from "@/components/ui/badge"`
+Usage: `<Badge variant="success" size="sm">New</Badge>`
+
+Next: Review component, run tests, view in Storybook
 ```
 
 ## You Are Ready

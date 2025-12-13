@@ -96,15 +96,12 @@ Include in components that need them: `onClick`, `onFocus`, `onBlur`
 
 - **`aria-label`** - Icon-only buttons
   - Example: `<Button aria-label="Close">×</Button>`
-  - Example: `<Button aria-label="Search"><SearchIcon /></Button>`
 
 - **`aria-pressed`** - Toggle buttons
   - Example: Bold button in editor (`aria-pressed={isBold}`)
-  - Example: Favorite toggle (`aria-pressed={isFavorited}`)
 
 - **`aria-expanded`** - Buttons that show/hide content
   - Example: Dropdown menu button
-  - Example: Accordion trigger
 
 ---
 
@@ -140,9 +137,7 @@ Include in components that need them: `onClick`, `onFocus`, `onBlur`
 - **`target="_blank"`** - External links, downloads
   - Always pair with `rel="noopener noreferrer"` for security
 - **`aria-label`** - Non-descriptive link text
-  - Bad: "Click here" → Add `aria-label="Read documentation"`
-  - Bad: "Read more" → Add `aria-label="Read more about pricing"`
-  - Good: "View pricing details" → No aria-label needed
+  - Example: "Read more" → Add `aria-label="Read more about pricing"`
 
 ---
 
@@ -183,31 +178,16 @@ Include in components that need them: `onClick`, `onFocus`, `onBlur`
 
 ### When to Use Each
 
-- **`type`** - Use semantic types for better UX
-  - `"email"` - Email validation, mobile keyboard
-  - `"tel"` - Phone number keyboard
-  - `"url"` - URL validation
-  - `"search"` - Search-specific styling
+- **`type`** - Use semantic types (e.g., `"email"` for validation, `"tel"` for phone keyboard)
 
-- **`aria-label`** vs `<label>` - Prefer visible `<label>`, use `aria-label` for compact UIs
+- **`aria-label`** vs `<label>` - Prefer visible `<label>`
 
-- **`aria-required`** - Always pair with `required` attribute
-  ```tsx
-  <input required aria-required={true} />
-  ```
+- **`aria-required`** - Always pair with `required` attribute: `<input required aria-required={true} />`
 
 - **`aria-invalid` + `aria-describedby`** - Link to error messages
-  ```tsx
-  <input
-    aria-invalid={hasError}
-    aria-describedby={hasError ? "error-message" : undefined}
-  />
-  <span id="error-message">Email is required</span>
-  ```
+  Example: `aria-invalid={hasError} aria-describedby="error-id"`
 
-- **`readonly` vs `disabled`**
-  - `readonly` - Visible, selectable, but not editable
-  - `disabled` - Grayed out, not interactive, not submitted with form
+- **`readonly` vs `disabled`** - Use `readonly` for visible but unchangeable; `disabled` grays out completely
 
 ---
 
@@ -254,17 +234,11 @@ Include in components that need them: `onClick`, `onFocus`, `onBlur`
 
 ### When to Use Each
 
-- **`role="alert"`** - Important messages that need immediate attention
-  - Automatically has `aria-live="assertive"`
-  - Example: Error messages, critical warnings
+- **`role="alert"`** - Important messages (errors, warnings). Auto `aria-live="assertive"`
 
-- **`role="status"`** - Informational updates
-  - Automatically has `aria-live="polite"`
-  - Example: "Changes saved", "3 items in cart"
+- **`role="status"`** - Informational updates (e.g., "Changes saved"). Auto `aria-live="polite"`
 
-- **`aria-live`** - Custom announcement timing
-  - `"assertive"` - Interrupts screen reader immediately (use sparingly!)
-  - `"polite"` - Waits for screen reader to finish current announcement
+- **`aria-live`** - Custom timing: `"assertive"` interrupts, `"polite"` waits
 
 ---
 
@@ -297,19 +271,9 @@ Include in components that need them: `onClick`, `onFocus`, `onBlur`
 
 - **`aria-modal={true}`** - Required for proper modal behavior
 
-- **`aria-labelledby`** - Link to heading
-  ```tsx
-  <Dialog aria-labelledby="dialog-title">
-    <h2 id="dialog-title">Delete Account</h2>
-  </Dialog>
-  ```
+- **`aria-labelledby`** - Link to modal heading ID
 
-- **`aria-describedby`** - Link to description
-  ```tsx
-  <Dialog aria-describedby="dialog-desc">
-    <p id="dialog-desc">This action cannot be undone.</p>
-  </Dialog>
-  ```
+- **`aria-describedby`** - Link to modal description ID
 
 ---
 
@@ -334,19 +298,9 @@ Include in components that need them: `onClick`, `onFocus`, `onBlur`
 
 ### When to Use Each
 
-- **Decorative icon (next to text)**
-  ```tsx
-  <button>
-    <Icon aria-hidden="true" /> Delete
-  </button>
-  ```
+- **Decorative icon (next to text)** - Use `aria-hidden="true"`
 
-- **Standalone icon (no text)**
-  ```tsx
-  <button>
-    <Icon role="img" aria-label="Delete" />
-  </button>
-  ```
+- **Standalone icon (no text)** - Use `role="img"` + `aria-label`
 
 ---
 
