@@ -1,11 +1,4 @@
-import {
-	createZero,
-	mutators,
-	type Mutators,
-	queries,
-	schema,
-	type Zero,
-} from "@package/database/client";
+import { createZero, mutators, schema } from "@package/database/client";
 import type { AuthData } from "../auth/types";
 
 export class ZeroFactory {
@@ -15,23 +8,21 @@ export class ZeroFactory {
 		this.serverUrl = "http://localhost:4848";
 	}
 
-	createAuthenticated(authData: AuthData): Zero<typeof schema, Mutators> {
+	createAuthenticated(authData: AuthData) {
 		return createZero({
 			auth: authData.accessToken,
 			userID: authData.userId,
 			server: this.serverUrl,
 			schema,
-			queries,
 			mutators,
 		});
 	}
 
-	createAnonymous(): Zero<typeof schema, Mutators> {
+	createAnonymous() {
 		return createZero({
 			userID: "anon",
 			server: this.serverUrl,
 			schema,
-			queries,
 			mutators,
 		});
 	}

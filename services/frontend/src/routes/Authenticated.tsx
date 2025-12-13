@@ -1,5 +1,5 @@
 import { throwError } from "@package/common";
-import { useQuery } from "@package/database/client";
+import { queries, useQuery } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
@@ -23,7 +23,9 @@ function MyForm() {
 		const formData = new FormData(target);
 		console.log(formData);
 
-		zero.mutate.test.create("Example mutation from button click");
+		// Use new mutator API with object parameter (requires Zod validation)
+		// biome-ignore lint/suspicious/noExplicitAny: Mutator types not fully inferred in Zero 0.25
+		(zero.mutate as any).test.create({ message: "Example mutation from button click" });
 	};
 
 	return (
@@ -40,9 +42,9 @@ function MyForm() {
 
 export const Authenticated = () => {
 	const auth = useAuth();
-	const zero = useZeroInstance();
 
-	const [accounts] = useQuery(() => zero.query.account);
+	// Use defined query instead of direct ZQL access
+	const [accounts] = useQuery(queries.account.myAccount);
 
 	if (auth.authState() !== "authenticated") {
 		return <Text>Not logged in</Text>;
