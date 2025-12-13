@@ -41,7 +41,7 @@ Ask these questions in order:
 ### Stage 2: Kobalte Primitive Selection
 
 **Process:**
-1. Load `/skills/.claude/skills/component-generator/kobalte-primitives.json`
+1. Read `/skills/.claude/skills/component-generator/kobalte-primitives.md`
 2. Search primitives using semantic matching:
    - Exact name match = 100% confidence
    - Description keyword match = 70% confidence
@@ -99,7 +99,7 @@ Which would you like to use? (or type 'none' for plain HTML)
 ### Stage 4.5: Accessibility & Type Considerations
 
 **Load accessibility guidance:**
-1. Read `/skills/.claude/skills/component-generator/accessibility-guidelines.json`
+1. Read `/skills/.claude/skills/component-generator/accessibility-guidelines.md`
 2. Find matching component type or use general guidance
 3. Determine which accessibility props to include
 
@@ -216,7 +216,7 @@ Shall I generate the component?
    - `{{NAME}}` = PascalCase component name
    - `{{NAME_LOWER}}` = kebab-case name
    - `{{PRIMITIVE}}` = Kobalte primitive name
-   - `{{PRIMITIVE_IMPORT}}` = Import path from primitives.json
+   - `{{PRIMITIVE_IMPORT}}` = Import path from kobalte-primitives.md
    - `{{ELEMENT}}` = HTML element type
    - `{{BASE_CLASSES}}` = Common Tailwind classes (comma-separated)
    - `{{VARIANT_DEFINITIONS}}` = CVA variant objects
