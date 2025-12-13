@@ -99,7 +99,7 @@ const labelVariants = cva(
 	{
 		variants: {
 			variant: {
-				label: "ui-invalid:text-danger",
+				label: "",
 				description:
 					"font-normal text-on-surface dark:text-on-surface-dark opacity-70",
 				error: "text-xs text-danger font-medium",

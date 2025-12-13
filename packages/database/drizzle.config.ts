@@ -6,7 +6,7 @@ export default defineConfig({
 	dialect: "postgresql",
 	dbCredentials: {
 		url:
-			process.env.POSTGRES_URL ?? "postgresql://root:root@localhost:5432/root",
+			process.env.POSTGRES_URL ?? "postgresql://root:root@postgres:5432/root",
 	},
 	casing: "snake_case",
 });
