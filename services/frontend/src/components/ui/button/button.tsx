@@ -20,7 +20,7 @@ const buttonVariants = cva(
 		"focus-visible:outline-offset-2",
 		"active:opacity-100",
 		"active:outline-offset-0",
-		"disabled:opacity-75",
+		"disabled:opacity-50",
 		"disabled:cursor-not-allowed",
 		"cursor-pointer",
 	],

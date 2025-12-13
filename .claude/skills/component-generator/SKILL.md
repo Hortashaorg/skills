@@ -506,8 +506,10 @@ Please choose a valid tier.
 
 You should read these files to understand patterns:
 
+- `/skills/.claude/skills/component-generator/color-reference.md` - **REQUIRED** - Complete color token guide with use cases
 - `/skills/services/frontend/src/components/ui/button/button.tsx` - **PRIMARY REFERENCE** - Follow this pattern exactly
 - `/skills/services/frontend/src/components/ui/badge/badge.tsx` - Simple component with accessibility props
+- `/skills/services/frontend/src/index.css` - Theme color definitions (for reference only, use color-reference.md for guidance)
 - `/skills/CLAUDE.md` - Project architecture guidelines
 
 **Note:** Ignore `label.tsx` and `text-field.tsx` - these are old files that don't follow the current pattern.
@@ -522,6 +524,8 @@ You should read these files to understand patterns:
 6. **Clear communication** - Explain suggestions, confirm before generating
 7. **Atomic operations** - All files or none (rollback on error)
 8. **CRITICAL: Always spread `{...others}`** - This passes through all HTML attributes (data-*, aria-*, events, etc.). Without it, components feel broken. Use `{...(others as JSX.HTMLAttributes<HTMLElementType>)}` for type safety.
+9. **CRITICAL: Dark mode is mandatory** - ALL components must support both light and dark modes. Theme colors require `-dark` variants, shared colors do not. Read color-reference.md before generating any component.
+10. **Use `rounded-radius` for borders** - Never use `rounded-md` or `rounded-lg` unless there's a specific reason (badges use `rounded-full`)
 
 ## Example Interaction
 

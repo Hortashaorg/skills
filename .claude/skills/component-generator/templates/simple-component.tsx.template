@@ -34,7 +34,7 @@ export const {{NAME}} = (props: {{NAME}}Props) => {
 				{{NAME_LOWER}}Variants({ {{VARIANT_ARGS}} }),
 				local.class,
 			)}
-			{...(others as JSX.HTMLAttributes<{{HTML_ELEMENT_TYPE}}>)}
+			{...others}
 		/>
 	);
 };
