@@ -48,6 +48,20 @@ export default defineConfig({
 					},
 				},
 			},
+			{
+				extends: true,
+				test: {
+					name: "component",
+					include: ["src/**/*.test.{ts,tsx}"],
+					environment: "jsdom",
+					setupFiles: ["./src/test-setup.ts"],
+					server: {
+						deps: {
+							inline: ["@kobalte/core"],
+						},
+					},
+				},
+			},
 		],
 	},
 });
