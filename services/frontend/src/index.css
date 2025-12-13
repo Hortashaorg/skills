@@ -2,52 +2,48 @@
 @import "tw-animate-css";
 @plugin "@kobalte/tailwindcss";
 
-[x-cloak] {
-  display: none !important;
-}
-
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
-  /* Fonts */
-  --font-body: 'Inter', sans-serif;
-  --font-title: 'Inter', sans-serif;
+	/* Fonts */
+	--font-body: "Inter", sans-serif;
+	--font-title: "Inter", sans-serif;
 
-  --color-*: initial;
+	--color-*: initial;
 
-  /* light theme */
-  --color-surface: oklch(0.985 0 0);
-  --color-surface-alt: oklch(0.92 0.004 286.32);
-  --color-on-surface: oklch(0.37 0.013 285.805);
-  --color-on-surface-strong: oklch(0.21 0.006 285.885);
-  --color-primary: oklch(0.585 0.233 277.117);
-  --color-on-primary: #000;
-  --color-secondary: oklch(0.696 0.17 162.48);
-  --color-on-secondary: #000;
-  --color-outline: oklch(0.871 0.006 286.286);
-  --color-outline-strong: oklch(0.705 0.015 286.067);
+	/* light theme */
+	--color-surface: oklch(0.985 0 0);
+	--color-surface-alt: oklch(0.92 0.004 286.32);
+	--color-on-surface: oklch(0.37 0.013 285.805);
+	--color-on-surface-strong: oklch(0.21 0.006 285.885);
+	--color-primary: oklch(0.585 0.233 277.117);
+	--color-on-primary: #000;
+	--color-secondary: oklch(0.696 0.17 162.48);
+	--color-on-secondary: #000;
+	--color-outline: oklch(0.871 0.006 286.286);
+	--color-outline-strong: oklch(0.705 0.015 286.067);
 
-  /* dark theme */
-  --color-surface-dark: oklch(0.21 0.006 285.885);
-  --color-surface-dark-alt: oklch(0.274 0.006 286.033);
-  --color-on-surface-dark: oklch(0.871 0.006 286.286);
-  --color-on-surface-dark-strong: oklch(0.967 0.001 286.375);
-  --color-primary-dark: oklch(0.606 0.25 292.717);
-  --color-on-primary-dark: #fff;
-  --color-secondary-dark: oklch(0.715 0.143 215.221);
-  --color-on-secondary-dark: #fff;
-  --color-outline-dark: oklch(0.37 0.013 285.805);
-  --color-outline-dark-strong: oklch(0.552 0.016 285.938);
+	/* dark theme */
+	--color-surface-dark: oklch(0.21 0.006 285.885);
+	--color-surface-dark-alt: oklch(0.274 0.006 286.033);
+	--color-on-surface-dark: oklch(0.871 0.006 286.286);
+	--color-on-surface-dark-strong: oklch(0.967 0.001 286.375);
+	--color-primary-dark: oklch(0.606 0.25 292.717);
+	--color-on-primary-dark: #fff;
+	--color-secondary-dark: oklch(0.715 0.143 215.221);
+	--color-on-secondary-dark: #fff;
+	--color-outline-dark: oklch(0.37 0.013 285.805);
+	--color-outline-dark-strong: oklch(0.552 0.016 285.938);
 
-  /* shared colors */
-  --color-info: oklch(0.685 0.169 237.323);
-  --color-on-info: #000;
-  --color-success: oklch(0.723 0.219 149.579);
-  --color-on-success: #000;
-  --color-warning: oklch(0.795 0.184 86.047);
-  --color-on-warning: #000;
-  --color-danger: oklch(0.637 0.237 25.331);
-  --color-on-danger: #000;
+	/* shared colors */
+	--color-info: oklch(0.685 0.169 237.323);
+	--color-on-info: #000;
+	--color-success: oklch(0.723 0.219 149.579);
+	--color-on-success: #000;
+	--color-warning: oklch(0.795 0.184 86.047);
+	--color-on-warning: #000;
+	--color-danger: oklch(0.637 0.237 25.331);
+	--color-on-danger: #000;
 
-  /* border radius */
-  --radius-radius: var(--radius-sm);  
+	/* border radius */
+	--radius-radius: var(--radius-sm);
 }
