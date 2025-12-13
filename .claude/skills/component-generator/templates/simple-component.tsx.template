@@ -1,0 +1,40 @@
+import { {{PRIMITIVE}} as {{PRIMITIVE}}Primitive } from "{{PRIMITIVE_IMPORT}}";
+import { cva, type VariantProps } from "class-variance-authority";
+import type { JSX } from "solid-js";
+import { splitProps } from "solid-js";
+import { cn } from "@/lib/utils";
+
+const {{NAME_LOWER}}Variants = cva(
+	[
+		{{BASE_CLASSES}}
+	],
+	{
+		variants: {
+			{{VARIANT_DEFINITIONS}}
+		},
+		defaultVariants: {
+			{{DEFAULT_VARIANTS}}
+		},
+	},
+);
+
+export type {{NAME}}Props = {
+	children?: JSX.Element;
+	class?: string;
+	{{COMMON_PROPS}}
+	{{ACCESSIBILITY_PROPS}}
+} & VariantProps<typeof {{NAME_LOWER}}Variants>;
+
+export const {{NAME}} = (props: {{NAME}}Props) => {
+	const [local, others] = splitProps(props, [{{SPLIT_PROPS}}]);
+
+	return (
+		<{{PRIMITIVE}}Primitive
+			class={cn(
+				{{NAME_LOWER}}Variants({ {{VARIANT_ARGS}} }),
+				local.class,
+			)}
+			{...(others as JSX.HTMLAttributes<{{HTML_ELEMENT_TYPE}}>)}
+		/>
+	);
+};

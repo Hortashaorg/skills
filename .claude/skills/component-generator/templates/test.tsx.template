@@ -1,0 +1,24 @@
+import { render, screen } from "@solidjs/testing-library";
+import { describe, expect, test } from "vitest";
+import { {{NAME}} } from "./{{NAME_LOWER}}";
+
+describe("{{NAME}}", () => {
+	test("renders children", () => {
+		render(() => <{{NAME}}>Test content</{{NAME}}>);
+		expect(screen.getByText("Test content")).toBeInTheDocument();
+	});
+
+	{{DEFAULT_VARIANT_TEST}}
+
+	{{VARIANT_TESTS}}
+
+	{{SIZE_TESTS}}
+
+	test("accepts custom classes", () => {
+		const { container } = render(() => <{{NAME}} class="custom-class">Test</{{NAME}}>);
+		const element = container.querySelector("{{ELEMENT}}");
+		expect(element).toHaveClass("custom-class");
+	});
+
+	{{INTERACTION_TESTS}}
+});
