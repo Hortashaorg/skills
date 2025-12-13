@@ -3,6 +3,7 @@
   "private": "true",
   "version": "1.0.0",
   "scripts": {
+    "local": "infisical run --env=local --path=/ -- pnpm",
     "all": "pnpm -r --paralell",
     "frontend": "pnpm --filter '@service/frontend'",
     "backend": "pnpm --filter '@service/backend'",
