@@ -10,12 +10,14 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/use-auth";
 
 function MyForm() {
-  const zero = useZero();
+	const zero = useZero();
 	const handleSubmit = (e: SubmitEvent) => {
 		e.preventDefault();
-		zero().mutate(mutators.test.create({
-			message: "hello world",
-		}));
+		zero().mutate(
+			mutators.test.create({
+				message: "hello world",
+			}),
+		);
 	};
 
 	return (

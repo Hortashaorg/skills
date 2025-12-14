@@ -1,8 +1,8 @@
 import { schema, zeroPostgresJS } from "@package/database/server";
 import type { Context } from "hono";
+import { verify } from "hono/jwt";
 import postgres from "postgres";
 import { environment } from "./environment.ts";
-import { verify } from "hono/jwt";
 
 export const dbProvider = zeroPostgresJS(
 	schema,
@@ -10,7 +10,7 @@ export const dbProvider = zeroPostgresJS(
 );
 
 export async function getUserID(c: Context) {
-  const token = c.req.header("Authorization")?.split(" ")[1];
+	const token = c.req.header("Authorization")?.split(" ")[1];
 	if (!token) {
 		return "anon";
 	}
