@@ -12,7 +12,7 @@ export const ZeroWrapper: ParentComponent = (props) => {
 			context={{ userID: auth.authData()?.userId ?? "anon" }}
 			schema={schema}
 			mutators={mutators}
-			cacheURL="http://localhost:4848"
+			cacheURL={import.meta.env.VITE_CACHE_BASE_URL}
 		>
 			{props.children}
 		</ZeroProvider>

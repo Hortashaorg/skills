@@ -4,4 +4,7 @@
 interface ImportMetaEnv {
 	readonly VITE_URL: string;
 	readonly VITE_BACKEND_BASE_URL: string;
+  readonly VITE_CACHE_BASE_URL: string;
+  readonly VITE_ZITADEL_ISSUER: string;
+  readonly VITE_ZITADEL_CLIENT_ID: string;
 }
