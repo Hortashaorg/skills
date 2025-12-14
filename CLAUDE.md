@@ -33,29 +33,65 @@ Monorepo using npm workspaces:
 - Always use `credentials: "include"` for cookie-based refresh tokens
 - OAuth callback page (`/auth/callback`) auto-redirects to home after processing
 
-### Using Auth and Zero in Components
+### Zero 0.25 Data Layer (Queries & Mutations)
+
+**Define queries server-side** (`packages/database/queries.ts`):
 ```tsx
-import { useAuth } from "@/context/use-auth";
-import { useZeroInstance } from "@/context/use-zero-instance";
-import { useQuery } from "@package/database/client";
+import { defineQuery, defineQueries } from "@rocicorp/zero";
+import { z } from "zod";
+import { zql } from "./zero-schema.gen.ts";
+
+const myPosts = defineQuery(({ ctx: { userID } }) =>
+  zql.posts.where('authorId', userID).related('comments')
+);
+
+const postById = defineQuery(
+  z.object({ id: z.string() }),
+  ({ args: { id } }) => zql.posts.where('id', id)
+);
+
+export const queries = defineQueries({
+  posts: { myPosts, postById },
+});
+```
+
+**Use queries in components** (frontend):
+```tsx
+import { queries, useQuery } from "@package/database/client";
 
 const PostList = () => {
-  const auth = useAuth();
-  const zero = useZeroInstance();
-  const userID = auth.authData()?.userId;
+  const [posts] = useQuery(queries.posts.myPosts);
+  // Or with args: useQuery(() => queries.posts.postById({ id: "123" }))
 
-  const [posts] = useQuery(() =>
-    zero.query.posts
-      .where('authorId', userID)
-      .related('comments')
-  );
-
-  return (
-    <For each={posts()}>
-      {(post) => <Post data={post} />}
-    </For>
-  );
+  return <For each={posts()}>{(post) => <Post data={post} />}</For>;
 };
+```
+
+**Backend handlers** (follow official Zero 0.25 pattern):
+```tsx
+// query.ts
+export async function handleQuery(c: Context) {
+  const userID = await getUserID(c);
+  const ctx = { userID };
+  return handleQueryRequest(
+    (name, args) => mustGetQuery(queries, name).fn({ args, ctx }),
+    schema,
+    c.req.raw
+  );
+}
+
+// mutate.ts
+export async function handleMutate(c: Context) {
+  const userID = await getUserID(c);
+  const ctx = { userID };
+  return handleMutateRequest(
+    dbProvider,
+    (transact) => transact((tx, name, args) =>
+      mustGetMutator(mutators, name).fn({ tx, args, ctx })
+    ),
+    c.req.raw
+  );
+}
 ```
 
 ## Component Architecture

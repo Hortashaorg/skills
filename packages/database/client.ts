@@ -7,5 +7,5 @@ export {
 } from "@rocicorp/zero/solid";
 export { mutators, type Mutators } from "./mutators.ts";
 export { queries } from "./queries.ts";
-export { type Schema, schema, zql } from "./schema.ts";
+export { type Schema, schema, zql } from "./zero-schema.gen.ts";
 export { decodeAuthData } from "./utils.ts";
