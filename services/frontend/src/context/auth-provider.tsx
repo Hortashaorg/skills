@@ -12,6 +12,7 @@ export type AuthContextType = {
 	authState: () => AuthState;
 	authData: () => AuthData | null;
 	login: () => Promise<void>;
+	logout: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>();
@@ -37,6 +38,16 @@ export const AuthProvider: ParentComponent = (props) => {
 		} catch (error) {
 			console.error("Login failed:", error);
 			throw error;
+		}
+	};
+
+	const logout = async () => {
+		try {
+			await authService.logout();
+		} finally {
+			// Clear client state even if server call fails
+			setAuthData(null);
+			setAuthState("unauthenticated");
 		}
 	};
 
@@ -73,6 +84,7 @@ export const AuthProvider: ParentComponent = (props) => {
 			authState,
 			authData,
 			login,
+			logout,
 		};
 	};
 

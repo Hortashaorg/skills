@@ -17,3 +17,8 @@
 
 ## Backend & Permissions
 - Support logout endpoint (clear refresh token cookie)
+
+
+
+- is schema.ts needed in the database package?
+- i prefer getters in the environment.ts file.

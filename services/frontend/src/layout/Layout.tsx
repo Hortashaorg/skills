@@ -9,9 +9,8 @@ import { useAuth } from "@/context/use-auth";
 export const Layout: ParentComponent = ({ children }) => {
 	const auth = useAuth();
 
-	const handleLogout = () => {
-		// TODO: Implement logout functionality
-		console.log("Logout clicked");
+	const handleLogout = async () => {
+		await auth.logout();
 	};
 
 	return (

@@ -157,6 +157,19 @@ app.post("/refresh", async (c) => {
 	return c.json({ error: "Token refresh failed" }, 401);
 });
 
+app.post("/logout", async (c) => {
+	// Clear the refresh token cookie
+	// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
+	setCookie(c as any, "refresh_token", "", {
+		maxAge: 0,
+		httpOnly: true,
+		secure: environment.NODE_ENV !== "local",
+		sameSite: "lax",
+	});
+
+	return c.json({ success: true });
+});
+
 app.post(
 	"/api/mutate",
 	validator("header", (v) => {
