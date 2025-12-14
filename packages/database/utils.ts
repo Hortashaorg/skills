@@ -1,4 +1,4 @@
-import { decodeJwt, jwtVerify } from "jose";
+import { decodeJwt } from "jose";
 import { z } from "zod";
 
 export const authDataSchema = z.object({
@@ -6,14 +6,6 @@ export const authDataSchema = z.object({
 });
 
 export type AuthData = z.infer<typeof authDataSchema>;
-
-export async function validateAndDecodeAuthData(
-	jwt: string,
-	secret: Uint8Array,
-): Promise<AuthData> {
-	const result = await jwtVerify(jwt, secret);
-	return authDataSchema.parse(result.payload);
-}
 
 export function decodeAuthData(jwt: string | undefined): AuthData | undefined {
 	if (!jwt) {
