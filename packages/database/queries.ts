@@ -4,8 +4,8 @@ import "./types/context.ts";
 import { zql } from "./zero-schema.gen.ts";
 
 // Account queries
-const myAccount = defineQuery(({ ctx: { userID } }) => {
-	return zql.account.where("id", userID);
+const myAccount = defineQuery(({ ctx }) => {
+   return zql.account.where("id", ctx.userID);
 });
 
 const allAccounts = defineQuery(() => {

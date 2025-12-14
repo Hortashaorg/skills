@@ -1,13 +1,21 @@
-import {
-	PostgresJSConnection,
-	schema,
-	ZQLDatabase,
-} from "@package/database/server";
+import { schema, zeroPostgresJS } from "@package/database/server";
 import postgres from "postgres";
 import { environment } from "./environment.ts";
+import type { Context } from "hono";
+import { getSignedCookie } from "hono/cookie";
 
-// Raw Postgres connection for server-side operations
+// Database provider for Zero using postgres.js adapter
+export const dbProvider = zeroPostgresJS(
+	schema,
+	postgres(environment.ZERO_UPSTREAM_DB),
+);
+
+export async function getUserID(c: Context) {
+  const cookie = await getSignedCookie(c, environment.AUTH_PRIVATE_KEY, "auth");
+  if (!cookie) {
+    return "anon";
+  }
+  return cookie;
+}
+
 export const sql = postgres(environment.ZERO_UPSTREAM_DB);
-
-// ZQLDatabase for Zero transaction processing
-export const db = new ZQLDatabase(new PostgresJSConnection(sql), schema);
