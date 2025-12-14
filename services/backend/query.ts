@@ -9,10 +9,10 @@ export async function handleQuery(
 	authData: AuthData | undefined,
 	request: Request,
 ) {
-	// Context (userID) is passed via the transform function
-	const context = authData ? { userID: authData.sub } : undefined;
+	// Context (userID) is injected into query execution
+	const context = authData ? { userID: authData.sub } : { userID: "anon" };
 
-	// Transform function that looks up queries from the registry
+	// Transform function that looks up query definitions and executes them with context
 	const transformQuery = (name: string, args: unknown) => {
 		// Parse the query name (e.g., "account.myAccount" -> ["account", "myAccount"])
 		const parts = name.split(".");
@@ -28,14 +28,20 @@ export async function handleQuery(
 			throw new Error(`Unknown query namespace: ${namespace}`);
 		}
 
-		const queryFn =
+		const queryDefinition =
 			namespaceQueries[queryName as keyof typeof namespaceQueries];
-		if (!queryFn || typeof queryFn !== "function") {
+		if (!queryDefinition) {
 			throw new Error(`Unknown query: ${name}`);
 		}
 
-		// Execute the query with args and context
-		// @ts-expect-error - query function types are complex
+		// Call the query definition's function with args and context
+		// @ts-expect-error - query definition types are complex
+		const queryFn = queryDefinition.fn;
+		if (typeof queryFn !== "function") {
+			throw new Error(`Query ${name} does not have a function`);
+		}
+
+		// Execute query function with context
 		return queryFn({ args, ctx: context });
 	};
 

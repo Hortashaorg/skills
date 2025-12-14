@@ -1,21 +1,20 @@
-import { ZeroProvider } from "@package/database/client";
-import { createMemo, type ParentComponent } from "solid-js";
+import { mutators, schema, ZeroProvider } from "@package/database/client";
+import type { ParentComponent } from "solid-js";
 import { useAuth } from "./use-auth";
-import { ZeroFactory } from "./zero/zero-factory";
 
 export const ZeroWrapper: ParentComponent = (props) => {
 	const auth = useAuth();
-	const zeroFactory = new ZeroFactory();
 
-	const zeroInstance = createMemo(() => {
-		const authData = auth.authData();
-
-		if (authData) {
-			return zeroFactory.createAuthenticated(authData);
-		}
-
-		return zeroFactory.createAnonymous();
-	});
-
-	return <ZeroProvider zero={zeroInstance()}>{props.children}</ZeroProvider>;
+	return (
+		<ZeroProvider
+			userID={auth.authData()?.userId ?? "anon"}
+			auth={auth.authData()?.accessToken ?? null}
+			context={{ userID: auth.authData()?.userId ?? "anon" }}
+			schema={schema}
+			mutators={mutators}
+			cacheURL="http://localhost:4848"
+		>
+			{props.children}
+		</ZeroProvider>
+	);
 };

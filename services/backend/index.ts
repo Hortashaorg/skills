@@ -121,11 +121,20 @@ app.post("/refresh", async (c) => {
 	if (res.ok) {
 		const result = await res.json();
 
+
 		const { payload } = decode(result.id_token);
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, user.email);
+
+		// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
+		setCookie(c as any, "refresh_token", result.refresh_token, {
+			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
+			httpOnly: true,
+			secure: environment.NODE_ENV !== "local",
+			sameSite: "lax",
+		});
 
 		return c.json({
 			access_token: token,
@@ -135,6 +144,16 @@ app.post("/refresh", async (c) => {
 
 	const errorText = await res.text();
 	console.error("Zitadel token refresh failed:", res.status, errorText);
+
+	// Clear the invalid refresh token cookie
+	// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
+	setCookie(c as any, "refresh_token", "", {
+		maxAge: 0,
+		httpOnly: true,
+		secure: environment.NODE_ENV !== "local",
+		sameSite: "lax",
+	});
+
 	return c.json({ error: "Token refresh failed" }, 401);
 });
 
