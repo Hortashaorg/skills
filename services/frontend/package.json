@@ -8,7 +8,6 @@
 		"dev": "vite --host",
 		"build": "vite build",
 		"serve": "vite preview",
-		"component": "pnpm dlx solidui-cli@latest add",
 		"storybook": "storybook dev -p 6006 --no-open",
 		"build-storybook": "storybook build",
 		"test": "vitest run --project component",
