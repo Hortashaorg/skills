@@ -6,7 +6,8 @@ import {
 import postgres from "postgres";
 import { environment } from "./environment.ts";
 
-export const db = new ZQLDatabase(
-	new PostgresJSConnection(postgres(environment.ZERO_UPSTREAM_DB)),
-	schema,
-);
+// Raw Postgres connection for server-side operations
+export const sql = postgres(environment.ZERO_UPSTREAM_DB);
+
+// ZQLDatabase for Zero transaction processing
+export const db = new ZQLDatabase(new PostgresJSConnection(sql), schema);

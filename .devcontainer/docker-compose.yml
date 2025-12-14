@@ -24,6 +24,7 @@ services:
             - POSTGRES_DB=root
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=root
+        command: postgres -c wal_level=logical -c max_wal_senders=10 -c max_replication_slots=10
         volumes:
             - postgres_data:/var/lib/postgresql
 
@@ -44,16 +45,16 @@ services:
 
     zero-cache:
         container_name: skills_zero
-        image: rocicorp/zero:0.25.1
+        image: rocicorp/zero:0.25.2
         ports:
             - "4848:4848"
         environment:
             - ZERO_UPSTREAM_DB=postgresql://root:root@postgres:5432/root
             - ZERO_REPLICA_FILE=/zero_data/zero.db
-            - ZERO_QUERY_URL=http://local:4000/api/query
-            - ZERO_MUTATE_URL=http://local:4000/api/mutate
-            - ZERO_QUERY_FORWARD_COOKIES="true"
-            - ZERO_MUTATE_FORWARD_COOKIES="true"
+            - ZERO_PUSH_URL=http://local:4000/api/mutate
+            - ZERO_MUTATE_FORWARD_COOKIES=true
+            - ZERO_LOG_LEVEL=debug
+            - ZERO_ADMIN_PASSWORD=admin
         depends_on:
             - postgres
         volumes:

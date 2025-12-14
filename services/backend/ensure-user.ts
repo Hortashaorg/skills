@@ -1,36 +1,35 @@
 import { throwError } from "@package/common";
-import { db } from "./util.ts";
+import { sql } from "./util.ts";
 
 export const ensureUser = async (email: string) => {
-	const account = await db.transaction(
-		async (tx) => {
-			const [account] = await tx.query.account.where("email", "=", email).run();
-			if (account) {
-				return account;
-			}
+	const account = await sql.begin(async (tx) => {
+		// Check if user exists
+		const [existing] = await tx<
+			Array<{ id: string; email: string; name: string | null }>
+		>`
+			SELECT id, email, name
+			FROM account
+			WHERE email = ${email}
+		`;
 
-			const accountData = {
-				email,
-				id: crypto.randomUUID() as string,
-				createdAt: Date.now(),
-				updatedAt: Date.now(),
-			};
+		if (existing) {
+			return existing;
+		}
 
-			await tx.mutate.account.insert(accountData);
+		// Create new user
+		const id = crypto.randomUUID();
+		const now = new Date();
 
-			const [insertedAccount] = await tx.query.account
-				.where("email", "=", email)
-				.run();
+		const [inserted] = await tx<
+			Array<{ id: string; email: string; name: string | null }>
+		>`
+			INSERT INTO account (id, email, created_at, updated_at)
+			VALUES (${id}, ${email}, ${now}, ${now})
+			RETURNING id, email, name
+		`;
 
-			return insertedAccount ?? throwError("Failed to get account");
-		},
-		{
-			clientGroupID: "unused",
-			clientID: "unused",
-			mutationID: 42,
-			upstreamSchema: "unused",
-		},
-	);
+		return inserted ?? throwError("Failed to create account");
+	});
 
 	return account;
 };
