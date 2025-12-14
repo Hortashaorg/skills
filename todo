@@ -20,5 +20,5 @@
 
 
 
-- is schema.ts needed in the database package?
+- How do we bestwrap application in zeroProvider to work well with logged out logged in etc.
 - i prefer getters in the environment.ts file.
