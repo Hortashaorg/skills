@@ -1,4 +1,3 @@
-import { throwError } from "@package/common";
 import { queries, useQuery } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
@@ -9,22 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/use-auth";
-import { useZeroInstance } from "@/context/use-zero-instance";
 
 function MyForm() {
-	const zero = useZeroInstance();
-
-	const handleSubmit = async (e: SubmitEvent) => {
-		if (e.target === null) throwError("");
+	const handleSubmit = (e: SubmitEvent) => {
 		e.preventDefault();
-		const target =
-			(e.target as HTMLFormElement) ??
-			throwError("Event does not have a target");
-		const formData = new FormData(target);
-		console.log(formData);
-
-		// Call test mutation - zero.mutate is properly typed via DefaultTypes
-		await zero.mutate.test.create({ message: "Example mutation from button click" });
+		console.log("Form submitted - mutations can be called here");
 	};
 
 	return (
