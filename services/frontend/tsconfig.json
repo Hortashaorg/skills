@@ -3,8 +3,8 @@
 		"module": "Preserve",
 		"moduleResolution": "bundler",
 		"allowJs": true,
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
 		"types": ["vite/client"],
 		"paths": {
 			"@/*": ["./src/*"],

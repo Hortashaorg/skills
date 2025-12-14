@@ -116,7 +116,6 @@ app.post("/refresh", async (c) => {
 	if (res.ok) {
 		const result = await res.json();
 
-
 		const { payload } = decode(result.id_token);
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
@@ -163,11 +162,11 @@ app.post("/logout", async (c) => {
 });
 
 app.post("/api/mutate", async (c) => {
-  return c.json(await handleMutate(c));
+	return c.json(await handleMutate(c));
 });
 
 app.post("/api/query", async (c) => {
-  return c.json(await handleQuery(c));
+	return c.json(await handleQuery(c));
 });
 
 serve({

@@ -5,190 +5,190 @@ import type { Row } from "@rocicorp/zero";
 import { createBuilder } from "@rocicorp/zero";
 
 const accountTable = {
-  name: "account",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    email: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    name: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
+	name: "account",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		email: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const tagTable = {
-  name: "tag",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    name: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    description: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
+	name: "tag",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		description: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const tagToTechTable = {
-  name: "tagToTech",
-  columns: {
-    techId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "tech_id",
-    },
-    tagId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "tag_id",
-    },
-  },
-  primaryKey: ["techId", "tagId"],
-  serverName: "tag_to_technology",
+	name: "tagToTech",
+	columns: {
+		techId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "tech_id",
+		},
+		tagId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "tag_id",
+		},
+	},
+	primaryKey: ["techId", "tagId"],
+	serverName: "tag_to_technology",
 } as const;
 const techTable = {
-  name: "tech",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    name: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    description: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    github: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    website: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "technology",
+	name: "tech",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		description: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		github: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		website: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "technology",
 } as const;
 const tagRelationships = {
-  tagsToTech: [
-    {
-      sourceField: ["id"],
-      destField: ["tagId"],
-      destSchema: "tagToTech",
-      cardinality: "many",
-    },
-  ],
+	tagsToTech: [
+		{
+			sourceField: ["id"],
+			destField: ["tagId"],
+			destSchema: "tagToTech",
+			cardinality: "many",
+		},
+	],
 } as const;
 const tagToTechRelationships = {
-  tech: [
-    {
-      sourceField: ["techId"],
-      destField: ["id"],
-      destSchema: "tech",
-      cardinality: "one",
-    },
-  ],
-  tag: [
-    {
-      sourceField: ["tagId"],
-      destField: ["id"],
-      destSchema: "tag",
-      cardinality: "one",
-    },
-  ],
+	tech: [
+		{
+			sourceField: ["techId"],
+			destField: ["id"],
+			destSchema: "tech",
+			cardinality: "one",
+		},
+	],
+	tag: [
+		{
+			sourceField: ["tagId"],
+			destField: ["id"],
+			destSchema: "tag",
+			cardinality: "one",
+		},
+	],
 } as const;
 const techRelationships = {
-  tagsToTech: [
-    {
-      sourceField: ["id"],
-      destField: ["techId"],
-      destSchema: "tagToTech",
-      cardinality: "many",
-    },
-  ],
+	tagsToTech: [
+		{
+			sourceField: ["id"],
+			destField: ["techId"],
+			destSchema: "tagToTech",
+			cardinality: "many",
+		},
+	],
 } as const;
 /**
  * The Zero schema object.
  * This type is auto-generated from your Drizzle schema definition.
  */
 export const schema = {
-  tables: {
-    account: accountTable,
-    tag: tagTable,
-    tagToTech: tagToTechTable,
-    tech: techTable,
-  },
-  relationships: {
-    tag: tagRelationships,
-    tagToTech: tagToTechRelationships,
-    tech: techRelationships,
-  },
-  enableLegacyQueries: false,
-  enableLegacyMutators: false,
+	tables: {
+		account: accountTable,
+		tag: tagTable,
+		tagToTech: tagToTechTable,
+		tech: techTable,
+	},
+	relationships: {
+		tag: tagRelationships,
+		tagToTech: tagToTechRelationships,
+		tech: techRelationships,
+	},
+	enableLegacyQueries: false,
+	enableLegacyMutators: false,
 } as const;
 
 /**
@@ -240,7 +240,7 @@ export const builder = zql;
 
 /** Defines the default types for Zero */
 declare module "@rocicorp/zero" {
-  interface DefaultTypes {
-    schema: Schema;
-  }
+	interface DefaultTypes {
+		schema: Schema;
+	}
 }

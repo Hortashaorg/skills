@@ -16,11 +16,13 @@ export const environment = {
 	NODE_ENV:
 		process.env.NODE_ENV ?? throwError("Env Variable: NODE_ENV not found"),
 	FRONTEND_URL:
-		process.env.FRONTEND_URL ?? throwError("Env Variable: FRONTEND_URL not found"),
+		process.env.FRONTEND_URL ??
+		throwError("Env Variable: FRONTEND_URL not found"),
 
 	// Zero Cache base url
 	CACHE_BASE_URL:
-	  process.env.CACHE_BASE_URL ?? throwError("Env Variable: CACHE_BASE_URL not found"),
+		process.env.CACHE_BASE_URL ??
+		throwError("Env Variable: CACHE_BASE_URL not found"),
 
 	// Database Configuration
 	ZERO_UPSTREAM_DB:

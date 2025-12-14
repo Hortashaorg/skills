@@ -5,7 +5,7 @@ import { zql } from "./zero-schema.gen.ts";
 
 // Account queries
 const myAccount = defineQuery(({ ctx }) => {
-   return zql.account.where("id", ctx.userID);
+	return zql.account.where("id", ctx.userID);
 });
 
 const allAccounts = defineQuery(() => {
@@ -27,9 +27,9 @@ const techById = defineQuery(
 const techWithTags = defineQuery(
 	z.object({ id: z.string() }),
 	({ args: { id } }) => {
-		return zql.tech.where("id", id).related("tagsToTech", (q) =>
-			q.related("tag"),
-		);
+		return zql.tech
+			.where("id", id)
+			.related("tagsToTech", (q) => q.related("tag"));
 	},
 );
 
@@ -56,9 +56,9 @@ const tagById = defineQuery(
 const tagWithTech = defineQuery(
 	z.object({ id: z.string() }),
 	({ args: { id } }) => {
-		return zql.tag.where("id", id).related("tagsToTech", (q) =>
-			q.related("tech"),
-		);
+		return zql.tag
+			.where("id", id)
+			.related("tagsToTech", (q) => q.related("tech"));
 	},
 );
 

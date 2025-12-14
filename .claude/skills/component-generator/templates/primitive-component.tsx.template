@@ -10,7 +10,7 @@ export type {{NAME}}Props = {
 };
 
 export const {{NAME}} = (props: {{NAME}}Props) => {
-	const [local, others] = splitProps(props, ["class"]);
+	const [local, others] = splitProps(props, ["children", "class"]);
 
 	return (
 		<{{ELEMENT}}
@@ -19,6 +19,8 @@ export const {{NAME}} = (props: {{NAME}}Props) => {
 				local.class,
 			)}
 			{...(others as JSX.HTMLAttributes<{{HTML_ELEMENT_TYPE}}>)}
-		/>
+		>
+			{local.children}
++		</{{ELEMENT}}>
 	);
 };

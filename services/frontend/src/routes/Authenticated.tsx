@@ -1,4 +1,4 @@
-import { queries, useQuery } from "@package/database/client";
+import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
@@ -10,9 +10,12 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/use-auth";
 
 function MyForm() {
+  const zero = useZero();
 	const handleSubmit = (e: SubmitEvent) => {
 		e.preventDefault();
-		console.log("Form submitted - mutations can be called here");
+		zero().mutate(mutators.test.create({
+			message: "hello world",
+		}));
 	};
 
 	return (

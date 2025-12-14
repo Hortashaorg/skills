@@ -7,10 +7,7 @@ export function getAuthorizationUrl(): string {
 	const redirectUri = import.meta.env.VITE_FRONTEND_URL;
 
 	if (!issuer || !clientId) {
-		console.error(
-			"Missing Zitadel configuration:",
-			{ issuer, clientId },
-		);
+		console.error("Missing Zitadel configuration:", { issuer, clientId });
 		throw new Error(
 			"Zitadel configuration is missing. Please set VITE_ZITADEL_ISSUER and VITE_ZITADEL_CLIENT_ID in your environment.",
 		);

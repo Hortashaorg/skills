@@ -2,10 +2,10 @@ export { Zero } from "@rocicorp/zero";
 export {
 	createZero,
 	useQuery,
-	useZero as useZeroRocicorp,
+	useZero,
 	ZeroProvider,
 } from "@rocicorp/zero/solid";
-export { mutators, type Mutators } from "./mutators.ts";
+export { type Mutators, mutators } from "./mutators.ts";
 export { queries } from "./queries.ts";
-export { type Schema, schema, zql } from "./zero-schema.gen.ts";
 export { decodeAuthData } from "./utils.ts";
+export { type Schema, schema, zql } from "./zero-schema.gen.ts";
