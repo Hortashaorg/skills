@@ -1,3 +1,4 @@
+export { mustGetQuery } from "@rocicorp/zero";
 export {
 	handleQueryRequest,
 	PostgresJSConnection,

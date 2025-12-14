@@ -70,8 +70,7 @@ app.post("/login", async (c) => {
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, user.email);
 
-		// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
-		setCookie(c as any, "refresh_token", result.refresh_token, {
+		setCookie(c, "refresh_token", result.refresh_token, {
 			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
 			httpOnly: true,
 			secure: environment.NODE_ENV !== "local",
@@ -128,8 +127,7 @@ app.post("/refresh", async (c) => {
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, user.email);
 
-		// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
-		setCookie(c as any, "refresh_token", result.refresh_token, {
+		setCookie(c, "refresh_token", result.refresh_token, {
 			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
 			httpOnly: true,
 			secure: environment.NODE_ENV !== "local",
@@ -146,8 +144,7 @@ app.post("/refresh", async (c) => {
 	console.error("Zitadel token refresh failed:", res.status, errorText);
 
 	// Clear the invalid refresh token cookie
-	// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
-	setCookie(c as any, "refresh_token", "", {
+	setCookie(c, "refresh_token", "", {
 		maxAge: 0,
 		httpOnly: true,
 		secure: environment.NODE_ENV !== "local",
@@ -159,8 +156,7 @@ app.post("/refresh", async (c) => {
 
 app.post("/logout", async (c) => {
 	// Clear the refresh token cookie
-	// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
-	setCookie(c as any, "refresh_token", "", {
+	setCookie(c, "refresh_token", "", {
 		maxAge: 0,
 		httpOnly: true,
 		secure: environment.NODE_ENV !== "local",

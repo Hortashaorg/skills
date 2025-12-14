@@ -14,7 +14,7 @@ import { useZeroInstance } from "@/context/use-zero-instance";
 function MyForm() {
 	const zero = useZeroInstance();
 
-	const handleSubmit = (e: SubmitEvent) => {
+	const handleSubmit = async (e: SubmitEvent) => {
 		if (e.target === null) throwError("");
 		e.preventDefault();
 		const target =
@@ -23,9 +23,8 @@ function MyForm() {
 		const formData = new FormData(target);
 		console.log(formData);
 
-		// Use new mutator API with object parameter (requires Zod validation)
-		// biome-ignore lint/suspicious/noExplicitAny: Mutator types not fully inferred in Zero 0.25
-		(zero.mutate as any).test.create({ message: "Example mutation from button click" });
+		// Call test mutation - zero.mutate is properly typed via DefaultTypes
+		await zero.mutate.test.create({ message: "Example mutation from button click" });
 	};
 
 	return (
