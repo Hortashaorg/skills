@@ -6,24 +6,23 @@
 		"typecheck": "tsc",
 		"generate": "drizzle-kit generate",
 		"migrate": "drizzle-kit migrate",
-		"zero": "drizzle-zero generate --format",
-		"sync": "npx zero-deploy-permissions --schema-path ./schema.ts --upstream-db postgresql://root:root@postgres:5432/root"
+		"zero": "drizzle-zero generate --format"
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"@types/node": "^24.7.2",
-		"drizzle-kit": "^0.31.5"
+		"@types/node": "^25.0.2",
+		"drizzle-kit": "^0.31.8"
 	},
 	"exports": {
 		"./client": "./client.ts",
 		"./server": "./server.ts"
 	},
 	"dependencies": {
-		"@rocicorp/zero": "^0.23.2025090100",
-		"drizzle-orm": "^0.44.6",
-		"drizzle-zero": "^0.14.3",
-		"jose": "^6.1.0",
+		"@rocicorp/zero": "^0.25.2",
+		"drizzle-orm": "^0.45.1",
+		"drizzle-zero": "0.17.0",
+		"jose": "^6.1.3",
 		"postgres": "^3.4.7",
-		"zod": "^4.1.12"
+		"zod": "^4.1.13"
 	}
 }

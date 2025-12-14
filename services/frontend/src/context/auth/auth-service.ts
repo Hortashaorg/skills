@@ -94,6 +94,23 @@ export class AuthService {
 	}
 
 	async logout(): Promise<void> {
-		throw new Error("Logout not implemented yet");
+		try {
+			const res = await fetch(`${this.baseUrl}/logout`, {
+				method: "POST",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+
+			if (!res.ok) {
+				console.warn(
+					`Logout failed with status ${res.status}: ${res.statusText}`,
+				);
+			}
+		} catch (error) {
+			console.error("Logout failed with error:", error);
+			// Don't throw - we want to clear client state even if server call fails
+		}
 	}
 }

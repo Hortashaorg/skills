@@ -1,4 +1,4 @@
-FROM node:24.9.0-slim AS base
+FROM node:25.1.0-slim AS base
 
 WORKDIR /skills
 
@@ -14,20 +14,20 @@ RUN apt-get update && \
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 
 
-# Install Doppler
-RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg && \
-    curl -sLf --retry 3 --tlsv1.2 --proto "=https" 'https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key' | gpg --dearmor -o /usr/share/keyrings/doppler-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/doppler-archive-keyring.gpg] https://packages.doppler.com/public/cli/deb/debian any-version main" | tee /etc/apt/sources.list.d/doppler-cli.list && \
-    apt-get update && apt-get install doppler
+# Install Infisical CLI
+RUN curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | bash && \
+    apt-get update && \
+    apt-get install -y infisical && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM base AS local
 
-# Install git
+# Install git, openssh-server Python, and build tools for native modules. Python and other dependencies are needed for zero-sqlite3 install script
 RUN apt-get update && \
-    apt-get install -y git openssh-server && \
+    apt-get install -y git openssh-server python3 build-essential libreadline-dev && \
     rm -rf /var/lib/apt/lists/*
 
-
+# Install Claude
 RUN npm install -g @anthropic-ai/claude-code
 
 # Configure SSH

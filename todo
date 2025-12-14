@@ -17,3 +17,8 @@
 
 ## Backend & Permissions
 - Support logout endpoint (clear refresh token cookie)
+
+
+
+- How do we bestwrap application in zeroProvider to work well with logged out logged in etc.
+- i prefer getters in the environment.ts file.

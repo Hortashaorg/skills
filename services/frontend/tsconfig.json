@@ -2,8 +2,13 @@
 	"compilerOptions": {
 		"module": "Preserve",
 		"moduleResolution": "bundler",
+		"allowJs": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"types": ["vite/client"],
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@sb/*": ["./.storybook/*"]
 		}
 	},
 	"exclude": ["dist"],

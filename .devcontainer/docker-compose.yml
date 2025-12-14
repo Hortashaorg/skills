@@ -9,6 +9,7 @@ services:
       - "4321:4321"
       - "4000:4000"
       - "2221:2221"
+      - "6006:6006"
     volumes:
       - ./..:/skills
       - ~/.ssh:/root/.ssh
@@ -16,31 +17,20 @@ services:
 
   postgres:
     container_name: skills_postgres
-    image: postgres:16.3
+    image: postgres:18.1
     ports:
       - "5432:5432"
-    command: |
-      postgres
-      -c wal_level=logical
-      -c max_wal_senders=10
-      -c max_replication_slots=5
-      -c hot_standby=on
-      -c hot_standby_feedback=on
     environment:
       - POSTGRES_DB=root
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U root"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    command: postgres -c wal_level=logical -c max_wal_senders=10 -c max_replication_slots=10
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   pgadmin:
     container_name: skills_pgadmin
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:9.11
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin@example.com"
@@ -55,18 +45,17 @@ services:
 
   zero-cache:
     container_name: skills_zero
-    image: rocicorp/zero:0.23.2025090100
+    image: rocicorp/zero:0.25.2
     ports:
       - "4848:4848"
     environment:
       - ZERO_UPSTREAM_DB=postgresql://root:root@postgres:5432/root
-      - ZERO_CVR_DB=postgresql://root:root@postgres:5432/root
-      - ZERO_CHANGE_DB=postgresql://root:root@postgres:5432/root
-      - ZERO_AUTH_SECRET=test-secret
-      - ZERO_REPLICA_FILE=/zero_data/skills_replica.db
-      - ZERO_PORT=4848
+      - ZERO_REPLICA_FILE=/zero_data/zero.db
       - ZERO_MUTATE_URL=http://local:4000/api/mutate
-      - ZERO_GET_QUERIES_URL=http://local:4000/api/get-queries
+      - ZERO_QUERY_URL=http://local:4000/api/query
+      - ZERO_MUTATE_FORWARD_COOKIES=true
+      - ZERO_LOG_LEVEL=debug
+      - ZERO_ADMIN_PASSWORD=admin
     depends_on:
       - postgres
     volumes:

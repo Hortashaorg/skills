@@ -4,14 +4,14 @@
 	"type": "module",
 	"scripts": {
 		"typecheck": "tsc",
-		"dev": "doppler run --project skills --config local -- node --watch ./index.ts"
+		"dev": "node --watch ./index.ts"
 	},
 	"dependencies": {
-		"@hono/node-server": "^1.19.5",
+		"@hono/node-server": "^1.19.7",
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
-		"@types/node": "^24.7.2",
-		"hono": "^4.9.12",
+		"@types/node": "^25.0.2",
+		"hono": "^4.11.0",
 		"postgres": "^3.4.7"
 	}
 }

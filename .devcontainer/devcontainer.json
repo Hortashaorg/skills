@@ -1,5 +1,16 @@
 {
 	"name": "skills",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker",
+				"yoavbls.pretty-ts-errors",
+				"GitHub.vscode-github-actions",
+				"bradlc.vscode-tailwindcss",
+				"Anthropic.claude-code"
+			]
+		}
+	},
 	"dockerComposeFile": "./docker-compose.yml",
 	"service": "local",
 	"workspaceFolder": "/skills",

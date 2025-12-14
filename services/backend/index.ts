@@ -1,16 +1,13 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
-import { validateAndDecodeAuthData } from "@package/database/server";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { decode, sign } from "hono/jwt";
-import { validator } from "hono/validator";
 import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
-import { handlePush } from "./push.ts";
-
-const secretKey = new TextEncoder().encode(environment.AUTH_PRIVATE_KEY);
+import { handleMutate } from "./mutate.ts";
+import { handleQuery } from "./query.ts";
 
 const userToken = async (sub: string, email: string) => {
 	const now = Math.floor(Date.now() / 1000);
@@ -32,7 +29,7 @@ const app = new Hono();
 app.use(
 	"*",
 	cors({
-		origin: ["http://localhost:4321", "http://localhost:4848"],
+		origin: ["http://localhost:4321", environment.CACHE_BASE_URL],
 		credentials: true,
 	}),
 );
@@ -43,23 +40,23 @@ app.post("/login", async (c) => {
 	if (!code) throwError("Code not provided");
 
 	const params = new URLSearchParams({
-		client_id: environment.CLIENT_ID,
-		client_secret: environment.CLIENT_SECRET,
-		redirect_uri: "http://localhost:4321/auth/callback",
-		scope: "email",
+		client_id: environment.ZITADEL_CLIENT_ID,
+		client_secret: environment.ZITADEL_CLIENT_SECRET,
+		redirect_uri: environment.FRONTEND_URL,
 		grant_type: "authorization_code",
-		access_type: "offline",
-		prompt: "consent",
 		code,
 	});
 
-	const res = await fetch(`https://oauth2.googleapis.com/token`, {
+	const tokenUrl = `${environment.ZITADEL_ISSUER}/oauth/v2/token`;
+
+	const res = await fetch(tokenUrl, {
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
 		},
 		method: "POST",
 		body: params,
 	});
+
 	if (res.ok) {
 		const result = await res.json();
 
@@ -69,8 +66,7 @@ app.post("/login", async (c) => {
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, user.email);
 
-		// biome-ignore lint/suspicious/noExplicitAny: Context type does not fit here.
-		setCookie(c as any, "refresh_token", result.refresh_token, {
+		setCookie(c, "refresh_token", result.refresh_token, {
 			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
 			httpOnly: true,
 			secure: environment.NODE_ENV !== "local",
@@ -81,12 +77,11 @@ app.post("/login", async (c) => {
 			access_token: token,
 			sub: user.id,
 		});
-	} else {
-		console.log(res.statusText);
-		res.statusText;
 	}
 
-	return c.text("Login");
+	const errorText = await res.text();
+	console.error("Zitadel token exchange failed:", res.status, errorText);
+	return c.json({ error: "Authentication failed" }, 401);
 });
 
 app.post("/refresh", async (c) => {
@@ -102,19 +97,22 @@ app.post("/refresh", async (c) => {
 	}
 
 	const params = new URLSearchParams({
-		client_id: environment.CLIENT_ID,
-		client_secret: environment.CLIENT_SECRET,
+		client_id: environment.ZITADEL_CLIENT_ID,
+		client_secret: environment.ZITADEL_CLIENT_SECRET,
 		grant_type: "refresh_token",
 		refresh_token: refreshToken,
 	});
 
-	const res = await fetch(`https://oauth2.googleapis.com/token`, {
+	const tokenUrl = `${environment.ZITADEL_ISSUER}/oauth/v2/token`;
+
+	const res = await fetch(tokenUrl, {
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
 		},
 		method: "POST",
 		body: params,
 	});
+
 	if (res.ok) {
 		const result = await res.json();
 
@@ -124,41 +122,52 @@ app.post("/refresh", async (c) => {
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, user.email);
 
+		setCookie(c, "refresh_token", result.refresh_token, {
+			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
+			httpOnly: true,
+			secure: environment.NODE_ENV !== "local",
+			sameSite: "lax",
+		});
+
 		return c.json({
 			access_token: token,
 			sub: user.id,
 		});
-	} else {
-		console.log(res.statusText);
-		res.statusText;
 	}
 
-	return c.text("Login");
+	const errorText = await res.text();
+	console.error("Zitadel token refresh failed:", res.status, errorText);
+
+	// Clear the invalid refresh token cookie
+	setCookie(c, "refresh_token", "", {
+		maxAge: 0,
+		httpOnly: true,
+		secure: environment.NODE_ENV !== "local",
+		sameSite: "lax",
+	});
+
+	return c.json({ error: "Token refresh failed" }, 401);
 });
 
-app.post(
-	"/api/mutate",
-	validator("header", (v) => {
-		const auth = v.authorization;
-		if (!auth) {
-			return undefined;
-		}
-		const parts = /^Bearer (.+)$/.exec(auth);
-		if (!parts) {
-			throw new Error(
-				"Invalid Authorization header - should start with 'Bearer '",
-			);
-		}
-		const [, jwt] = parts;
-		if (!jwt) {
-			throw new Error("jwt missing");
-		}
-		return validateAndDecodeAuthData(jwt, secretKey);
-	}),
-	async (c) => {
-		return c.json(await handlePush(c.req.valid("header"), c.req.raw));
-	},
-);
+app.post("/logout", async (c) => {
+	// Clear the refresh token cookie
+	setCookie(c, "refresh_token", "", {
+		maxAge: 0,
+		httpOnly: true,
+		secure: environment.NODE_ENV !== "local",
+		sameSite: "lax",
+	});
+
+	return c.json({ success: true });
+});
+
+app.post("/api/mutate", async (c) => {
+	return c.json(await handleMutate(c));
+});
+
+app.post("/api/query", async (c) => {
+	return c.json(await handleQuery(c));
+});
 
 serve({
 	fetch: app.fetch,

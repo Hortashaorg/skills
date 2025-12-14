@@ -33,29 +33,65 @@ Monorepo using npm workspaces:
 - Always use `credentials: "include"` for cookie-based refresh tokens
 - OAuth callback page (`/auth/callback`) auto-redirects to home after processing
 
-### Using Auth and Zero in Components
+### Zero 0.25 Data Layer (Queries & Mutations)
+
+**Define queries server-side** (`packages/database/queries.ts`):
 ```tsx
-import { useAuth } from "@/context/use-auth";
-import { useZeroInstance } from "@/context/use-zero-instance";
-import { useQuery } from "@package/database/client";
+import { defineQuery, defineQueries } from "@rocicorp/zero";
+import { z } from "zod";
+import { zql } from "./zero-schema.gen.ts";
+
+const myPosts = defineQuery(({ ctx: { userID } }) =>
+  zql.posts.where('authorId', userID).related('comments')
+);
+
+const postById = defineQuery(
+  z.object({ id: z.string() }),
+  ({ args: { id } }) => zql.posts.where('id', id)
+);
+
+export const queries = defineQueries({
+  posts: { myPosts, postById },
+});
+```
+
+**Use queries in components** (frontend):
+```tsx
+import { queries, useQuery } from "@package/database/client";
 
 const PostList = () => {
-  const auth = useAuth();
-  const zero = useZeroInstance();
-  const userID = auth.authData()?.userId;
+  const [posts] = useQuery(queries.posts.myPosts);
+  // Or with args: useQuery(() => queries.posts.postById({ id: "123" }))
 
-  const [posts] = useQuery(() =>
-    zero.query.posts
-      .where('authorId', userID)
-      .related('comments')
-  );
-
-  return (
-    <For each={posts()}>
-      {(post) => <Post data={post} />}
-    </For>
-  );
+  return <For each={posts()}>{(post) => <Post data={post} />}</For>;
 };
+```
+
+**Backend handlers** (follow official Zero 0.25 pattern):
+```tsx
+// query.ts
+export async function handleQuery(c: Context) {
+  const userID = await getUserID(c);
+  const ctx = { userID };
+  return handleQueryRequest(
+    (name, args) => mustGetQuery(queries, name).fn({ args, ctx }),
+    schema,
+    c.req.raw
+  );
+}
+
+// mutate.ts
+export async function handleMutate(c: Context) {
+  const userID = await getUserID(c);
+  const ctx = { userID };
+  return handleMutateRequest(
+    dbProvider,
+    (transact) => transact((tx, name, args) =>
+      mustGetMutator(mutators, name).fn({ tx, args, ctx })
+    ),
+    c.req.raw
+  );
+}
 ```
 
 ## Component Architecture
@@ -66,7 +102,8 @@ Components follow a **flexibility-to-purpose spectrum**:
   - Maximum flexibility, minimal opinion
   - Use for one-off layouts
 - **`ui/`** - Interactive components (Button, Input, Select, Dialog)
-  - shadcn-inspired API
+  - Built with Kobalte headless primitives for accessibility
+  - Styled with Tailwind 4 (minimal CSS variables)
   - Accept `class` prop for composition, never override internally
 - **`composite/`** - Convenient wrappers (IconButton, SearchInput)
   - Combine primitives/ui for common patterns
@@ -75,15 +112,33 @@ Components follow a **flexibility-to-purpose spectrum**:
   - Context-specific, less reusable
   - Enforce business logic and patterns
 
+### Component Structure
+
+Components are organized in **folders with colocated files**:
+
+```
+components/ui/button/
+├── index.ts              # Export barrel
+├── button.tsx            # Component implementation
+├── button.stories.tsx    # Storybook stories
+└── button.test.tsx       # Vitest tests
+```
+
+Import from folder: `import { Button } from "@/components/ui/button"`
+
 ### Component Guidelines
 
 - **Type-safe**: Props fully typed, use discriminated unions for variants
-- **Accessible**: ARIA labels, keyboard navigation, focus management
+- **Accessible**: Built on Kobalte primitives with ARIA, keyboard nav, focus management
 - **Documented**: JSDoc comments explain usage and props
+- **Tested**: Unit tests for logic, Storybook tests for visual/interaction
 - **Composable**: Accept `class` for styling, children for content
 - **CVA for variants**: Use `class-variance-authority` for size/color/state variants
+- **Tailwind styling**: Direct utility classes, avoid excessive CSS variables
 
 ```tsx
+// button.tsx - Component implementation with Kobalte + CVA
+import * as ButtonPrimitive from "@kobalte/core/button";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
@@ -91,38 +146,88 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-input hover:bg-accent",
+        default: "bg-zinc-900 text-white hover:bg-zinc-800",
+        outline: "border border-zinc-300 hover:bg-zinc-100",
       },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-      },
+      size: { default: "h-10 px-4", sm: "h-9 px-3" },
     },
     defaultVariants: { variant: "default", size: "default" },
   }
 );
 
-/**
- * Button component with variant support
- * @example
- * <Button variant="outline" size="sm" onClick={() => alert('clicked')}>
- *   Click me
- * </Button>
- */
-export const Button: Component<
-  VariantProps<typeof buttonVariants> & { onClick?: () => void }
-> = (props) => {
+export const Button = (props) => {
+  const [local, others] = splitProps(props, ["variant", "size", "class"]);
   return (
-    <button
-      class={buttonVariants({ variant: props.variant, size: props.size })}
-      onClick={props.onClick}
-    >
-      {props.children}
-    </button>
+    <ButtonPrimitive.Root
+      class={cn(buttonVariants({ variant: local.variant, size: local.size }), local.class)}
+      {...others}
+    />
   );
 };
 ```
+
+## Storybook & Testing
+
+**Purpose**: Document, test, and verify component behavior
+
+### Storybook Stories
+
+Stories are **colocated** with components for discoverability:
+
+```tsx
+// button.stories.tsx - Visual documentation and interaction testing
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { Button } from "./button";
+
+const meta = {
+  title: "UI/Button",
+  component: Button,
+  tags: ["autodocs"],
+  argTypes: {
+    variant: { control: "select", options: ["default", "outline"] },
+  },
+} satisfies Meta<typeof Button>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = { args: { children: "Click me" } };
+export const Outline: Story = { args: { variant: "outline", children: "Outline" } };
+```
+
+**Story guidelines**:
+- Use CSF3 format with `satisfies Meta<typeof Component>`
+- One story per variant/state combination
+- Include all interactive controls via `argTypes`
+- Tag with `"autodocs"` for auto-generated documentation
+- Stories test visual appearance and user interaction
+
+### Unit Tests
+
+Tests verify component **logic and behavior**:
+
+```tsx
+// button.test.tsx - Unit tests for component behavior
+import { render } from "@solidjs/testing-library";
+import { Button } from "./button";
+
+test("renders children", () => {
+  const { getByText } = render(() => <Button>Click me</Button>);
+  expect(getByText("Click me")).toBeInTheDocument();
+});
+
+test("applies variant classes", () => {
+  const { container } = render(() => <Button variant="outline">Test</Button>);
+  expect(container.querySelector("button")).toHaveClass("border");
+});
+```
+
+**Test guidelines**:
+- Test props/variants apply correctly
+- Test click handlers and interactions
+- Test accessibility (ARIA attributes, keyboard nav)
+- Use `@solidjs/testing-library` for rendering
+- Keep tests simple - Storybook handles visual regression
 
 ## Contributing
 
