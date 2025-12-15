@@ -1,12 +1,12 @@
 import { defineConfig } from "drizzle-kit";
+import { environment } from "./environment.ts";
 
 export default defineConfig({
 	out: "./drizzle",
 	schema: "./db/schema.ts",
 	dialect: "postgresql",
 	dbCredentials: {
-		url:
-			process.env.POSTGRES_URL ?? "postgresql://root:root@postgres:5432/root",
+		url: environment.ZERO_UPSTREAM_DB,
 	},
 	casing: "snake_case",
 });
