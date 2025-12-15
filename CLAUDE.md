@@ -20,18 +20,71 @@ Monorepo using npm workspaces:
 
 ## Architecture
 
-### Context Structure
-- **Separate concerns**: Auth context is independent of Zero context
-- **AuthProvider** (`context/auth-provider.tsx`) - Manages authentication state
-- **ZeroWrapper** (`context/zero-wrapper.tsx`) - Wraps Rocicorp's ZeroProvider, reactively updates when auth changes
-- **Hooks at top level** (`use-auth.ts`, `use-zero-instance.ts`) - Easy imports
-- **Implementation details in subfolders** (`context/auth/`, `context/zero/`) - Colocated with consumers
+### Auth & Zero Integration
+
+**Single Provider Pattern** (`context/app-provider.tsx`):
+- `AppProvider` wraps entire app - combines auth state + ZeroProvider
+- Initializes on mount: OAuth code exchange or refresh token restore
+- ZeroProvider props are reactive - updates when auth changes
+- `ConnectionStatus` nested inside monitors Zero connection state
+
+**Auth API** (`context/auth/auth-api.ts`):
+- `authApi.login(code)` - Exchange OAuth code for tokens
+- `authApi.refresh()` - Restore session from httpOnly cookie
+- `authApi.logout()` - Clear refresh token cookie
+
+**Exported utilities**:
+- `logout()` - Call API + update state (use instead of authApi.logout directly)
+- Backend stores refresh token in httpOnly cookie (6 months)
+- Frontend stores access token in memory (10 min expiry)
 
 ### OAuth Flow
 - Auto-detect `?code=` in URL and exchange for tokens on app load
 - Use `/login` endpoint to exchange code, `/refresh` to restore sessions
 - Always use `credentials: "include"` for cookie-based refresh tokens
-- OAuth callback page (`/auth/callback`) auto-redirects to home after processing
+- Automatic token refresh when Zero fires `needs-auth` event (token expired)
+
+### Checking Auth/Login State
+
+**Check if user is logged in**:
+```tsx
+import { useZero } from "@package/database/client";
+
+const MyComponent = () => {
+  const zero = useZero();
+  const userID = zero().userID; // "anon" = not logged in, otherwise actual userId
+
+  if (userID === "anon") {
+    return <LoginPrompt />;
+  }
+
+  return <AuthenticatedContent />;
+};
+```
+
+**Check connection status**:
+```tsx
+import { useConnectionState } from "@package/database/client";
+
+const MyComponent = () => {
+  const connectionState = useConnectionState();
+
+  // connectionState().name can be:
+  // "connecting" - Initial connection attempt (up to 30s configured)
+  // "connected" - Successfully connected
+  // "disconnected" - Connection lost, retrying every 5s
+  // "error" - Unrecoverable error
+  // "needs-auth" - Token expired (handled automatically by ConnectionStatus)
+
+  if (connectionState().name === "disconnected") {
+    return <div>Offline mode - changes will sync when reconnected</div>;
+  }
+
+  return <NormalContent />;
+};
+```
+
+**Important**: `needs-auth` is handled automatically by `ConnectionStatus` - it refreshes the token and reconnects. You typically don't need to handle it manually.
 
 ### Zero 0.25 Data Layer (Queries & Mutations)
 

@@ -7,7 +7,6 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/context/use-auth";
 
 function MyForm() {
 	const zero = useZero();
@@ -33,12 +32,12 @@ function MyForm() {
 }
 
 export const Authenticated = () => {
-	const auth = useAuth();
+	const zero = useZero();
 
 	// Use defined query instead of direct ZQL access
 	const [accounts] = useQuery(queries.account.myAccount);
 
-	if (auth.authState() !== "authenticated") {
+	if (zero().userID === "anon") {
 		return <Text>Not logged in</Text>;
 	}
 

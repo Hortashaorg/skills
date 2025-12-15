@@ -21,6 +21,5 @@
 
 
 - How do we best wrap application in zeroProvider to work well with logged out logged in etc.
-- I prefer getters in the environment.ts file.
 - Cleanup the files that export to server and client
 - verify correct access based on state of the website.

@@ -1,20 +1,20 @@
+import { useZero } from "@package/database/client";
 import { Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/context/use-auth";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl } from "@/lib/auth-url";
 import { Authenticated } from "./Authenticated";
 
 export const Home = () => {
-	const auth = useAuth();
+	const zero = useZero();
 
 	return (
 		<Layout>
-			<Show when={auth.authState() === "unauthenticated"}>
+			<Show when={zero().userID === "anon"}>
 				<Container size="md">
 					<div class="flex items-center justify-center py-24">
 						<Card padding="lg" class="max-w-md w-full">
@@ -36,7 +36,7 @@ export const Home = () => {
 					</div>
 				</Container>
 			</Show>
-			<Show when={auth.authState() === "authenticated"}>
+			<Show when={zero().userID !== "anon"}>
 				<Authenticated />
 			</Show>
 		</Layout>

@@ -1,6 +1,7 @@
 export { Zero } from "@rocicorp/zero";
 export {
 	createZero,
+	useConnectionState,
 	useQuery,
 	useZero,
 	ZeroProvider,
