@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 // ============================================================================
-// Existing Tables (keep for compatibility)
+// Users
 // ============================================================================
 
 export const account = pgTable("account", {
