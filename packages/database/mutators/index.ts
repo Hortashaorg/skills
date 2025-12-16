@@ -1,9 +1,9 @@
 import { defineMutators } from "@rocicorp/zero";
-import "./types/context.ts";
-import * as tagMutators from "./mutators/tag.ts";
-import * as tagToTechMutators from "./mutators/tag-to-tech.ts";
-import * as techMutators from "./mutators/tech.ts";
-import * as testMutators from "./mutators/test.ts";
+import "../types/context.ts";
+import * as tagMutators from "./tag.ts";
+import * as tagToTechMutators from "./tag-to-tech.ts";
+import * as techMutators from "./tech.ts";
+import * as testMutators from "./test.ts";
 
 export const mutators = defineMutators({
 	test: {

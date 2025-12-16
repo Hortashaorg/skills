@@ -1,9 +1,9 @@
 import { defineQueries } from "@rocicorp/zero";
-import "./types/context.ts";
-import * as accountQueries from "./queries/account.ts";
-import * as tagQueries from "./queries/tag.ts";
-import * as tagToTechQueries from "./queries/tag-to-tech.ts";
-import * as techQueries from "./queries/tech.ts";
+import "../types/context.ts";
+import * as accountQueries from "./account.ts";
+import * as tagQueries from "./tag.ts";
+import * as tagToTechQueries from "./tag-to-tech.ts";
+import * as techQueries from "./tech.ts";
 
 export const queries = defineQueries({
 	account: {

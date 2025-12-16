@@ -54,7 +54,8 @@ pnpm all typecheck   # TypeScript type checking
 
 **Database**:
 ```bash
-pnpm database generate    # Generate Zero schema from Drizzle
+pnpm database generate    # Generate database migrations
+pnpm database zero        # Generate zero-schema.gen.ts from Drizzle schema
 pnpm database migrate     # Run database migrations
 ```
 
