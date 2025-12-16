@@ -39,13 +39,6 @@ export const environment = {
 			throwError("Env Variable: CACHE_BASE_URL not found")
 		);
 	},
-	// Database Configuration
-	get ZERO_UPSTREAM_DB() {
-		return (
-			process.env.ZERO_UPSTREAM_DB ??
-			throwError("Env Variable: ZERO_UPSTREAM_DB not found")
-		);
-	},
 	// JWT Configuration
 	get AUTH_PRIVATE_KEY() {
 		return (

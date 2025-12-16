@@ -24,5 +24,3 @@ export const mutators = defineMutators({
 		remove: tagToTechMutators.remove,
 	},
 });
-
-export type Mutators = typeof mutators;

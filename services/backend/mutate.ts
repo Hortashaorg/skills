@@ -1,12 +1,13 @@
 import { throwError } from "@package/common";
 import {
+	dbProvider,
 	handleMutateRequest,
 	mustGetMutator,
 	mutators,
 } from "@package/database/server";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { dbProvider, getUserID } from "./util.ts";
+import { getUserID } from "./util.ts";
 
 export async function handleMutate(c: Context) {
 	try {

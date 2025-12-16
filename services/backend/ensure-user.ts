@@ -1,16 +1,10 @@
 import { throwError } from "@package/common";
-import { sql } from "./util.ts";
+import { dbProvider, zql } from "@package/database/server";
 
 export const ensureUser = async (email: string) => {
-	const account = await sql.begin(async (tx) => {
+	const account = await dbProvider.transaction(async (tx) => {
 		// Check if user exists
-		const [existing] = await tx<
-			Array<{ id: string; email: string; name: string | null }>
-		>`
-			SELECT id, email, name
-			FROM account
-			WHERE email = ${email}
-		`;
+		const existing = await tx.run(zql.account.where("email", email).one());
 
 		if (existing) {
 			return existing;
@@ -18,17 +12,18 @@ export const ensureUser = async (email: string) => {
 
 		// Create new user
 		const id = crypto.randomUUID();
-		const now = new Date();
+		const now = Date.now();
 
-		const [inserted] = await tx<
-			Array<{ id: string; email: string; name: string | null }>
-		>`
-			INSERT INTO account (id, email, created_at, updated_at)
-			VALUES (${id}, ${email}, ${now}, ${now})
-			RETURNING id, email, name
-		`;
+		await tx.mutate.account.insert({
+			id,
+			email,
+			createdAt: now,
+			updatedAt: now,
+		});
 
-		return inserted ?? throwError("Failed to create account");
+		return tx
+			.run(zql.account.where("id", id).one())
+			.then((account) => account ?? throwError("Failed to create account"));
 	});
 
 	return account;
