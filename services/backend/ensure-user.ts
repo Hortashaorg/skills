@@ -1,4 +1,3 @@
-import { throwError } from "@package/common";
 import { dbProvider, zql } from "@package/database/server";
 
 export const ensureUser = async (email: string) => {
@@ -14,16 +13,10 @@ export const ensureUser = async (email: string) => {
 		const id = crypto.randomUUID();
 		const now = Date.now();
 
-		await tx.mutate.account.insert({
-			id,
-			email,
-			createdAt: now,
-			updatedAt: now,
-		});
+		const user = { id, email, name: null, createdAt: now, updatedAt: now };
+		await tx.mutate.account.insert(user);
 
-		return tx
-			.run(zql.account.where("id", id).one())
-			.then((account) => account ?? throwError("Failed to create account"));
+		return user;
 	});
 
 	return account;
