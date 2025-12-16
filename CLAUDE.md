@@ -18,6 +18,23 @@ Monorepo using npm workspaces:
   - Internal imports use `@/` alias (e.g., `@/context/use-auth`)
 - `services/backend` - Hono API server
 
+## Useful Commands
+
+**Check code quality**:
+- `pnpm check` - Run Biome linter and formatter with auto-fix
+- `pnpm all typecheck` - Run TypeScript type checking across all workspaces
+
+**Development**:
+- `pnpm frontend dev` - Start frontend dev server
+- `pnpm backend dev` - Start backend dev server
+- `pnpm database generate` - Generate Zero schema from Drizzle
+
+**Workspace commands**:
+- `pnpm all <command>` - Run command in all workspaces (parallel)
+- `pnpm frontend <command>` - Run command in frontend only
+- `pnpm backend <command>` - Run command in backend only
+- `pnpm database <command>` - Run command in database package only
+
 ## Architecture
 
 ### Auth & Zero Integration
@@ -281,6 +298,84 @@ test("applies variant classes", () => {
 - Test accessibility (ARIA attributes, keyboard nav)
 - Use `@solidjs/testing-library` for rendering
 - Keep tests simple - Storybook handles visual regression
+
+## Common Gotchas
+
+### Mutators - Always Update Timestamps
+```tsx
+// ✅ Good - includes updatedAt
+await tx.mutate.tech.update({
+  id: args.id,
+  name: args.name,
+  updatedAt: Date.now(),  // Don't forget!
+});
+
+// ❌ Bad - missing updatedAt, data will be out of sync
+await tx.mutate.tech.update({
+  id: args.id,
+  name: args.name,
+});
+```
+**Why**: TypeScript enforces `createdAt`/`updatedAt` on inserts, but updates are manual. Always include `updatedAt: Date.now()` or data won't sync properly.
+
+### Auth API Calls - Always Include Credentials
+```tsx
+// ✅ Good - includes credentials
+await fetch(`${baseUrl}/refresh`, {
+  credentials: "include",  // Required for cookies!
+  // ...
+});
+
+// ❌ Bad - refresh token cookie won't be sent
+await fetch(`${baseUrl}/refresh`, {
+  // Missing credentials: "include"
+});
+```
+**Why**: Refresh tokens are httpOnly cookies. Without `credentials: "include"`, cookies aren't sent/received.
+
+### Backend Auth - Only 401 for Invalid Tokens
+```tsx
+// ✅ Good - no token = anonymous user
+const token = c.req.header("Authorization")?.split(" ")[1];
+if (!token) {
+  return "anon";  // Not an error!
+}
+
+// ❌ Bad - returns 401 for missing token
+if (!token) {
+  return c.json({ error: "Unauthorized" }, 401);  // Triggers needs-auth incorrectly
+}
+```
+**Why**: Missing token means anonymous user (valid). Only return 401 when token exists but is invalid/expired. This triggers Zero's `needs-auth` event correctly.
+
+### Mutator Folder Structure - Re-export Everything
+When adding new mutators to `mutators/`, remember to export in `mutators.ts`:
+```tsx
+// mutators.ts
+import * as newMutators from "./mutators/new-table.ts";
+
+export const mutators = defineMutators({
+  // ...existing
+  newTable: {
+    create: newMutators.create,  // Don't forget to add!
+  },
+});
+```
+**Why**: Mutators in folders aren't automatically exported. Must manually re-export in main file.
+
+### Zero Connection Status - Don't Block on needs-auth
+```tsx
+// ✅ Good - let ConnectionStatus handle it
+if (connectionState().name === "disconnected") {
+  return <OfflineBanner />;
+}
+
+// ❌ Bad - blocks user unnecessarily
+if (connectionState().name === "needs-auth") {
+  return <LoginScreen />;  // ConnectionStatus auto-refreshes!
+}
+```
+**Why**: `needs-auth` is handled automatically by `ConnectionStatus` - it refreshes and reconnects. Don't block the UI.
 
 ## Contributing
 

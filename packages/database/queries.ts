@@ -1,100 +1,28 @@
-import { defineQueries, defineQuery } from "@rocicorp/zero";
-import { z } from "zod";
+import { defineQueries } from "@rocicorp/zero";
 import "./types/context.ts";
-import { zql } from "./zero-schema.gen.ts";
-
-// Account queries
-const myAccount = defineQuery(({ ctx }) => {
-	return zql.account.where("id", ctx.userID);
-});
-
-const allAccounts = defineQuery(() => {
-	return zql.account;
-});
-
-// Tech queries
-const allTech = defineQuery(() => {
-	return zql.tech;
-});
-
-const techById = defineQuery(
-	z.object({ id: z.string() }),
-	({ args: { id } }) => {
-		return zql.tech.where("id", id);
-	},
-);
-
-const techWithTags = defineQuery(
-	z.object({ id: z.string() }),
-	({ args: { id } }) => {
-		return zql.tech
-			.where("id", id)
-			.related("tagsToTech", (q) => q.related("tag"));
-	},
-);
-
-const searchTech = defineQuery(
-	z.object({ query: z.string() }),
-	({ args: { query } }) => {
-		// Note: Zero uses LIKE pattern matching
-		return zql.tech.where("name", "LIKE", `%${query}%`);
-	},
-);
-
-// Tag queries
-const allTags = defineQuery(() => {
-	return zql.tag;
-});
-
-const tagById = defineQuery(
-	z.object({ id: z.string() }),
-	({ args: { id } }) => {
-		return zql.tag.where("id", id);
-	},
-);
-
-const tagWithTech = defineQuery(
-	z.object({ id: z.string() }),
-	({ args: { id } }) => {
-		return zql.tag
-			.where("id", id)
-			.related("tagsToTech", (q) => q.related("tech"));
-	},
-);
-
-// TagToTech queries (junction table)
-const techTagsByTechId = defineQuery(
-	z.object({ techId: z.string() }),
-	({ args: { techId } }) => {
-		return zql.tagToTech.where("techId", techId).related("tag");
-	},
-);
-
-const techTagsByTagId = defineQuery(
-	z.object({ tagId: z.string() }),
-	({ args: { tagId } }) => {
-		return zql.tagToTech.where("tagId", tagId).related("tech");
-	},
-);
+import * as accountQueries from "./queries/account.ts";
+import * as tagQueries from "./queries/tag.ts";
+import * as tagToTechQueries from "./queries/tag-to-tech.ts";
+import * as techQueries from "./queries/tech.ts";
 
 export const queries = defineQueries({
 	account: {
-		myAccount,
-		allAccounts,
+		myAccount: accountQueries.myAccount,
+		allAccounts: accountQueries.allAccounts,
 	},
 	tech: {
-		all: allTech,
-		byId: techById,
-		withTags: techWithTags,
-		search: searchTech,
+		all: techQueries.allTech,
+		byId: techQueries.techById,
+		withTags: techQueries.techWithTags,
+		search: techQueries.searchTech,
 	},
 	tag: {
-		all: allTags,
-		byId: tagById,
-		withTech: tagWithTech,
+		all: tagQueries.allTags,
+		byId: tagQueries.tagById,
+		withTech: tagQueries.tagWithTech,
 	},
 	tagToTech: {
-		byTechId: techTagsByTechId,
-		byTagId: techTagsByTagId,
+		byTechId: tagToTechQueries.techTagsByTechId,
+		byTagId: tagToTechQueries.techTagsByTagId,
 	},
 });
