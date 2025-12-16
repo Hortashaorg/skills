@@ -12,15 +12,17 @@ export async function handleMutate(c: Context) {
 	try {
 		const userID = (await getUserID(c)) ?? throwError("There is always userID");
 		const ctx = { userID };
-		return handleMutateRequest(
-			dbProvider,
-			(transact) => {
-				return transact((tx, name, args) => {
-					const mutator = mustGetMutator(mutators, name);
-					return mutator.fn({ tx, args, ctx });
-				});
-			},
-			c.req.raw,
+		return c.json(
+			await handleMutateRequest(
+				dbProvider,
+				(transact) => {
+					return transact((tx, name, args) => {
+						const mutator = mustGetMutator(mutators, name);
+						return mutator.fn({ tx, args, ctx });
+					});
+				},
+				c.req.raw,
+			),
 		);
 	} catch (error) {
 		if (error instanceof HTTPException) {

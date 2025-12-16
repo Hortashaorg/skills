@@ -162,11 +162,11 @@ app.post("/logout", async (c) => {
 });
 
 app.post("/api/mutate", async (c) => {
-	return c.json(await handleMutate(c));
+	return handleMutate(c);
 });
 
 app.post("/api/query", async (c) => {
-	return c.json(await handleQuery(c));
+	return handleQuery(c);
 });
 
 serve({

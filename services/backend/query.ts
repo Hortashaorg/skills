@@ -13,13 +13,15 @@ export async function handleQuery(c: Context) {
 	try {
 		const userID = (await getUserID(c)) ?? throwError("There is always userID");
 		const ctx = { userID };
-		return handleQueryRequest(
-			(name, args) => {
-				const query = mustGetQuery(queries, name);
-				return query.fn({ args, ctx });
-			},
-			schema,
-			c.req.raw,
+		return c.json(
+			await handleQueryRequest(
+				(name, args) => {
+					const query = mustGetQuery(queries, name);
+					return query.fn({ args, ctx });
+				},
+				schema,
+				c.req.raw,
+			),
 		);
 	} catch (error) {
 		if (error instanceof HTTPException) {
