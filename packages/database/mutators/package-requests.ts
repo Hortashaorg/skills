@@ -1,0 +1,92 @@
+import { defineMutator } from "@rocicorp/zero";
+import { z } from "zod";
+
+export const create = defineMutator(
+	z.object({
+		packageName: z.string(),
+		registry: z.enum(["npm", "jsr", "brew", "apt"]),
+	}),
+	async ({ tx, args }) => {
+		// TODO: Add validation:
+		// - Check user hasn't exceeded hourly limit (query audit log)
+		// - Check for existing pending/fetching request
+		// - Check package cooldown period
+
+		const id = crypto.randomUUID();
+		const now = Date.now();
+
+		await tx.mutate.packageRequests.insert({
+			id,
+			packageName: args.packageName,
+			registry: args.registry,
+			status: "pending",
+			errorMessage: null,
+			packageId: null,
+			attemptCount: 0,
+			createdAt: now,
+			updatedAt: now,
+		});
+
+		// TODO: Create audit log entry
+		// await tx.mutate.auditLog.insert({ ... })
+	},
+);
+
+export const markFetching = defineMutator(
+	z.object({ id: z.string() }),
+	async ({ tx, args }) => {
+		await tx.mutate.packageRequests.update({
+			id: args.id,
+			status: "fetching",
+			updatedAt: Date.now(),
+		});
+	},
+);
+
+export const markCompleted = defineMutator(
+	z.object({
+		id: z.string(),
+		packageId: z.string(),
+	}),
+	async ({ tx, args }) => {
+		await tx.mutate.packageRequests.update({
+			id: args.id,
+			status: "completed",
+			packageId: args.packageId,
+			updatedAt: Date.now(),
+		});
+	},
+);
+
+export const markFailed = defineMutator(
+	z.object({
+		id: z.string(),
+		errorMessage: z.string(),
+		attemptCount: z.number(),
+	}),
+	async ({ tx, args }) => {
+		const status = args.attemptCount >= 3 ? "discarded" : "failed";
+
+		await tx.mutate.packageRequests.update({
+			id: args.id,
+			status,
+			errorMessage: args.errorMessage,
+			attemptCount: args.attemptCount,
+			updatedAt: Date.now(),
+		});
+	},
+);
+
+export const incrementAttempt = defineMutator(
+	z.object({
+		id: z.string(),
+		attemptCount: z.number(),
+	}),
+	async ({ tx, args }) => {
+		await tx.mutate.packageRequests.update({
+			id: args.id,
+			attemptCount: args.attemptCount,
+			updatedAt: Date.now(),
+		});
+	},
+);

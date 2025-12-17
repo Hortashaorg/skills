@@ -1,26 +1,38 @@
 import { defineMutators } from "@rocicorp/zero";
 import "../types/context.ts";
-import * as tagMutators from "./tag.ts";
-import * as tagToTechMutators from "./tag-to-tech.ts";
-import * as techMutators from "./tech.ts";
-import * as testMutators from "./test.ts";
+import * as packageDependenciesMutators from "./package-dependencies.ts";
+import * as packageRequestsMutators from "./package-requests.ts";
+import * as packageTagsMutators from "./package-tags.ts";
+import * as packageVersionsMutators from "./package-versions.ts";
+import * as packagesMutators from "./packages.ts";
+import * as tagsMutators from "./tags.ts";
 
 export const mutators = defineMutators({
-	test: {
-		create: testMutators.create,
+	packages: {
+		upsert: packagesMutators.upsert,
+		updateFetchTimestamps: packagesMutators.updateFetchTimestamps,
 	},
-	tech: {
-		create: techMutators.create,
-		update: techMutators.update,
-		remove: techMutators.remove,
+	packageRequests: {
+		create: packageRequestsMutators.create,
+		markFetching: packageRequestsMutators.markFetching,
+		markCompleted: packageRequestsMutators.markCompleted,
+		markFailed: packageRequestsMutators.markFailed,
+		incrementAttempt: packageRequestsMutators.incrementAttempt,
 	},
-	tag: {
-		create: tagMutators.create,
-		update: tagMutators.update,
-		remove: tagMutators.remove,
+	packageVersions: {
+		create: packageVersionsMutators.create,
 	},
-	tagToTech: {
-		add: tagToTechMutators.add,
-		remove: tagToTechMutators.remove,
+	packageDependencies: {
+		create: packageDependenciesMutators.create,
+		linkPackage: packageDependenciesMutators.linkPackage,
+	},
+	tags: {
+		create: tagsMutators.create,
+		update: tagsMutators.update,
+		remove: tagsMutators.remove,
+	},
+	packageTags: {
+		create: packageTagsMutators.create,
+		remove: packageTagsMutators.remove,
 	},
 });
