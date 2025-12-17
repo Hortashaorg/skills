@@ -5,574 +5,574 @@ import type { ReadonlyJSONValue, Row } from "@rocicorp/zero";
 import { createBuilder } from "@rocicorp/zero";
 
 const accountTable = {
-  name: "account",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    email: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    name: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
+	name: "account",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		email: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const auditLogTable = {
-  name: "auditLog",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    entityType: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "entity_type",
-    },
-    entityId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "entity_id",
-    },
-    action: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as
-        | "insert"
-        | "create"
-        | "update"
-        | "upsert"
-        | "delete",
-    },
-    actorType: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as "user" | "worker" | "system",
-      serverName: "actor_type",
-    },
-    actorId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "actor_id",
-    },
-    metadata: {
-      type: "json",
-      optional: true,
-      customType: null as unknown as ReadonlyJSONValue,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "audit_log",
+	name: "auditLog",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		entityType: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "entity_type",
+		},
+		entityId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "entity_id",
+		},
+		action: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as
+				| "insert"
+				| "create"
+				| "update"
+				| "upsert"
+				| "delete",
+		},
+		actorType: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as "user" | "worker" | "system",
+			serverName: "actor_type",
+		},
+		actorId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "actor_id",
+		},
+		metadata: {
+			type: "json",
+			optional: true,
+			customType: null as unknown as ReadonlyJSONValue,
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "audit_log",
 } as const;
 const packageDependenciesTable = {
-  name: "packageDependencies",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    packageId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "package_id",
-    },
-    versionId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "version_id",
-    },
-    dependencyName: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "dependency_name",
-    },
-    dependencyPackageId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "dependency_package_id",
-    },
-    dependencyVersionRange: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "dependency_version_range",
-    },
-    resolvedVersion: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "resolved_version",
-    },
-    resolvedVersionId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "resolved_version_id",
-    },
-    dependencyType: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as "runtime" | "dev" | "peer" | "optional",
-      serverName: "dependency_type",
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "package_dependencies",
+	name: "packageDependencies",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		packageId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "package_id",
+		},
+		versionId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "version_id",
+		},
+		dependencyName: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "dependency_name",
+		},
+		dependencyPackageId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "dependency_package_id",
+		},
+		dependencyVersionRange: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "dependency_version_range",
+		},
+		resolvedVersion: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "resolved_version",
+		},
+		resolvedVersionId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "resolved_version_id",
+		},
+		dependencyType: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as "runtime" | "dev" | "peer" | "optional",
+			serverName: "dependency_type",
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "package_dependencies",
 } as const;
 const packageRequestsTable = {
-  name: "packageRequests",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    packageName: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "package_name",
-    },
-    registry: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as "npm" | "jsr" | "brew" | "apt",
-    },
-    status: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as
-        | "pending"
-        | "fetching"
-        | "completed"
-        | "failed"
-        | "discarded",
-    },
-    errorMessage: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "error_message",
-    },
-    packageId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "package_id",
-    },
-    attemptCount: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "attempt_count",
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "package_requests",
+	name: "packageRequests",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		packageName: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "package_name",
+		},
+		registry: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as "npm" | "jsr" | "brew" | "apt",
+		},
+		status: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as
+				| "pending"
+				| "fetching"
+				| "completed"
+				| "failed"
+				| "discarded",
+		},
+		errorMessage: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "error_message",
+		},
+		packageId: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+			serverName: "package_id",
+		},
+		attemptCount: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "attempt_count",
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "package_requests",
 } as const;
 const packageTagsTable = {
-  name: "packageTags",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    packageId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "package_id",
-    },
-    tagId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "tag_id",
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "package_tags",
+	name: "packageTags",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		packageId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "package_id",
+		},
+		tagId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "tag_id",
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "package_tags",
 } as const;
 const packageVersionsTable = {
-  name: "packageVersions",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    packageId: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "package_id",
-    },
-    version: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    publishedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "published_at",
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "package_versions",
+	name: "packageVersions",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		packageId: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+			serverName: "package_id",
+		},
+		version: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		publishedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "published_at",
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+	},
+	primaryKey: ["id"],
+	serverName: "package_versions",
 } as const;
 const packagesTable = {
-  name: "packages",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    name: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    registry: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as "npm" | "jsr" | "brew" | "apt",
-    },
-    description: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    homepage: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    repository: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    lastFetchAttempt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "last_fetch_attempt",
-    },
-    lastFetchSuccess: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "last_fetch_success",
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
+	name: "packages",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		registry: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as "npm" | "jsr" | "brew" | "apt",
+		},
+		description: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		homepage: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		repository: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		lastFetchAttempt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "last_fetch_attempt",
+		},
+		lastFetchSuccess: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "last_fetch_success",
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const tagsTable = {
-  name: "tags",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    name: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    slug: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    description: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    color: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
+	name: "tags",
+	columns: {
+		id: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		name: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		slug: {
+			type: "string",
+			optional: false,
+			customType: null as unknown as string,
+		},
+		description: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		color: {
+			type: "string",
+			optional: true,
+			customType: null as unknown as string,
+		},
+		createdAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "created_at",
+		},
+		updatedAt: {
+			type: "number",
+			optional: false,
+			customType: null as unknown as number,
+			serverName: "updated_at",
+		},
+	},
+	primaryKey: ["id"],
 } as const;
 const auditLogRelationships = {
-  actor: [
-    {
-      sourceField: ["actorId"],
-      destField: ["id"],
-      destSchema: "account",
-      cardinality: "one",
-    },
-  ],
+	actor: [
+		{
+			sourceField: ["actorId"],
+			destField: ["id"],
+			destSchema: "account",
+			cardinality: "one",
+		},
+	],
 } as const;
 const packageDependenciesRelationships = {
-  package: [
-    {
-      sourceField: ["packageId"],
-      destField: ["id"],
-      destSchema: "packages",
-      cardinality: "one",
-    },
-  ],
-  version: [
-    {
-      sourceField: ["versionId"],
-      destField: ["id"],
-      destSchema: "packageVersions",
-      cardinality: "one",
-    },
-  ],
-  dependencyPackage: [
-    {
-      sourceField: ["dependencyPackageId"],
-      destField: ["id"],
-      destSchema: "packages",
-      cardinality: "one",
-    },
-  ],
-  resolvedVersionRecord: [
-    {
-      sourceField: ["resolvedVersionId"],
-      destField: ["id"],
-      destSchema: "packageVersions",
-      cardinality: "one",
-    },
-  ],
+	package: [
+		{
+			sourceField: ["packageId"],
+			destField: ["id"],
+			destSchema: "packages",
+			cardinality: "one",
+		},
+	],
+	version: [
+		{
+			sourceField: ["versionId"],
+			destField: ["id"],
+			destSchema: "packageVersions",
+			cardinality: "one",
+		},
+	],
+	dependencyPackage: [
+		{
+			sourceField: ["dependencyPackageId"],
+			destField: ["id"],
+			destSchema: "packages",
+			cardinality: "one",
+		},
+	],
+	resolvedVersionRecord: [
+		{
+			sourceField: ["resolvedVersionId"],
+			destField: ["id"],
+			destSchema: "packageVersions",
+			cardinality: "one",
+		},
+	],
 } as const;
 const packageRequestsRelationships = {
-  package: [
-    {
-      sourceField: ["packageId"],
-      destField: ["id"],
-      destSchema: "packages",
-      cardinality: "one",
-    },
-  ],
+	package: [
+		{
+			sourceField: ["packageId"],
+			destField: ["id"],
+			destSchema: "packages",
+			cardinality: "one",
+		},
+	],
 } as const;
 const packageTagsRelationships = {
-  package: [
-    {
-      sourceField: ["packageId"],
-      destField: ["id"],
-      destSchema: "packages",
-      cardinality: "one",
-    },
-  ],
-  tag: [
-    {
-      sourceField: ["tagId"],
-      destField: ["id"],
-      destSchema: "tags",
-      cardinality: "one",
-    },
-  ],
+	package: [
+		{
+			sourceField: ["packageId"],
+			destField: ["id"],
+			destSchema: "packages",
+			cardinality: "one",
+		},
+	],
+	tag: [
+		{
+			sourceField: ["tagId"],
+			destField: ["id"],
+			destSchema: "tags",
+			cardinality: "one",
+		},
+	],
 } as const;
 const packageVersionsRelationships = {
-  package: [
-    {
-      sourceField: ["packageId"],
-      destField: ["id"],
-      destSchema: "packages",
-      cardinality: "one",
-    },
-  ],
-  dependencies: [
-    {
-      sourceField: ["id"],
-      destField: ["versionId"],
-      destSchema: "packageDependencies",
-      cardinality: "many",
-    },
-  ],
-  resolvedDependents: [
-    {
-      sourceField: ["id"],
-      destField: ["resolvedVersionId"],
-      destSchema: "packageDependencies",
-      cardinality: "many",
-    },
-  ],
+	package: [
+		{
+			sourceField: ["packageId"],
+			destField: ["id"],
+			destSchema: "packages",
+			cardinality: "one",
+		},
+	],
+	dependencies: [
+		{
+			sourceField: ["id"],
+			destField: ["versionId"],
+			destSchema: "packageDependencies",
+			cardinality: "many",
+		},
+	],
+	resolvedDependents: [
+		{
+			sourceField: ["id"],
+			destField: ["resolvedVersionId"],
+			destSchema: "packageDependencies",
+			cardinality: "many",
+		},
+	],
 } as const;
 const packagesRelationships = {
-  versions: [
-    {
-      sourceField: ["id"],
-      destField: ["packageId"],
-      destSchema: "packageVersions",
-      cardinality: "many",
-    },
-  ],
-  dependencies: [
-    {
-      sourceField: ["id"],
-      destField: ["packageId"],
-      destSchema: "packageDependencies",
-      cardinality: "many",
-    },
-  ],
-  dependents: [
-    {
-      sourceField: ["id"],
-      destField: ["dependencyPackageId"],
-      destSchema: "packageDependencies",
-      cardinality: "many",
-    },
-  ],
-  packageTags: [
-    {
-      sourceField: ["id"],
-      destField: ["packageId"],
-      destSchema: "packageTags",
-      cardinality: "many",
-    },
-  ],
-  requests: [
-    {
-      sourceField: ["id"],
-      destField: ["packageId"],
-      destSchema: "packageRequests",
-      cardinality: "many",
-    },
-  ],
+	versions: [
+		{
+			sourceField: ["id"],
+			destField: ["packageId"],
+			destSchema: "packageVersions",
+			cardinality: "many",
+		},
+	],
+	dependencies: [
+		{
+			sourceField: ["id"],
+			destField: ["packageId"],
+			destSchema: "packageDependencies",
+			cardinality: "many",
+		},
+	],
+	dependents: [
+		{
+			sourceField: ["id"],
+			destField: ["dependencyPackageId"],
+			destSchema: "packageDependencies",
+			cardinality: "many",
+		},
+	],
+	packageTags: [
+		{
+			sourceField: ["id"],
+			destField: ["packageId"],
+			destSchema: "packageTags",
+			cardinality: "many",
+		},
+	],
+	requests: [
+		{
+			sourceField: ["id"],
+			destField: ["packageId"],
+			destSchema: "packageRequests",
+			cardinality: "many",
+		},
+	],
 } as const;
 const tagsRelationships = {
-  packageTags: [
-    {
-      sourceField: ["id"],
-      destField: ["tagId"],
-      destSchema: "packageTags",
-      cardinality: "many",
-    },
-  ],
+	packageTags: [
+		{
+			sourceField: ["id"],
+			destField: ["tagId"],
+			destSchema: "packageTags",
+			cardinality: "many",
+		},
+	],
 } as const;
 /**
  * The Zero schema object.
  * This type is auto-generated from your Drizzle schema definition.
  */
 export const schema = {
-  tables: {
-    account: accountTable,
-    auditLog: auditLogTable,
-    packageDependencies: packageDependenciesTable,
-    packageRequests: packageRequestsTable,
-    packageTags: packageTagsTable,
-    packageVersions: packageVersionsTable,
-    packages: packagesTable,
-    tags: tagsTable,
-  },
-  relationships: {
-    auditLog: auditLogRelationships,
-    packageDependencies: packageDependenciesRelationships,
-    packageRequests: packageRequestsRelationships,
-    packageTags: packageTagsRelationships,
-    packageVersions: packageVersionsRelationships,
-    packages: packagesRelationships,
-    tags: tagsRelationships,
-  },
-  enableLegacyQueries: false,
-  enableLegacyMutators: false,
+	tables: {
+		account: accountTable,
+		auditLog: auditLogTable,
+		packageDependencies: packageDependenciesTable,
+		packageRequests: packageRequestsTable,
+		packageTags: packageTagsTable,
+		packageVersions: packageVersionsTable,
+		packages: packagesTable,
+		tags: tagsTable,
+	},
+	relationships: {
+		auditLog: auditLogRelationships,
+		packageDependencies: packageDependenciesRelationships,
+		packageRequests: packageRequestsRelationships,
+		packageTags: packageTagsRelationships,
+		packageVersions: packageVersionsRelationships,
+		packages: packagesRelationships,
+		tags: tagsRelationships,
+	},
+	enableLegacyQueries: false,
+	enableLegacyMutators: false,
 } as const;
 
 /**
@@ -652,7 +652,7 @@ export const builder = zql;
 
 /** Defines the default types for Zero */
 declare module "@rocicorp/zero" {
-  interface DefaultTypes {
-    schema: Schema;
-  }
+	interface DefaultTypes {
+		schema: Schema;
+	}
 }

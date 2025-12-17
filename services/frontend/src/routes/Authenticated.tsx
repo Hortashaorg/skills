@@ -1,35 +1,11 @@
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import { queries, useQuery, useZero } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
-function MyForm() {
-	const zero = useZero();
-	const handleSubmit = (e: SubmitEvent) => {
-		e.preventDefault();
-		zero().mutate(
-			mutators.test.create({
-				message: "hello world",
-			}),
-		);
-	};
-
-	return (
-		<Card>
-			<form onSubmit={handleSubmit}>
-				<Stack spacing="md">
-					<Heading level="h3">Create Test Data</Heading>
-					<Button type="submit">Submit (Example Mutation)</Button>
-				</Stack>
-			</form>
-		</Card>
-	);
-}
 
 export const Authenticated = () => {
 	const zero = useZero();
@@ -48,8 +24,6 @@ export const Authenticated = () => {
 					<Heading level="h1">Dashboard</Heading>
 					<Text color="muted">Welcome back!</Text>
 				</div>
-
-				<MyForm />
 
 				<div>
 					<Heading level="h2" class="mb-4">

@@ -33,12 +33,10 @@ export const remove = defineMutator(
 	async () => {
 		// TODO: Check if user is admin
 		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
-
 		// TODO: Hard delete the association
 		// Note: Zero doesn't support WHERE with multiple conditions directly
 		// May need to query first, then delete by ID
 		// Or use a raw SQL mutator
-
 		// TODO: Create audit log entry for removal
 	},
 );
