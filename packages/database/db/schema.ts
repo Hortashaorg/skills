@@ -1,9 +1,9 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	type AnyPgColumn,
-	boolean,
 	index,
 	integer,
+	jsonb,
+	pgEnum,
 	pgTable,
 	text,
 	timestamp,
@@ -13,12 +13,43 @@ import {
 } from "drizzle-orm/pg-core";
 
 // ============================================================================
+// Enums
+// ============================================================================
+
+export const registryEnum = pgEnum("registry", ["npm", "jsr", "brew", "apt"]);
+
+export const dependencyTypeEnum = pgEnum("dependency_type", [
+	"runtime",
+	"dev",
+	"peer",
+	"optional",
+]);
+
+export const packageRequestStatusEnum = pgEnum("package_request_status", [
+	"pending",
+	"fetching",
+	"completed",
+	"failed",
+	"discarded",
+]);
+
+export const auditActionEnum = pgEnum("audit_action", [
+	"create",
+	"insert",
+	"update",
+	"upsert",
+	"delete",
+]);
+
+export const actorTypeEnum = pgEnum("actor_type", ["user", "worker", "system"]);
+
+// ============================================================================
 // Users
 // ============================================================================
 
 export const account = pgTable("account", {
 	id: uuid().primaryKey(),
-	email: varchar({ length: 100 }).notNull().unique(),
+	email: varchar({ length: 100 }).unique(),
 	name: varchar({ length: 50 }).unique(),
 	createdAt: timestamp().notNull(),
 	updatedAt: timestamp().notNull(),
@@ -33,14 +64,12 @@ export const packages = pgTable(
 	{
 		id: uuid().primaryKey(),
 		name: text().notNull(),
-		registry: text().notNull(), // 'npm' | 'jsr' | 'brew' | 'apt'
+		registry: registryEnum().notNull(),
 		description: text(),
 		homepage: text(),
 		repository: text(),
-		lastFetchAttempt: timestamp(),
-		lastFetchSuccess: timestamp(),
-		deletedAt: timestamp(),
-		deletedBy: uuid().references(() => account.id),
+		lastFetchAttempt: timestamp().notNull(),
+		lastFetchSuccess: timestamp().notNull(),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
 	},
@@ -50,9 +79,6 @@ export const packages = pgTable(
 		index("idx_packages_registry").on(table.registry),
 		index("idx_packages_last_fetch_attempt").on(table.lastFetchAttempt),
 		index("idx_packages_created_at").on(table.createdAt),
-		index("idx_packages_deleted_at")
-			.on(table.deletedAt)
-			.where(sql`${table.deletedAt} IS NULL`),
 	],
 );
 
@@ -62,9 +88,9 @@ export const packageVersions = pgTable(
 		id: uuid().primaryKey(),
 		packageId: uuid()
 			.notNull()
-			.references(() => packages.id, { onDelete: "cascade" }),
+			.references(() => packages.id),
 		version: text().notNull(),
-		publishedAt: timestamp(),
+		publishedAt: timestamp().notNull(),
 		createdAt: timestamp().notNull(),
 	},
 	(table) => [
@@ -80,39 +106,32 @@ export const packageDependencies = pgTable(
 		id: uuid().primaryKey(),
 		packageId: uuid()
 			.notNull()
-			.references(() => packages.id, { onDelete: "cascade" }),
+			.references(() => packages.id),
 		versionId: uuid()
 			.notNull()
-			.references(() => packageVersions.id, { onDelete: "cascade" }),
+			.references(() => packageVersions.id),
 		dependencyName: text().notNull(),
-		dependencyPackageId: uuid().references(() => packages.id, {
-			onDelete: "set null",
-		}),
+		dependencyPackageId: uuid().references(() => packages.id),
 		dependencyVersionRange: text().notNull(),
-		resolvedVersion: text().notNull(), // REQUIRED
-		resolvedVersionId: uuid().references(() => packageVersions.id, {
-			onDelete: "set null",
-		}),
-		dependencyType: text().notNull(), // 'runtime' | 'dev' | 'peer' | 'optional'
+		resolvedVersion: text().notNull(),
+		resolvedVersionId: uuid().references(() => packageVersions.id),
+		dependencyType: dependencyTypeEnum().notNull(),
 		createdAt: timestamp().notNull(),
+		updatedAt: timestamp().notNull(),
 	},
 	(table) => [
 		index("idx_package_dependencies_package_id").on(table.packageId),
 		index("idx_package_dependencies_version_id").on(table.versionId),
+		index("idx_package_dependencies_dependency_name").on(table.dependencyName),
 		index("idx_package_dependencies_dependency_package_id").on(
 			table.dependencyPackageId,
 		),
 		index("idx_package_dependencies_resolved_version_id").on(
 			table.resolvedVersionId,
 		),
-		index("idx_package_dependencies_dependency_name").on(table.dependencyName),
-		index("idx_package_dependencies_name_type").on(
-			table.dependencyName,
-			table.dependencyType,
-		),
-		index("idx_package_dependencies_name_resolved")
-			.on(table.dependencyName, table.resolvedVersion)
-			.where(sql`${table.resolvedVersion} IS NOT NULL`),
+		index("idx_package_dependencies_unlinked")
+			.on(table.dependencyName, table.createdAt)
+			.where(sql`${table.dependencyPackageId} IS NULL`),
 	],
 );
 
@@ -121,15 +140,10 @@ export const packageRequests = pgTable(
 	{
 		id: uuid().primaryKey(),
 		packageName: text().notNull(),
-		registry: text().notNull(), // 'npm' | 'jsr' | 'brew' | 'apt'
-		requestedBy: uuid().references(() => account.id, { onDelete: "set null" }),
-		sourceRequestId: uuid().references((): AnyPgColumn => packageRequests.id, {
-			onDelete: "set null",
-		}),
-		isAutoQueued: boolean().notNull(),
-		status: text().notNull(), // 'pending' | 'fetching' | 'completed' | 'failed'
+		registry: registryEnum().notNull(),
+		status: packageRequestStatusEnum().notNull(),
 		errorMessage: text(),
-		packageId: uuid().references(() => packages.id, { onDelete: "set null" }),
+		packageId: uuid().references(() => packages.id),
 		attemptCount: integer().notNull(),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
@@ -138,42 +152,21 @@ export const packageRequests = pgTable(
 		index("idx_package_requests_unique_pending")
 			.on(table.packageName, table.registry, table.status)
 			.where(sql`${table.status} IN ('pending', 'fetching')`),
-		index("idx_package_requests_requested_by_created").on(
-			table.requestedBy,
-			table.createdAt,
-		),
 		index("idx_package_requests_status_created")
 			.on(table.status, table.createdAt)
 			.where(sql`${table.status} IN ('pending', 'fetching')`),
-		index("idx_package_requests_is_auto_queued").on(
-			table.isAutoQueued,
-			table.status,
-		),
-		index("idx_package_requests_source_request_id").on(table.sourceRequestId),
 	],
 );
 
-export const tags = pgTable(
-	"tags",
-	{
-		id: uuid().primaryKey(),
-		name: text().notNull().unique(),
-		slug: text().notNull().unique(),
-		description: text(),
-		color: text(),
-		deletedAt: timestamp(),
-		deletedBy: uuid().references(() => account.id),
-		createdAt: timestamp().notNull(),
-		updatedAt: timestamp().notNull(),
-	},
-	(table) => [
-		index("idx_tags_slug").on(table.slug),
-		index("idx_tags_name").on(table.name),
-		index("idx_tags_deleted_at")
-			.on(table.deletedAt)
-			.where(sql`${table.deletedAt} IS NULL`),
-	],
-);
+export const tags = pgTable("tags", {
+	id: uuid().primaryKey(),
+	name: text().notNull().unique(),
+	slug: text().notNull().unique(),
+	description: text(),
+	color: text(),
+	createdAt: timestamp().notNull(),
+	updatedAt: timestamp().notNull(),
+});
 
 export const packageTags = pgTable(
 	"package_tags",
@@ -181,20 +174,36 @@ export const packageTags = pgTable(
 		id: uuid().primaryKey(),
 		packageId: uuid()
 			.notNull()
-			.references(() => packages.id, { onDelete: "cascade" }),
+			.references(() => packages.id),
 		tagId: uuid()
 			.notNull()
-			.references(() => tags.id, { onDelete: "cascade" }),
-		createdBy: uuid()
-			.notNull()
-			.references(() => account.id, { onDelete: "cascade" }),
+			.references(() => tags.id),
 		createdAt: timestamp().notNull(),
 	},
 	(table) => [
 		unique().on(table.packageId, table.tagId),
 		index("idx_package_tags_package_id").on(table.packageId),
 		index("idx_package_tags_tag_id").on(table.tagId),
-		index("idx_package_tags_created_by").on(table.createdBy),
+	],
+);
+
+export const auditLog = pgTable(
+	"audit_log",
+	{
+		id: uuid().primaryKey(),
+		entityType: text().notNull(),
+		entityId: uuid(),
+		action: auditActionEnum().notNull(),
+		actorType: actorTypeEnum().notNull(),
+		actorId: uuid().references(() => account.id),
+		metadata: jsonb(),
+		createdAt: timestamp().notNull(),
+	},
+	(table) => [
+		index("idx_audit_log_entity").on(table.entityType, table.entityId),
+		index("idx_audit_log_action").on(table.action),
+		index("idx_audit_log_actor").on(table.actorType, table.actorId),
+		index("idx_audit_log_created_at").on(table.createdAt),
 	],
 );
 
@@ -202,7 +211,7 @@ export const packageTags = pgTable(
 // Relations
 // ============================================================================
 
-export const packagesRelations = relations(packages, ({ many, one }) => ({
+export const packagesRelations = relations(packages, ({ many }) => ({
 	versions: many(packageVersions),
 	dependencies: many(packageDependencies),
 	dependents: many(packageDependencies, {
@@ -210,10 +219,6 @@ export const packagesRelations = relations(packages, ({ many, one }) => ({
 	}),
 	packageTags: many(packageTags),
 	requests: many(packageRequests),
-	deletedByUser: one(account, {
-		fields: [packages.deletedBy],
-		references: [account.id],
-	}),
 }));
 
 export const packageVersionsRelations = relations(
@@ -225,7 +230,7 @@ export const packageVersionsRelations = relations(
 		}),
 		dependencies: many(packageDependencies),
 		resolvedDependents: many(packageDependencies, {
-			relationName: "resolvedVersion",
+			relationName: "resolvedVersionRecord",
 		}),
 	}),
 );
@@ -246,10 +251,10 @@ export const packageDependenciesRelations = relations(
 			references: [packages.id],
 			relationName: "dependencyPackage",
 		}),
-		resolvedVersion: one(packageVersions, {
+		resolvedVersionRecord: one(packageVersions, {
 			fields: [packageDependencies.resolvedVersionId],
 			references: [packageVersions.id],
-			relationName: "resolvedVersion",
+			relationName: "resolvedVersionRecord",
 		}),
 	}),
 );
@@ -257,14 +262,6 @@ export const packageDependenciesRelations = relations(
 export const packageRequestsRelations = relations(
 	packageRequests,
 	({ one }) => ({
-		requestedByUser: one(account, {
-			fields: [packageRequests.requestedBy],
-			references: [account.id],
-		}),
-		sourceRequest: one(packageRequests, {
-			fields: [packageRequests.sourceRequestId],
-			references: [packageRequests.id],
-		}),
 		package: one(packages, {
 			fields: [packageRequests.packageId],
 			references: [packages.id],
@@ -272,12 +269,8 @@ export const packageRequestsRelations = relations(
 	}),
 );
 
-export const tagsRelations = relations(tags, ({ many, one }) => ({
+export const tagsRelations = relations(tags, ({ many }) => ({
 	packageTags: many(packageTags),
-	deletedByUser: one(account, {
-		fields: [tags.deletedBy],
-		references: [account.id],
-	}),
 }));
 
 export const packageTagsRelations = relations(packageTags, ({ one }) => ({
@@ -289,8 +282,11 @@ export const packageTagsRelations = relations(packageTags, ({ one }) => ({
 		fields: [packageTags.tagId],
 		references: [tags.id],
 	}),
-	createdByUser: one(account, {
-		fields: [packageTags.createdBy],
+}));
+
+export const auditLogRelations = relations(auditLog, ({ one }) => ({
+	actor: one(account, {
+		fields: [auditLog.actorId],
 		references: [account.id],
 	}),
 }));
