@@ -76,7 +76,7 @@ export const Default: Story = {
 					results={filteredResults()}
 					placeholder="Search npm packages..."
 				/>
-				<div class="mt-4 text-sm text-on-surface/70 dark:text-on-surface-dark/70">
+				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					Type "express", "react", "lodash", "axios", or "moment" to see results
 				</div>
 			</div>
@@ -140,7 +140,7 @@ export const WithLoading: Story = {
 					label="Search Packages"
 					placeholder="Type to see loading state..."
 				/>
-				<div class="mt-4 text-sm text-on-surface/70 dark:text-on-surface-dark/70">
+				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					Notice the loading spinner appears when typing
 				</div>
 			</div>
@@ -161,7 +161,7 @@ export const NoResults: Story = {
 					label="Package Search"
 					placeholder="Search packages..."
 				/>
-				<div class="mt-4 text-sm text-on-surface/70 dark:text-on-surface-dark/70">
+				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					Shows "No packages found" message for non-existent package
 				</div>
 			</div>
@@ -196,7 +196,7 @@ export const WithSelection: Story = {
 					label="Package Search"
 					placeholder="Search npm packages..."
 				/>
-				<div class="text-sm text-on-surface/70 dark:text-on-surface-dark/70">
+				<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					Click a package in the dropdown to see selection callback
 				</div>
 			</div>
@@ -238,7 +238,7 @@ export const Interactive: Story = {
 					label="Package Search"
 					placeholder="Search npm packages..."
 				/>
-				<div class="space-y-2 text-sm text-on-surface/70 dark:text-on-surface-dark/70">
+				<div class="space-y-2 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					<p>Try typing:</p>
 					<ul class="list-disc list-inside">
 						<li>"ex" - shows express and axios</li>

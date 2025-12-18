@@ -68,7 +68,7 @@ export const AllSpacings: Story = {
 	render: () => (
 		<div class="space-y-8">
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					No spacing (gap-0)
 				</p>
 				<Stack spacing="none">
@@ -78,7 +78,7 @@ export const AllSpacings: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					XS spacing (gap-1)
 				</p>
 				<Stack spacing="xs">
@@ -88,7 +88,7 @@ export const AllSpacings: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					SM spacing (gap-2)
 				</p>
 				<Stack spacing="sm">
@@ -98,7 +98,7 @@ export const AllSpacings: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					MD spacing (gap-4) - Default
 				</p>
 				<Stack spacing="md">
@@ -108,7 +108,7 @@ export const AllSpacings: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					LG spacing (gap-6)
 				</p>
 				<Stack spacing="lg">
@@ -118,7 +118,7 @@ export const AllSpacings: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					XL spacing (gap-8)
 				</p>
 				<Stack spacing="xl">
@@ -135,7 +135,7 @@ export const AllAlignments: Story = {
 	render: () => (
 		<div class="space-y-8">
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align start
 				</p>
 				<Stack align="start" spacing="md">
@@ -144,7 +144,7 @@ export const AllAlignments: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align center
 				</p>
 				<Stack align="center" spacing="md">
@@ -153,7 +153,7 @@ export const AllAlignments: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align end
 				</p>
 				<Stack align="end" spacing="md">
@@ -162,7 +162,7 @@ export const AllAlignments: Story = {
 				</Stack>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align stretch (default)
 				</p>
 				<Stack align="stretch" spacing="md">

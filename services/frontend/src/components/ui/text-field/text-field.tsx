@@ -66,7 +66,7 @@ const TextFieldInput = <T extends ValidComponent = "input">(
 		<TextFieldPrimitive.Input
 			type={local.type}
 			class={cn(
-				"flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface/50 dark:placeholder:text-on-surface-dark/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger",
+				"flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger",
 				local.class,
 			)}
 			{...others}
@@ -86,7 +86,7 @@ const TextFieldTextArea = <T extends ValidComponent = "textarea">(
 	return (
 		<TextFieldPrimitive.TextArea
 			class={cn(
-				"flex min-h-20 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface/50 dark:placeholder:text-on-surface-dark/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger",
+				"flex min-h-20 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger",
 				local.class,
 			)}
 			{...others}
@@ -101,7 +101,7 @@ const labelVariants = cva(
 			variant: {
 				label: "",
 				description:
-					"font-normal text-on-surface dark:text-on-surface-dark opacity-70",
+					"font-normal text-on-surface-muted dark:text-on-surface-dark-muted",
 				error: "text-xs text-danger font-medium",
 			},
 		},

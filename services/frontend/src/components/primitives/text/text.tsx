@@ -21,7 +21,7 @@ const textVariants = cva("", {
 		color: {
 			default: "text-on-surface dark:text-on-surface-dark",
 			strong: "text-on-surface-strong dark:text-on-surface-dark-strong",
-			muted: "text-on-surface/70 dark:text-on-surface-dark/70",
+			muted: "text-on-surface-muted dark:text-on-surface-dark-muted",
 			primary: "text-primary dark:text-primary-dark",
 			danger: "text-danger",
 			success: "text-success",

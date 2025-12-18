@@ -48,7 +48,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 					<TextFieldLabel>{props.label}</TextFieldLabel>
 				</Show>
 				<div class="relative">
-					<div class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface/50 dark:text-on-surface-dark/50">
+					<div class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-subtle dark:text-on-surface-dark-subtle">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="16"
@@ -76,7 +76,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 
 					<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
 						<Show when={props.isLoading}>
-							<div class="text-on-surface/50 dark:text-on-surface-dark/50">
+							<div class="text-on-surface-subtle dark:text-on-surface-dark-subtle">
 								<svg
 									class="animate-spin"
 									xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +99,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 							<button
 								type="button"
 								onClick={handleClear}
-								class="text-on-surface/50 dark:text-on-surface-dark/50 hover:text-on-surface dark:hover:text-on-surface-dark transition-colors"
+								class="text-on-surface-subtle dark:text-on-surface-dark-subtle hover:text-on-surface dark:hover:text-on-surface-dark transition-colors"
 								aria-label="Clear search"
 							>
 								<svg
@@ -140,7 +140,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 											{pkg.name}
 										</div>
 										<Show when={pkg.description}>
-											<div class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 truncate">
+											<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted truncate">
 												{pkg.description}
 											</div>
 										</Show>
@@ -162,7 +162,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 				when={props.value && props.results.length === 0 && !props.isLoading}
 			>
 				<div class="absolute z-50 w-full mt-1 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg p-4 text-center">
-					<div class="text-on-surface/70 dark:text-on-surface-dark/70">
+					<div class="text-on-surface-muted dark:text-on-surface-dark-muted">
 						No packages found for "{props.value}"
 					</div>
 				</div>

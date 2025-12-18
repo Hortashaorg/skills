@@ -69,7 +69,7 @@ export const AllSizes: Story = {
 	render: () => (
 		<div class="space-y-8">
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Small (max-w-3xl)
 				</p>
 				<Container size="sm">
@@ -77,7 +77,7 @@ export const AllSizes: Story = {
 				</Container>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Medium (max-w-5xl)
 				</p>
 				<Container size="md">
@@ -85,7 +85,7 @@ export const AllSizes: Story = {
 				</Container>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Large (max-w-7xl) - Default
 				</p>
 				<Container size="lg">
@@ -93,7 +93,7 @@ export const AllSizes: Story = {
 				</Container>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Extra Large (max-w-[1400px])
 				</p>
 				<Container size="xl">
@@ -101,7 +101,7 @@ export const AllSizes: Story = {
 				</Container>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Full Width (max-w-full)
 				</p>
 				<Container size="full">

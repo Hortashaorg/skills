@@ -75,7 +75,7 @@ export const AllPaddings: Story = {
 	render: () => (
 		<div class="space-y-4">
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					No padding (p-0)
 				</p>
 				<Card padding="none">
@@ -85,7 +85,7 @@ export const AllPaddings: Story = {
 				</Card>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Small padding (p-3)
 				</p>
 				<Card padding="sm">
@@ -93,7 +93,7 @@ export const AllPaddings: Story = {
 				</Card>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Medium padding (p-4) - Default
 				</p>
 				<Card padding="md">
@@ -101,7 +101,7 @@ export const AllPaddings: Story = {
 				</Card>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Large padding (p-6)
 				</p>
 				<Card padding="lg">

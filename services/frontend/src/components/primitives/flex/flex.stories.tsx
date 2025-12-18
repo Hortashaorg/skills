@@ -103,7 +103,7 @@ export const WithGaps: Story = {
 	render: () => (
 		<div class="space-y-6">
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					No gap
 				</p>
 				<Flex gap="none">
@@ -113,7 +113,7 @@ export const WithGaps: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					XS gap (gap-1)
 				</p>
 				<Flex gap="xs">
@@ -123,7 +123,7 @@ export const WithGaps: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					SM gap (gap-2)
 				</p>
 				<Flex gap="sm">
@@ -133,7 +133,7 @@ export const WithGaps: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					MD gap (gap-4)
 				</p>
 				<Flex gap="md">
@@ -143,7 +143,7 @@ export const WithGaps: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					LG gap (gap-6)
 				</p>
 				<Flex gap="lg">
@@ -153,7 +153,7 @@ export const WithGaps: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					XL gap (gap-8)
 				</p>
 				<Flex gap="xl">
@@ -170,7 +170,7 @@ export const AllAlignments: Story = {
 	render: () => (
 		<div class="space-y-6">
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align start
 				</p>
 				<Flex
@@ -183,7 +183,7 @@ export const AllAlignments: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align center
 				</p>
 				<Flex
@@ -196,7 +196,7 @@ export const AllAlignments: Story = {
 				</Flex>
 			</div>
 			<div>
-				<p class="text-sm text-on-surface/70 dark:text-on-surface-dark/70 mb-2">
+				<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
 					Align end
 				</p>
 				<Flex

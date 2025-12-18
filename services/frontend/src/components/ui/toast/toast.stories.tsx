@@ -165,7 +165,7 @@ export const AllVariants: Story = {
 				>
 					Show All Variants
 				</button>
-				<div class="text-sm text-on-surface/70">
+				<div class="text-sm text-on-surface-muted">
 					Click to see all toast variants at once
 				</div>
 				<ToastRegion />
