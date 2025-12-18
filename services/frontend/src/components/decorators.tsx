@@ -1,19 +1,27 @@
 import type { Decorator } from "storybook-solidjs-vite";
 
-export const withTheme: Decorator = (Story, context) => {
-	const theme = context.globals.theme || "light";
-	const isDark = theme === "dark";
-
+export const withTheme: Decorator = (Story) => {
 	return (
-		<div
-			class={isDark ? "dark" : ""}
-			style={{
-				"min-height": "100vh",
-				"background-color": isDark ? "#1a1a1a" : "#ffffff",
-				padding: "1rem",
-			}}
-		>
-			<Story />
-		</div>
+		<>
+			<div
+				class={"dark"}
+				style={{
+					width: "100%",
+					margin: 0,
+					"background-color": "#1a1a1a",
+					padding: "1rem",
+				}}
+			>
+				<Story />
+			</div>
+			<div
+				style={{
+					"background-color": "#ffffff",
+					padding: "1rem",
+				}}
+			>
+				<Story />
+			</div>
+		</>
 	);
 };

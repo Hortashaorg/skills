@@ -17,27 +17,6 @@ const preview: Preview = {
 			// 'off' - skip a11y checks entirely
 			test: "error",
 		},
-
-		// Test both light and dark modes
-		backgrounds: {
-			default: "light",
-			values: [
-				{ name: "light", value: "#ffffff" },
-				{ name: "dark", value: "#1a1a1a" },
-			],
-		},
-	},
-
-	globalTypes: {
-		theme: {
-			description: "Global theme for components",
-			toolbar: {
-				title: "Theme",
-				icon: "circlehollow",
-				items: ["light", "dark"],
-				dynamicTitle: true,
-			},
-		},
 	},
 
 	decorators: [withTheme],
