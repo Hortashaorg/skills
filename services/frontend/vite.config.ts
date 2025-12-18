@@ -1,4 +1,5 @@
-import { dirname, join, resolve } from "node:path";
+/// <reference types="vitest" />
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import tailwindcss from "@tailwindcss/vite";
@@ -6,10 +7,12 @@ import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const dirname =
+	typeof __dirname !== "undefined"
+		? __dirname
+		: path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
+export default defineConfig(() => ({
 	plugins: [solidPlugin(), tailwindcss()],
 	server: {
 		port: 4321,
@@ -19,8 +22,8 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			"@": resolve(__dirname, "./src"),
-			"@sb": resolve(__dirname, "./.storybook"),
+			"@": path.resolve(__dirname, "./src"),
+			"@sb": path.resolve(__dirname, "./.storybook"),
 		},
 	},
 	test: {
@@ -31,7 +34,7 @@ export default defineConfig({
 					// The plugin will run tests for the stories defined in your Storybook config
 					// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
 					storybookTest({
-						configDir: join(__dirname, ".storybook"),
+						configDir: path.join(dirname, ".storybook"),
 					}),
 				],
 				test: {
@@ -46,22 +49,9 @@ export default defineConfig({
 							},
 						],
 					},
-				},
-			},
-			{
-				extends: true,
-				test: {
-					name: "component",
-					include: ["src/**/*.test.{ts,tsx}"],
-					environment: "jsdom",
-					setupFiles: ["./src/test-setup.ts"],
-					server: {
-						deps: {
-							inline: ["@kobalte/core"],
-						},
-					},
+					setupFiles: ["./.storybook/vitest.setup.ts"],
 				},
 			},
 		],
 	},
-});
+}));

@@ -64,7 +64,7 @@ app.post("/login", async (c) => {
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
 		const user = await ensureUser(email);
-		const token = await userToken(user.id, user.email);
+		const token = await userToken(user.id, email);
 
 		setCookie(c, "refresh_token", result.refresh_token, {
 			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
@@ -120,7 +120,7 @@ app.post("/refresh", async (c) => {
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
 		const user = await ensureUser(email);
-		const token = await userToken(user.id, user.email);
+		const token = await userToken(user.id, email);
 
 		setCookie(c, "refresh_token", result.refresh_token, {
 			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds

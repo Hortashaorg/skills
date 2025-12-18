@@ -1,16 +1,13 @@
-import { defineMain } from "storybook-solidjs-vite";
+import type { StorybookConfig } from "storybook-solidjs-vite";
 
-export default defineMain({
-	framework: {
-		name: "storybook-solidjs-vite",
-		options: {},
-	},
+const config: StorybookConfig = {
 	addons: [
-		"@storybook/addon-onboarding",
-		"@storybook/addon-docs",
-		"@storybook/addon-a11y",
-		"@storybook/addon-links",
+		"@chromatic-com/storybook",
 		"@storybook/addon-vitest",
+		"@storybook/addon-a11y",
+		"@storybook/addon-docs",
 	],
+	framework: "storybook-solidjs-vite",
 	stories: ["../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-});
+};
+export default config;

@@ -1,11 +1,18 @@
 {
 	"compilerOptions": {
-		"module": "Preserve",
+		"module": "ESNext",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"moduleResolution": "bundler",
-		"allowJs": true,
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
-		"types": ["vite/client"],
+		"skipLibCheck": true,
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"types": ["vite/client", "vitest"],
+
 		"paths": {
 			"@/*": ["./src/*"],
 			"@sb/*": ["./.storybook/*"]

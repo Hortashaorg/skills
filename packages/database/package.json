@@ -11,7 +11,7 @@
 	"author": "Martin Eide",
 	"devDependencies": {
 		"@package/common": "workspace:*",
-		"@types/node": "^25.0.2",
+		"@types/node": "^25.0.3",
 		"drizzle-kit": "^0.31.8"
 	},
 	"exports": {
@@ -19,7 +19,7 @@
 		"./server": "./server.ts"
 	},
 	"dependencies": {
-		"@rocicorp/zero": "^0.25.3",
+		"@rocicorp/zero": "^0.25.4",
 		"drizzle-orm": "^0.45.1",
 		"drizzle-zero": "0.17.0",
 		"jose": "^6.1.3",

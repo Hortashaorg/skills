@@ -3,14 +3,14 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"typecheck": "tsc",
+		"typecheck": "tsc  --noEmit",
 		"dev": "node --watch ./index.ts"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.7",
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
-		"@types/node": "^25.0.2",
+		"@types/node": "^25.0.3",
 		"hono": "^4.11.1",
 		"postgres": "^3.4.7"
 	}
