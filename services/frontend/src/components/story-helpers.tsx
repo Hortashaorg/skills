@@ -6,18 +6,17 @@ import type { StoryObj } from "storybook-solidjs-vite";
 export interface ThemedStoryConfig<T> {
 	/** The base story configuration */
 	story: StoryObj<T>;
-	/** Whether to run tests (default: "light" - only test light mode) */
+	/** Whether to run tests (default: "both" - test both light and dark modes) */
 	testMode?: "light" | "dark" | "both" | "none";
 }
 
 /**
- * Creates three story variants from a base story:
- * - Light mode (hidden in UI by default, available for testing)
- * - Dark mode (hidden in UI by default, available for testing)
- * - Side-by-side playground (visible in UI, excluded from tests)
+ * Creates two story variants from a base story:
+ * - Light mode - Visible in sidebar, tested
+ * - Dark mode - Visible in sidebar, tested
  *
- * To hide Light/Dark stories from Storybook sidebar, export them with underscore prefix:
- * export const __MyStoryLight = themed.Light;  // Hidden from sidebar
+ * Users can toggle between light, dark, and side-by-side views using the
+ * toolbar control in Storybook UI (default is side-by-side).
  *
  * @example
  * ```tsx
@@ -30,65 +29,41 @@ export interface ThemedStoryConfig<T> {
  *
  * const themed = createThemedStories({
  *   story: baseStory,
- *   testMode: "light", // Only test light mode (default)
+ *   testMode: "both", // Test both themes (default)
  * });
  *
- * // Export with __ prefix to hide from sidebar
- * export const __MyStoryLight = themed.Light;
- * export const __MyStoryDark = themed.Dark;
- * export const MyStory = themed.Playground;
+ * export const PrimaryLight = themed.Light;
+ * export const PrimaryDark = themed.Dark;
  * ```
  */
 export function createThemedStories<T>(config: ThemedStoryConfig<T>) {
-	const { story, testMode = "light" } = config;
+	const { story, testMode = "both" } = config;
 
-	// Light mode story - available for testing
-	// Hidden from sidebar using 'test-only' tag
+	// Light mode story - visible and tested
 	const Light: StoryObj<T> = {
 		...story,
 		parameters: {
 			...story.parameters,
-			docs: { disable: true }, // Disable docs page
-			globals: { themeMode: "light" },
+			theme: "light", // Custom parameter for decorator
 		},
 		tags: [
 			...(story.tags || []),
-			"!autodocs", // Hide from docs
-			"test-only", // Mark as test-only (can be filtered in sidebar)
 			...(testMode === "light" || testMode === "both" ? [] : ["!test"]),
 		],
 	};
 
-	// Dark mode story - available for testing
-	// Hidden from sidebar using 'test-only' tag
+	// Dark mode story - visible and tested
 	const Dark: StoryObj<T> = {
 		...story,
 		parameters: {
 			...story.parameters,
-			docs: { disable: true }, // Disable docs page
-			globals: { themeMode: "dark" },
+			theme: "dark", // Custom parameter for decorator
 		},
 		tags: [
 			...(story.tags || []),
-			"!autodocs", // Hide from docs
-			"test-only", // Mark as test-only (can be filtered in sidebar)
 			...(testMode === "dark" || testMode === "both" ? [] : ["!test"]),
 		],
 	};
 
-	// Playground story - visible in UI, excluded from tests
-	const Playground: StoryObj<T> = {
-		...story,
-		parameters: {
-			...story.parameters,
-			globals: { themeMode: "side-by-side" }, // Force side-by-side mode
-		},
-		tags: [
-			...(story.tags || []).filter((tag) => tag !== "autodocs"), // Keep other tags but ensure autodocs
-			"!test", // Always exclude from tests (side-by-side breaks tests)
-		],
-		play: undefined, // Remove interaction tests from playground
-	};
-
-	return { Light, Dark, Playground };
+	return { Light, Dark };
 }

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Badge } from "./badge";
 
 const meta = {
@@ -22,63 +23,127 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+const primaryBase: Story = {
 	args: {
 		variant: "primary",
 		children: "Primary",
 	},
 };
 
-export const Secondary: Story = {
+const primaryThemed = createThemedStories({
+	story: primaryBase,
+	testMode: "both",
+});
+
+export const PrimaryLight = primaryThemed.Light;
+export const PrimaryDark = primaryThemed.Dark;
+
+const secondaryBase: Story = {
 	args: {
 		variant: "secondary",
 		children: "Secondary",
 	},
 };
 
-export const Success: Story = {
+const secondaryThemed = createThemedStories({
+	story: secondaryBase,
+	testMode: "both",
+});
+
+export const SecondaryLight = secondaryThemed.Light;
+export const SecondaryDark = secondaryThemed.Dark;
+
+const successBase: Story = {
 	args: {
 		variant: "success",
 		children: "Success",
 	},
 };
 
-export const Danger: Story = {
+const successThemed = createThemedStories({
+	story: successBase,
+	testMode: "both",
+});
+
+export const SuccessLight = successThemed.Light;
+export const SuccessDark = successThemed.Dark;
+
+const dangerBase: Story = {
 	args: {
 		variant: "danger",
 		children: "Danger",
 	},
 };
 
-export const Warning: Story = {
+const dangerThemed = createThemedStories({
+	story: dangerBase,
+	testMode: "both",
+});
+
+export const DangerLight = dangerThemed.Light;
+export const DangerDark = dangerThemed.Dark;
+
+const warningBase: Story = {
 	args: {
 		variant: "warning",
 		children: "Warning",
 	},
 };
 
-export const Info: Story = {
+const warningThemed = createThemedStories({
+	story: warningBase,
+	testMode: "both",
+});
+
+export const WarningLight = warningThemed.Light;
+export const WarningDark = warningThemed.Dark;
+
+const infoBase: Story = {
 	args: {
 		variant: "info",
 		children: "Info",
 	},
 };
 
-export const Small: Story = {
+const infoThemed = createThemedStories({
+	story: infoBase,
+	testMode: "both",
+});
+
+export const InfoLight = infoThemed.Light;
+export const InfoDark = infoThemed.Dark;
+
+const smallBase: Story = {
 	args: {
 		size: "sm",
 		children: "Small Badge",
 	},
 };
 
-export const Medium: Story = {
+const smallThemed = createThemedStories({
+	story: smallBase,
+	testMode: "both",
+});
+
+export const SmallLight = smallThemed.Light;
+export const SmallDark = smallThemed.Dark;
+
+const mediumBase: Story = {
 	args: {
 		size: "md",
 		children: "Medium Badge",
 	},
 };
 
-export const AllVariants: Story = {
+const mediumThemed = createThemedStories({
+	story: mediumBase,
+	testMode: "both",
+});
+
+export const MediumLight = mediumThemed.Light;
+export const MediumDark = mediumThemed.Dark;
+
+const allVariantsBase: Story = {
 	render: () => (
 		<div style={{ display: "flex", "flex-direction": "column", gap: "1rem" }}>
 			<div style={{ display: "flex", gap: "0.5rem", "flex-wrap": "wrap" }}>
@@ -102,3 +167,11 @@ export const AllVariants: Story = {
 		</div>
 	),
 };
+
+const allVariantsThemed = createThemedStories({
+	story: allVariantsBase,
+	testMode: "both",
+});
+
+export const AllVariantsLight = allVariantsThemed.Light;
+export const AllVariantsDark = allVariantsThemed.Dark;

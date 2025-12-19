@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Heading } from "./heading";
 
 const meta = {
@@ -27,49 +28,97 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const H1: Story = {
+const h1Base: Story = {
 	args: {
 		level: "h1",
 		children: "Heading 1",
 	},
 };
 
-export const H2: Story = {
+const h1Themed = createThemedStories({
+	story: h1Base,
+	testMode: "both",
+});
+
+export const H1Light = h1Themed.Light;
+export const H1Dark = h1Themed.Dark;
+
+const h2Base: Story = {
 	args: {
 		level: "h2",
 		children: "Heading 2",
 	},
 };
 
-export const H3: Story = {
+const h2Themed = createThemedStories({
+	story: h2Base,
+	testMode: "both",
+});
+
+export const H2Light = h2Themed.Light;
+export const H2Dark = h2Themed.Dark;
+
+const h3Base: Story = {
 	args: {
 		level: "h3",
 		children: "Heading 3",
 	},
 };
 
-export const H4: Story = {
+const h3Themed = createThemedStories({
+	story: h3Base,
+	testMode: "both",
+});
+
+export const H3Light = h3Themed.Light;
+export const H3Dark = h3Themed.Dark;
+
+const h4Base: Story = {
 	args: {
 		level: "h4",
 		children: "Heading 4",
 	},
 };
 
-export const H5: Story = {
+const h4Themed = createThemedStories({
+	story: h4Base,
+	testMode: "both",
+});
+
+export const H4Light = h4Themed.Light;
+export const H4Dark = h4Themed.Dark;
+
+const h5Base: Story = {
 	args: {
 		level: "h5",
 		children: "Heading 5",
 	},
 };
 
-export const H6: Story = {
+const h5Themed = createThemedStories({
+	story: h5Base,
+	testMode: "both",
+});
+
+export const H5Light = h5Themed.Light;
+export const H5Dark = h5Themed.Dark;
+
+const h6Base: Story = {
 	args: {
 		level: "h6",
 		children: "Heading 6",
 	},
 };
 
-export const AllLevels: Story = {
+const h6Themed = createThemedStories({
+	story: h6Base,
+	testMode: "both",
+});
+
+export const H6Light = h6Themed.Light;
+export const H6Dark = h6Themed.Dark;
+
+const allLevelsBase: Story = {
 	render: () => (
 		<div class="space-y-4">
 			<Heading level="h1">Heading 1 (4xl → 5xl)</Heading>
@@ -82,7 +131,15 @@ export const AllLevels: Story = {
 	),
 };
 
-export const Colors: Story = {
+const allLevelsThemed = createThemedStories({
+	story: allLevelsBase,
+	testMode: "both",
+});
+
+export const AllLevelsLight = allLevelsThemed.Light;
+export const AllLevelsDark = allLevelsThemed.Dark;
+
+const colorsBase: Story = {
 	render: () => (
 		<div class="space-y-4">
 			<Heading level="h2" color="default">
@@ -98,7 +155,15 @@ export const Colors: Story = {
 	),
 };
 
-export const SemanticVsVisual: Story = {
+const colorsThemed = createThemedStories({
+	story: colorsBase,
+	testMode: "both",
+});
+
+export const ColorsLight = colorsThemed.Light;
+export const ColorsDark = colorsThemed.Dark;
+
+const semanticVsVisualBase: Story = {
 	render: () => (
 		<div class="space-y-4">
 			<div>
@@ -129,10 +194,26 @@ export const SemanticVsVisual: Story = {
 	),
 };
 
-export const WithCustomClass: Story = {
+const semanticVsVisualThemed = createThemedStories({
+	story: semanticVsVisualBase,
+	testMode: "both",
+});
+
+export const SemanticVsVisualLight = semanticVsVisualThemed.Light;
+export const SemanticVsVisualDark = semanticVsVisualThemed.Dark;
+
+const withCustomClassBase: Story = {
 	render: () => (
 		<Heading level="h2" class="italic" color="primary">
 			Heading with custom class
 		</Heading>
 	),
 };
+
+const withCustomClassThemed = createThemedStories({
+	story: withCustomClassBase,
+	testMode: "both",
+});
+
+export const WithCustomClassLight = withCustomClassThemed.Light;
+export const WithCustomClassDark = withCustomClassThemed.Dark;

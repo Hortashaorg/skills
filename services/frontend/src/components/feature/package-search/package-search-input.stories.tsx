@@ -57,7 +57,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+const defaultBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 
@@ -86,7 +86,15 @@ export const Default: Story = {
 	},
 };
 
-export const WithLabel: Story = {
+const defaultThemed = createThemedStories({
+	story: defaultBase,
+	testMode: "both",
+});
+
+export const DefaultLight = defaultThemed.Light;
+export const DefaultDark = defaultThemed.Dark;
+
+const withLabelBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 
@@ -112,7 +120,15 @@ export const WithLabel: Story = {
 	},
 };
 
-export const WithLoading: Story = {
+const withLabelThemed = createThemedStories({
+	story: withLabelBase,
+	testMode: "both",
+});
+
+export const WithLabelLight = withLabelThemed.Light;
+export const WithLabelDark = withLabelThemed.Dark;
+
+const withLoadingBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 		const [isLoading, setIsLoading] = createSignal(false);
@@ -150,7 +166,15 @@ export const WithLoading: Story = {
 	},
 };
 
-export const NoResults: Story = {
+const withLoadingThemed = createThemedStories({
+	story: withLoadingBase,
+	testMode: "both",
+});
+
+export const WithLoadingLight = withLoadingThemed.Light;
+export const WithLoadingDark = withLoadingThemed.Dark;
+
+const noResultsBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("xyz123");
 
@@ -171,7 +195,15 @@ export const NoResults: Story = {
 	},
 };
 
-export const WithSelection: Story = {
+const noResultsThemed = createThemedStories({
+	story: noResultsBase,
+	testMode: "both",
+});
+
+export const NoResultsLight = noResultsThemed.Light;
+export const NoResultsDark = noResultsThemed.Dark;
+
+const withSelectionBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 
@@ -205,6 +237,14 @@ export const WithSelection: Story = {
 		);
 	},
 };
+
+const withSelectionThemed = createThemedStories({
+	story: withSelectionBase,
+	testMode: "both",
+});
+
+export const WithSelectionLight = withSelectionThemed.Light;
+export const WithSelectionDark = withSelectionThemed.Dark;
 
 // Example: Interactive story with tests
 const interactiveBase: Story = {
@@ -297,12 +337,11 @@ const interactiveBase: Story = {
 	},
 };
 
-// Creates three stories: InteractiveLight (tested), InteractiveDark (not tested), Interactive (visible, not tested)
+// Creates two stories: InteractiveLight and InteractiveDark (both tested)
 const interactiveThemed = createThemedStories({
 	story: interactiveBase,
-	testMode: "light", // Only test light mode
+	testMode: "both", // Test both light and dark modes
 });
 
 export const InteractiveLight = interactiveThemed.Light;
 export const InteractiveDark = interactiveThemed.Dark;
-export const Interactive = interactiveThemed.Playground;

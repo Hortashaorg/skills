@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import {
 	TextField,
 	TextFieldDescription,
@@ -17,7 +18,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+const defaultBase: Story = {
 	render: () => (
 		<TextField>
 			<TextFieldLabel>Email</TextFieldLabel>
@@ -26,7 +27,15 @@ export const Default: Story = {
 	),
 };
 
-export const WithDescription: Story = {
+const defaultThemed = createThemedStories({
+	story: defaultBase,
+	testMode: "both",
+});
+
+export const DefaultLight = defaultThemed.Light;
+export const DefaultDark = defaultThemed.Dark;
+
+const withDescriptionBase: Story = {
 	render: () => (
 		<TextField>
 			<TextFieldLabel>Email</TextFieldLabel>
@@ -38,7 +47,15 @@ export const WithDescription: Story = {
 	),
 };
 
-export const WithError: Story = {
+const withDescriptionThemed = createThemedStories({
+	story: withDescriptionBase,
+	testMode: "both",
+});
+
+export const WithDescriptionLight = withDescriptionThemed.Light;
+export const WithDescriptionDark = withDescriptionThemed.Dark;
+
+const withErrorBase: Story = {
 	render: () => (
 		<TextField validationState="invalid">
 			<TextFieldLabel>Email</TextFieldLabel>
@@ -50,7 +67,15 @@ export const WithError: Story = {
 	),
 };
 
-export const Password: Story = {
+const withErrorThemed = createThemedStories({
+	story: withErrorBase,
+	testMode: "both",
+});
+
+export const WithErrorLight = withErrorThemed.Light;
+export const WithErrorDark = withErrorThemed.Dark;
+
+const passwordBase: Story = {
 	render: () => (
 		<TextField>
 			<TextFieldLabel>Password</TextFieldLabel>
@@ -59,7 +84,15 @@ export const Password: Story = {
 	),
 };
 
-export const NumberInput: Story = {
+const passwordThemed = createThemedStories({
+	story: passwordBase,
+	testMode: "both",
+});
+
+export const PasswordLight = passwordThemed.Light;
+export const PasswordDark = passwordThemed.Dark;
+
+const numberInputBase: Story = {
 	render: () => (
 		<TextField>
 			<TextFieldLabel>Age</TextFieldLabel>
@@ -68,7 +101,15 @@ export const NumberInput: Story = {
 	),
 };
 
-export const TextArea: Story = {
+const numberInputThemed = createThemedStories({
+	story: numberInputBase,
+	testMode: "both",
+});
+
+export const NumberInputLight = numberInputThemed.Light;
+export const NumberInputDark = numberInputThemed.Dark;
+
+const textAreaBase: Story = {
 	render: () => (
 		<TextField>
 			<TextFieldLabel>Bio</TextFieldLabel>
@@ -80,7 +121,15 @@ export const TextArea: Story = {
 	),
 };
 
-export const Disabled: Story = {
+const textAreaThemed = createThemedStories({
+	story: textAreaBase,
+	testMode: "both",
+});
+
+export const TextAreaLight = textAreaThemed.Light;
+export const TextAreaDark = textAreaThemed.Dark;
+
+const disabledBase: Story = {
 	render: () => (
 		<TextField disabled>
 			<TextFieldLabel>Email</TextFieldLabel>
@@ -89,7 +138,15 @@ export const Disabled: Story = {
 	),
 };
 
-export const Required: Story = {
+const disabledThemed = createThemedStories({
+	story: disabledBase,
+	testMode: "both",
+});
+
+export const DisabledLight = disabledThemed.Light;
+export const DisabledDark = disabledThemed.Dark;
+
+const requiredBase: Story = {
 	render: () => (
 		<TextField required>
 			<TextFieldLabel>Email</TextFieldLabel>
@@ -99,7 +156,15 @@ export const Required: Story = {
 	),
 };
 
-export const FullExample: Story = {
+const requiredThemed = createThemedStories({
+	story: requiredBase,
+	testMode: "both",
+});
+
+export const RequiredLight = requiredThemed.Light;
+export const RequiredDark = requiredThemed.Dark;
+
+const fullExampleBase: Story = {
 	render: () => (
 		<div class="flex flex-col gap-4 max-w-md">
 			<TextField>
@@ -125,3 +190,11 @@ export const FullExample: Story = {
 		</div>
 	),
 };
+
+const fullExampleThemed = createThemedStories({
+	story: fullExampleBase,
+	testMode: "both",
+});
+
+export const FullExampleLight = fullExampleThemed.Light;
+export const FullExampleDark = fullExampleThemed.Dark;

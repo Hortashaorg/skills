@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import type { JSX } from "solid-js";
+import { createThemedStories } from "@/components/story-helpers";
 import { Flex } from "./flex";
 
 const meta = {
@@ -37,8 +39,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-import type { JSX } from "solid-js";
-
 const Box = (props: { children?: JSX.Element; color?: string }) => (
 	<div
 		class={`p-4 rounded-radius ${props.color || "bg-primary dark:bg-primary-dark"} text-on-primary dark:text-on-primary-dark`}
@@ -47,7 +47,7 @@ const Box = (props: { children?: JSX.Element; color?: string }) => (
 	</div>
 );
 
-export const Row: Story = {
+const rowBase: Story = {
 	render: () => (
 		<Flex direction="row" gap="md">
 			<Box>1</Box>
@@ -57,7 +57,15 @@ export const Row: Story = {
 	),
 };
 
-export const Column: Story = {
+const rowThemed = createThemedStories({
+	story: rowBase,
+	testMode: "both",
+});
+
+export const RowLight = rowThemed.Light;
+export const RowDark = rowThemed.Dark;
+
+const columnBase: Story = {
 	render: () => (
 		<Flex direction="column" gap="md">
 			<Box>1</Box>
@@ -67,7 +75,15 @@ export const Column: Story = {
 	),
 };
 
-export const CenterAligned: Story = {
+const columnThemed = createThemedStories({
+	story: columnBase,
+	testMode: "both",
+});
+
+export const ColumnLight = columnThemed.Light;
+export const ColumnDark = columnThemed.Dark;
+
+const centerAlignedBase: Story = {
 	render: () => (
 		<Flex align="center" justify="center" gap="md" class="h-48">
 			<Box>Centered</Box>
@@ -76,7 +92,15 @@ export const CenterAligned: Story = {
 	),
 };
 
-export const SpaceBetween: Story = {
+const centerAlignedThemed = createThemedStories({
+	story: centerAlignedBase,
+	testMode: "both",
+});
+
+export const CenterAlignedLight = centerAlignedThemed.Light;
+export const CenterAlignedDark = centerAlignedThemed.Dark;
+
+const spaceBetweenBase: Story = {
 	render: () => (
 		<Flex justify="between" gap="md">
 			<Box>Start</Box>
@@ -86,7 +110,15 @@ export const SpaceBetween: Story = {
 	),
 };
 
-export const Wrap: Story = {
+const spaceBetweenThemed = createThemedStories({
+	story: spaceBetweenBase,
+	testMode: "both",
+});
+
+export const SpaceBetweenLight = spaceBetweenThemed.Light;
+export const SpaceBetweenDark = spaceBetweenThemed.Dark;
+
+const wrapBase: Story = {
 	render: () => (
 		<Flex wrap="wrap" gap="md" class="max-w-md">
 			<Box>1</Box>
@@ -99,7 +131,15 @@ export const Wrap: Story = {
 	),
 };
 
-export const WithGaps: Story = {
+const wrapThemed = createThemedStories({
+	story: wrapBase,
+	testMode: "both",
+});
+
+export const WrapLight = wrapThemed.Light;
+export const WrapDark = wrapThemed.Dark;
+
+const withGapsBase: Story = {
 	render: () => (
 		<div class="space-y-6">
 			<div>
@@ -166,7 +206,15 @@ export const WithGaps: Story = {
 	),
 };
 
-export const AllAlignments: Story = {
+const withGapsThemed = createThemedStories({
+	story: withGapsBase,
+	testMode: "both",
+});
+
+export const WithGapsLight = withGapsThemed.Light;
+export const WithGapsDark = withGapsThemed.Dark;
+
+const allAlignmentsBase: Story = {
 	render: () => (
 		<div class="space-y-6">
 			<div>
@@ -211,3 +259,11 @@ export const AllAlignments: Story = {
 		</div>
 	),
 };
+
+const allAlignmentsThemed = createThemedStories({
+	story: allAlignmentsBase,
+	testMode: "both",
+});
+
+export const AllAlignmentsLight = allAlignmentsThemed.Light;
+export const AllAlignmentsDark = allAlignmentsThemed.Dark;

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Text } from "./text";
 
 const meta = {
@@ -41,13 +42,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+const defaultBase: Story = {
 	args: {
 		children: "This is default text",
 	},
 };
 
-export const Sizes: Story = {
+const defaultThemed = createThemedStories({
+	story: defaultBase,
+	testMode: "both",
+});
+
+export const DefaultLight = defaultThemed.Light;
+export const DefaultDark = defaultThemed.Dark;
+
+const sizesBase: Story = {
 	render: () => (
 		<div class="space-y-2">
 			<Text size="xs">Extra small text (text-xs)</Text>
@@ -59,7 +68,15 @@ export const Sizes: Story = {
 	),
 };
 
-export const Weights: Story = {
+const sizesThemed = createThemedStories({
+	story: sizesBase,
+	testMode: "both",
+});
+
+export const SizesLight = sizesThemed.Light;
+export const SizesDark = sizesThemed.Dark;
+
+const weightsBase: Story = {
 	render: () => (
 		<div class="space-y-2">
 			<Text weight="normal">Normal weight (font-normal) - Default</Text>
@@ -70,7 +87,15 @@ export const Weights: Story = {
 	),
 };
 
-export const Colors: Story = {
+const weightsThemed = createThemedStories({
+	story: weightsBase,
+	testMode: "both",
+});
+
+export const WeightsLight = weightsThemed.Light;
+export const WeightsDark = weightsThemed.Dark;
+
+const colorsBase: Story = {
 	render: () => (
 		<div class="space-y-2">
 			<Text color="default">Default color (on-surface)</Text>
@@ -85,7 +110,15 @@ export const Colors: Story = {
 	),
 };
 
-export const PolymorphicElements: Story = {
+const colorsThemed = createThemedStories({
+	story: colorsBase,
+	testMode: "both",
+});
+
+export const ColorsLight = colorsThemed.Light;
+export const ColorsDark = colorsThemed.Dark;
+
+const polymorphicElementsBase: Story = {
 	render: () => (
 		<div class="space-y-2">
 			<Text as="p">
@@ -97,7 +130,15 @@ export const PolymorphicElements: Story = {
 	),
 };
 
-export const CombinedVariants: Story = {
+const polymorphicElementsThemed = createThemedStories({
+	story: polymorphicElementsBase,
+	testMode: "both",
+});
+
+export const PolymorphicElementsLight = polymorphicElementsThemed.Light;
+export const PolymorphicElementsDark = polymorphicElementsThemed.Dark;
+
+const combinedVariantsBase: Story = {
 	render: () => (
 		<div class="space-y-4">
 			<Text size="xl" weight="bold" color="primary">
@@ -113,10 +154,26 @@ export const CombinedVariants: Story = {
 	),
 };
 
-export const WithCustomClass: Story = {
+const combinedVariantsThemed = createThemedStories({
+	story: combinedVariantsBase,
+	testMode: "both",
+});
+
+export const CombinedVariantsLight = combinedVariantsThemed.Light;
+export const CombinedVariantsDark = combinedVariantsThemed.Dark;
+
+const withCustomClassBase: Story = {
 	render: () => (
 		<Text class="italic underline" color="primary">
 			Text with custom classes (italic, underline)
 		</Text>
 	),
 };
+
+const withCustomClassThemed = createThemedStories({
+	story: withCustomClassBase,
+	testMode: "both",
+});
+
+export const WithCustomClassLight = withCustomClassThemed.Light;
+export const WithCustomClassDark = withCustomClassThemed.Dark;

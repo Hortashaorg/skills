@@ -1,5 +1,6 @@
 import { expect, userEvent, within } from "@storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { ToastRegion, toast } from "./toast";
 
 const meta = {
@@ -10,7 +11,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Success: Story = {
+const successBase: Story = {
 	render: () => {
 		return (
 			<div>
@@ -41,7 +42,15 @@ export const Success: Story = {
 	},
 };
 
-export const ErrorToast: Story = {
+const successThemed = createThemedStories({
+	story: successBase,
+	testMode: "light",
+});
+
+export const SuccessLight = successThemed.Light;
+export const SuccessDark = successThemed.Dark;
+
+const errorToastBase: Story = {
 	render: () => {
 		return (
 			<div>
@@ -74,7 +83,15 @@ export const ErrorToast: Story = {
 	},
 };
 
-export const Info: Story = {
+const errorToastThemed = createThemedStories({
+	story: errorToastBase,
+	testMode: "light",
+});
+
+export const ErrorToastLight = errorToastThemed.Light;
+export const ErrorToastDark = errorToastThemed.Dark;
+
+const infoBase: Story = {
 	render: () => {
 		return (
 			<div>
@@ -103,7 +120,15 @@ export const Info: Story = {
 	},
 };
 
-export const Warning: Story = {
+const infoThemed = createThemedStories({
+	story: infoBase,
+	testMode: "light",
+});
+
+export const InfoLight = infoThemed.Light;
+export const InfoDark = infoThemed.Dark;
+
+const warningBase: Story = {
 	render: () => {
 		return (
 			<div>
@@ -136,7 +161,15 @@ export const Warning: Story = {
 	},
 };
 
-export const CustomTitle: Story = {
+const warningThemed = createThemedStories({
+	story: warningBase,
+	testMode: "light",
+});
+
+export const WarningLight = warningThemed.Light;
+export const WarningDark = warningThemed.Dark;
+
+const customTitleBase: Story = {
 	render: () => {
 		return (
 			<div>
@@ -157,7 +190,15 @@ export const CustomTitle: Story = {
 	},
 };
 
-export const CustomDuration: Story = {
+const customTitleThemed = createThemedStories({
+	story: customTitleBase,
+	testMode: "light",
+});
+
+export const CustomTitleLight = customTitleThemed.Light;
+export const CustomTitleDark = customTitleThemed.Dark;
+
+const customDurationBase: Story = {
 	render: () => {
 		return (
 			<div>
@@ -195,7 +236,15 @@ export const CustomDuration: Story = {
 	},
 };
 
-export const MultipleToasts: Story = {
+const customDurationThemed = createThemedStories({
+	story: customDurationBase,
+	testMode: "light",
+});
+
+export const CustomDurationLight = customDurationThemed.Light;
+export const CustomDurationDark = customDurationThemed.Dark;
+
+const multipleToastsBase: Story = {
 	render: () => {
 		const showMultiple = () => {
 			toast.info("First toast");
@@ -220,7 +269,15 @@ export const MultipleToasts: Story = {
 	},
 };
 
-export const AllVariants: Story = {
+const multipleToastsThemed = createThemedStories({
+	story: multipleToastsBase,
+	testMode: "light",
+});
+
+export const MultipleToastsLight = multipleToastsThemed.Light;
+export const MultipleToastsDark = multipleToastsThemed.Dark;
+
+const allVariantsBase: Story = {
 	render: () => {
 		const showAll = () => {
 			toast.success("Success message");
@@ -248,3 +305,11 @@ export const AllVariants: Story = {
 		);
 	},
 };
+
+const allVariantsThemed = createThemedStories({
+	story: allVariantsBase,
+	testMode: "light",
+});
+
+export const AllVariantsLight = allVariantsThemed.Light;
+export const AllVariantsDark = allVariantsThemed.Dark;

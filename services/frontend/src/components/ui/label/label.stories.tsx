@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Label } from "./label";
 
 const meta = {
@@ -16,13 +17,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+const defaultBase: Story = {
 	args: {
 		children: "Email address",
 	},
 };
 
-export const WithInput: Story = {
+const defaultThemed = createThemedStories({
+	story: defaultBase,
+	testMode: "both",
+});
+
+export const DefaultLight = defaultThemed.Light;
+export const DefaultDark = defaultThemed.Dark;
+
+const withInputBase: Story = {
 	render: () => (
 		<div class="flex flex-col gap-2">
 			<Label for="email">Email address</Label>
@@ -36,7 +45,15 @@ export const WithInput: Story = {
 	),
 };
 
-export const WithDisabledInput: Story = {
+const withInputThemed = createThemedStories({
+	story: withInputBase,
+	testMode: "both",
+});
+
+export const WithInputLight = withInputThemed.Light;
+export const WithInputDark = withInputThemed.Dark;
+
+const withDisabledInputBase: Story = {
 	render: () => (
 		<div class="flex flex-col gap-2">
 			<Label for="disabled-email">Email address</Label>
@@ -51,7 +68,15 @@ export const WithDisabledInput: Story = {
 	),
 };
 
-export const Required: Story = {
+const withDisabledInputThemed = createThemedStories({
+	story: withDisabledInputBase,
+	testMode: "both",
+});
+
+export const WithDisabledInputLight = withDisabledInputThemed.Light;
+export const WithDisabledInputDark = withDisabledInputThemed.Dark;
+
+const requiredBase: Story = {
 	render: () => (
 		<div class="flex flex-col gap-2">
 			<Label for="required-email">
@@ -67,3 +92,11 @@ export const Required: Story = {
 		</div>
 	),
 };
+
+const requiredThemed = createThemedStories({
+	story: requiredBase,
+	testMode: "both",
+});
+
+export const RequiredLight = requiredThemed.Light;
+export const RequiredDark = requiredThemed.Dark;

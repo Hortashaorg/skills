@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Container } from "./container";
 
 const meta = {
@@ -30,7 +31,7 @@ const DemoContent = () => (
 	</div>
 );
 
-export const Small: Story = {
+const smallBase: Story = {
 	render: () => (
 		<Container size="sm">
 			<DemoContent />
@@ -38,7 +39,15 @@ export const Small: Story = {
 	),
 };
 
-export const Medium: Story = {
+const smallThemed = createThemedStories({
+	story: smallBase,
+	testMode: "both",
+});
+
+export const SmallLight = smallThemed.Light;
+export const SmallDark = smallThemed.Dark;
+
+const mediumBase: Story = {
 	render: () => (
 		<Container size="md">
 			<DemoContent />
@@ -46,7 +55,15 @@ export const Medium: Story = {
 	),
 };
 
-export const Large: Story = {
+const mediumThemed = createThemedStories({
+	story: mediumBase,
+	testMode: "both",
+});
+
+export const MediumLight = mediumThemed.Light;
+export const MediumDark = mediumThemed.Dark;
+
+const largeBase: Story = {
 	render: () => (
 		<Container size="lg">
 			<DemoContent />
@@ -54,7 +71,15 @@ export const Large: Story = {
 	),
 };
 
-export const ExtraLarge: Story = {
+const largeThemed = createThemedStories({
+	story: largeBase,
+	testMode: "both",
+});
+
+export const LargeLight = largeThemed.Light;
+export const LargeDark = largeThemed.Dark;
+
+const extraLargeBase: Story = {
 	render: () => (
 		<Container size="xl">
 			<DemoContent />
@@ -62,7 +87,15 @@ export const ExtraLarge: Story = {
 	),
 };
 
-export const Full: Story = {
+const extraLargeThemed = createThemedStories({
+	story: extraLargeBase,
+	testMode: "both",
+});
+
+export const ExtraLargeLight = extraLargeThemed.Light;
+export const ExtraLargeDark = extraLargeThemed.Dark;
+
+const fullBase: Story = {
 	render: () => (
 		<Container size="full">
 			<DemoContent />
@@ -70,7 +103,15 @@ export const Full: Story = {
 	),
 };
 
-export const AllSizes: Story = {
+const fullThemed = createThemedStories({
+	story: fullBase,
+	testMode: "both",
+});
+
+export const FullLight = fullThemed.Light;
+export const FullDark = fullThemed.Dark;
+
+const allSizesBase: Story = {
 	render: () => (
 		<div class="space-y-8">
 			<div>
@@ -116,3 +157,11 @@ export const AllSizes: Story = {
 		</div>
 	),
 };
+
+const allSizesThemed = createThemedStories({
+	story: allSizesBase,
+	testMode: "both",
+});
+
+export const AllSizesLight = allSizesThemed.Light;
+export const AllSizesDark = allSizesThemed.Dark;

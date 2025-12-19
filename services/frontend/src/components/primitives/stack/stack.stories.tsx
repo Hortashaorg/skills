@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Stack } from "./stack";
 
 const meta = {
@@ -34,7 +35,7 @@ const Box = (props: { children?: JSX.Element }) => (
 	</div>
 );
 
-export const Vertical: Story = {
+const verticalBase: Story = {
 	render: () => (
 		<Stack direction="vertical" spacing="md">
 			<Box>Item 1</Box>
@@ -44,7 +45,15 @@ export const Vertical: Story = {
 	),
 };
 
-export const Horizontal: Story = {
+const verticalThemed = createThemedStories({
+	story: verticalBase,
+	testMode: "both",
+});
+
+export const VerticalLight = verticalThemed.Light;
+export const VerticalDark = verticalThemed.Dark;
+
+const horizontalBase: Story = {
 	render: () => (
 		<Stack direction="horizontal" spacing="md">
 			<Box>Item 1</Box>
@@ -54,7 +63,15 @@ export const Horizontal: Story = {
 	),
 };
 
-export const CenterAligned: Story = {
+const horizontalThemed = createThemedStories({
+	story: horizontalBase,
+	testMode: "both",
+});
+
+export const HorizontalLight = horizontalThemed.Light;
+export const HorizontalDark = horizontalThemed.Dark;
+
+const centerAlignedBase: Story = {
 	render: () => (
 		<Stack align="center" spacing="md">
 			<Box>Centered Item 1</Box>
@@ -64,7 +81,15 @@ export const CenterAligned: Story = {
 	),
 };
 
-export const AllSpacings: Story = {
+const centerAlignedThemed = createThemedStories({
+	story: centerAlignedBase,
+	testMode: "both",
+});
+
+export const CenterAlignedLight = centerAlignedThemed.Light;
+export const CenterAlignedDark = centerAlignedThemed.Dark;
+
+const allSpacingsBase: Story = {
 	render: () => (
 		<div class="space-y-8">
 			<div>
@@ -131,7 +156,15 @@ export const AllSpacings: Story = {
 	),
 };
 
-export const AllAlignments: Story = {
+const allSpacingsThemed = createThemedStories({
+	story: allSpacingsBase,
+	testMode: "both",
+});
+
+export const AllSpacingsLight = allSpacingsThemed.Light;
+export const AllSpacingsDark = allSpacingsThemed.Dark;
+
+const allAlignmentsBase: Story = {
 	render: () => (
 		<div class="space-y-8">
 			<div>
@@ -173,3 +206,11 @@ export const AllAlignments: Story = {
 		</div>
 	),
 };
+
+const allAlignmentsThemed = createThemedStories({
+	story: allAlignmentsBase,
+	testMode: "both",
+});
+
+export const AllAlignmentsLight = allAlignmentsThemed.Light;
+export const AllAlignmentsDark = allAlignmentsThemed.Dark;

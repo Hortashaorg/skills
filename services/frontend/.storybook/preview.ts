@@ -27,23 +27,6 @@ const preview: Preview = {
 		},
 	},
 
-	globalTypes: {
-		themeMode: {
-			description: "Theme display mode",
-			defaultValue: "side-by-side",
-			toolbar: {
-				title: "Theme",
-				icon: "contrast",
-				items: [
-					{ value: "light", title: "Light", icon: "sun" },
-					{ value: "dark", title: "Dark", icon: "moon" },
-					{ value: "side-by-side", title: "Side by Side", icon: "sidebyside" },
-				],
-				dynamicTitle: true,
-			},
-		},
-	},
-
 	decorators: [withTheme],
 };
 

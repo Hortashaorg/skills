@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Card } from "./card";
 
 const meta = {
@@ -29,7 +30,7 @@ const DemoContent = () => (
 	</div>
 );
 
-export const Default: Story = {
+const defaultBase: Story = {
 	render: () => (
 		<Card>
 			<DemoContent />
@@ -37,7 +38,15 @@ export const Default: Story = {
 	),
 };
 
-export const NoPadding: Story = {
+const defaultThemed = createThemedStories({
+	story: defaultBase,
+	testMode: "both",
+});
+
+export const DefaultLight = defaultThemed.Light;
+export const DefaultDark = defaultThemed.Dark;
+
+const noPaddingBase: Story = {
 	render: () => (
 		<Card padding="none">
 			<div class="p-4">
@@ -47,7 +56,15 @@ export const NoPadding: Story = {
 	),
 };
 
-export const SmallPadding: Story = {
+const noPaddingThemed = createThemedStories({
+	story: noPaddingBase,
+	testMode: "both",
+});
+
+export const NoPaddingLight = noPaddingThemed.Light;
+export const NoPaddingDark = noPaddingThemed.Dark;
+
+const smallPaddingBase: Story = {
 	render: () => (
 		<Card padding="sm">
 			<DemoContent />
@@ -55,7 +72,15 @@ export const SmallPadding: Story = {
 	),
 };
 
-export const MediumPadding: Story = {
+const smallPaddingThemed = createThemedStories({
+	story: smallPaddingBase,
+	testMode: "both",
+});
+
+export const SmallPaddingLight = smallPaddingThemed.Light;
+export const SmallPaddingDark = smallPaddingThemed.Dark;
+
+const mediumPaddingBase: Story = {
 	render: () => (
 		<Card padding="md">
 			<DemoContent />
@@ -63,7 +88,15 @@ export const MediumPadding: Story = {
 	),
 };
 
-export const LargePadding: Story = {
+const mediumPaddingThemed = createThemedStories({
+	story: mediumPaddingBase,
+	testMode: "both",
+});
+
+export const MediumPaddingLight = mediumPaddingThemed.Light;
+export const MediumPaddingDark = mediumPaddingThemed.Dark;
+
+const largePaddingBase: Story = {
 	render: () => (
 		<Card padding="lg">
 			<DemoContent />
@@ -71,7 +104,15 @@ export const LargePadding: Story = {
 	),
 };
 
-export const AllPaddings: Story = {
+const largePaddingThemed = createThemedStories({
+	story: largePaddingBase,
+	testMode: "both",
+});
+
+export const LargePaddingLight = largePaddingThemed.Light;
+export const LargePaddingDark = largePaddingThemed.Dark;
+
+const allPaddingsBase: Story = {
 	render: () => (
 		<div class="space-y-4">
 			<div>
@@ -112,7 +153,15 @@ export const AllPaddings: Story = {
 	),
 };
 
-export const WithCustomContent: Story = {
+const allPaddingsThemed = createThemedStories({
+	story: allPaddingsBase,
+	testMode: "both",
+});
+
+export const AllPaddingsLight = allPaddingsThemed.Light;
+export const AllPaddingsDark = allPaddingsThemed.Dark;
+
+const withCustomContentBase: Story = {
 	render: () => (
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<Card>
@@ -141,7 +190,15 @@ export const WithCustomContent: Story = {
 	),
 };
 
-export const NestedCards: Story = {
+const withCustomContentThemed = createThemedStories({
+	story: withCustomContentBase,
+	testMode: "both",
+});
+
+export const WithCustomContentLight = withCustomContentThemed.Light;
+export const WithCustomContentDark = withCustomContentThemed.Dark;
+
+const nestedCardsBase: Story = {
 	render: () => (
 		<Card padding="lg">
 			<h2 class="text-xl font-semibold text-on-surface-strong dark:text-on-surface-dark-strong mb-4">
@@ -162,3 +219,11 @@ export const NestedCards: Story = {
 		</Card>
 	),
 };
+
+const nestedCardsThemed = createThemedStories({
+	story: nestedCardsBase,
+	testMode: "both",
+});
+
+export const NestedCardsLight = nestedCardsThemed.Light;
+export const NestedCardsDark = nestedCardsThemed.Dark;
