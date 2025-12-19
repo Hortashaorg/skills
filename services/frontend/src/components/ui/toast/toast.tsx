@@ -155,7 +155,9 @@ export const ToastCloseButton = (props: JSX.IntrinsicElements["button"]) => {
 	);
 };
 
-export const ToastRegion = (props: { class?: string }) => {
+export const ToastRegion = (
+	props: { class?: string } & JSX.IntrinsicElements["div"],
+) => {
 	return (
 		<ToastPrimitive.Region
 			class={cn(
@@ -175,6 +177,7 @@ export const ToastRegion = (props: { class?: string }) => {
 				"md:max-w-105",
 				props.class,
 			)}
+			{...props}
 		>
 			<ToastPrimitive.List class="flex flex-col gap-2" />
 		</ToastPrimitive.Region>

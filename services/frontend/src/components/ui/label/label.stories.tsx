@@ -30,7 +30,7 @@ export const WithInput: Story = {
 				id="email"
 				type="email"
 				placeholder="you@example.com"
-				class="border border-outline dark:border-outline-dark rounded-radius px-3 py-2"
+				class="border border-outline dark:border-outline-dark rounded-radius px-3 py-2 text-on-surface dark:text-on-surface-dark"
 			/>
 		</div>
 	),
@@ -45,7 +45,7 @@ export const WithDisabledInput: Story = {
 				type="email"
 				placeholder="you@example.com"
 				disabled
-				class="peer border border-outline dark:border-outline-dark rounded-radius px-3 py-2"
+				class="peer border border-outline dark:border-outline-dark rounded-radius px-3 py-2 text-on-surface dark:text-on-surface-dark"
 			/>
 		</div>
 	),
@@ -55,14 +55,14 @@ export const Required: Story = {
 	render: () => (
 		<div class="flex flex-col gap-2">
 			<Label for="required-email">
-				Email address <span class="text-danger">*</span>
+				Email address <span class="text-danger dark:text-danger-dark">*</span>
 			</Label>
 			<input
 				id="required-email"
 				type="email"
 				placeholder="you@example.com"
 				required
-				class="border border-outline dark:border-outline-dark rounded-radius px-3 py-2"
+				class="border border-outline dark:border-outline-dark rounded-radius px-3 py-2 text-on-surface dark:text-on-surface-dark"
 			/>
 		</div>
 	),

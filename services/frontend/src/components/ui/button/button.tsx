@@ -107,7 +107,15 @@ const buttonVariants = cva(
 					"dark:text-on-success",
 					"dark:focus-visible:outline-success",
 				],
-				outline: [],
+				outline: [
+					"bg-transparent",
+					"border-outline-strong",
+					"text-on-surface",
+					"focus-visible:outline-primary",
+					"dark:border-outline-dark-strong",
+					"dark:text-on-surface-dark",
+					"dark:focus-visible:outline-primary-dark",
+				],
 			},
 			size: {
 				sm: ["text-xs", "px-2", "py-1"],

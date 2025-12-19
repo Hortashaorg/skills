@@ -31,38 +31,43 @@ const DemoContent = () => (
 );
 
 export const Small: Story = {
-	args: {
-		size: "sm",
-		children: <DemoContent />,
-	},
+	render: () => (
+		<Container size="sm">
+			<DemoContent />
+		</Container>
+	),
 };
 
 export const Medium: Story = {
-	args: {
-		size: "md",
-		children: <DemoContent />,
-	},
+	render: () => (
+		<Container size="md">
+			<DemoContent />
+		</Container>
+	),
 };
 
 export const Large: Story = {
-	args: {
-		size: "lg",
-		children: <DemoContent />,
-	},
+	render: () => (
+		<Container size="lg">
+			<DemoContent />
+		</Container>
+	),
 };
 
 export const ExtraLarge: Story = {
-	args: {
-		size: "xl",
-		children: <DemoContent />,
-	},
+	render: () => (
+		<Container size="xl">
+			<DemoContent />
+		</Container>
+	),
 };
 
 export const Full: Story = {
-	args: {
-		size: "full",
-		children: <DemoContent />,
-	},
+	render: () => (
+		<Container size="full">
+			<DemoContent />
+		</Container>
+	),
 };
 
 export const AllSizes: Story = {

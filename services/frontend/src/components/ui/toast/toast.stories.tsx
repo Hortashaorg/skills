@@ -20,7 +20,7 @@ export const Success: Story = {
 				>
 					Show Success Toast
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Success Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -39,7 +39,7 @@ export const ErrorToast: Story = {
 				>
 					Show Error Toast
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Error Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -56,7 +56,7 @@ export const Info: Story = {
 				>
 					Show Info Toast
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Info Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -75,7 +75,7 @@ export const Warning: Story = {
 				>
 					Show Warning Toast
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Warning Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -94,7 +94,7 @@ export const CustomTitle: Story = {
 				>
 					Show Toast with Custom Title
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Custom Title Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -118,7 +118,7 @@ export const CustomDuration: Story = {
 				>
 					Show Toast (10 seconds)
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Custom Duration Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -141,7 +141,7 @@ export const MultipleToasts: Story = {
 				>
 					Show Multiple Toasts
 				</button>
-				<ToastRegion />
+				<ToastRegion aria-label={`Multiple Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},
@@ -165,10 +165,10 @@ export const AllVariants: Story = {
 				>
 					Show All Variants
 				</button>
-				<div class="text-sm text-on-surface-muted">
+				<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					Click to see all toast variants at once
 				</div>
-				<ToastRegion />
+				<ToastRegion aria-label={`All Variants Toast Notifications ${Math.random()}`} />
 			</div>
 		);
 	},

@@ -2,26 +2,40 @@ import type { Decorator } from "storybook-solidjs-vite";
 
 export const withTheme: Decorator = (Story) => {
 	return (
-		<>
+		<div
+			style={{
+				display: "flex",
+				gap: "0",
+				width: "100%",
+				margin: "0",
+				"min-height": "100vh",
+			}}
+		>
 			<div
 				class={"dark"}
 				style={{
-					width: "100%",
-					margin: 0,
+					flex: "1",
 					"background-color": "#1a1a1a",
-					padding: "1rem",
+					padding: "2rem",
+					display: "flex",
+					"align-items": "center",
+					"justify-content": "center",
 				}}
 			>
 				<Story />
 			</div>
 			<div
 				style={{
+					flex: "1",
 					"background-color": "#ffffff",
-					padding: "1rem",
+					padding: "2rem",
+					display: "flex",
+					"align-items": "center",
+					"justify-content": "center",
 				}}
 			>
 				<Story />
 			</div>
-		</>
+		</div>
 	);
 };

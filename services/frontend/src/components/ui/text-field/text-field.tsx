@@ -66,7 +66,7 @@ const TextFieldInput = <T extends ValidComponent = "input">(
 		<TextFieldPrimitive.Input
 			type={local.type}
 			class={cn(
-				"flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger",
+				"flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger ui-invalid:dark:text-danger-dark",
 				local.class,
 			)}
 			{...others}
@@ -86,7 +86,7 @@ const TextFieldTextArea = <T extends ValidComponent = "textarea">(
 	return (
 		<TextFieldPrimitive.TextArea
 			class={cn(
-				"flex min-h-20 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger",
+				"flex min-h-20 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger ui-invalid:dark:text-danger-dark",
 				local.class,
 			)}
 			{...others}
@@ -102,7 +102,7 @@ const labelVariants = cva(
 				label: "",
 				description:
 					"font-normal text-on-surface-muted dark:text-on-surface-dark-muted",
-				error: "text-xs text-danger font-medium",
+				error: "text-xs text-danger dark:text-danger-dark font-medium",
 			},
 		},
 		defaultVariants: {
