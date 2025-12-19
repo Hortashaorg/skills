@@ -8,10 +8,10 @@ setProjectAnnotations([
 	a11yAddonAnnotations,
 	projectAnnotations,
 	{
-		// Override globals for light mode testing
-		// This ensures each story is tested in light mode for accessibility
+		// Override globals for dark mode testing
+		// This ensures each story is tested in dark mode for accessibility
 		initialGlobals: {
-			themeMode: "light",
+			themeMode: "dark",
 		},
 	},
 ]);

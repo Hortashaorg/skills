@@ -29,6 +29,7 @@ export default defineConfig(() => ({
 	test: {
 		projects: [
 			{
+				name: "storybook-light",
 				extends: true,
 				plugins: [
 					// The plugin will run tests for the stories defined in your Storybook config
@@ -38,7 +39,6 @@ export default defineConfig(() => ({
 					}),
 				],
 				test: {
-					name: "storybook",
 					browser: {
 						enabled: true,
 						headless: true,
@@ -50,6 +50,23 @@ export default defineConfig(() => ({
 						],
 					},
 					setupFiles: ["./.storybook/vitest.setup.ts"],
+				},
+			},
+			{
+				name: "storybook-dark",
+				extends: true,
+				test: {
+					browser: {
+						enabled: true,
+						headless: true,
+						provider: playwright(),
+						instances: [
+							{
+								browser: "chromium",
+							},
+						],
+					},
+					setupFiles: ["./.storybook/vitest.setup-dark.ts"],
 				},
 			},
 		],
