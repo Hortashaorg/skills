@@ -39,6 +39,11 @@ export interface ThemedStoryConfig<T> {
 export function createThemedStories<T>(config: ThemedStoryConfig<T>) {
 	const { story, testMode = "both" } = config;
 
+	// When testMode is "both", only run play function on Light to avoid conflicts
+	// (interaction tests would run twice and cause "multiple elements" errors)
+	const shouldRunPlayOnLight = testMode === "light" || testMode === "both";
+	const shouldRunPlayOnDark = testMode === "dark";
+
 	// Light mode story - visible and tested
 	const Light: StoryObj<T> = {
 		...story,
@@ -50,6 +55,8 @@ export function createThemedStories<T>(config: ThemedStoryConfig<T>) {
 			...(story.tags || []),
 			...(testMode === "light" || testMode === "both" ? [] : ["!test"]),
 		],
+		// Keep play function for Light when testing light or both
+		play: shouldRunPlayOnLight ? story.play : undefined,
 	};
 
 	// Dark mode story - visible and tested
@@ -63,6 +70,8 @@ export function createThemedStories<T>(config: ThemedStoryConfig<T>) {
 			...(story.tags || []),
 			...(testMode === "dark" || testMode === "both" ? [] : ["!test"]),
 		],
+		// Only keep play function for Dark when explicitly testing dark mode only
+		play: shouldRunPlayOnDark ? story.play : undefined,
 	};
 
 	return { Light, Dark };
