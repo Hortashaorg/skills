@@ -48,8 +48,27 @@ export const SearchInput = (props: SearchInputProps) => {
 		props.onClear?.();
 	};
 
+	const handleSelect = (item: SearchResultItem) => {
+		// Update input value with selected item's primary text
+		props.onValueChange(item.primary);
+		// Call the onSelect callback if provided
+		props.onSelect?.(item);
+	};
+
 	const getNoResultsMessage = () => {
 		return props.noResultsMessage || `No results found for "${props.value}"`;
+	};
+
+	// Check if current value exactly matches a result (case-sensitive)
+	// This closes dropdown after selection while keeping it open during typing
+	const hasExactMatch = () => {
+		const trimmedValue = props.value.trim();
+		return props.results.some((item) => item.primary === trimmedValue);
+	};
+
+	// Show dropdown only when there's a value, results exist, and no exact match
+	const shouldShowDropdown = () => {
+		return props.value && props.results.length > 0 && !hasExactMatch();
 	};
 
 	return (
@@ -78,7 +97,7 @@ export const SearchInput = (props: SearchInputProps) => {
 					</div>
 
 					<TextFieldInput
-						type="search"
+						type="text"
 						value={props.value}
 						onInput={(e) => props.onValueChange(e.currentTarget.value)}
 						placeholder={props.placeholder || "Search..."}
@@ -136,13 +155,13 @@ export const SearchInput = (props: SearchInputProps) => {
 			</TextField>
 
 			{/* Results Dropdown */}
-			<Show when={props.value && props.results.length > 0}>
+			<Show when={shouldShowDropdown()}>
 				<div class="absolute z-50 w-full mt-1 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg max-h-60 overflow-y-auto">
 					<For each={props.results}>
 						{(item) => (
 							<button
 								type="button"
-								onClick={() => props.onSelect?.(item)}
+								onClick={() => handleSelect(item)}
 								class="w-full text-left px-4 py-3 hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors border-b border-outline/50 dark:border-outline-dark/50 last:border-b-0"
 							>
 								<div class="flex items-start justify-between gap-2">

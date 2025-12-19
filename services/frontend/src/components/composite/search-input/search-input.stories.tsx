@@ -22,7 +22,7 @@ const mockResults: SearchResultItem[] = [
 		id: "3",
 		primary: "Svelte",
 		secondary: "Cybernetically enhanced web apps",
-		label: "npm",
+		label: "jsr",
 	},
 	{
 		id: "4",
