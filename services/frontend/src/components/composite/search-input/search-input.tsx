@@ -5,40 +5,51 @@ import {
 	TextFieldLabel,
 } from "@/components/ui/text-field";
 
-export type PackageRegistry = "npm" | "jsr" | "brew" | "apt";
-
-export interface PackageResult {
+/**
+ * Generic search result item structure
+ */
+export interface SearchResultItem {
+	/** Unique identifier */
 	id: string;
-	name: string;
-	registry: PackageRegistry;
-	description?: string | null;
-	homepage?: string | null;
-	repository?: string | null;
+	/** Primary text (e.g., name, title) */
+	primary: string;
+	/** Optional secondary text (e.g., description) */
+	secondary?: string;
+	/** Optional label for badge (e.g., category, type) */
+	label?: string;
 }
 
-export interface PackageSearchInputProps {
+export interface SearchInputProps {
 	/** Controlled search value */
 	value: string;
 	/** Called when user types */
 	onValueChange: (value: string) => void;
 	/** Results to display in dropdown */
-	results: PackageResult[];
+	results: SearchResultItem[];
 	/** Show loading spinner */
 	isLoading?: boolean;
-	/** Called when user selects a package */
-	onPackageSelect?: (pkg: PackageResult) => void;
+	/** Called when user selects an item */
+	onSelect?: (item: SearchResultItem) => void;
 	/** Called when user clears search */
 	onClear?: () => void;
-	/** UI customization */
+	/** Placeholder text for input */
 	placeholder?: string;
+	/** Label above input */
 	label?: string;
+	/** Custom CSS class */
 	class?: string;
+	/** Custom message when no results found */
+	noResultsMessage?: string;
 }
 
-export const PackageSearchInput = (props: PackageSearchInputProps) => {
+export const SearchInput = (props: SearchInputProps) => {
 	const handleClear = () => {
 		props.onValueChange("");
 		props.onClear?.();
+	};
+
+	const getNoResultsMessage = () => {
+		return props.noResultsMessage || `No results found for "${props.value}"`;
 	};
 
 	return (
@@ -70,7 +81,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 						type="search"
 						value={props.value}
 						onInput={(e) => props.onValueChange(e.currentTarget.value)}
-						placeholder={props.placeholder || "Search packages..."}
+						placeholder={props.placeholder || "Search..."}
 						class="pl-9 pr-20"
 					/>
 
@@ -128,28 +139,30 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 			<Show when={props.value && props.results.length > 0}>
 				<div class="absolute z-50 w-full mt-1 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg max-h-60 overflow-y-auto">
 					<For each={props.results}>
-						{(pkg) => (
+						{(item) => (
 							<button
 								type="button"
-								onClick={() => props.onPackageSelect?.(pkg)}
+								onClick={() => props.onSelect?.(item)}
 								class="w-full text-left px-4 py-3 hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors border-b border-outline/50 dark:border-outline-dark/50 last:border-b-0"
 							>
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex-1 min-w-0">
 										<div class="font-semibold text-on-surface dark:text-on-surface-dark">
-											{pkg.name}
+											{item.primary}
 										</div>
-										<Show when={pkg.description}>
+										<Show when={item.secondary}>
 											<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted truncate">
-												{pkg.description}
+												{item.secondary}
 											</div>
 										</Show>
 									</div>
-									<div class="shrink-0">
-										<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark">
-											{pkg.registry}
-										</span>
-									</div>
+									<Show when={item.label}>
+										<div class="shrink-0">
+											<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark">
+												{item.label}
+											</span>
+										</div>
+									</Show>
 								</div>
 							</button>
 						)}
@@ -163,7 +176,7 @@ export const PackageSearchInput = (props: PackageSearchInputProps) => {
 			>
 				<div class="absolute z-50 w-full mt-1 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg p-4 text-center">
 					<div class="text-on-surface-muted dark:text-on-surface-dark-muted">
-						No packages found for "{props.value}"
+						{getNoResultsMessage()}
 					</div>
 				</div>
 			</Show>

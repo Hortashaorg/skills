@@ -2,57 +2,47 @@ import { expect, userEvent, within } from "@storybook/test";
 import { createSignal } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createThemedStories } from "@/components/story-helpers";
-import { type PackageResult, PackageSearchInput } from "./package-search-input";
+import { SearchInput, type SearchResultItem } from "./search-input";
 
-// Mock package data for stories
-const mockPackages: PackageResult[] = [
+// Mock search data for stories
+const mockResults: SearchResultItem[] = [
 	{
 		id: "1",
-		name: "express",
-		registry: "npm",
-		description: "Fast, unopinionated, minimalist web framework for Node.js",
-		homepage: "http://expressjs.com/",
-		repository: "https://github.com/expressjs/express",
+		primary: "React",
+		secondary: "A JavaScript library for building user interfaces",
+		label: "npm",
 	},
 	{
 		id: "2",
-		name: "react",
-		registry: "npm",
-		description: "React is a JavaScript library for building user interfaces",
-		homepage: "https://react.dev/",
-		repository: "https://github.com/facebook/react",
+		primary: "Vue",
+		secondary: "The Progressive JavaScript Framework",
+		label: "npm",
 	},
 	{
 		id: "3",
-		name: "lodash",
-		registry: "npm",
-		description: "Lodash modular utilities",
-		homepage: "https://lodash.com/",
-		repository: "https://github.com/lodash/lodash",
+		primary: "Svelte",
+		secondary: "Cybernetically enhanced web apps",
+		label: "npm",
 	},
 	{
 		id: "4",
-		name: "axios",
-		registry: "npm",
-		description: "Promise based HTTP client for the browser and node.js",
-		homepage: null,
-		repository: "https://github.com/axios/axios",
+		primary: "Angular",
+		secondary: "Platform for building mobile and desktop web applications",
+		label: "npm",
 	},
 	{
 		id: "5",
-		name: "moment",
-		registry: "npm",
-		description: "Parse, validate, manipulate, and display dates",
-		homepage: "http://momentjs.com",
-		repository: null,
+		primary: "SolidJS",
+		secondary: "Simple and performant reactivity for building user interfaces",
+		label: "npm",
 	},
 ];
 
 const meta = {
-	title: "Feature/Package Search/PackageSearchInput",
-	component: PackageSearchInput,
+	title: "Composite/SearchInput",
+	component: SearchInput,
 	tags: ["autodocs"],
-} satisfies Meta<typeof PackageSearchInput>;
+} satisfies Meta<typeof SearchInput>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -61,25 +51,25 @@ const defaultBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 
-		// Filter packages based on search value
+		// Filter results based on search value
 		const filteredResults = () => {
 			const term = searchValue().toLowerCase().trim();
 			if (!term) return [];
-			return mockPackages.filter((pkg) =>
-				pkg.name.toLowerCase().includes(term),
+			return mockResults.filter((item) =>
+				item.primary.toLowerCase().includes(term),
 			);
 		};
 
 		return (
 			<div class="h-96">
-				<PackageSearchInput
+				<SearchInput
 					value={searchValue()}
 					onValueChange={setSearchValue}
 					results={filteredResults()}
-					placeholder="Search npm packages..."
+					placeholder="Search frameworks..."
 				/>
 				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
-					Type "express", "react", "lodash", "axios", or "moment" to see results
+					Type "react", "vue", "svelte", "angular", or "solid" to see results
 				</div>
 			</div>
 		);
@@ -101,18 +91,18 @@ const withLabelBase: Story = {
 		const filteredResults = () => {
 			const term = searchValue().toLowerCase().trim();
 			if (!term) return [];
-			return mockPackages.filter((pkg) =>
-				pkg.name.toLowerCase().includes(term),
+			return mockResults.filter((item) =>
+				item.primary.toLowerCase().includes(term),
 			);
 		};
 
 		return (
 			<div class="h-96">
-				<PackageSearchInput
+				<SearchInput
 					value={searchValue()}
 					onValueChange={setSearchValue}
 					results={filteredResults()}
-					label="Search Packages"
+					label="Search Frameworks"
 					placeholder="Type to search..."
 				/>
 			</div>
@@ -136,8 +126,8 @@ const withLoadingBase: Story = {
 		const filteredResults = () => {
 			const term = searchValue().toLowerCase().trim();
 			if (!term) return [];
-			return mockPackages.filter((pkg) =>
-				pkg.name.toLowerCase().includes(term),
+			return mockResults.filter((item) =>
+				item.primary.toLowerCase().includes(term),
 			);
 		};
 
@@ -150,12 +140,12 @@ const withLoadingBase: Story = {
 
 		return (
 			<div class="h-96">
-				<PackageSearchInput
+				<SearchInput
 					value={searchValue()}
 					onValueChange={handleValueChange}
 					results={filteredResults()}
 					isLoading={isLoading()}
-					label="Search Packages"
+					label="Search Frameworks"
 					placeholder="Type to see loading state..."
 				/>
 				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
@@ -180,15 +170,15 @@ const noResultsBase: Story = {
 
 		return (
 			<div class="h-96">
-				<PackageSearchInput
+				<SearchInput
 					value={searchValue()}
 					onValueChange={setSearchValue}
 					results={[]}
-					label="Package Search"
-					placeholder="Search packages..."
+					label="Framework Search"
+					placeholder="Search frameworks..."
 				/>
 				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
-					Shows "No packages found" message for non-existent package
+					Shows "No results found" message for non-existent items
 				</div>
 			</div>
 		);
@@ -203,6 +193,36 @@ const noResultsThemed = createThemedStories({
 export const NoResultsLight = noResultsThemed.Light;
 export const NoResultsDark = noResultsThemed.Dark;
 
+const customNoResultsBase: Story = {
+	render: () => {
+		const [searchValue, setSearchValue] = createSignal("xyz123");
+
+		return (
+			<div class="h-96">
+				<SearchInput
+					value={searchValue()}
+					onValueChange={setSearchValue}
+					results={[]}
+					label="Framework Search"
+					placeholder="Search frameworks..."
+					noResultsMessage="No frameworks match your search. Try different keywords."
+				/>
+				<div class="mt-4 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
+					Custom no results message
+				</div>
+			</div>
+		);
+	},
+};
+
+const customNoResultsThemed = createThemedStories({
+	story: customNoResultsBase,
+	testMode: "both",
+});
+
+export const CustomNoResultsLight = customNoResultsThemed.Light;
+export const CustomNoResultsDark = customNoResultsThemed.Dark;
+
 const withSelectionBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
@@ -210,28 +230,30 @@ const withSelectionBase: Story = {
 		const filteredResults = () => {
 			const term = searchValue().toLowerCase().trim();
 			if (!term) return [];
-			return mockPackages.filter((pkg) =>
-				pkg.name.toLowerCase().includes(term),
+			return mockResults.filter((item) =>
+				item.primary.toLowerCase().includes(term),
 			);
 		};
 
-		const handleSelect = (pkg: PackageResult) => {
-			console.log("Selected package:", pkg);
-			alert(`Selected: ${pkg.name}\nDescription: ${pkg.description || "N/A"}`);
+		const handleSelect = (item: SearchResultItem) => {
+			console.log("Selected item:", item);
+			alert(
+				`Selected: ${item.primary}\\nDescription: ${item.secondary || "N/A"}`,
+			);
 		};
 
 		return (
 			<div class="h-96 space-y-4">
-				<PackageSearchInput
+				<SearchInput
 					value={searchValue()}
 					onValueChange={setSearchValue}
 					results={filteredResults()}
-					onPackageSelect={handleSelect}
-					label="Package Search"
-					placeholder="Search npm packages..."
+					onSelect={handleSelect}
+					label="Framework Search"
+					placeholder="Search frameworks..."
 				/>
 				<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
-					Click a package in the dropdown to see selection callback
+					Click an item in the dropdown to see selection callback
 				</div>
 			</div>
 		);
@@ -246,20 +268,20 @@ const withSelectionThemed = createThemedStories({
 export const WithSelectionLight = withSelectionThemed.Light;
 export const WithSelectionDark = withSelectionThemed.Dark;
 
-// Example: Interactive story with tests
+// Interactive story with tests
 const interactiveBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 		const [isLoading, setIsLoading] = createSignal(false);
-		const [selectedPackage, setSelectedPackage] = createSignal<
-			PackageResult | undefined
+		const [selectedItem, setSelectedItem] = createSignal<
+			SearchResultItem | undefined
 		>();
 
 		const filteredResults = () => {
 			const term = searchValue().toLowerCase().trim();
 			if (!term) return [];
-			return mockPackages.filter((pkg) =>
-				pkg.name.toLowerCase().includes(term),
+			return mockResults.filter((item) =>
+				item.primary.toLowerCase().includes(term),
 			);
 		};
 
@@ -269,38 +291,38 @@ const interactiveBase: Story = {
 			setTimeout(() => setIsLoading(false), 200);
 		};
 
-		const handleSelect = (pkg: PackageResult) => {
-			setSelectedPackage(pkg);
-			console.log("Selected package:", pkg);
+		const handleSelect = (item: SearchResultItem) => {
+			setSelectedItem(item);
+			console.log("Selected item:", item);
 		};
 
 		const handleClear = () => {
-			setSelectedPackage(undefined);
+			setSelectedItem(undefined);
 		};
 
 		return (
 			<div class="h-96 space-y-4">
-				<PackageSearchInput
+				<SearchInput
 					value={searchValue()}
 					onValueChange={handleValueChange}
 					results={filteredResults()}
 					isLoading={isLoading()}
-					onPackageSelect={handleSelect}
+					onSelect={handleSelect}
 					onClear={handleClear}
-					label="Package Search"
-					placeholder="Search npm packages..."
+					label="Framework Search"
+					placeholder="Search frameworks..."
 				/>
 				<div class="space-y-2 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 					<p>Try typing:</p>
 					<ul class="list-disc list-inside">
-						<li>"ex" - shows express and axios</li>
-						<li>"react" - shows react</li>
-						<li>"lo" - shows lodash</li>
-						<li>"moment" - shows moment</li>
+						<li>"re" - shows React</li>
+						<li>"vue" - shows Vue</li>
+						<li>"sv" - shows Svelte</li>
+						<li>"solid" - shows SolidJS</li>
 					</ul>
 					<p>Open console to see selection events</p>
-					<p data-testid="selected-package">
-						Selected: {selectedPackage()?.name || "None"}
+					<p data-testid="selected-item">
+						Selected: {selectedItem()?.primary || "None"}
 					</p>
 				</div>
 			</div>
@@ -310,7 +332,7 @@ const interactiveBase: Story = {
 		const canvas = within(canvasElement);
 
 		// Find the search input
-		const input = canvas.getByPlaceholderText("Search npm packages...");
+		const input = canvas.getByPlaceholderText("Search frameworks...");
 
 		// Type 'react' to trigger search
 		await userEvent.type(input, "react");
@@ -318,15 +340,15 @@ const interactiveBase: Story = {
 		// Wait for results to appear
 		await new Promise((resolve) => setTimeout(resolve, 300));
 
-		// Click on the first result (should be 'react')
-		const reactButton = canvas.getByText("react", {
+		// Click on the first result (should be 'React')
+		const reactButton = canvas.getByText("React", {
 			selector: ".font-semibold",
 		});
 		await userEvent.click(reactButton);
 
 		// Verify selection was made
-		const selectedText = canvas.getByTestId("selected-package");
-		await expect(selectedText).toHaveTextContent("Selected: react");
+		const selectedText = canvas.getByTestId("selected-item");
+		await expect(selectedText).toHaveTextContent("Selected: React");
 
 		// Click clear button
 		const clearButton = canvas.getByLabelText("Clear search");
@@ -337,10 +359,9 @@ const interactiveBase: Story = {
 	},
 };
 
-// Creates two stories: InteractiveLight and InteractiveDark (both tested)
 const interactiveThemed = createThemedStories({
 	story: interactiveBase,
-	testMode: "both", // Test both light and dark modes
+	testMode: "both",
 });
 
 export const InteractiveLight = interactiveThemed.Light;
