@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
 import { Button } from "./button";
 
 const meta = {
 	title: "UI/Button",
 	component: Button,
 	tags: ["autodocs"],
+	includeStories: /^(?!.*Light|.*Dark).*$/, // Exclude stories ending with Light or Dark from sidebar
 	argTypes: {
 		variant: {
 			control: "select",
@@ -36,12 +38,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+// Example: Using the helper for themed stories
+const primaryBase: Story = {
 	args: {
 		variant: "primary",
 		children: "Primary Button",
 	},
 };
+
+// This creates three stories: PrimaryLight (tested, hidden), PrimaryDark (hidden), Primary (visible, not tested)
+const primaryThemed = createThemedStories({
+	story: primaryBase,
+	testMode: "light", // Only test light mode (default)
+});
+
+export const PrimaryLight = primaryThemed.Light;
+export const PrimaryDark = primaryThemed.Dark;
+export const Primary = primaryThemed.Playground;
 
 export const Secondary: Story = {
 	args: {

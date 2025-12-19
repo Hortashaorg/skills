@@ -13,7 +13,13 @@ const dirname =
 		: path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => ({
-	plugins: [solidPlugin(), tailwindcss()],
+	plugins: [
+		solidPlugin(),
+		tailwindcss(),
+		storybookTest({
+			configDir: path.join(dirname, ".storybook"),
+		}),
+	],
 	server: {
 		port: 4321,
 	},
@@ -27,48 +33,16 @@ export default defineConfig(() => ({
 		},
 	},
 	test: {
-		projects: [
-			{
-				name: "storybook-light",
-				extends: true,
-				plugins: [
-					// The plugin will run tests for the stories defined in your Storybook config
-					// See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-					storybookTest({
-						configDir: path.join(dirname, ".storybook"),
-					}),
-				],
-				test: {
-					browser: {
-						enabled: true,
-						headless: true,
-						provider: playwright(),
-						instances: [
-							{
-								browser: "chromium",
-							},
-						],
-					},
-					setupFiles: ["./.storybook/vitest.setup.ts"],
+		browser: {
+			enabled: true,
+			headless: true,
+			provider: playwright(),
+			instances: [
+				{
+					browser: "chromium",
 				},
-			},
-			{
-				name: "storybook-dark",
-				extends: true,
-				test: {
-					browser: {
-						enabled: true,
-						headless: true,
-						provider: playwright(),
-						instances: [
-							{
-								browser: "chromium",
-							},
-						],
-					},
-					setupFiles: ["./.storybook/vitest.setup-dark.ts"],
-				},
-			},
-		],
+			],
+		},
+		setupFiles: ["./.storybook/vitest.setup.ts"],
 	},
 }));

@@ -11,5 +11,10 @@ const config: StorybookConfig = {
 	],
 	framework: "storybook-solidjs-vite",
 	stories: ["../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+	tags: {
+		"test-only": {
+			defaultFilterSelection: "exclude", // Hide from sidebar by default
+		},
+	},
 };
 export default config;

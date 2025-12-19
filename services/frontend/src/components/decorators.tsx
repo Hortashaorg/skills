@@ -1,7 +1,8 @@
 import type { Decorator } from "storybook-solidjs-vite";
 
 export const withTheme: Decorator = (Story, context) => {
-	const themeMode = context.globals.themeMode || "side-by-side";
+	console.log(context.globals.themeMode);
+	const themeMode = context.globals.themeMode || "light";
 
 	// Single dark mode
 	if (themeMode === "dark") {

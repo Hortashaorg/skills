@@ -1,6 +1,7 @@
+import { expect, userEvent, within } from "@storybook/test";
 import { createSignal } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { expect, userEvent, within } from "@storybook/test";
+import { createThemedStories } from "@/components/story-helpers";
 import { type PackageResult, PackageSearchInput } from "./package-search-input";
 
 // Mock package data for stories
@@ -205,7 +206,8 @@ export const WithSelection: Story = {
 	},
 };
 
-export const Interactive: Story = {
+// Example: Interactive story with tests
+const interactiveBase: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 		const [isLoading, setIsLoading] = createSignal(false);
@@ -277,7 +279,9 @@ export const Interactive: Story = {
 		await new Promise((resolve) => setTimeout(resolve, 300));
 
 		// Click on the first result (should be 'react')
-		const reactButton = canvas.getByText("react", { selector: ".font-semibold" });
+		const reactButton = canvas.getByText("react", {
+			selector: ".font-semibold",
+		});
 		await userEvent.click(reactButton);
 
 		// Verify selection was made
@@ -292,3 +296,13 @@ export const Interactive: Story = {
 		await expect(input).toHaveValue("");
 	},
 };
+
+// Creates three stories: InteractiveLight (tested), InteractiveDark (not tested), Interactive (visible, not tested)
+const interactiveThemed = createThemedStories({
+	story: interactiveBase,
+	testMode: "light", // Only test light mode
+});
+
+export const InteractiveLight = interactiveThemed.Light;
+export const InteractiveDark = interactiveThemed.Dark;
+export const Interactive = interactiveThemed.Playground;

@@ -17,6 +17,14 @@ const preview: Preview = {
 			// 'off' - skip a11y checks entirely
 			test: "error",
 		},
+
+		options: {
+			// Configure story sorting and filtering
+			storySort: {
+				method: "alphabetical",
+				locales: "en-US",
+			},
+		},
 	},
 
 	globalTypes: {
