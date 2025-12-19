@@ -44,5 +44,15 @@ export default defineConfig(() => ({
 			],
 		},
 		setupFiles: ["./.storybook/vitest.setup.ts"],
+		coverage: {
+			exclude: [
+				"**/*.stories.tsx",
+				"src/components/decorators.tsx",
+				"src/components/story-helpers.tsx",
+				".storybook/**",
+				"src/index.css",
+				"**/index.ts",
+			],
+		},
 	},
 }));

@@ -1,3 +1,4 @@
+import { toaster } from "@kobalte/core/toast";
 import { expect, userEvent, within } from "@storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createThemedStories } from "@/components/story-helpers";
@@ -36,6 +37,9 @@ const successBase: Story = {
 		},
 	},
 	play: async ({ canvasElement }) => {
+		// Clear any existing toasts from previous tests
+		toaster.clear();
+
 		const canvas = within(canvasElement);
 		const button = canvas.getByText("Show Success Toast");
 		await userEvent.click(button);
@@ -83,6 +87,9 @@ const errorToastBase: Story = {
 		},
 	},
 	play: async ({ canvasElement }) => {
+		// Clear any existing toasts from previous tests
+		toaster.clear();
+
 		const canvas = within(canvasElement);
 		const button = canvas.getByText("Show Error Toast");
 		await userEvent.click(button);
@@ -126,6 +133,9 @@ const infoBase: Story = {
 		},
 	},
 	play: async ({ canvasElement }) => {
+		// Clear any existing toasts from previous tests
+		toaster.clear();
+
 		const canvas = within(canvasElement);
 		const button = canvas.getByText("Show Info Toast");
 		await userEvent.click(button);
@@ -173,6 +183,9 @@ const warningBase: Story = {
 		},
 	},
 	play: async ({ canvasElement }) => {
+		// Clear any existing toasts from previous tests
+		toaster.clear();
+
 		const canvas = within(canvasElement);
 		const button = canvas.getByText("Show Warning Toast");
 		await userEvent.click(button);
@@ -260,6 +273,9 @@ const customDurationBase: Story = {
 		},
 	},
 	play: async ({ canvasElement }) => {
+		// Clear any existing toasts from previous tests
+		toaster.clear();
+
 		const canvas = within(canvasElement);
 		const button = canvas.getByText("Show Toast (10 seconds)");
 		await userEvent.click(button);
