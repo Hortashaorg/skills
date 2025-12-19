@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createThemedStories } from "@/components/story-helpers";
 import { SearchInput, type SearchResultItem } from "./search-input";
 
-// Mock search data for stories
+// Mock search data for stories (same as search-input)
 const mockResults: SearchResultItem[] = [
 	{
 		id: "1",
@@ -330,6 +330,7 @@ const interactiveBase: Story = {
 	},
 	play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
 		const canvas = within(canvasElement);
+		const body = within(document.body);
 
 		// Find the search input
 		const input = canvas.getByPlaceholderText("Search frameworks...");
@@ -341,10 +342,12 @@ const interactiveBase: Story = {
 		await new Promise((resolve) => setTimeout(resolve, 300));
 
 		// Click on the first result (should be 'React')
-		const reactButton = canvas.getByText("React", {
-			selector: ".font-semibold",
-		});
+		// Portal renders to document.body, so search there
+		const reactButton = body.getByRole("option", { name: /React/i });
 		await userEvent.click(reactButton);
+
+		// Wait for selection to process
+		await new Promise((resolve) => setTimeout(resolve, 100));
 
 		// Verify selection was made
 		const selectedText = canvas.getByTestId("selected-item");
