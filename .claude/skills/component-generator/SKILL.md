@@ -1,6 +1,6 @@
 ---
 name: component-generator
-description: Generate production-ready SolidJS components with Kobalte accessibility primitives, CVA variants, Storybook stories, and Vitest tests. Use when creating new UI components, buttons, inputs, badges, dialogs, cards, or any SolidJS components for the frontend application.
+description: Generate production-ready SolidJS components with Kobalte accessibility primitives, CVA variants, and Storybook stories with themed testing. Use when creating new UI components, buttons, inputs, badges, dialogs, cards, or any SolidJS components for the frontend application.
 ---
 
 # SolidJS Component Generator Agent
@@ -12,9 +12,28 @@ You are a specialized agent for creating fully-functional SolidJS components fol
 - Generate components in 4 tiers: primitives, ui, composite, feature
 - Integrate Kobalte accessibility primitives intelligently
 - Create type-safe components with CVA variants
-- Generate comprehensive Storybook stories
-- Generate complete Vitest tests
+- Generate comprehensive Storybook stories with themed Light/Dark variants
 - Follow established project patterns exactly
+- Work on ONE component at a time, ensuring quality before proceeding
+
+## Critical Constraints
+
+**Components MUST:**
+- ✅ Contain NO backend communication or API calls
+- ✅ Contain NO business logic (business logic lives in features/pages)
+- ✅ Be purely presentational (accept props, render UI, emit events)
+- ✅ Use Kobalte primitives for accessibility where appropriate
+- ✅ Support both light and dark themes
+- ✅ Pass biome linting/formatting and TypeScript type checking
+- ✅ Have comprehensive Storybook stories for testing
+
+**Components must NOT:**
+- ❌ Make fetch/API calls
+- ❌ Import from backend packages
+- ❌ Contain business rules or domain logic
+- ❌ Manage application state (use props/callbacks instead)
+
+**Feature components** (like Navbar) are domain-specific but still presentational - they compose ui/composite components with domain-specific layouts, not business logic.
 
 ## Conversation Flow
 
@@ -31,7 +50,7 @@ Ask these questions in order:
    - Options:
      - `ui` - Interactive, styled components (buttons, inputs, cards)
      - `composite` - Combinations of ui components (search input, icon button)
-     - `feature` - Domain-specific components (user card, product grid)
+     - `feature` - Domain-specific presentational components (navbar, footer, user profile card)
      - `primitives` - Layout & base elements (flex, grid, text)
 
 3. **Purpose/Description**
@@ -182,13 +201,14 @@ I'll create a {{NAME}} component with:
   - Size: {{SIZE_VARIANTS}}
   {{STATE_VARIANTS}}
 - Additional Props: {{PROPS}}
-- Files: 4 (component, index, stories, tests)
+- Files: 3 (component, index, stories)
 
 **File Locations:**
 - /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/index.ts
 - /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/{{NAME_LOWER}}.tsx
 - /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/{{NAME_LOWER}}.stories.tsx
-- /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/{{NAME_LOWER}}.test.tsx
+
+**Testing:** Storybook stories serve as both documentation and tests
 
 Shall I generate the component?
 ```
@@ -207,85 +227,152 @@ Shall I generate the component?
    - Ensure `/skills/services/frontend/src/components/{{TIER}}/` exists
    - If not, create it
 
+### Required Reading (BEFORE GENERATION)
+
+**CRITICAL:** You MUST read these files in order before generating any code:
+
+1. **Read `/skills/services/frontend/src/components/ui/button/button.tsx`**
+   - This is your PRIMARY REFERENCE pattern
+   - Follow this structure exactly
+
+2. **Read `/skills/.claude/skills/component-generator/kobalte-primitives.md`**
+   - Find the correct Kobalte primitive import path
+   - Understand sub-component structure if composite
+
+3. **Read `/skills/.claude/skills/component-generator/accessibility-guidelines.md`**
+   - Find the section matching your component type
+   - Extract which accessibility props to include in types
+
+4. **Read `/skills/.claude/skills/component-generator/color-reference.md`**
+   - Understand theme vs shared colors
+   - Apply correct dark mode patterns for variants
+
+5. **Read `/skills/.claude/skills/component-generator/templates/component.tsx.template`**
+   - Reference pattern showing decision tree
+   - Understand USE_KOBALTE and HAS_VARIANTS flags
+
 ### Generation Process
 
-**For Simple Pattern:**
+**Follow this workflow:**
 
-1. Load `simple-component.tsx.template`
-2. Replace placeholders:
-   - `{{NAME}}` = PascalCase component name
-   - `{{NAME_LOWER}}` = kebab-case name
-   - `{{PRIMITIVE}}` = Kobalte primitive name
-   - `{{PRIMITIVE_IMPORT}}` = Import path from kobalte-primitives.md
-   - `{{ELEMENT}}` = HTML element type
-   - `{{BASE_CLASSES}}` = Common Tailwind classes (comma-separated)
-   - `{{VARIANT_DEFINITIONS}}` = CVA variant objects
-   - `{{DEFAULT_VARIANTS}}` = Default variant values
-   - `{{SPLIT_PROPS}}` = Props to split (variant names + "class")
-   - `{{VARIANT_ARGS}}` = Arguments for variant function
+1. **Determine component pattern:**
+   - Does it use Kobalte? → USE_KOBALTE = true/false
+   - Does it have variants? → HAS_VARIANTS = true/false
+   - Examples:
+     - Button: USE_KOBALTE=true, HAS_VARIANTS=true
+     - Badge: USE_KOBALTE=false, HAS_VARIANTS=true
+     - Label: USE_KOBALTE=false, HAS_VARIANTS=false
 
-**Example Replacement:**
+2. **Generate component file ({name}.tsx) following Button pattern:**
+   - Import Kobalte primitive if USE_KOBALTE=true
+   - Import CVA if HAS_VARIANTS=true
+   - Always import: JSX, splitProps, cn
+   - Create CVA variants if HAS_VARIANTS=true (use color-reference.md for tokens)
+   - Define type with accessibility props (use accessibility-guidelines.md)
+   - Implement component following template pattern
+   - Spread {...others} for HTML attribute passthrough
+
+3. **Generate index.ts (barrel export):**
+   ```typescript
+   export { ComponentName, type ComponentNameProps } from "./component-name";
+   ```
+
+4. **Generate {name}.stories.tsx using themed story pattern:**
+   - Import `createThemedStories` from `@/components/story-helpers`
+   - Create base story with args for each variant
+   - Wrap with `createThemedStories({ story: base, testMode: "both" })`
+   - Export Light and Dark variants
+   - One themed story pair per color variant
+   - One themed story pair per size variant
+   - AllVariants showcase story with both themes
+   - See `/skills/.claude/skills/component-generator/themed-story-pattern.md` for complete pattern
+
+### Story Generation Pattern
+
+**CRITICAL:** All stories MUST use the themed pattern with Light/Dark variants.
+
 ```tsx
-// Input template:
-const {{NAME_LOWER}}Variants = cva([{{BASE_CLASSES}}], { variants: { {{VARIANT_DEFINITIONS}} } });
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { createThemedStories } from "@/components/story-helpers";
+import { {{NAME}} } from "./{{NAME_LOWER}}";
 
-// Output:
-const cardVariants = cva(
-	["rounded-lg", "border", "p-4", "transition"],
-	{
-		variants: {
-			variant: {
-				default: ["bg-white", "border-gray-200"],
-				elevated: ["bg-white", "shadow-lg", "border-transparent"],
-				outlined: ["bg-transparent", "border-gray-300"],
-				ghost: ["bg-transparent", "border-transparent"]
-			},
-			size: {
-				md: ["p-4"],
-				lg: ["p-6"]
-			}
+const meta = {
+	title: "{{TIER}}/{{NAME}}",
+	component: {{NAME}},
+	tags: ["autodocs"],
+	argTypes: {
+		variant: {
+			control: "select",
+			options: [{{VARIANT_OPTIONS}}],
+			description: "{{NAME}} color variant",
 		},
-		defaultVariants: {
-			variant: "default",
-			size: "md"
-		}
-	}
-);
+		size: {
+			control: "select",
+			options: [{{SIZE_OPTIONS}}],
+			description: "{{NAME}} size",
+		},
+	},
+} satisfies Meta<typeof {{NAME}}>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+// Example: Primary variant with themed stories
+const primaryBase: Story = {
+	args: {
+		variant: "primary",
+		children: "Primary {{NAME}}",
+	},
+};
+
+const primaryThemed = createThemedStories({
+	story: primaryBase,
+	testMode: "both", // Run interaction tests in both light and dark
+});
+
+export const PrimaryLight = primaryThemed.Light;
+export const PrimaryDark = primaryThemed.Dark;
+
+// Repeat for each variant...
 ```
 
-3. Generate index.ts from template
-4. Generate stories from template with:
-   - One story per color variant
-   - One story per size variant
-   - AllVariants showcase story
-5. Generate tests from template with:
-   - Renders children test
-   - Default variant test
-   - Tests for each variant
-   - Tests for each size
-   - Custom class test
-   - Interaction tests (if interactive)
+**testMode options:**
+- `"both"` - Run interaction tests in both light and dark (default for most)
+- `"light"` - Run tests only in light mode
+- `"dark"` - Run tests only in dark mode
+- `"none"` - Skip interaction tests (for visual-only stories)
 
 ### Atomic File Write
 
-1. **Generate all 4 files in memory first**
+1. **Generate all 3 files in memory first**
 2. **Create component directory**
 3. **Write all files atomically:**
    ```bash
    mkdir -p /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}
    ```
 4. Write each file
-5. **Validate TypeScript compilation:**
+5. **Validate with biome and TypeScript:**
    ```bash
-   cd /skills/services/frontend && npx tsc --noEmit --skipLibCheck
+   cd /skills/services/frontend && pnpm check
+   cd /skills/services/frontend && pnpm typecheck
    ```
 6. If validation fails:
-   - Show error to user
-   - Ask if they want to see the code for manual fixes
-   - Do NOT write files
-7. If validation passes:
-   - Confirm success
-   - Show next steps
+   - Fix errors immediately - NO workarounds
+   - Re-run validation
+   - Repeat until clean
+7. **Run Storybook tests:**
+   ```bash
+   cd /skills/services/frontend && pnpm test
+   ```
+8. **Check test coverage:**
+   ```bash
+   cd /skills/services/frontend && pnpm coverage
+   ```
+9. Only proceed to next component when:
+   - ✅ Biome check passes
+   - ✅ TypeScript compiles
+   - ✅ All Storybook tests pass
+   - ✅ Component has adequate coverage
 
 ### Post-Generation Response
 
@@ -296,13 +383,17 @@ const cardVariants = cva(
 - /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/index.ts
 - /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/{{NAME_LOWER}}.tsx
 - /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/{{NAME_LOWER}}.stories.tsx
-- /skills/services/frontend/src/components/{{TIER}}/{{NAME_LOWER}}/{{NAME_LOWER}}.test.tsx
+
+**Validation results:**
+✅ Biome check passed
+✅ TypeScript compilation passed
+✅ Storybook tests: {{TEST_COUNT}} passing
+✅ Test coverage: {{COVERAGE}}%
 
 **Next steps:**
 1. Review the generated component
-2. Run `pnpm test` to verify tests pass
-3. Run `pnpm storybook` to preview in Storybook
-4. Customize styling/behavior as needed
+2. Run `pnpm storybook` to preview in Storybook
+3. Customize styling/behavior as needed
 
 **Import usage:**
 ```tsx
@@ -314,7 +405,7 @@ import { {{NAME}} } from "@/components/{{TIER}}/{{NAME_LOWER}}";
 </{{NAME}}>
 ```
 
-Would you like me to make any adjustments?
+Would you like me to make any adjustments or create another component?
 ```
 
 ## Tailwind Class Generation
@@ -427,19 +518,21 @@ Options:
 What would you like to do?
 ```
 
-### TypeScript Compilation Errors
+### Validation Errors
 ```
-❌ Generated code has TypeScript errors:
+❌ Validation failed:
 
 {{ERROR_MESSAGE}}
 
-I can:
-1. Show you the generated code for manual fixes
-2. Try regenerating with different options
-3. Cancel and start over
-
-What would you like to do?
+Fixing errors now (no workarounds)...
 ```
+
+**Process:**
+1. Read error message
+2. Fix the actual issue
+3. Re-run validation
+4. Repeat until clean
+5. NEVER use workarounds or type assertions to bypass errors
 
 ### Invalid Tier
 ```
@@ -454,28 +547,56 @@ Please choose a valid tier.
 
 ## Reference Files
 
-You should read these files to understand patterns:
+**REQUIRED READING** (must read before generating any component):
 
-- `/skills/.claude/skills/component-generator/color-reference.md` - **REQUIRED** - Complete color token guide with use cases
-- `/skills/services/frontend/src/components/ui/button/button.tsx` - **PRIMARY REFERENCE** - Follow this pattern exactly
-- `/skills/services/frontend/src/components/ui/badge/badge.tsx` - Simple component with accessibility props
-- `/skills/services/frontend/src/index.css` - Theme color definitions (for reference only, use color-reference.md for guidance)
-- `/skills/CLAUDE.md` - Project architecture guidelines
+1. **`/skills/services/frontend/src/components/ui/button/button.tsx`**
+   - PRIMARY REFERENCE - Follow this structure exactly
+   - Shows complete pattern: Kobalte + CVA + types + spreading
 
-**Note:** Ignore `label.tsx` and `text-field.tsx` - these are old files that don't follow the current pattern.
+2. **`/skills/.claude/skills/component-generator/kobalte-primitives.md`**
+   - Catalog of all 30+ Kobalte primitives
+   - Import paths, sub-components, keywords for matching
+
+3. **`/skills/.claude/skills/component-generator/accessibility-guidelines.md`**
+   - Component-specific accessibility prop guidance
+   - Determines which props to expose in types
+
+4. **`/skills/.claude/skills/component-generator/color-reference.md`**
+   - Theme color token guide (theme vs shared colors)
+   - Dark mode patterns, variant examples
+
+5. **`/skills/.claude/skills/component-generator/templates/component.tsx.template`**
+   - Reference pattern with decision tree
+   - Shows USE_KOBALTE and HAS_VARIANTS logic
+
+6. **`/skills/.claude/skills/component-generator/themed-story-pattern.md`**
+   - Complete themed story pattern documentation
+   - testMode options, Portal component testing
+
+**Additional references** (optional, for context):
+
+- `/skills/services/frontend/src/components/ui/badge/badge.tsx` - Plain HTML + CVA pattern
+- `/skills/services/frontend/src/components/composite/search-input/search-input.tsx` - Complex Kobalte Combobox
+- `/skills/services/frontend/src/components/story-helpers.tsx` - Themed story helper implementation
+- `/skills/CLAUDE.md` - Overall project architecture
 
 ## Key Principles
 
-1. **Follow existing patterns exactly** - Don't invent new patterns
-2. **Type safety is critical** - All props must be properly typed, but keep autocomplete clean
-3. **Accessibility first** - Use Kobalte when possible, expose accessibility props in types
-4. **Complete coverage** - Generate all 4 files every time
-5. **Validate before writing** - TypeScript check prevents broken code
-6. **Clear communication** - Explain suggestions, confirm before generating
-7. **Atomic operations** - All files or none (rollback on error)
-8. **CRITICAL: Always spread `{...others}`** - This passes through all HTML attributes (data-*, aria-*, events, etc.). Without it, components feel broken. Use `{...(others as JSX.HTMLAttributes<HTMLElementType>)}` for type safety.
-9. **CRITICAL: Dark mode is mandatory** - ALL components must support both light and dark modes. Theme colors require `-dark` variants, shared colors do not. Read color-reference.md before generating any component.
-10. **Use `rounded-radius` for borders** - Never use `rounded-md` or `rounded-lg` unless there's a specific reason (badges use `rounded-full`)
+1. **CRITICAL: Read reference files BEFORE generation** - See "Required Reading" section. Must read Button.tsx, kobalte-primitives.md, accessibility-guidelines.md, color-reference.md, and component.tsx.template BEFORE writing any code.
+2. **Follow existing patterns exactly** - Don't invent new patterns, use Button.tsx as PRIMARY REFERENCE
+3. **Type safety is critical** - All props must be properly typed, but keep autocomplete clean
+4. **Accessibility first** - Use Kobalte when possible, expose accessibility props from guidelines
+5. **Storybook for testing** - No separate test files, stories serve as tests with themed Light/Dark variants
+6. **Validate before proceeding** - Biome, TypeScript, and Storybook tests must pass
+7. **One component at a time** - Complete and validate before moving to next
+8. **No workarounds** - Fix errors properly, never use type assertions or ignores
+9. **Clear communication** - Explain suggestions, confirm before generating
+10. **Atomic operations** - All files or none (rollback on error)
+11. **CRITICAL: Always spread `{...others}`** - This passes through all HTML attributes (data-*, aria-*, events, etc.). Without it, components feel broken. Use `{...(others as JSX.HTMLAttributes<HTMLElementType>)}` for type safety.
+12. **CRITICAL: Dark mode is mandatory** - ALL components must support both light and dark modes. Theme colors require `-dark` variants, shared colors do not. Use color-reference.md for all variant classes.
+13. **Use `rounded-radius` for borders** - Never use `rounded-md` or `rounded-lg` unless there's a specific reason (badges use `rounded-full`)
+14. **No backend communication** - Components are purely presentational
+15. **No business logic** - Components accept props and render UI
 
 ## Example Interaction
 
@@ -506,20 +627,31 @@ User: sm and md
 
 Agent: Summary:
 - Tier: ui | Base: span | Variants: 6 colors, 2 sizes
-- Files: index.ts, badge.tsx, badge.stories.tsx, badge.test.tsx
+- Files: index.ts, badge.tsx, badge.stories.tsx
+- Testing: Storybook stories with Light/Dark themes
 
 Generate? (Yes/No)
 
 User: Yes
 
-Agent: ✅ Generated Badge successfully!
+Agent: [Generates files, validates with biome + typecheck, runs tests]
+
+✅ Generated Badge successfully!
+
+**Validation:**
+✅ Biome check passed
+✅ TypeScript compiled
+✅ 24 Storybook tests passing
+✅ Coverage: 100%
 
 Import: `import { Badge } from "@/components/ui/badge"`
 Usage: `<Badge variant="success" size="sm">New</Badge>`
 
-Next: Review component, run tests, view in Storybook
+Next: Review component, run Storybook to preview
+
+Would you like to create another component?
 ```
 
 ## You Are Ready
 
-Start the conversation by greeting the user and asking what component they'd like to create. Guide them through the 6-stage process, generate all files, and provide clear next steps.
+Start the conversation by greeting the user and asking what component they'd like to create. Guide them through the 6-stage process, generate all files, validate thoroughly, and only proceed when all checks pass. Work on ONE component at a time to ensure quality.

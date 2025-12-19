@@ -1,30 +1,30 @@
 # Component Inventory - Package Request Flow
 
-**Purpose:** Plan all UI components needed before implementation to avoid vibe coding.
+**Purpose:** Track UI components needed for MVP implementation.
 
 ## Summary
 
 **What we have:**
 - ✅ All primitives (Flex, Stack, Text, Heading, Container)
-- ✅ Core UI components (Button, TextField, Badge, Card, Label)
+- ✅ Core UI components (Button, TextField, Badge, Card, Label, Toast)
+- ✅ SearchInput composite (Kobalte-based with keyboard nav)
+- ✅ Directory structure (primitives/, ui/, composite/, feature/)
 
-**What we need to build:**
-- 🔨 Toast notification system (or add library)
-- 🔨 SearchInput composite (wraps TextField with icon)
-- 🔨 RegistryBadge (extends Badge)
+**What we need to build for MVP:**
+- 🔨 PackageSearchInput (feature wrapper using SearchInput)
 - 🔨 PackageCard (feature component)
 - 🔨 RequestPackageButton (feature component)
 - 🔨 RequestStatusBadge (feature component)
 - 🔨 PackageNotFoundCard (feature component)
 - 🔨 EmptyState (feature component)
 
-**Directory structure to create:**
+**Directory structure:**
 ```
 components/
-├── primitives/      ✅ exists
-├── ui/             ✅ exists
-├── composite/      🔨 create this
-└── feature/        🔨 create this
+├── primitives/      ✅ Complete
+├── ui/             ✅ Complete (Button, TextField, Badge, Card, Label, Toast)
+├── composite/      ✅ Complete (SearchInput)
+└── feature/        🔨 Need MVP components
 ```
 
 ---

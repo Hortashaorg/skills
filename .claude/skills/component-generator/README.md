@@ -8,9 +8,11 @@ This skill guides you through creating production-ready components with:
 - ✅ Full TypeScript type safety
 - ✅ Kobalte accessibility primitives integration
 - ✅ CVA (class-variance-authority) variants
-- ✅ Comprehensive Storybook stories
-- ✅ Complete Vitest test coverage
-- ✅ Tailwind 4 styling
+- ✅ Comprehensive Storybook stories with themed Light/Dark variants
+- ✅ Testing via Storybook (no separate test files)
+- ✅ Tailwind 4 styling with theme tokens
+- ✅ Biome linting/formatting validation
+- ✅ One component at a time with quality assurance
 
 ## Quick Start
 
@@ -24,15 +26,16 @@ The agent will guide you through an interactive conversation to gather requireme
 
 ## What Gets Generated
 
-For each component, the agent creates 4 files:
+For each component, the agent creates 3 files:
 
 ```
 /skills/services/frontend/src/components/{tier}/{component-name}/
-├── index.ts              # Barrel export
-├── {component-name}.tsx   # Component implementation
-├── {component-name}.stories.tsx  # Storybook documentation
-└── {component-name}.test.tsx     # Unit tests
+├── index.ts                       # Barrel export
+├── {component-name}.tsx           # Component implementation
+└── {component-name}.stories.tsx   # Storybook documentation & tests
 ```
+
+**No separate test files** - Storybook stories serve as both documentation and automated tests with themed Light/Dark variants.
 
 ## Example Usage
 
@@ -44,7 +47,7 @@ You: Create a Badge component
 Agent: I'll help you create a Badge component! Which tier should this component be in?
 - ui (interactive, styled components)
 - composite (combination of ui components)
-- feature (domain-specific components)
+- feature (domain-specific presentational components)
 - primitives (layout & base elements)
 
 You: ui
@@ -53,18 +56,18 @@ Agent: Great! What's the purpose of this Badge component?
 
 You: A small label for displaying status, counts, or categories
 
-Agent: Based on your description, I don't see a direct Kobalte primitive match. 
+Agent: Based on your description, I don't see a direct Kobalte primitive match.
 Would you like to use plain HTML with Tailwind styling?
 
 You: Yes
 
 Agent: Perfect! What color variants would you like?
-Suggested: primary, secondary, success, danger, warning
+Suggested: primary, secondary, info, success, warning, danger
 
 You: Use the suggestions
 
 Agent: What size variants?
-Suggested: sm, md, lg
+Suggested: sm, md
 
 You: Just sm and md
 
@@ -78,15 +81,24 @@ Agent: Excellent! Here's what I'll create:
 - Tier: ui
 - Base: Plain HTML (span)
 - Variants:
-  - Color: primary, secondary, success, danger, warning
+  - Color: primary, secondary, info, success, warning, danger
   - Size: sm, md
-- Files: 4 (component, index, stories, tests)
+- Files: 3 (component, index, stories)
+- Testing: Storybook stories with Light/Dark themes
 
 Shall I generate the component?
 
 You: Yes
 
-Agent: ✅ Generated Badge component successfully!
+Agent: [Generates files, validates with biome + typecheck, runs Storybook tests]
+
+✅ Generated Badge component successfully!
+
+**Validation:**
+✅ Biome check passed
+✅ TypeScript compiled
+✅ 24 Storybook tests passing
+✅ Coverage: 100%
 
 **Import usage:**
 ```tsx
@@ -97,9 +109,8 @@ import { Badge } from "@/components/ui/badge";
 
 **Next steps:**
 1. Review the generated component
-2. Run `pnpm test` to verify tests pass
-3. Run `pnpm storybook` to preview in Storybook
-4. Customize styling/behavior as needed
+2. Run `pnpm storybook` to preview in Storybook
+3. Customize styling/behavior as needed
 ```
 
 ## Component Tiers
@@ -113,16 +124,31 @@ Maximum flexibility, minimal opinion. Use for layout and base elements.
 Interactive components with Kobalte primitives for accessibility.
 - Examples: Button, Input, Select, Dialog, Badge
 - Pattern: Kobalte primitive + CVA variants + TypeScript types
+- **NO backend communication or business logic**
 
 ### `composite/`
 Convenient wrappers combining ui components for common patterns.
 - Examples: IconButton, SearchInput, ColorPicker
 - Pattern: Composition of ui components with preset configurations
+- **NO backend communication or business logic**
 
 ### `feature/`
-Domain-specific components enforcing business logic.
-- Examples: UserCard, ProductGrid, OrderSummary
-- Pattern: Feature-specific logic with ui/composite components
+Domain-specific presentational components.
+- Examples: Navbar, Footer, UserProfileCard
+- Pattern: Domain-specific layouts using ui/composite components
+- **NO backend communication or business logic**
+- Feature components are presentational - business logic lives in pages/features
+
+## Critical Constraints
+
+**Components MUST:**
+- ✅ Be purely presentational (accept props, render UI, emit events)
+- ✅ Contain NO backend communication or API calls
+- ✅ Contain NO business logic (business logic lives in pages)
+- ✅ Use Kobalte primitives for accessibility where appropriate
+- ✅ Support both light and dark themes
+- ✅ Pass biome linting/formatting and TypeScript checking
+- ✅ Have comprehensive Storybook stories
 
 ## Kobalte Primitives
 
@@ -134,7 +160,7 @@ The agent has access to 30 Kobalte primitives and will intelligently suggest the
 
 **Navigation:** tabs, accordion, breadcrumbs, navigation-menu
 
-**Feedback:** progress, alert
+**Feedback:** progress, alert, toast
 
 **Layout:** separator, collapsible
 
@@ -148,11 +174,11 @@ The agent has access to 30 Kobalte primitives and will intelligently suggest the
 - Type-safe props from primitive + CVA
 - Example: Button, Badge, Link
 
-### Composite Component (TextField-like)
+### Composite Component (SearchInput-like)
 - Multiple sub-components (Root, Input, Label, etc.)
-- Namespace exports
+- Namespace exports or single component
 - Complex prop types with polymorphism
-- Example: TextField, Select, Dialog
+- Example: SearchInput (uses Kobalte Combobox), TextField, Select
 
 ### Primitive Component (Label-like)
 - Plain HTML element
@@ -187,22 +213,41 @@ export type BadgeProps = {
 // NO & Omit<JSX.HTMLAttributes<...>> - keeps autocomplete clean!
 ```
 
-### Comprehensive Testing
-Generated tests cover:
-- Rendering children
-- Default variant application
-- All color variants
-- All size variants
-- Custom class composition
-- Interaction handlers (when applicable)
+### Themed Story Pattern
+All stories use the `createThemedStories` helper to test both light and dark modes:
 
-### Complete Stories
+```tsx
+const primaryBase: Story = {
+	args: {
+		variant: "primary",
+		children: "Primary Button",
+	},
+};
+
+const primaryThemed = createThemedStories({
+	story: primaryBase,
+	testMode: "both", // Test in both light and dark
+});
+
+export const PrimaryLight = primaryThemed.Light;
+export const PrimaryDark = primaryThemed.Dark;
+```
+
+**testMode options:**
+- `"both"` - Run tests in both light and dark (default)
+- `"light"` - Test only in light mode
+- `"dark"` - Test only in dark mode
+- `"none"` - Visual-only, no tests
+
+### Complete Stories & Testing
 Generated Storybook stories include:
-- Individual story per variant
-- Individual story per size
-- Combined showcase story (AllVariants)
+- Individual themed story pair per variant (Light/Dark)
+- Individual themed story pair per size (Light/Dark)
+- Combined showcase story (AllVariants with both themes)
 - Interactive controls (argTypes)
+- Interaction tests using play functions
 - Auto-generated documentation
+- **Serves as both documentation AND automated tests**
 
 ## Validation
 
@@ -214,24 +259,40 @@ The agent performs validation at multiple stages:
 - Valid Kobalte primitive selection
 
 **Post-Generation:**
+- Biome linting and formatting check
 - TypeScript compilation check
-- Import resolution verification
+- Storybook test execution
+- Test coverage verification
 - Atomic file writes (all or none)
+
+**Quality Gate:**
+Only proceeds to next component when:
+- ✅ Biome check passes
+- ✅ TypeScript compiles
+- ✅ All Storybook tests pass
+- ✅ Component has adequate coverage
 
 ## Files Structure
 
 ```
 /skills/.claude/skills/component-generator/
 ├── README.md                          # This file
-├── agent.md                           # Agent system prompt
-├── kobalte-primitives.json            # Catalog of 30 primitives
+├── SKILL.md                           # Skill system prompt
+├── kobalte-primitives.md              # Catalog of 30+ primitives
+├── accessibility-guidelines.md        # Accessibility best practices
+├── color-reference.md                 # Theme color token guide (REQUIRED)
+├── themed-story-pattern.md            # Themed story documentation
 └── templates/
-    ├── simple-component.tsx.template  # Simple pattern
-    ├── primitive-component.tsx.template # Primitive pattern
-    ├── index.ts.template              # Barrel export
-    ├── stories.tsx.template           # Storybook stories
-    └── test.tsx.template              # Vitest tests
+    ├── component.tsx.template         # Reference pattern (not a fill-in template)
+    ├── index.ts.template              # Barrel export pattern
+    └── stories.tsx.template           # Storybook themed stories pattern
 ```
+
+**How templates work:**
+- Templates are **reference patterns**, not fill-in-the-blanks
+- Agent reads Button.tsx as PRIMARY REFERENCE and follows that structure
+- Agent reads reference guides (kobalte, accessibility, colors) BEFORE generating
+- Templates show the decision tree and conditional logic, not placeholders
 
 ## Customization
 
@@ -240,15 +301,16 @@ After generation, you can customize:
 - Add more variants
 - Extend props with additional functionality
 - Modify stories for different use cases
-- Add more comprehensive tests
+- Add more interaction tests in stories
 
 ## Tips
 
 1. **Be specific in descriptions** - Helps the agent suggest the right Kobalte primitive
 2. **Start simple** - You can always extend the component later
 3. **Review before confirming** - The agent shows a summary before generating
-4. **Test immediately** - Run `pnpm test` right after generation
-5. **Preview in Storybook** - Verify visual appearance with `pnpm storybook`
+4. **Preview in Storybook** - Verify visual appearance and test both themes
+5. **One at a time** - Let the agent complete and validate each component before moving to the next
+6. **No workarounds** - Agent fixes errors properly, never uses type assertions or ignores
 
 ## Troubleshooting
 
@@ -258,12 +320,12 @@ The agent will detect conflicts and offer to:
 - Overwrite existing component
 - Cancel operation
 
-### TypeScript errors
+### Validation errors
 If generated code has errors, the agent will:
 - Show the error message
-- Offer to regenerate with fixes
-- Let you see the code for manual fixes
-- Not write files until valid
+- Fix the actual issue (no workarounds)
+- Re-run validation
+- Repeat until clean
 
 ### Missing Kobalte primitive
 If you describe a component that doesn't match any primitive, the agent will:
@@ -271,17 +333,19 @@ If you describe a component that doesn't match any primitive, the agent will:
 - Allow you to manually specify a primitive
 - Fall back to the primitive pattern
 
-## Demo Component
+## Reference Components
 
-A working **Badge** component has been generated as an example at:
-```
-/skills/services/frontend/src/components/ui/badge/
-```
+Working examples in the codebase:
+- **Button** (`ui/button`) - Simple Kobalte component with CVA variants
+- **Badge** (`ui/badge`) - Plain HTML with CVA variants
+- **SearchInput** (`composite/search-input`) - Complex Kobalte Combobox
+- **Toast** (`ui/toast`) - Kobalte Toast with utility functions
 
-Run the tests to see it in action:
+View these for pattern reference:
 ```bash
-cd /skills/services/frontend
-pnpm test badge.test.tsx
+cd /skills/services/frontend/src/components
+ls -la ui/button/
+ls -la composite/search-input/
 ```
 
 ## Next Steps
@@ -290,5 +354,12 @@ The agent is ready to use! Start creating components by simply saying:
 ```
 Create a [YourComponent] component
 ```
+
+The agent will:
+1. Guide you through interactive questions
+2. Generate 3 files (component, index, stories)
+3. Validate with biome + typecheck
+4. Run Storybook tests
+5. Ensure 100% coverage before proceeding
 
 Happy component building! 🎨
