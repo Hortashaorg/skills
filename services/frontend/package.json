@@ -10,6 +10,7 @@
 		"serve": "vite preview",
 		"storybook": "storybook dev -p 6006 --no-open",
 		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
 		"playwright-setup": "pnpm exec playwright install --with-deps chromium"
 	},
 	"devDependencies": {
@@ -19,6 +20,7 @@
 		"@storybook/addon-links": "^10.1.10",
 		"@storybook/addon-onboarding": "^10.1.10",
 		"@storybook/addon-vitest": "^10.1.10",
+		"@storybook/test": "^8.6.14",
 		"@vitest/browser-playwright": "^4.0.16",
 		"@vitest/coverage-v8": "^4.0.16",
 		"playwright": "^1.57.0",

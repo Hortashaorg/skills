@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { expect, userEvent, within } from "@storybook/test";
 import { type PackageResult, PackageSearchInput } from "./package-search-input";
 
 // Mock package data for stories
@@ -208,6 +209,9 @@ export const Interactive: Story = {
 	render: () => {
 		const [searchValue, setSearchValue] = createSignal("");
 		const [isLoading, setIsLoading] = createSignal(false);
+		const [selectedPackage, setSelectedPackage] = createSignal<
+			PackageResult | undefined
+		>();
 
 		const filteredResults = () => {
 			const term = searchValue().toLowerCase().trim();
@@ -224,7 +228,12 @@ export const Interactive: Story = {
 		};
 
 		const handleSelect = (pkg: PackageResult) => {
+			setSelectedPackage(pkg);
 			console.log("Selected package:", pkg);
+		};
+
+		const handleClear = () => {
+			setSelectedPackage(undefined);
 		};
 
 		return (
@@ -235,6 +244,7 @@ export const Interactive: Story = {
 					results={filteredResults()}
 					isLoading={isLoading()}
 					onPackageSelect={handleSelect}
+					onClear={handleClear}
 					label="Package Search"
 					placeholder="Search npm packages..."
 				/>
@@ -247,8 +257,38 @@ export const Interactive: Story = {
 						<li>"moment" - shows moment</li>
 					</ul>
 					<p>Open console to see selection events</p>
+					<p data-testid="selected-package">
+						Selected: {selectedPackage()?.name || "None"}
+					</p>
 				</div>
 			</div>
 		);
+	},
+	play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+		const canvas = within(canvasElement);
+
+		// Find the search input
+		const input = canvas.getByPlaceholderText("Search npm packages...");
+
+		// Type 'react' to trigger search
+		await userEvent.type(input, "react");
+
+		// Wait for results to appear
+		await new Promise((resolve) => setTimeout(resolve, 300));
+
+		// Click on the first result (should be 'react')
+		const reactButton = canvas.getByText("react", { selector: ".font-semibold" });
+		await userEvent.click(reactButton);
+
+		// Verify selection was made
+		const selectedText = canvas.getByTestId("selected-package");
+		await expect(selectedText).toHaveTextContent("Selected: react");
+
+		// Click clear button
+		const clearButton = canvas.getByLabelText("Clear search");
+		await userEvent.click(clearButton);
+
+		// Verify input is cleared
+		await expect(input).toHaveValue("");
 	},
 };
