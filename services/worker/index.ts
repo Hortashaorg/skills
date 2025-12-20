@@ -43,7 +43,9 @@ async function main() {
 
 		if (result.success) {
 			console.log(`  ✓ Success`);
-			console.log(`    Versions: ${result.versionsProcessed}`);
+			console.log(
+				`    Versions: ${result.versionsNew} new, ${result.versionsSkipped} skipped (${result.versionsTotal} total)`,
+			);
 			console.log(`    Dependencies created: ${result.dependenciesCreated}`);
 			console.log(`    Dependencies linked: ${result.dependenciesLinked}`);
 			console.log(`    New requests scheduled: ${result.newRequestsScheduled}`);
@@ -56,8 +58,12 @@ async function main() {
 	// Summary
 	const succeeded = results.filter((r) => r.success).length;
 	const failed = results.length - succeeded;
-	const totalVersions = results.reduce(
-		(sum, r) => sum + (r.versionsProcessed ?? 0),
+	const totalVersionsNew = results.reduce(
+		(sum, r) => sum + (r.versionsNew ?? 0),
+		0,
+	);
+	const totalVersionsSkipped = results.reduce(
+		(sum, r) => sum + (r.versionsSkipped ?? 0),
 		0,
 	);
 	const totalDeps = results.reduce(
@@ -73,7 +79,7 @@ async function main() {
 	console.log(`Processed: ${results.length} requests`);
 	console.log(`  Succeeded: ${succeeded}`);
 	console.log(`  Failed: ${failed}`);
-	console.log(`  Versions processed: ${totalVersions}`);
+	console.log(`  Versions: ${totalVersionsNew} new, ${totalVersionsSkipped} skipped`);
 	console.log(`  Dependencies created: ${totalDeps}`);
 	console.log(`  New requests scheduled: ${totalScheduled}`);
 }

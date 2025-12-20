@@ -1,14 +1,11 @@
-import {
-	dbProvider,
-	type Registry,
-	type Row,
-} from "@package/database/server";
+import { dbProvider, type Registry, type Row } from "@package/database/server";
 import {
 	createDependency,
 	createPendingRequest,
 	createVersion,
 	findActiveRequest,
 	findPackage,
+	getExistingVersions,
 	incrementAttempt,
 	linkDependencies,
 	updateRequestStatus,
@@ -25,7 +22,9 @@ export interface ProcessResult {
 	registry: Registry;
 	success: boolean;
 	packageId?: string;
-	versionsProcessed?: number;
+	versionsTotal?: number;
+	versionsNew?: number;
+	versionsSkipped?: number;
 	dependenciesCreated?: number;
 	dependenciesLinked?: number;
 	newRequestsScheduled?: number;
@@ -65,16 +64,24 @@ export async function processRequest(
 			const packageId = await upsertPackage(tx, packageData, request.registry);
 			result.packageId = packageId;
 
-			// 4. Process all versions
-			let versionsProcessed = 0;
+			// 4. Get existing versions and filter to only new ones
+			const existingVersions = await getExistingVersions(tx, packageId);
+			const newVersions = packageData.versions.filter(
+				(v) => !existingVersions.has(v.version),
+			);
+
+			result.versionsTotal = packageData.versions.length;
+			result.versionsNew = newVersions.length;
+			result.versionsSkipped = existingVersions.size;
+
+			// 5. Process only new versions
 			let dependenciesCreated = 0;
 			let newRequestsScheduled = 0;
 
-			for (const version of packageData.versions) {
+			for (const version of newVersions) {
 				const versionId = await createVersion(tx, packageId, version);
-				versionsProcessed++;
 
-				// 5. Process dependencies for this version
+				// 6. Process dependencies for this version
 				for (const dep of version.dependencies) {
 					const scheduled = await processDependency(
 						tx,
@@ -90,7 +97,6 @@ export async function processRequest(
 				}
 			}
 
-			result.versionsProcessed = versionsProcessed;
 			result.dependenciesCreated = dependenciesCreated;
 			result.newRequestsScheduled = newRequestsScheduled;
 

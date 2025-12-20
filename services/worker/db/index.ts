@@ -14,4 +14,5 @@ export {
 	findPackage,
 	findUnlinkedDependencies,
 	findVersion,
+	getExistingVersions,
 } from "./queries.ts";

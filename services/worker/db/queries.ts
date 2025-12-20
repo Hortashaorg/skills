@@ -45,6 +45,17 @@ export async function findActiveRequest(
 	);
 }
 
+/** Get all existing version strings for a package */
+export async function getExistingVersions(
+	tx: Transaction,
+	packageId: string,
+): Promise<Set<string>> {
+	const versions = await tx.run(
+		zql.packageVersions.where("packageId", packageId),
+	);
+	return new Set(versions.map((v) => v.version));
+}
+
 /** Find unlinked dependencies that reference a package name */
 export async function findUnlinkedDependencies(
 	tx: Transaction,
