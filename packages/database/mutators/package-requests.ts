@@ -9,11 +9,6 @@ export const create = defineMutator(
 		registry: z.enum(enums.registry),
 	}),
 	async ({ tx, args }) => {
-		// TODO: Add validation:
-		// - Check user hasn't exceeded hourly limit (query audit log)
-		// - Check for existing pending/fetching request
-		// - Check package cooldown period
-
 		const record = newRecord();
 
 		await tx.mutate.packageRequests.insert({
@@ -27,9 +22,6 @@ export const create = defineMutator(
 			createdAt: record.now,
 			updatedAt: record.now,
 		});
-
-		// TODO: Create audit log entry
-		// await tx.mutate.auditLog.insert({ ... })
 	},
 );
 

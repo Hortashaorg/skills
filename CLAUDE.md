@@ -101,6 +101,12 @@ href={`/package/${encodeURIComponent(registry)}/${encodeURIComponent(name)}`}
 const name = () => decodeURIComponent(params.name);
 ```
 
+## Architecture
+
+**AppProvider** (`context/app-provider.tsx`) wraps the app with auth state + ZeroProvider. On mount: exchanges OAuth code or restores session via refresh token. ZeroProvider props are reactive - updates when auth changes.
+
+**ConnectionStatus** monitors Zero connection and auto-refreshes tokens on `needs-auth` events.
+
 ## Skills & References
 
 | Resource | Purpose |
@@ -108,6 +114,7 @@ const name = () => decodeURIComponent(params.name);
 | `/component-generator` | Create UI components with Kobalte + CVA + stories |
 | `/registry-adapter` | Add new package registry support to worker |
 | `packages/database/CLAUDE.md` | Query/mutator patterns, timestamp helpers |
+| `services/frontend/CLAUDE.md` | Page structure, component tiers, Zero in sections |
 
 ## Contributing
 

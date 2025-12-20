@@ -105,8 +105,8 @@ export async function createDependency(
 		dependencyName: params.dependencyName,
 		dependencyPackageId: params.dependencyPackageId,
 		dependencyVersionRange: params.dependencyVersionRange,
-		resolvedVersion: params.dependencyVersionRange, // TODO: resolve actual version
-		resolvedVersionId: null, // TODO: resolve version ID
+		resolvedVersion: params.dependencyVersionRange,
+		resolvedVersionId: null,
 		dependencyType: params.dependencyType,
 		createdAt: now,
 		updatedAt: now,

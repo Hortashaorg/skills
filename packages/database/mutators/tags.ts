@@ -10,9 +10,6 @@ export const create = defineMutator(
 		color: z.string().optional(),
 	}),
 	async ({ tx, args }) => {
-		// TODO: Check if user is admin
-		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
-
 		const record = newRecord();
 
 		await tx.mutate.tags.insert({
@@ -36,9 +33,6 @@ export const update = defineMutator(
 		color: z.string().optional(),
 	}),
 	async ({ tx, args }) => {
-		// TODO: Check if user is admin
-		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
-
 		const updates: {
 			id: string;
 			name?: string;
@@ -64,10 +58,6 @@ export const update = defineMutator(
 export const remove = defineMutator(
 	z.object({ id: z.string() }),
 	async ({ tx, args }) => {
-		// TODO: Check if user is admin
-		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
-
-		// Hard delete - FK constraint will prevent if packageTags exist
 		await tx.mutate.tags.delete({ id: args.id });
 	},
 );

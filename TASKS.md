@@ -70,6 +70,10 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [ ] Request deduplication (no duplicate pending requests)
 - [ ] Retry with backoff, discard after 3 failures
 
+### Dependency Resolution
+- [ ] Resolve version ranges to actual versions (e.g., `^1.0.0` → `1.2.3`)
+- [ ] Link `resolvedVersionId` to specific version record
+
 ---
 
 ## Milestone 3: User Value
@@ -98,6 +102,11 @@ Progress toward a deployable MVP with data flowing and utility for users.
 ## Milestone 4: Admin & Polish
 
 **Goal:** Admin features and demo-ready polish
+
+### Authorization
+- [ ] Role system (admin vs user)
+- [ ] Admin-only mutators for tags and package-tags
+- [ ] Audit logging for admin actions
 
 ### Tag System
 - [ ] `/admin/tags` - tag management (CRUD)

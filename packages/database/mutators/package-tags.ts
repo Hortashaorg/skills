@@ -8,9 +8,6 @@ export const create = defineMutator(
 		tagId: z.string(),
 	}),
 	async ({ tx, args }) => {
-		// TODO: Check if user is admin
-		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
-
 		const record = newRecord();
 
 		await tx.mutate.packageTags.insert({
@@ -19,9 +16,6 @@ export const create = defineMutator(
 			tagId: args.tagId,
 			createdAt: record.now,
 		});
-
-		// TODO: Create audit log entry
-		// await tx.mutate.auditLog.insert({ ... })
 	},
 );
 
@@ -30,8 +24,6 @@ export const remove = defineMutator(
 		id: z.string(),
 	}),
 	async ({ tx, args }) => {
-		// TODO: Check if user is admin
-		// TODO: Create audit log entry for removal
 		await tx.mutate.packageTags.delete({ id: args.id });
 	},
 );
