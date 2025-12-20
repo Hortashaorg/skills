@@ -1,6 +1,10 @@
 # TechGarden MVP - Phase 1
 
+> **Progress tracking:** See [TASKS.md](./TASKS.md) for implementation progress.
+
 User-driven package curation: search, request, and browse npm packages.
+
+**Goal:** Get data flowing into the platform and provide utility for both anonymous and logged-in users. Deploy something demonstrable, then build toward the full vision.
 
 ## Core Flow
 
@@ -194,44 +198,7 @@ account {
 }
 ```
 
-## Backend Tasks
-
-### Package Request System
-
-- [ ] Create package request mutator
-- [ ] Zero query for user's requests (show status)
-- [ ] Zero query for pending requests (for background job)
-
-### npm Integration
-
-- [ ] npm API client service
-- [ ] Fetch package metadata
-- [ ] Fetch version list
-- [ ] Parse dependencies
-- [ ] Error handling (404, rate limits, etc.)
-
-### Background Job / Worker Service
-
-**Deployment strategy:**
-- **Separate service** (not part of backend server)
-- Prevents duplicate jobs when backend scales horizontally
-- Single instance runs cron job
-- Uses Zero's database mutations to process requests
-
-**Implementation:**
-- Periodic task (every 30-60 seconds)
-- Query pending requests via Zero
-- Process in batches (5-10 at a time)
-- Fetch from npm API with rate limiting
-- Update request status via Zero mutations
-
-**Why separate service?**
-- Backend server scales horizontally (multiple instances)
-- Don't want 10 cron jobs doing the same work
-- Worker service runs as single instance (or with leader election later)
-- Cleaner separation of concerns
-
-### Zero Queries & Mutations
+## Zero Queries & Mutations
 
 All data access goes through Zero - no REST API needed. Frontend and worker service both use Zero queries/mutations.
 
@@ -279,39 +246,7 @@ All data access goes through Zero - no REST API needed. Frontend and worker serv
 - `packageTags.create` - add tag to package (admin check)
 - `packageTags.delete` - remove tag (admin check)
 
-## Frontend Tasks
-
-### Components to Build
-
-**Package search**
-- `PackageSearch` - search input with live results
-- `SearchResults` - list of matching packages
-- `AddPackageButton` - "Add this package" for missing packages
-- `RequestStatus` - show request status (pending, fetching, etc.)
-
-**Package browsing**
-- `PackageList` - grid/list of packages
-- `PackageCard` - preview card with name, description, tags
-- `PackageFilters` - filter by tags, search
-
-**Package details**
-- `PackageDetail` - full package view
-- `VersionHistory` - list of versions
-- `DependencyList` - dependencies with links (if in DB)
-- `DependencyGraph` - visual tree/graph of dependencies (basic for MVP)
-- `DependencyStats` - direct count, transitive count, depth indicator
-- `PackageTags` - tag chips with admin edit UI
-
-**Tag management (admin)**
-- `TagList` - browse all tags
-- `TagForm` - create/edit tags
-- `TagManager` - CRUD interface
-- `TagChip` - reusable tag display
-
-**User requests**
-- `MyRequests` - view user's package requests and status
-
-### Pages/Routes
+## Routes
 
 - `/` - Landing with search + recently added packages
 - `/packages` - Browse all packages
