@@ -19,7 +19,10 @@ export const NpmPackageSchema = z.object({
 	homepage: z.string().optional(),
 	license: z.union([z.string(), z.object({ type: z.string() })]).optional(),
 	repository: z
-		.union([z.string(), z.object({ type: z.string(), url: z.string() })])
+		.union([
+			z.string(),
+			z.object({ type: z.string().optional(), url: z.string() }),
+		])
 		.optional(),
 	"dist-tags": z.looseObject({
 		latest: z.string(),

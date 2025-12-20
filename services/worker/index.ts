@@ -13,29 +13,37 @@ import { type ProcessResult, processRequest } from "./process-request.ts";
 async function main() {
 	console.log("Worker starting...\n");
 
-	// Query pending package requests
-	const pendingRequests = await dbProvider.transaction(async (tx) => {
-		return tx.run(
+	// Query pending and failed package requests (failed = retry eligible)
+	const requests = await dbProvider.transaction(async (tx) => {
+		const pending = await tx.run(
 			zql.packageRequests
 				.where("status", "pending")
 				.orderBy("createdAt", "asc")
-				.limit(10),
+				.limit(50),
 		);
+		const failed = await tx.run(
+			zql.packageRequests
+				.where("status", "failed")
+				.orderBy("createdAt", "asc")
+				.limit(50),
+		);
+		// Combine and sort by createdAt, take first 10
+		return [...pending, ...failed]
+			.sort((a, b) => a.createdAt - b.createdAt)
+			.slice(0, 10);
 	});
 
-	if (pendingRequests.length === 0) {
-		console.log("No pending requests to process.");
+	if (requests.length === 0) {
+		console.log("No pending or failed requests to process.");
 		return;
 	}
 
-	console.log(
-		`Processing ${pendingRequests.length} pending package requests...\n`,
-	);
+	console.log(`Processing ${requests.length} package requests...\n`);
 
 	const results: ProcessResult[] = [];
 
 	// Process requests sequentially to avoid race conditions
-	for (const request of pendingRequests) {
+	for (const request of requests) {
 		console.log(`Processing: ${request.packageName} (${request.registry})...`);
 
 		const result = await processRequest(request);

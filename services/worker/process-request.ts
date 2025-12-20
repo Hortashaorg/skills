@@ -1,20 +1,22 @@
 import { dbProvider, type Registry, type Row } from "@package/database/server";
 import {
-	createDependency,
-	createPendingRequest,
-	createVersion,
-	findActiveRequest,
-	findPackage,
+	bulkInsertDependencies,
+	bulkInsertPendingRequests,
+	bulkInsertVersions,
+	bulkLinkDependencies,
+	type DependencyInsert,
+	loadActiveRequests,
+	loadPackageNames,
+	type RequestInsert,
+	type VersionInsert,
+} from "./db/bulk.ts";
+import {
 	getExistingVersions,
 	incrementAttempt,
-	linkDependencies,
 	updateRequestStatus,
 	upsertPackage,
 } from "./db/index.ts";
 import { npm } from "./registries/index.ts";
-import type { DependencyData } from "./registries/types.ts";
-
-type Transaction = Parameters<Parameters<typeof dbProvider.transaction>[0]>[0];
 
 export interface ProcessResult {
 	requestId: string;
@@ -31,7 +33,7 @@ export interface ProcessResult {
 	error?: string;
 }
 
-/** Process a single package request */
+/** Process a single package request with bulk operations */
 export async function processRequest(
 	request: Row["packageRequests"],
 ): Promise<ProcessResult> {
@@ -43,77 +45,134 @@ export async function processRequest(
 	};
 
 	try {
+		// 1. Mark as fetching and increment attempt (still uses Zero for consistency)
 		await dbProvider.transaction(async (tx) => {
-			// 1. Mark as fetching and increment attempt
 			await updateRequestStatus(tx, request.id, "fetching");
 			await incrementAttempt(tx, request.id, request.attemptCount);
+		});
 
-			// 2. Fetch from registry
-			const fetchResult = await npm.getPackages([request.packageName]);
-			const packageData = fetchResult.get(request.packageName);
+		// 2. Fetch from registry (outside transaction - network call)
+		const fetchResult = await npm.getPackages([request.packageName]);
+		const packageData = fetchResult.get(request.packageName);
 
-			if (!packageData) {
-				throw new Error(`No result for package "${request.packageName}"`);
-			}
+		if (!packageData) {
+			throw new Error(`No result for package "${request.packageName}"`);
+		}
 
-			if (packageData instanceof Error) {
-				throw packageData;
-			}
+		if (packageData instanceof Error) {
+			throw packageData;
+		}
 
-			// 3. Upsert package
-			const packageId = await upsertPackage(tx, packageData, request.registry);
-			result.packageId = packageId;
+		// 3. Pre-load existing data for fast lookups
+		const [packageNames, activeRequests] = await Promise.all([
+			loadPackageNames(request.registry),
+			loadActiveRequests(request.registry),
+		]);
 
-			// 4. Get existing versions and filter to only new ones
-			const existingVersions = await getExistingVersions(tx, packageId);
-			const newVersions = packageData.versions.filter(
-				(v) => !existingVersions.has(v.version),
-			);
+		// 4. Upsert package (still uses Zero transaction)
+		const packageId = await dbProvider.transaction(async (tx) => {
+			return upsertPackage(tx, packageData, request.registry);
+		});
+		result.packageId = packageId;
 
-			result.versionsTotal = packageData.versions.length;
-			result.versionsNew = newVersions.length;
-			result.versionsSkipped = existingVersions.size;
+		// Update cache with new package
+		packageNames.set(packageData.name, packageId);
 
-			// 5. Process only new versions
-			let dependenciesCreated = 0;
-			let newRequestsScheduled = 0;
+		// 5. Get existing versions and filter to only new ones
+		const existingVersions = await dbProvider.transaction(async (tx) => {
+			return getExistingVersions(tx, packageId);
+		});
 
-			for (const version of newVersions) {
-				const versionId = await createVersion(tx, packageId, version);
+		const newVersions = packageData.versions.filter(
+			(v) => !existingVersions.has(v.version),
+		);
 
-				// 6. Process dependencies for this version
-				for (const dep of version.dependencies) {
-					const scheduled = await processDependency(
-						tx,
-						packageId,
-						versionId,
-						dep,
-						request.registry,
-					);
-					dependenciesCreated++;
-					if (scheduled) {
-						newRequestsScheduled++;
-					}
+		result.versionsTotal = packageData.versions.length;
+		result.versionsNew = newVersions.length;
+		result.versionsSkipped = existingVersions.size;
+
+		// 6. Prepare bulk inserts
+		const now = new Date();
+		const versionInserts: VersionInsert[] = [];
+		const dependencyInserts: DependencyInsert[] = [];
+		const pendingRequestInserts: RequestInsert[] = [];
+		const newRequestNames = new Set<string>();
+
+		for (const version of newVersions) {
+			const versionId = crypto.randomUUID();
+
+			versionInserts.push({
+				id: versionId,
+				packageId,
+				version: version.version,
+				publishedAt: version.publishedAt,
+				isPrerelease: version.isPrerelease,
+				isYanked: version.isYanked,
+				createdAt: now,
+			});
+
+			// Process dependencies for this version
+			for (const dep of version.dependencies) {
+				const existingPackageId = packageNames.get(dep.name) ?? null;
+
+				dependencyInserts.push({
+					id: crypto.randomUUID(),
+					packageId,
+					versionId,
+					dependencyName: dep.name,
+					dependencyPackageId: existingPackageId,
+					dependencyVersionRange: dep.versionRange,
+					resolvedVersion: dep.versionRange,
+					resolvedVersionId: null,
+					dependencyType: dep.type,
+					createdAt: now,
+					updatedAt: now,
+				});
+
+				// Schedule missing dependency for fetching (if not already queued)
+				if (
+					!existingPackageId &&
+					!activeRequests.has(dep.name) &&
+					!newRequestNames.has(dep.name)
+				) {
+					newRequestNames.add(dep.name);
+					pendingRequestInserts.push({
+						id: crypto.randomUUID(),
+						packageName: dep.name,
+						registry: request.registry,
+						status: "pending",
+						errorMessage: null,
+						packageId: null,
+						attemptCount: 0,
+						createdAt: now,
+						updatedAt: now,
+					});
 				}
 			}
+		}
 
-			result.dependenciesCreated = dependenciesCreated;
-			result.newRequestsScheduled = newRequestsScheduled;
+		// 7. Execute bulk inserts
+		await bulkInsertVersions(versionInserts);
+		await bulkInsertDependencies(dependencyInserts);
+		await bulkInsertPendingRequests(pendingRequestInserts);
 
-			// 6. Link any previously unlinked deps that reference this package
-			const linkedCount = await linkDependencies(
-				tx,
-				packageId,
-				request.packageName,
-			);
-			result.dependenciesLinked = linkedCount;
+		result.dependenciesCreated = dependencyInserts.length;
+		result.newRequestsScheduled = pendingRequestInserts.length;
 
-			// 7. Mark completed
+		// 8. Link any previously unlinked deps that reference this package
+		const linkedCount = await bulkLinkDependencies(
+			packageId,
+			request.packageName,
+		);
+		result.dependenciesLinked = linkedCount;
+
+		// 9. Mark completed
+		await dbProvider.transaction(async (tx) => {
 			await updateRequestStatus(tx, request.id, "completed", packageId);
-			result.success = true;
 		});
+		result.success = true;
 	} catch (error) {
-		// Handle failure outside transaction (since it rolled back)
+		// Handle failure
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		result.error = errorMessage;
 
@@ -127,37 +186,4 @@ export async function processRequest(
 	}
 
 	return result;
-}
-
-/** Process a single dependency - returns true if a new request was scheduled */
-async function processDependency(
-	tx: Transaction,
-	packageId: string,
-	versionId: string,
-	dep: DependencyData,
-	registry: Registry,
-): Promise<boolean> {
-	// Check if dependency package exists
-	const existingPackage = await findPackage(tx, dep.name, registry);
-
-	// Create dependency record
-	await createDependency(tx, {
-		packageId,
-		versionId,
-		dependencyName: dep.name,
-		dependencyPackageId: existingPackage?.id ?? null,
-		dependencyVersionRange: dep.versionRange,
-		dependencyType: dep.type,
-	});
-
-	// Schedule missing dependency for fetching
-	if (!existingPackage) {
-		const activeRequest = await findActiveRequest(tx, dep.name, registry);
-		if (!activeRequest) {
-			await createPendingRequest(tx, dep.name, registry);
-			return true;
-		}
-	}
-
-	return false;
 }
