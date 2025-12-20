@@ -43,14 +43,14 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Create `services/worker/` service
 - [x] npm API client (fetch `registry.npmjs.org/{name}`)
 - [x] npm response mapper (extract versions, dependencies, dist-tags)
-- [ ] Request processor: query pending → fetch → parse → store
-- [ ] Process all pending requests in one run, then exit
-- [ ] Update request status throughout process (fetching → completed/failed)
+- [x] Request processor: query pending → fetch → parse → store
+- [x] Process all pending requests in one run, then exit
+- [x] Update request status throughout process (fetching → completed/failed)
 - [x] Add `pnpm worker start` script
-- [ ] Handle errors gracefully (mark failed, continue with next)
+- [x] Handle errors gracefully (mark failed, continue with next)
 
 ### End-to-End Validation
-- [ ] Search for non-existent package → request it → run worker → package appears
+- [x] Search for non-existent package → request it → run worker → package appears
 
 ---
 
@@ -59,16 +59,16 @@ Progress toward a deployable MVP with data flowing and utility for users.
 **Goal:** Database grows automatically through dependency chains
 
 ### Auto-Queue Dependencies
-- [ ] Parse dependencies from npm response (runtime, dev, peer, optional)
-- [ ] Create auto-queued requests for each dependency
-- [ ] Handle circular dependencies via deduplication
-- [ ] Link `dependencyPackageId` when dependency package exists
+- [x] Parse dependencies from npm response (runtime, dev, peer, optional)
+- [x] Create auto-queued requests for each dependency
+- [x] Handle circular dependencies via deduplication
+- [x] Link `dependencyPackageId` when dependency package exists
 
 ### Rate Limiting & Protection
 - [ ] User request limits (10/hour)
 - [ ] Package cooldown (1 hour between fetches)
-- [ ] Request deduplication (no duplicate pending requests)
-- [ ] Retry with backoff, discard after 3 failures
+- [x] Request deduplication (no duplicate pending requests)
+- [x] Retry with backoff, discard after 3 failures
 
 ### Dependency Resolution
 - [ ] Resolve version ranges to actual versions (e.g., `^1.0.0` → `1.2.3`)
@@ -122,20 +122,23 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ## Current Focus
 
-**Active:** Milestone 1 - Worker Job (request processor)
+**Active:** Milestone 2 - Rate Limiting & Milestone 3 - User Value
 
-**Completed:** Database, Zero layer, UI components, Homepage search, Package detail page
+**Completed:** Milestone 1 (full data flow), Auto-queue dependencies, Request deduplication, Retry logic
 
-**Next task:** Wire up request processor to query pending requests, fetch from npm, and store results
+**Next task:** User request limits, package cooldown, or user dashboard
 
 ---
 
 ## Notes
 
 - Homepage uses card grid for search results (max 20), links to package detail
+- Homepage shows "Recently updated" packages when no search query
 - Package detail page at `/package/:registry/:name` with version selector
+- Version selector supports exact versions, dist-tags (latest, next), and ranges (^1.0.0, ~2.3.0)
 - Version metadata: `latestVersion`, `distTags` on packages; `isPrerelease`, `isYanked` on versions
 - Registry filter with extensible options in `lib/registries.ts`
 - All data access through Zero queries/mutations
-- Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob
+- Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob, processes 10 requests per run
 - Anonymous users can browse; logged-in users can request packages
+- npm schema handles edge cases: unpublished packages, malformed deps (string instead of object), unknown field types
