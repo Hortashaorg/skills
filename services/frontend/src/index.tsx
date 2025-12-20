@@ -3,8 +3,8 @@ import { Route, Router } from "@solidjs/router";
 import { render } from "solid-js/web";
 import "./index.css";
 import { AppProvider } from "./context/app-provider";
-import { Home } from "./routes/Home";
-import { Package } from "./routes/Package";
+import { Home } from "./routes/home";
+import { Package } from "./routes/package";
 
 const root = document.getElementById("root");
 
