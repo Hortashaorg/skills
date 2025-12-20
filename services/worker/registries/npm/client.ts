@@ -24,6 +24,19 @@ export class NpmSchemaError extends Error {
 	}
 }
 
+/**
+ * Error thrown when a package has been unpublished from npm.
+ */
+export class NpmUnpublishedError extends Error {
+	packageName: string;
+
+	constructor(packageName: string) {
+		super(`Package "${packageName}" has been unpublished from npm`);
+		this.name = "NpmUnpublishedError";
+		this.packageName = packageName;
+	}
+}
+
 const client = ky.create({
 	prefixUrl: NPM_REGISTRY,
 	timeout: 30_000,
@@ -39,7 +52,20 @@ const client = ky.create({
  * Validates response against schema.
  */
 export async function fetchPackage(name: string): Promise<NpmPackageResponse> {
-	const raw = await client.get(encodeURIComponent(name)).json();
+	const raw: unknown = await client.get(encodeURIComponent(name)).json();
+
+	// Check for unpublished packages (they have time.unpublished as an object)
+	if (
+		raw &&
+		typeof raw === "object" &&
+		"time" in raw &&
+		raw.time &&
+		typeof raw.time === "object" &&
+		"unpublished" in raw.time &&
+		typeof raw.time.unpublished === "object"
+	) {
+		throw new NpmUnpublishedError(name);
+	}
 
 	const parseResult = schemas.package.safeParse(raw);
 	if (!parseResult.success) {

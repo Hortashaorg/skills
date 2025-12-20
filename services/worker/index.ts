@@ -30,7 +30,7 @@ async function main() {
 		// Combine and sort by createdAt, take first 10
 		return [...pending, ...failed]
 			.sort((a, b) => a.createdAt - b.createdAt)
-			.slice(0, 10);
+			.slice(0, 50);
 	});
 
 	if (requests.length === 0) {
