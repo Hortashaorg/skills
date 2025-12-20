@@ -27,16 +27,11 @@ export const create = defineMutator(
 
 export const remove = defineMutator(
 	z.object({
-		packageId: z.string(),
-		tagId: z.string(),
+		id: z.string(),
 	}),
-	async () => {
+	async ({ tx, args }) => {
 		// TODO: Check if user is admin
-		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
-		// TODO: Hard delete the association
-		// Note: Zero doesn't support WHERE with multiple conditions directly
-		// May need to query first, then delete by ID
-		// Or use a raw SQL mutator
 		// TODO: Create audit log entry for removal
+		await tx.mutate.packageTags.delete({ id: args.id });
 	},
 );

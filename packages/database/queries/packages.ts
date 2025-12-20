@@ -17,16 +17,15 @@ export const byName = defineQuery(
 		registry: z.enum(enums.registry),
 	}),
 	({ args }) => {
-		// TODO: Zero doesn't support multiple where clauses
-		// For now, filter by name only, handle registry client-side
-		return zql.packages.where("name", args.name);
+		return zql.packages
+			.where("name", args.name)
+			.where("registry", args.registry);
 	},
 );
 
 export const search = defineQuery(z.object({ query: z.string() }), () => {
-	// Note: Zero doesn't support LIKE queries directly
-	// For MVP, return all packages and filter client-side
-	// Or use a full-text search solution later
+	// Zero uses exact matching only - no LIKE/pattern queries
+	// Filter client-side with .includes() or add full-text search later
 	return zql.packages;
 });
 
@@ -38,6 +37,7 @@ export const byNameWithVersions = defineQuery(
 	({ args }) => {
 		return zql.packages
 			.where("name", args.name)
+			.where("registry", args.registry)
 			.related("versions", (q) => q.orderBy("publishedAt", "desc"));
 	},
 );

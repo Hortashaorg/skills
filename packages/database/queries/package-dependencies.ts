@@ -3,10 +3,9 @@ import { z } from "zod";
 import { zql } from "../zero-schema.gen.ts";
 
 // Monitor unlinked dependencies (where dependencyPackageId is null)
+// Zero doesn't support NULL filtering - must filter client-side
 export const unlinked = defineQuery(() => {
 	return zql.packageDependencies.orderBy("createdAt", "asc").limit(100);
-	// Note: Can't filter by NULL in Zero's where clause
-	// Will need to filter client-side or handle in worker
 });
 
 // Get dependencies for a specific package version

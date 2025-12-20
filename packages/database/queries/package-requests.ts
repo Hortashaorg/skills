@@ -18,11 +18,10 @@ export const existingPending = defineQuery(
 		registry: z.enum(enums.registry),
 	}),
 	({ args }) => {
+		// Zero doesn't support IN operator - filter status client-side
 		return zql.packageRequests
 			.where("packageName", args.packageName)
 			.where("registry", args.registry);
-		// Note: Can't filter by status IN ('pending', 'fetching') directly in Zero
-		// Will need to filter client-side or use separate queries
 	},
 );
 

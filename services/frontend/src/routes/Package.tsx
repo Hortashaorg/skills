@@ -43,11 +43,10 @@ export const Package = () => {
 		}),
 	);
 
-	// Get the package (first result matching registry)
+	// Get the package (query filters by name + registry, should be 0 or 1 result)
 	const pkg = createMemo(() => {
 		const data = packageData();
-		if (!data || data.length === 0) return null;
-		return data.find((p) => p.registry === registry()) ?? data[0];
+		return data?.[0] ?? null;
 	});
 
 	// Version selection and search

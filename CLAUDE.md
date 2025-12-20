@@ -28,19 +28,25 @@
 | `pnpm database migrate` | Apply migrations |
 | `pnpm frontend test` | Run Storybook tests |
 
-## Zero Queries Pattern
+## Zero Queries
 
 ```tsx
-// Define (packages/database/queries/*.ts)
-const byId = defineQuery(
-  z.object({ id: z.string() }),
-  ({ args }) => zql.posts.where('id', args.id).related('comments')
+// Define: chain .where() for multiple conditions
+const byNameAndRegistry = defineQuery(
+  z.object({ name: z.string(), registry: z.enum(enums.registry) }),
+  ({ args }) => zql.packages
+    .where("name", args.name)
+    .where("registry", args.registry)
+    .related("versions")
 );
-export const queries = defineQueries({ posts: { byId } });
 
 // Use (frontend)
-const [post] = useQuery(() => queries.posts.byId({ id }));
+const [pkg] = useQuery(() => queries.packages.byNameAndRegistry({ name, registry }));
 ```
+
+**ZQL supports:** `.where()` chaining, comparison operators, `IS NULL`, `.orderBy()`, `.limit()`, `.one()`, `.related()`
+
+**Not supported:** `LIKE`, `IN` operator — filter client-side instead
 
 ## Auth Check
 
@@ -86,6 +92,14 @@ Regenerates `zero-schema.gen.ts`. Never edit generated file directly.
 
 ### Don't block UI on `needs-auth`
 `ConnectionStatus` handles token refresh automatically. Only handle `disconnected`.
+
+### URL encode route params for scoped packages
+```tsx
+// Building URLs (handles @scope/pkg)
+href={`/package/${encodeURIComponent(registry)}/${encodeURIComponent(name)}`}
+// Reading params
+const name = () => decodeURIComponent(params.name);
+```
 
 ## Skills & References
 

@@ -24,6 +24,31 @@ await tx.mutate.table.update({
 });
 ```
 
+## ZQL Query Capabilities
+
+**Supported:**
+```tsx
+.where("field", value)              // Exact match
+.where("field", "=", value)         // Explicit operator
+.where("field", "!=", value)        // Not equal
+.where("field", ">", value)         // Comparison operators: >, <, >=, <=
+.where("field", "IS", null)         // NULL check
+.where("field", "IS NOT", null)     // NOT NULL check
+.where(...).where(...)              // Multiple conditions (AND)
+.orderBy("field", "asc" | "desc")   // Sorting
+.limit(n)                           // Limit results
+.one()                              // Single result (returns T | undefined)
+.related("relation")                // Include relations
+.related("relation", q => q.where(...))  // Filter relations
+```
+
+**Not supported (filter client-side):**
+```tsx
+.where("field", "LIKE", "%foo%")    // Pattern matching
+.where("field", "IN", [...])        // IN operator
+.where("field", null)               // Use "IS" operator instead
+```
+
 ## Query Pattern
 
 ```tsx
@@ -36,10 +61,12 @@ import { zql } from "../zero-schema.gen.ts";
 // No args
 export const list = defineQuery(() => zql.entity);
 
-// With args
-export const byId = defineQuery(
-  z.object({ id: z.string() }),
-  ({ args }) => zql.entity.where("id", args.id)
+// With args + multiple where
+export const byNameAndType = defineQuery(
+  z.object({ name: z.string(), type: z.string() }),
+  ({ args }) => zql.entity
+    .where("name", args.name)
+    .where("type", args.type)
 );
 
 // With relations
@@ -53,6 +80,18 @@ export const withRelated = defineQuery(
 // With context (user-scoped)
 export const mine = defineQuery(
   ({ ctx }) => zql.entity.where("userId", ctx.userID)
+);
+
+// Conditional where (build query dynamically)
+export const search = defineQuery(
+  z.object({ status: z.string().optional() }),
+  ({ args }) => {
+    let q = zql.entity;
+    if (args.status) {
+      q = q.where("status", args.status);
+    }
+    return q;
+  }
 );
 ```
 
@@ -118,16 +157,15 @@ export const mutators = defineMutators({
 ## Schema Conventions (`db/schema.ts`)
 
 ```tsx
-// Tables always have: id, createdAt, updatedAt (except join tables)
+// Regular tables: id + createdAt + updatedAt
 export const entity = pgTable("entity", {
   id: uuid().primaryKey(),
   name: text().notNull(),
-  // ... fields
   createdAt: timestamp().notNull(),
   updatedAt: timestamp().notNull(),
 });
 
-// Join tables: id + createdAt only
+// Join tables: id + createdAt only (no updatedAt)
 export const entityTags = pgTable("entity_tags", {
   id: uuid().primaryKey(),
   entityId: uuid().notNull().references(() => entity.id),
@@ -135,11 +173,20 @@ export const entityTags = pgTable("entity_tags", {
   createdAt: timestamp().notNull(),
 }, (table) => [unique().on(table.entityId, table.tagId)]);
 
-// Relations
-export const entityRelations = relations(entity, ({ many }) => ({
-  tags: many(entityTags),
-}));
+// Immutable tables: id + createdAt only (never updated after creation)
+// Example: packageVersions - versions are immutable once published
+export const packageVersions = pgTable("package_versions", {
+  id: uuid().primaryKey(),
+  version: text().notNull(),
+  createdAt: timestamp().notNull(),
+  // No updatedAt - records never change
+});
 ```
+
+**Timestamp rules:**
+- Regular tables: Always include `updatedAt` in mutations
+- Join tables: Only `createdAt`, deleted not updated
+- Immutable tables: Only `createdAt`, never update these records
 
 ## After Changes
 
