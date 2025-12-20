@@ -25,6 +25,8 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Button component
 - [x] Card component
 - [x] Toast system
+- [x] Tabs component (line/pills variants, Kobalte-based)
+- [x] Select component (dropdown, Kobalte-based)
 
 ### Homepage Search Integration
 - [x] Wire SearchInput to `packages.list` query on homepage
@@ -39,7 +41,8 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ### Worker Job
 - [x] Create `services/worker/` service
-- [ ] npm API client (fetch `registry.npmjs.org/{name}`)
+- [x] npm API client (fetch `registry.npmjs.org/{name}`)
+- [x] npm response mapper (extract versions, dependencies, dist-tags)
 - [ ] Request processor: query pending → fetch → parse → store
 - [ ] Process all pending requests in one run, then exit
 - [ ] Update request status throughout process (fetching → completed/failed)
@@ -79,10 +82,11 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [ ] Sort options (recent, popular, name)
 
 ### Package Details
-- [ ] `/packages/:id` route - package detail page
-- [ ] Metadata display (name, description, homepage, repo)
-- [ ] Version history
-- [ ] Dependency list with links to other packages
+- [x] `/package/:registry/:name` route - package detail page
+- [x] Metadata display (name, description, homepage, repo)
+- [x] Version selector (defaults to latest stable, search for older versions)
+- [x] Dependency list with tabs by type (runtime, dev, peer, optional)
+- [x] Dependencies link to package page when fetched
 - [ ] Dependency stats (direct count, transitive count)
 
 ### User Dashboard
@@ -109,17 +113,19 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ## Current Focus
 
-**Active:** Milestone 1 - Worker Job
+**Active:** Milestone 1 - Worker Job (request processor)
 
-**Completed:** Database, Zero layer, UI components, Homepage search integration
+**Completed:** Database, Zero layer, UI components, Homepage search, Package detail page
 
-**Next task:** Create worker job that processes pending package requests
+**Next task:** Wire up request processor to query pending requests, fetch from npm, and store results
 
 ---
 
 ## Notes
 
-- SearchInput is generic - pass any data, it searches and displays
+- Homepage uses card grid for search results (max 20), links to package detail
+- Package detail page at `/package/:registry/:name` with version selector
+- Version metadata: `latestVersion`, `distTags` on packages; `isPrerelease`, `isYanked` on versions
 - Registry filter with extensible options in `lib/registries.ts`
 - All data access through Zero queries/mutations
 - Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob
