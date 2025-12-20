@@ -10,6 +10,8 @@
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
 		"@types/node": "^25.0.3",
-		"postgres": "^3.4.7"
+		"ky": "^1.14.1",
+		"postgres": "^3.4.7",
+		"zod": "^4.2.1"
 	}
 }
