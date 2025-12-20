@@ -1,10 +1,11 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { enums } from "../db/types.ts";
 
 export const create = defineMutator(
 	z.object({
 		packageName: z.string(),
-		registry: z.enum(["npm", "jsr", "brew", "apt"]),
+		registry: z.enum(enums.registry),
 	}),
 	async ({ tx, args }) => {
 		// TODO: Add validation:

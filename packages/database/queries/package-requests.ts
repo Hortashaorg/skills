@@ -1,5 +1,6 @@
 import { defineQuery } from "@rocicorp/zero";
 import { z } from "zod";
+import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 
 // Get pending requests for worker to process
@@ -14,7 +15,7 @@ export const pending = defineQuery(() => {
 export const existingPending = defineQuery(
 	z.object({
 		packageName: z.string(),
-		registry: z.enum(["npm", "jsr", "brew", "apt"]),
+		registry: z.enum(enums.registry),
 	}),
 	({ args }) => {
 		return zql.packageRequests

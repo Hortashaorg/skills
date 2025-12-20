@@ -3,7 +3,11 @@
  * All registries return data in this format, ready for database insertion.
  */
 
-export type DependencyType = "runtime" | "dev" | "peer" | "optional";
+// Import the canonical DependencyType from database schema
+export type { DependencyType } from "@package/database/server";
+
+// Re-import for local use
+import type { DependencyType } from "@package/database/server";
 
 export interface DependencyData {
 	name: string;

@@ -1,10 +1,11 @@
 /**
- * Supported package registries.
- * Add new registries here to extend support across the app.
+ * Registry types and options derived from database schema.
+ * The source of truth is packages/database/db/schema.ts
  */
-export const REGISTRIES = ["npm", "jsr", "brew", "apt"] as const;
+import { enums, type Registry } from "@package/database/client";
 
-export type Registry = (typeof REGISTRIES)[number];
+// Re-export the type for convenience
+export type { Registry } from "@package/database/client";
 
 export type RegistryFilter = Registry | "all";
 
@@ -14,24 +15,16 @@ export const REGISTRY_FILTER_OPTIONS: {
 	label: string;
 }[] = [
 	{ value: "all", label: "All Registries" },
-	{ value: "npm", label: "npm" },
-	{ value: "jsr", label: "jsr" },
-	{ value: "brew", label: "brew" },
-	{ value: "apt", label: "apt" },
+	...enums.registry.map((r) => ({ value: r, label: r })),
 ];
 
 /** Registry options without "All" - for selecting a specific registry */
-export const REGISTRY_OPTIONS: { value: Registry; label: string }[] = [
-	{ value: "npm", label: "npm" },
-	{ value: "jsr", label: "jsr" },
-	{ value: "brew", label: "brew" },
-	{ value: "apt", label: "apt" },
-];
+export const REGISTRY_OPTIONS: { value: Registry; label: string }[] =
+	enums.registry.map((r) => ({ value: r, label: r }));
 
 /**
  * Get display label for a registry
  */
 export function getRegistryLabel(registry: Registry): string {
-	const option = REGISTRY_OPTIONS.find((r) => r.value === registry);
-	return option?.label ?? registry;
+	return registry;
 }

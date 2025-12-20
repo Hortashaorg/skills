@@ -1,5 +1,6 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { enums } from "../db/types.ts";
 
 export const create = defineMutator(
 	z.object({
@@ -10,7 +11,7 @@ export const create = defineMutator(
 		dependencyVersionRange: z.string(),
 		resolvedVersion: z.string(),
 		resolvedVersionId: z.string().optional(),
-		dependencyType: z.enum(["runtime", "dev", "peer", "optional"]),
+		dependencyType: z.enum(enums.dependencyType),
 	}),
 	async ({ tx, args }) => {
 		const id = crypto.randomUUID();

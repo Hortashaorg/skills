@@ -1,11 +1,12 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { enums } from "../db/types.ts";
 
 export const upsert = defineMutator(
 	z.object({
 		id: z.string().optional(),
 		name: z.string(),
-		registry: z.enum(["npm", "jsr", "brew", "apt"]),
+		registry: z.enum(enums.registry),
 		description: z.string().optional(),
 		homepage: z.string().optional(),
 		repository: z.string().optional(),

@@ -12,3 +12,13 @@ export const dbProvider = zeroPostgresJS(
 	schema,
 	postgres(environment.ZERO_UPSTREAM_DB),
 );
+
+// Re-export inferred types from schema
+export type {
+	ActorType,
+	AuditAction,
+	DependencyType,
+	PackageRequestStatus,
+	Registry,
+} from "./db/types.ts";
+export { enums } from "./db/types.ts";

@@ -1,5 +1,6 @@
 import { defineQuery } from "@rocicorp/zero";
 import { z } from "zod";
+import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 
 export const list = defineQuery(() => {
@@ -13,7 +14,7 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 export const byName = defineQuery(
 	z.object({
 		name: z.string(),
-		registry: z.enum(["npm", "jsr", "brew", "apt"]),
+		registry: z.enum(enums.registry),
 	}),
 	({ args }) => {
 		// TODO: Zero doesn't support multiple where clauses
