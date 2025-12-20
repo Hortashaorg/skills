@@ -43,6 +43,9 @@ export default defineConfig(() => ({
 				},
 			],
 		},
+		// Reduce parallelism to avoid resource exhaustion
+		fileParallelism: false,
+		isolate: false,
 		setupFiles: ["./.storybook/vitest.setup.ts"],
 		coverage: {
 			exclude: [
