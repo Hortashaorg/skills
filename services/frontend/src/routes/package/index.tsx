@@ -1,6 +1,6 @@
 import { queries, type Row, useQuery } from "@package/database/client";
-import { A, useParams } from "@solidjs/router";
-import { createEffect, createMemo, createSignal, Show } from "solid-js";
+import { A, useParams, useSearchParams } from "@solidjs/router";
+import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -15,6 +15,7 @@ type PackageVersion = Row["packageVersions"];
 
 export const Package = () => {
 	const params = useParams<{ registry: string; name: string }>();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	// Decode URL params
 	const registry = () => decodeURIComponent(params.registry) as Registry;
@@ -34,32 +35,95 @@ export const Package = () => {
 		return data?.[0] ?? null;
 	});
 
-	// Version selection and search
+	// Version from URL query param
+	const urlVersion = () => searchParams.v as string | undefined;
+
+	// Track if URL version was not found
+	const [versionNotFound, setVersionNotFound] = createSignal<string>();
+
+	// Version selection
 	const [selectedVersionId, setSelectedVersionId] = createSignal<string>();
-	const [versionSearch, setVersionSearch] = createSignal("");
 
-	// Auto-select latest stable version when package loads
-	createEffect(() => {
+	// Find version by version string (exact match or latest matching for ranges)
+	const findVersion = (
+		versions: readonly PackageVersion[],
+		versionStr: string,
+	): PackageVersion | undefined => {
+		// Try exact match first
+		const exact = versions.find((v) => v.version === versionStr);
+		if (exact) return exact;
+
+		// For version ranges (^, ~, >=, etc.), find latest stable version as approximation
+		if (/[\^~>=<]/.test(versionStr)) {
+			const stable = versions.find((v) => !v.isPrerelease && !v.isYanked);
+			return stable ?? versions[0];
+		}
+
+		return undefined;
+	};
+
+	// Find default version (latest stable)
+	const findDefaultVersion = (
+		p: NonNullable<ReturnType<typeof pkg>>,
+	): PackageVersion | undefined => {
+		if (!p.versions?.length) return undefined;
+
+		if (p.latestVersion) {
+			const latest = p.versions.find((v) => v.version === p.latestVersion);
+			if (latest) return latest;
+		}
+
+		return p.versions.find((v) => !v.isPrerelease) ?? p.versions[0];
+	};
+
+	// Initialize version from URL or default when package loads
+	createEffect(
+		on([pkg, urlVersion], ([p, urlV]) => {
+			if (!p?.versions?.length) return;
+
+			// If URL has version param, try to find it
+			if (urlV) {
+				const found = findVersion(p.versions, urlV);
+				if (found) {
+					setSelectedVersionId(found.id);
+					setVersionNotFound(undefined);
+				} else {
+					setVersionNotFound(urlV);
+					// Still select default so dependencies section works
+					const defaultV = findDefaultVersion(p);
+					if (defaultV) setSelectedVersionId(defaultV.id);
+				}
+			} else {
+				// No URL version - select default and update URL
+				const defaultV = findDefaultVersion(p);
+				if (defaultV) {
+					setSelectedVersionId(defaultV.id);
+					setSearchParams({ v: defaultV.version }, { replace: true });
+				}
+			}
+		}),
+	);
+
+	// Update URL when user manually changes version
+	const handleVersionChange = (versionId: string | undefined) => {
+		setSelectedVersionId(versionId);
+		setVersionNotFound(undefined);
+
 		const p = pkg();
-		if (p?.versions && p.versions.length > 0 && !selectedVersionId()) {
-			let defaultVersion: PackageVersion | undefined;
-
-			if (p.latestVersion) {
-				defaultVersion = p.versions.find((v) => v.version === p.latestVersion);
-			}
-
-			if (!defaultVersion) {
-				defaultVersion = p.versions.find((v) => !v.isPrerelease);
-			}
-
-			if (!defaultVersion) {
-				defaultVersion = p.versions[0];
-			}
-
-			if (defaultVersion) {
-				setSelectedVersionId(defaultVersion.id);
+		if (versionId && p?.versions) {
+			const version = p.versions.find((v) => v.id === versionId);
+			if (version) {
+				setSearchParams({ v: version.version }, { replace: true });
 			}
 		}
+	};
+
+	// Get selected version object
+	const selectedVersion = createMemo(() => {
+		const p = pkg();
+		const id = selectedVersionId();
+		if (!p?.versions || !id) return null;
+		return p.versions.find((v) => v.id === id) ?? null;
 	});
 
 	return (
@@ -116,10 +180,12 @@ export const Package = () => {
 								{/* Version selector */}
 								<VersionSelector
 									versions={p().versions ?? []}
-									selectedVersionId={selectedVersionId()}
-									versionSearch={versionSearch()}
-									onVersionChange={setSelectedVersionId}
-									onSearchChange={setVersionSearch}
+									distTags={p().distTags}
+									selectedVersion={selectedVersion()}
+									versionNotFound={versionNotFound()}
+									onVersionChange={handleVersionChange}
+									registry={p().registry}
+									packageName={p().name}
 								/>
 
 								{/* Dependencies */}
