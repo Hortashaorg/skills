@@ -25,6 +25,8 @@ export async function upsertPackage(
 			description: data.description ?? null,
 			homepage: data.homepage ?? null,
 			repository: data.repository ?? null,
+			latestVersion: data.latestVersion ?? null,
+			distTags: data.distTags ?? null,
 			lastFetchAttempt: now,
 			lastFetchSuccess: now,
 			updatedAt: now,
@@ -41,6 +43,8 @@ export async function upsertPackage(
 		description: data.description ?? null,
 		homepage: data.homepage ?? null,
 		repository: data.repository ?? null,
+		latestVersion: data.latestVersion ?? null,
+		distTags: data.distTags ?? null,
 		lastFetchAttempt: now,
 		lastFetchSuccess: now,
 		createdAt: now,
@@ -69,6 +73,8 @@ export async function createVersion(
 		packageId,
 		version: version.version,
 		publishedAt: version.publishedAt.getTime(),
+		isPrerelease: version.isPrerelease,
+		isYanked: version.isYanked,
 		createdAt: now,
 	});
 

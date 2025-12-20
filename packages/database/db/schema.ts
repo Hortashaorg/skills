@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+	boolean,
 	index,
 	integer,
 	jsonb,
@@ -68,6 +69,8 @@ export const packages = pgTable(
 		description: text(),
 		homepage: text(),
 		repository: text(),
+		latestVersion: text(),
+		distTags: jsonb().$type<Record<string, string>>(),
 		lastFetchAttempt: timestamp().notNull(),
 		lastFetchSuccess: timestamp().notNull(),
 		createdAt: timestamp().notNull(),
@@ -91,12 +94,17 @@ export const packageVersions = pgTable(
 			.references(() => packages.id),
 		version: text().notNull(),
 		publishedAt: timestamp().notNull(),
+		isPrerelease: boolean().notNull(),
+		isYanked: boolean().notNull(),
 		createdAt: timestamp().notNull(),
 	},
 	(table) => [
 		unique().on(table.packageId, table.version),
 		index("idx_package_versions_package_id").on(table.packageId),
 		index("idx_package_versions_published_at").on(table.publishedAt),
+		index("idx_package_versions_stable")
+			.on(table.packageId, table.publishedAt)
+			.where(sql`${table.isPrerelease} = false AND ${table.isYanked} = false`),
 	],
 );
 

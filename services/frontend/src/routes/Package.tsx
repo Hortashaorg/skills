@@ -27,36 +27,6 @@ type PackageDependency = Row["packageDependencies"];
 
 const MAX_DROPDOWN_VERSIONS = 15;
 
-// Pre-release identifiers to filter out for default selection
-const PRERELEASE_PATTERNS = [
-	"-alpha",
-	"-beta",
-	"-rc",
-	"-canary",
-	"-experimental",
-	"-next",
-	"-nightly",
-	"-dev",
-	"-snapshot",
-	"-preview",
-	"-insiders",
-];
-
-/** Check if a version string is a pre-release */
-function isPrerelease(version: string): boolean {
-	const lower = version.toLowerCase();
-	return PRERELEASE_PATTERNS.some((pattern) => lower.includes(pattern));
-}
-
-/** Find the best "latest" stable version */
-function findLatestStableVersion(
-	versions: readonly PackageVersion[],
-): PackageVersion | undefined {
-	// Versions are already sorted by publishedAt desc
-	// Find first non-prerelease version
-	return versions.find((v) => !isPrerelease(v.version));
-}
-
 export const Package = () => {
 	const params = useParams<{ registry: string; name: string }>();
 	const zero = useZero();
@@ -88,9 +58,24 @@ export const Package = () => {
 	createEffect(() => {
 		const p = pkg();
 		if (p?.versions && p.versions.length > 0 && !selectedVersionId()) {
-			// Find latest stable version, fallback to first if none
-			const stable = findLatestStableVersion(p.versions);
-			const defaultVersion = stable ?? p.versions[0];
+			// Use latestVersion from package if available, otherwise first stable, then first
+			let defaultVersion: PackageVersion | undefined;
+
+			if (p.latestVersion) {
+				// Find the version matching latestVersion string
+				defaultVersion = p.versions.find((v) => v.version === p.latestVersion);
+			}
+
+			if (!defaultVersion) {
+				// Fallback: find first non-prerelease version
+				defaultVersion = p.versions.find((v) => !v.isPrerelease);
+			}
+
+			if (!defaultVersion) {
+				// Ultimate fallback: first version
+				defaultVersion = p.versions[0];
+			}
+
 			if (defaultVersion) {
 				setSelectedVersionId(defaultVersion.id);
 			}
@@ -103,7 +88,12 @@ export const Package = () => {
 		if (!p || !p.versions) return [];
 
 		const search = versionSearch().toLowerCase().trim();
-		let versions = p.versions;
+		let versions = [...p.versions]; // Copy since we need to filter
+
+		// Filter out yanked versions unless specifically searching
+		if (!search) {
+			versions = versions.filter((v) => !v.isYanked);
+		}
 
 		// If searching, filter by search term
 		if (search) {
@@ -111,8 +101,8 @@ export const Package = () => {
 				v.version.toLowerCase().includes(search),
 			);
 		} else {
-			// When not searching, prioritize stable versions
-			const stable = versions.filter((v) => !isPrerelease(v.version));
+			// When not searching, prioritize stable versions (use database field)
+			const stable = versions.filter((v) => !v.isPrerelease);
 			// If we have stable versions, show those first (limited)
 			if (stable.length > 0) {
 				versions = stable.slice(0, MAX_DROPDOWN_VERSIONS);
@@ -386,9 +376,14 @@ export const Package = () => {
 															Published:{" "}
 															{new Date(v().publishedAt).toLocaleDateString()}
 														</Text>
-														<Show when={isPrerelease(v().version)}>
+														<Show when={v().isPrerelease}>
 															<Badge variant="warning" size="sm">
 																pre-release
+															</Badge>
+														</Show>
+														<Show when={v().isYanked}>
+															<Badge variant="danger" size="sm">
+																yanked
 															</Badge>
 														</Show>
 													</Flex>
