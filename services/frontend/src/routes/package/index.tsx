@@ -35,45 +35,99 @@ export const Package = () => {
 		return data?.[0] ?? null;
 	});
 
+	// Track current package key to detect navigation between packages
+	const packageKey = () => `${registry()}:${packageName()}`;
+
 	// Version from URL query param
 	const urlVersion = () => searchParams.v as string | undefined;
 
 	// Track if URL version was not found
 	const [versionNotFound, setVersionNotFound] = createSignal<string>();
 
+	// Track if URL version was a range that got resolved
+	const [resolvedFrom, setResolvedFrom] = createSignal<string>();
+
 	// Version selection
 	const [selectedVersionId, setSelectedVersionId] = createSignal<string>();
 
-	// Find version by version string (exact match or latest matching for ranges)
+	// Reset state when navigating to a different package
+	createEffect(
+		on(packageKey, () => {
+			setSelectedVersionId(undefined);
+			setVersionNotFound(undefined);
+			setResolvedFrom(undefined);
+		}, { defer: true })
+	);
+
+	// Sort versions by publishedAt descending (newest first)
+	const sortedVersions = createMemo(() => {
+		const p = pkg();
+		if (!p?.versions?.length) return [];
+		return [...p.versions].sort((a, b) => b.publishedAt - a.publishedAt);
+	});
+
+	// Find version by version string (exact match, dist-tag, or range)
 	const findVersion = (
-		versions: readonly PackageVersion[],
 		versionStr: string,
-	): PackageVersion | undefined => {
+	): { version: PackageVersion; isResolved: boolean } | undefined => {
+		const versions = sortedVersions();
+		const p = pkg();
+		if (!versions.length) return undefined;
+
 		// Try exact match first
 		const exact = versions.find((v) => v.version === versionStr);
-		if (exact) return exact;
+		if (exact) return { version: exact, isResolved: false };
 
-		// For version ranges (^, ~, >=, etc.), find latest stable version as approximation
-		if (/[\^~>=<]/.test(versionStr)) {
-			const stable = versions.find((v) => !v.isPrerelease && !v.isYanked);
-			return stable ?? versions[0];
+		// Try dist-tag (latest, next, etc.)
+		const distTags = p?.distTags;
+		if (distTags && versionStr in distTags) {
+			const tagVersion = distTags[versionStr];
+			const found = versions.find((v) => v.version === tagVersion);
+			if (found) return { version: found, isResolved: true };
+		}
+
+		// For version ranges, try to find a matching version
+		const stableVersions = versions.filter((v) => !v.isPrerelease && !v.isYanked);
+
+		// ^X.Y.Z - find latest X.* version
+		const caretMatch = versionStr.match(/^\^(\d+)\./);
+		if (caretMatch) {
+			const major = caretMatch[1];
+			const matching = stableVersions.find((v) => v.version.startsWith(`${major}.`));
+			if (matching) return { version: matching, isResolved: true };
+		}
+
+		// ~X.Y.Z - find latest X.Y.* version
+		const tildeMatch = versionStr.match(/^~(\d+\.\d+)\./);
+		if (tildeMatch) {
+			const majorMinor = tildeMatch[1];
+			const matching = stableVersions.find((v) => v.version.startsWith(`${majorMinor}.`));
+			if (matching) return { version: matching, isResolved: true };
+		}
+
+		// *, x, or other wildcards - latest stable
+		if (/^[*x]$/i.test(versionStr) || /[>=<]/.test(versionStr)) {
+			const first = stableVersions[0] ?? versions[0];
+			if (first) return { version: first, isResolved: true };
 		}
 
 		return undefined;
 	};
 
-	// Find default version (latest stable)
-	const findDefaultVersion = (
-		p: NonNullable<ReturnType<typeof pkg>>,
-	): PackageVersion | undefined => {
-		if (!p.versions?.length) return undefined;
+	// Find default version (latest from dist-tags or newest stable)
+	const findDefaultVersion = (): PackageVersion | undefined => {
+		const versions = sortedVersions();
+		const p = pkg();
+		if (!versions.length) return undefined;
 
-		if (p.latestVersion) {
-			const latest = p.versions.find((v) => v.version === p.latestVersion);
+		// Use latest dist-tag if available
+		if (p?.latestVersion) {
+			const latest = versions.find((v) => v.version === p.latestVersion);
 			if (latest) return latest;
 		}
 
-		return p.versions.find((v) => !v.isPrerelease) ?? p.versions[0];
+		// Fall back to newest stable version
+		return versions.find((v) => !v.isPrerelease && !v.isYanked) ?? versions[0];
 	};
 
 	// Initialize version from URL or default when package loads
@@ -83,23 +137,26 @@ export const Package = () => {
 
 			// If URL has version param, try to find it
 			if (urlV) {
-				const found = findVersion(p.versions, urlV);
-				if (found) {
-					setSelectedVersionId(found.id);
+				const result = findVersion(urlV);
+				if (result) {
+					setSelectedVersionId(result.version.id);
 					setVersionNotFound(undefined);
+					setResolvedFrom(result.isResolved ? urlV : undefined);
 				} else {
+					// Version not found - show warning and select default
 					setVersionNotFound(urlV);
-					// Still select default so dependencies section works
-					const defaultV = findDefaultVersion(p);
+					setResolvedFrom(undefined);
+					const defaultV = findDefaultVersion();
 					if (defaultV) setSelectedVersionId(defaultV.id);
 				}
 			} else {
-				// No URL version - select default and update URL
-				const defaultV = findDefaultVersion(p);
+				// No URL version - select default (don't update URL to keep it clean)
+				const defaultV = findDefaultVersion();
 				if (defaultV) {
 					setSelectedVersionId(defaultV.id);
-					setSearchParams({ v: defaultV.version }, { replace: true });
 				}
+				setVersionNotFound(undefined);
+				setResolvedFrom(undefined);
 			}
 		}),
 	);
@@ -108,6 +165,7 @@ export const Package = () => {
 	const handleVersionChange = (versionId: string | undefined) => {
 		setSelectedVersionId(versionId);
 		setVersionNotFound(undefined);
+		setResolvedFrom(undefined);
 
 		const p = pkg();
 		if (versionId && p?.versions) {
@@ -179,10 +237,11 @@ export const Package = () => {
 
 								{/* Version selector */}
 								<VersionSelector
-									versions={p().versions ?? []}
+									versions={sortedVersions()}
 									distTags={p().distTags}
 									selectedVersion={selectedVersion()}
 									versionNotFound={versionNotFound()}
+									resolvedFrom={resolvedFrom()}
 									onVersionChange={handleVersionChange}
 									registry={p().registry}
 									packageName={p().name}

@@ -1,5 +1,5 @@
-import { Combobox } from "@kobalte/core/combobox";
 import { mutators, type Row, useZero } from "@package/database/client";
+import { useNavigate } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -17,6 +17,7 @@ export interface VersionSelectorProps {
 	distTags: Record<string, string> | null;
 	selectedVersion: PackageVersion | null;
 	versionNotFound: string | undefined;
+	resolvedFrom: string | undefined;
 	onVersionChange: (versionId: string | undefined) => void;
 	registry: Registry;
 	packageName: string;
@@ -24,21 +25,9 @@ export interface VersionSelectorProps {
 
 export const VersionSelector = (props: VersionSelectorProps) => {
 	const zero = useZero();
+	const navigate = useNavigate();
 	const [inputValue, setInputValue] = createSignal("");
-	const [isOpen, setIsOpen] = createSignal(false);
 	const [requestedUpdate, setRequestedUpdate] = createSignal(false);
-
-	// Filter versions based on input
-	const filteredVersions = createMemo(() => {
-		const search = inputValue().toLowerCase().trim();
-		if (!search) {
-			// Show recent stable versions by default
-			return [...props.versions].filter((v) => !v.isYanked).slice(0, 20);
-		}
-		return [...props.versions].filter((v) =>
-			v.version.toLowerCase().includes(search),
-		);
-	});
 
 	// Get dist-tags as array for display
 	const distTagsArray = createMemo(() => {
@@ -47,20 +36,37 @@ export const VersionSelector = (props: VersionSelectorProps) => {
 		return Object.entries(tags).map(([tag, version]) => ({ tag, version }));
 	});
 
-	// Handle selecting a version from dropdown
-	const handleSelect = (version: PackageVersion | null) => {
-		if (version) {
-			props.onVersionChange(version.id);
-			setInputValue("");
-			setIsOpen(false);
-		}
-	};
+	// Get 5 most recent stable versions (already sorted by publishedAt desc)
+	const recentVersions = createMemo(() => {
+		return props.versions
+			.filter((v) => !v.isPrerelease && !v.isYanked)
+			.slice(0, 5);
+	});
 
-	// Handle clicking a dist-tag pill
-	const handleDistTagClick = (version: string) => {
+	// Handle clicking a version button
+	const handleVersionClick = (version: string) => {
 		const found = props.versions.find((v) => v.version === version);
 		if (found) {
 			props.onVersionChange(found.id);
+		}
+	};
+
+	// Handle Find button click - navigate with version in URL
+	const handleFind = () => {
+		const version = inputValue().trim();
+		if (!version) return;
+
+		const encodedRegistry = encodeURIComponent(props.registry);
+		const encodedName = encodeURIComponent(props.packageName);
+		const encodedVersion = encodeURIComponent(version);
+		navigate(`/package/${encodedRegistry}/${encodedName}?v=${encodedVersion}`);
+		setInputValue("");
+	};
+
+	// Handle Enter key in input
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key === "Enter") {
+			handleFind();
 		}
 	};
 
@@ -101,162 +107,151 @@ export const VersionSelector = (props: VersionSelectorProps) => {
 
 					{/* Dist-tags quick select */}
 					<Show when={distTagsArray().length > 0}>
-						<Flex gap="sm" wrap="wrap">
-							<For each={distTagsArray()}>
-								{({ tag, version }) => {
-									const isSelected = () =>
-										props.selectedVersion?.version === version;
-									return (
-										<button
-											type="button"
-											onClick={() => handleDistTagClick(version)}
-											class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-radius text-sm font-medium transition-colors cursor-pointer border ${
-												isSelected()
-													? "bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark border-primary dark:border-primary-dark"
-													: "bg-surface-alt dark:bg-surface-dark-alt text-on-surface dark:text-on-surface-dark border-outline dark:border-outline-dark hover:bg-surface dark:hover:bg-surface-dark"
-											}`}
-										>
-											<span class="text-xs opacity-70">{tag}:</span>
-											<span>{version}</span>
-										</button>
-									);
-								}}
-							</For>
-						</Flex>
+						<Stack spacing="xs">
+							<Text size="xs" color="muted">
+								Tags
+							</Text>
+							<Flex gap="sm" wrap="wrap">
+								<For each={distTagsArray()}>
+									{({ tag, version }) => {
+										const isSelected = () =>
+											props.selectedVersion?.version === version &&
+											!props.resolvedFrom;
+										return (
+											<button
+												type="button"
+												onClick={() => handleVersionClick(version)}
+												class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-radius text-sm font-medium transition-colors cursor-pointer border ${
+													isSelected()
+														? "bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark border-primary dark:border-primary-dark"
+														: "bg-surface-alt dark:bg-surface-dark-alt text-on-surface dark:text-on-surface-dark border-outline dark:border-outline-dark hover:bg-surface dark:hover:bg-surface-dark"
+												}`}
+											>
+												<span class="text-xs opacity-70">{tag}:</span>
+												<span>{version}</span>
+											</button>
+										);
+									}}
+								</For>
+							</Flex>
+						</Stack>
 					</Show>
 
-					{/* Version combobox */}
-					<Combobox<PackageVersion>
-						value={props.selectedVersion}
-						onChange={handleSelect}
-						onInputChange={setInputValue}
-						open={isOpen()}
-						onOpenChange={setIsOpen}
-						options={filteredVersions()}
-						optionValue="id"
-						optionTextValue="version"
-						optionLabel="version"
-						placeholder="Search or enter version..."
-						allowsEmptyCollection={true}
-						shouldFocusWrap={true}
-						itemComponent={(itemProps) => (
-							<Combobox.Item
-								item={itemProps.item}
-								class="w-full text-left px-3 py-2 hover:bg-surface-alt dark:hover:bg-surface-dark-alt ui-highlighted:bg-surface-alt dark:ui-highlighted:bg-surface-dark-alt transition-colors cursor-pointer outline-none"
+					{/* Recent versions quick select */}
+					<Show when={recentVersions().length > 0}>
+						<Stack spacing="xs">
+							<Text size="xs" color="muted">
+								Recent
+							</Text>
+							<Flex gap="sm" wrap="wrap">
+								<For each={recentVersions()}>
+									{(v) => {
+										const isSelected = () =>
+											props.selectedVersion?.id === v.id && !props.resolvedFrom;
+										return (
+											<button
+												type="button"
+												onClick={() => handleVersionClick(v.version)}
+												class={`px-3 py-1.5 rounded-radius text-sm font-medium transition-colors cursor-pointer border ${
+													isSelected()
+														? "bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark border-primary dark:border-primary-dark"
+														: "bg-surface-alt dark:bg-surface-dark-alt text-on-surface dark:text-on-surface-dark border-outline dark:border-outline-dark hover:bg-surface dark:hover:bg-surface-dark"
+												}`}
+											>
+												{v.version}
+											</button>
+										);
+									}}
+								</For>
+							</Flex>
+						</Stack>
+					</Show>
+
+					{/* Version input */}
+					<Flex gap="sm">
+						<input
+							type="text"
+							value={inputValue()}
+							onInput={(e) => setInputValue(e.currentTarget.value)}
+							onKeyDown={handleKeyDown}
+							placeholder="Enter version or range..."
+							class="flex-1 h-10 rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark"
+						/>
+						<Button variant="outline" size="md" onClick={handleFind}>
+							Find
+						</Button>
+					</Flex>
+
+					{/* Current version status */}
+					<Show when={props.selectedVersion}>
+						{(v) => (
+							<Card
+								padding="sm"
+								class={
+									props.versionNotFound
+										? "bg-warning/10 dark:bg-warning-dark/10 border-warning dark:border-warning-dark"
+										: "bg-surface-alt dark:bg-surface-dark-alt"
+								}
 							>
-								<Flex justify="between" align="center">
-									<Flex gap="sm" align="center">
-										<Text size="sm">{itemProps.item.rawValue.version}</Text>
-										<Show when={itemProps.item.rawValue.isPrerelease}>
+								<Stack spacing="sm">
+									<Flex gap="sm" align="center" wrap="wrap">
+										{/* Show URL version if it differs from selected */}
+										<Show when={props.resolvedFrom || props.versionNotFound}>
+											<Badge
+												variant={
+													props.versionNotFound ? "warning" : "secondary"
+												}
+												size="md"
+											>
+												{props.resolvedFrom || props.versionNotFound}
+											</Badge>
+											<Text size="sm" color="muted">
+												{props.versionNotFound ? "not found →" : "→"}
+											</Text>
+										</Show>
+
+										{/* Always show resolved/selected version */}
+										<Badge variant="primary" size="md">
+											{v().version}
+										</Badge>
+
+										<Show when={v().isPrerelease}>
 											<Badge variant="warning" size="sm">
-												pre
+												pre-release
 											</Badge>
 										</Show>
-										<Show when={itemProps.item.rawValue.isYanked}>
+										<Show when={v().isYanked}>
 											<Badge variant="danger" size="sm">
 												yanked
 											</Badge>
 										</Show>
 									</Flex>
+
 									<Text size="xs" color="muted">
-										{new Date(
-											itemProps.item.rawValue.publishedAt,
-										).toLocaleDateString()}
+										Published: {new Date(v().publishedAt).toLocaleDateString()}
 									</Text>
-								</Flex>
-							</Combobox.Item>
-						)}
-					>
-						<Combobox.Control class="relative">
-							<Combobox.Input class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 pr-8" />
-							<Combobox.Trigger class="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-subtle dark:text-on-surface-dark-subtle">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<title>Toggle</title>
-									<path d="m6 9 6 6 6-6" />
-								</svg>
-							</Combobox.Trigger>
-						</Combobox.Control>
 
-						<Combobox.Portal>
-							<Combobox.Content class="z-50 mt-1 w-(--kb-popper-anchor-width) bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg max-h-60 overflow-auto ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95 ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95">
-								<Combobox.Listbox class="flex flex-col" />
-								<Show when={inputValue() && filteredVersions().length === 0}>
-									<div class="p-3 text-center">
-										<Text size="sm" color="muted">
-											No matching versions
-										</Text>
-									</div>
-								</Show>
-							</Combobox.Content>
-						</Combobox.Portal>
-					</Combobox>
-
-					{/* Selected version info */}
-					<Show when={props.selectedVersion}>
-						{(v) => (
-							<Flex gap="sm" align="center" wrap="wrap">
-								<Text size="xs" color="muted">
-									Published: {new Date(v().publishedAt).toLocaleDateString()}
-								</Text>
-								<Show when={v().isPrerelease}>
-									<Badge variant="warning" size="sm">
-										pre-release
-									</Badge>
-								</Show>
-								<Show when={v().isYanked}>
-									<Badge variant="danger" size="sm">
-										yanked
-									</Badge>
-								</Show>
-							</Flex>
-						)}
-					</Show>
-
-					{/* Version not found state */}
-					<Show when={props.versionNotFound}>
-						{(version) => (
-							<Card
-								padding="sm"
-								class="bg-warning/10 dark:bg-warning-dark/10 border-warning dark:border-warning-dark"
-							>
-								<Stack spacing="sm">
-									<Text size="sm" weight="semibold">
-										Version "{version()}" not found
-									</Text>
-									<Text size="xs" color="muted">
-										This version may not be in our database yet.
-										{props.selectedVersion && (
-											<> Showing {props.selectedVersion.version} instead.</>
-										)}
-									</Text>
-									<Show when={!requestedUpdate() && zero().userID !== "anon"}>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={handleRequestUpdate}
-										>
-											Request package update
-										</Button>
-									</Show>
-									<Show when={requestedUpdate()}>
-										<Badge variant="info" size="sm">
-											Update requested
-										</Badge>
-									</Show>
-									<Show when={zero().userID === "anon"}>
-										<Text size="xs" color="muted">
-											Sign in to request an update.
-										</Text>
+									{/* Request update option for not found versions */}
+									<Show when={props.versionNotFound}>
+										<Show when={!requestedUpdate() && zero().userID !== "anon"}>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleRequestUpdate}
+											>
+												Request package update
+											</Button>
+										</Show>
+										<Show when={requestedUpdate()}>
+											<Badge variant="info" size="sm">
+												Update requested
+											</Badge>
+										</Show>
+										<Show when={zero().userID === "anon"}>
+											<Text size="xs" color="muted">
+												Sign in to request an update.
+											</Text>
+										</Show>
 									</Show>
 								</Stack>
 							</Card>
