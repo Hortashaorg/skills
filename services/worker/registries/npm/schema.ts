@@ -5,25 +5,26 @@ import { z } from "zod";
  * If npm changes their API, validation fails and we can alert.
  */
 
+// Some packages have malformed deps (string instead of object) - accept both
+const depsField = z
+	.union([z.record(z.string(), z.string()), z.string()])
+	.optional();
+
 export const NpmVersionSchema = z.object({
 	version: z.string(),
-	dependencies: z.record(z.string(), z.string()).optional(),
-	devDependencies: z.record(z.string(), z.string()).optional(),
-	peerDependencies: z.record(z.string(), z.string()).optional(),
-	optionalDependencies: z.record(z.string(), z.string()).optional(),
+	dependencies: depsField,
+	devDependencies: depsField,
+	peerDependencies: depsField,
+	optionalDependencies: depsField,
 });
 
 export const NpmPackageSchema = z.object({
 	name: z.string(),
 	description: z.string().optional(),
-	homepage: z.string().optional(),
-	license: z.union([z.string(), z.object({ type: z.string() })]).optional(),
-	repository: z
-		.union([
-			z.string(),
-			z.object({ type: z.string().optional(), url: z.string() }),
-		])
-		.optional(),
+	// These fields have inconsistent types in legacy packages - accept anything
+	homepage: z.unknown().optional(),
+	license: z.unknown().optional(),
+	repository: z.unknown().optional(),
 	"dist-tags": z.looseObject({
 		latest: z.string(),
 	}),

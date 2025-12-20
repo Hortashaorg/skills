@@ -29,6 +29,8 @@ export interface ProcessResult {
 	versionsSkipped?: number;
 	dependenciesCreated?: number;
 	dependenciesLinked?: number;
+	dependenciesExisting?: number;
+	dependenciesQueued?: number;
 	newRequestsScheduled?: number;
 	error?: string;
 }
@@ -97,6 +99,8 @@ export async function processRequest(
 		const dependencyInserts: DependencyInsert[] = [];
 		const pendingRequestInserts: RequestInsert[] = [];
 		const newRequestNames = new Set<string>();
+		let depsExisting = 0;
+		let depsAlreadyQueued = 0;
 
 		for (const version of newVersions) {
 			const versionId = crypto.randomUUID();
@@ -129,12 +133,12 @@ export async function processRequest(
 					updatedAt: now,
 				});
 
-				// Schedule missing dependency for fetching (if not already queued)
-				if (
-					!existingPackageId &&
-					!activeRequests.has(dep.name) &&
-					!newRequestNames.has(dep.name)
-				) {
+				if (existingPackageId) {
+					depsExisting++;
+				} else if (activeRequests.has(dep.name) || newRequestNames.has(dep.name)) {
+					depsAlreadyQueued++;
+				} else {
+					// Schedule missing dependency for fetching
 					newRequestNames.add(dep.name);
 					pendingRequestInserts.push({
 						id: crypto.randomUUID(),
@@ -157,6 +161,8 @@ export async function processRequest(
 		await bulkInsertPendingRequests(pendingRequestInserts);
 
 		result.dependenciesCreated = dependencyInserts.length;
+		result.dependenciesExisting = depsExisting;
+		result.dependenciesQueued = depsAlreadyQueued;
 		result.newRequestsScheduled = pendingRequestInserts.length;
 
 		// 8. Link any previously unlinked deps that reference this package

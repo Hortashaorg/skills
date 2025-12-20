@@ -54,9 +54,10 @@ async function main() {
 			console.log(
 				`    Versions: ${result.versionsNew} new, ${result.versionsSkipped} skipped (${result.versionsTotal} total)`,
 			);
-			console.log(`    Dependencies created: ${result.dependenciesCreated}`);
-			console.log(`    Dependencies linked: ${result.dependenciesLinked}`);
-			console.log(`    New requests scheduled: ${result.newRequestsScheduled}`);
+			console.log(
+				`    Dependencies: ${result.dependenciesCreated} created (${result.dependenciesExisting} existing, ${result.dependenciesQueued} already queued)`,
+			);
+			console.log(`    Linked: ${result.dependenciesLinked} | New requests: ${result.newRequestsScheduled}`);
 		} else {
 			console.log(`  ✗ Failed: ${result.error}`);
 		}
@@ -78,6 +79,14 @@ async function main() {
 		(sum, r) => sum + (r.dependenciesCreated ?? 0),
 		0,
 	);
+	const totalExisting = results.reduce(
+		(sum, r) => sum + (r.dependenciesExisting ?? 0),
+		0,
+	);
+	const totalQueued = results.reduce(
+		(sum, r) => sum + (r.dependenciesQueued ?? 0),
+		0,
+	);
 	const totalScheduled = results.reduce(
 		(sum, r) => sum + (r.newRequestsScheduled ?? 0),
 		0,
@@ -90,7 +99,9 @@ async function main() {
 	console.log(
 		`  Versions: ${totalVersionsNew} new, ${totalVersionsSkipped} skipped`,
 	);
-	console.log(`  Dependencies created: ${totalDeps}`);
+	console.log(
+		`  Dependencies: ${totalDeps} created (${totalExisting} existing, ${totalQueued} already queued)`,
+	);
 	console.log(`  New requests scheduled: ${totalScheduled}`);
 }
 

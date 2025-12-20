@@ -31,7 +31,7 @@ export function mapNpmPackage(response: NpmPackageResponse): PackageData {
 	return {
 		name: response.name,
 		description: response.description,
-		homepage: response.homepage,
+		homepage: typeof response.homepage === "string" ? response.homepage : undefined,
 		repository: extractRepository(response.repository),
 		latestVersion: distTags.latest,
 		distTags: distTags as Record<string, string>,
@@ -39,17 +39,22 @@ export function mapNpmPackage(response: NpmPackageResponse): PackageData {
 	};
 }
 
-function extractRepository(
-	repo: NpmPackageResponse["repository"],
-): string | undefined {
+function extractRepository(repo: unknown): string | undefined {
 	if (!repo) return undefined;
 
 	if (typeof repo === "string") {
 		return repo;
 	}
 
-	// Clean up git URLs: git+https://... → https://...
-	return repo.url.replace(/^git\+/, "").replace(/\.git$/, "");
+	if (typeof repo === "object" && repo !== null && "url" in repo) {
+		const url = (repo as { url: unknown }).url;
+		if (typeof url === "string") {
+			// Clean up git URLs: git+https://... → https://...
+			return url.replace(/^git\+/, "").replace(/\.git$/, "");
+		}
+	}
+
+	return undefined;
 }
 
 function mapVersions(response: NpmPackageResponse): VersionData[] {
@@ -72,25 +77,26 @@ function parsePublishedAt(timeString: string | undefined): Date {
 function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 	const deps: DependencyData[] = [];
 
-	if (version.dependencies) {
+	// Skip if deps is a string (malformed package data)
+	if (version.dependencies && typeof version.dependencies === "object") {
 		for (const [name, range] of Object.entries(version.dependencies)) {
 			deps.push({ name, versionRange: range, type: "runtime" });
 		}
 	}
 
-	if (version.devDependencies) {
+	if (version.devDependencies && typeof version.devDependencies === "object") {
 		for (const [name, range] of Object.entries(version.devDependencies)) {
 			deps.push({ name, versionRange: range, type: "dev" });
 		}
 	}
 
-	if (version.peerDependencies) {
+	if (version.peerDependencies && typeof version.peerDependencies === "object") {
 		for (const [name, range] of Object.entries(version.peerDependencies)) {
 			deps.push({ name, versionRange: range, type: "peer" });
 		}
 	}
 
-	if (version.optionalDependencies) {
+	if (version.optionalDependencies && typeof version.optionalDependencies === "object") {
 		for (const [name, range] of Object.entries(version.optionalDependencies)) {
 			deps.push({ name, versionRange: range, type: "optional" });
 		}
