@@ -50,14 +50,8 @@ export const Package = () => {
 	// Version selection
 	const [selectedVersionId, setSelectedVersionId] = createSignal<string>();
 
-	// Reset state when navigating to a different package
-	createEffect(
-		on(packageKey, () => {
-			setSelectedVersionId(undefined);
-			setVersionNotFound(undefined);
-			setResolvedFrom(undefined);
-		}, { defer: true })
-	);
+	// Track last processed package to detect navigation (as signal for proper reactivity)
+	const [lastPackageKey, setLastPackageKey] = createSignal("");
 
 	// Sort versions by publishedAt descending (newest first)
 	const sortedVersions = createMemo(() => {
@@ -132,8 +126,17 @@ export const Package = () => {
 
 	// Initialize version from URL or default when package loads
 	createEffect(
-		on([pkg, urlVersion], ([p, urlV]) => {
+		on([pkg, urlVersion, packageKey, sortedVersions], ([p, urlV, key]) => {
 			if (!p?.versions?.length) return;
+
+			// Detect navigation to a different package - reset state
+			const isNewPackage = key !== lastPackageKey();
+			if (isNewPackage) {
+				setLastPackageKey(key);
+				setSelectedVersionId(undefined);
+				setVersionNotFound(undefined);
+				setResolvedFrom(undefined);
+			}
 
 			// If URL has version param, try to find it
 			if (urlV) {

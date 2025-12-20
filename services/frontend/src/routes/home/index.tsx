@@ -1,9 +1,12 @@
 import { queries, useQuery } from "@package/database/client";
-import { createMemo, createSignal, Show } from "solid-js";
+import { A } from "@solidjs/router";
+import { createMemo, createSignal, For, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
 import type { Registry, RegistryFilter } from "@/lib/registries";
@@ -42,6 +45,14 @@ export const Home = () => {
 				return matchesSearch && matchesRegistry;
 			})
 			.slice(0, MAX_RESULTS);
+	});
+
+	// Recently updated packages for empty state
+	const recentPackages = createMemo(() => {
+		const allPackages = packages() || [];
+		return [...allPackages]
+			.sort((a, b) => b.updatedAt - a.updatedAt)
+			.slice(0, 8);
 	});
 
 	// Check if the exact search term exists in packages (respecting registry filter)
@@ -128,15 +139,47 @@ export const Home = () => {
 						/>
 					</Show>
 
-					{/* Empty state when no search */}
-					<Show when={searchValue().trim().length === 0}>
-						<Card padding="lg">
-							<Stack spacing="sm" align="center">
-								<Text color="muted" size="sm" class="text-center">
-									Start typing to search for packages
-								</Text>
-							</Stack>
-						</Card>
+					{/* Empty state when no search - show recent packages */}
+					<Show when={searchValue().trim().length === 0 && recentPackages().length > 0}>
+						<Stack spacing="sm">
+							<Text size="sm" color="muted">
+								Recently updated
+							</Text>
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<For each={recentPackages()}>
+									{(pkg) => (
+										<A
+											href={`/package/${encodeURIComponent(pkg.registry)}/${encodeURIComponent(pkg.name)}`}
+											class="block"
+										>
+											<Card
+												padding="md"
+												class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors cursor-pointer"
+											>
+												<Stack spacing="xs">
+													<Flex gap="sm" align="center">
+														<Text
+															weight="semibold"
+															class="text-on-surface dark:text-on-surface-dark truncate"
+														>
+															{pkg.name}
+														</Text>
+														<Badge variant="secondary" size="sm">
+															{pkg.registry}
+														</Badge>
+													</Flex>
+													<Show when={pkg.description}>
+														<Text size="sm" color="muted" class="line-clamp-2">
+															{pkg.description}
+														</Text>
+													</Show>
+												</Stack>
+											</Card>
+										</A>
+									)}
+								</For>
+							</div>
+						</Stack>
 					</Show>
 				</Stack>
 			</Container>
