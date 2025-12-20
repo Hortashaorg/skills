@@ -65,7 +65,6 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Link `dependencyPackageId` when dependency package exists
 
 ### Rate Limiting & Protection
-- [ ] User request limits (10/hour)
 - [x] Package cooldown (1 hour between fetches)
 - [x] Request deduplication (no duplicate pending requests)
 - [x] Retry with backoff, discard after 3 failures
@@ -77,9 +76,9 @@ Progress toward a deployable MVP with data flowing and utility for users.
 **Goal:** Useful features for both anonymous and logged-in users
 
 ### Package Browsing
-- [ ] `/packages` route - browse all packages
-- [ ] List/grid display with search and filter
-- [ ] Sort options (recent, popular, name)
+- [x] Homepage shows recently updated packages
+- [x] Search with registry filter
+- [ ] Upvoting system (affects search result ordering)
 
 ### Package Details
 - [x] `/package/:registry/:name` route - package detail page
@@ -118,11 +117,11 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ## Current Focus
 
-**Active:** Milestone 2 - Rate Limiting & Milestone 3 - User Value
+**Active:** Milestone 3 - User Value
 
-**Completed:** Milestone 1 (full data flow), Auto-queue dependencies, Request deduplication, Retry logic
+**Completed:** Milestone 1 (full data flow), Milestone 2 (auto-queue, deduplication, cooldown, retry)
 
-**Next task:** User request limits, package cooldown, or user dashboard
+**Next task:** Upvoting system or user dashboard
 
 ---
 
