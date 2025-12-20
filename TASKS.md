@@ -70,10 +70,6 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Request deduplication (no duplicate pending requests)
 - [x] Retry with backoff, discard after 3 failures
 
-### Dependency Resolution
-- [ ] Resolve version ranges to actual versions (e.g., `^1.0.0` → `1.2.3`)
-- [ ] Link `resolvedVersionId` to specific version record
-
 ---
 
 ## Milestone 3: User Value

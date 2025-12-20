@@ -121,8 +121,6 @@ export const packageDependencies = pgTable(
 		dependencyName: text().notNull(),
 		dependencyPackageId: uuid().references(() => packages.id),
 		dependencyVersionRange: text().notNull(),
-		resolvedVersion: text().notNull(),
-		resolvedVersionId: uuid().references(() => packageVersions.id),
 		dependencyType: dependencyTypeEnum().notNull(),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
@@ -133,9 +131,6 @@ export const packageDependencies = pgTable(
 		index("idx_package_dependencies_dependency_name").on(table.dependencyName),
 		index("idx_package_dependencies_dependency_package_id").on(
 			table.dependencyPackageId,
-		),
-		index("idx_package_dependencies_resolved_version_id").on(
-			table.resolvedVersionId,
 		),
 		index("idx_package_dependencies_unlinked")
 			.on(table.dependencyName, table.createdAt)
@@ -237,9 +232,6 @@ export const packageVersionsRelations = relations(
 			references: [packages.id],
 		}),
 		dependencies: many(packageDependencies),
-		resolvedDependents: many(packageDependencies, {
-			relationName: "resolvedVersionRecord",
-		}),
 	}),
 );
 
@@ -258,11 +250,6 @@ export const packageDependenciesRelations = relations(
 			fields: [packageDependencies.dependencyPackageId],
 			references: [packages.id],
 			relationName: "dependencyPackage",
-		}),
-		resolvedVersionRecord: one(packageVersions, {
-			fields: [packageDependencies.resolvedVersionId],
-			references: [packageVersions.id],
-			relationName: "resolvedVersionRecord",
 		}),
 	}),
 );

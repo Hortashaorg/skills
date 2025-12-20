@@ -30,7 +30,7 @@ export const DependencyItem = (props: DependencyItemProps) => {
 					}
 				>
 					<A
-						href={`/package/${encodeURIComponent(props.registry)}/${encodeURIComponent(props.dep.dependencyName)}?v=${encodeURIComponent(props.dep.resolvedVersion ?? props.dep.dependencyVersionRange)}`}
+						href={`/package/${encodeURIComponent(props.registry)}/${encodeURIComponent(props.dep.dependencyName)}?v=${encodeURIComponent(props.dep.dependencyVersionRange)}`}
 						class="text-sm text-primary dark:text-primary-dark hover:underline"
 					>
 						{props.dep.dependencyName}

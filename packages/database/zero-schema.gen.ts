@@ -134,18 +134,6 @@ const packageDependenciesTable = {
       customType: null as unknown as string,
       serverName: "dependency_version_range",
     },
-    resolvedVersion: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "resolved_version",
-    },
-    resolvedVersionId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "resolved_version_id",
-    },
     dependencyType: {
       type: "string",
       optional: false,
@@ -462,14 +450,6 @@ const packageDependenciesRelationships = {
       cardinality: "one",
     },
   ],
-  resolvedVersionRecord: [
-    {
-      sourceField: ["resolvedVersionId"],
-      destField: ["id"],
-      destSchema: "packageVersions",
-      cardinality: "one",
-    },
-  ],
 } as const;
 const packageRequestsRelationships = {
   package: [
@@ -512,14 +492,6 @@ const packageVersionsRelationships = {
     {
       sourceField: ["id"],
       destField: ["versionId"],
-      destSchema: "packageDependencies",
-      cardinality: "many",
-    },
-  ],
-  resolvedDependents: [
-    {
-      sourceField: ["id"],
-      destField: ["resolvedVersionId"],
       destSchema: "packageDependencies",
       cardinality: "many",
     },

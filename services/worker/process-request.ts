@@ -126,8 +126,6 @@ export async function processRequest(
 					dependencyName: dep.name,
 					dependencyPackageId: existingPackageId,
 					dependencyVersionRange: dep.versionRange,
-					resolvedVersion: dep.versionRange,
-					resolvedVersionId: null,
 					dependencyType: dep.type,
 					createdAt: now,
 					updatedAt: now,
