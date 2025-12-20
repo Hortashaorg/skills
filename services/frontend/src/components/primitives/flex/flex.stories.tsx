@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import type { JSX } from "solid-js";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createThemedStories } from "@/components/story-helpers";
 import { Flex } from "./flex";
 

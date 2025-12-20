@@ -6,6 +6,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Toast } from "@/components/ui/toast";
 import { logout } from "@/context/app-provider";
 
 export const Layout: ParentComponent = ({ children }) => {
@@ -60,6 +61,7 @@ export const Layout: ParentComponent = ({ children }) => {
 				</Container>
 			</header>
 			<main class="py-8">{children}</main>
+			<Toast.Region />
 		</div>
 	);
 };
