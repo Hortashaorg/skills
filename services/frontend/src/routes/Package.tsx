@@ -25,6 +25,38 @@ import type { DependencyType, Registry } from "@/lib/registries";
 type PackageVersion = Row["packageVersions"];
 type PackageDependency = Row["packageDependencies"];
 
+const MAX_DROPDOWN_VERSIONS = 15;
+
+// Pre-release identifiers to filter out for default selection
+const PRERELEASE_PATTERNS = [
+	"-alpha",
+	"-beta",
+	"-rc",
+	"-canary",
+	"-experimental",
+	"-next",
+	"-nightly",
+	"-dev",
+	"-snapshot",
+	"-preview",
+	"-insiders",
+];
+
+/** Check if a version string is a pre-release */
+function isPrerelease(version: string): boolean {
+	const lower = version.toLowerCase();
+	return PRERELEASE_PATTERNS.some((pattern) => lower.includes(pattern));
+}
+
+/** Find the best "latest" stable version */
+function findLatestStableVersion(
+	versions: readonly PackageVersion[],
+): PackageVersion | undefined {
+	// Versions are already sorted by publishedAt desc
+	// Find first non-prerelease version
+	return versions.find((v) => !isPrerelease(v.version));
+}
+
 export const Package = () => {
 	const params = useParams<{ registry: string; name: string }>();
 	const zero = useZero();
@@ -48,29 +80,70 @@ export const Package = () => {
 		return data.find((p) => p.registry === registry()) ?? data[0];
 	});
 
-	// Version selection
+	// Version selection and search
 	const [selectedVersionId, setSelectedVersionId] = createSignal<string>();
+	const [versionSearch, setVersionSearch] = createSignal("");
 
-	// Auto-select latest version when package loads
+	// Auto-select latest stable version when package loads
 	createEffect(() => {
 		const p = pkg();
 		if (p?.versions && p.versions.length > 0 && !selectedVersionId()) {
-			// Versions are ordered by publishedAt desc, so first is latest
-			const firstVersion = p.versions[0];
-			if (firstVersion) {
-				setSelectedVersionId(firstVersion.id);
+			// Find latest stable version, fallback to first if none
+			const stable = findLatestStableVersion(p.versions);
+			const defaultVersion = stable ?? p.versions[0];
+			if (defaultVersion) {
+				setSelectedVersionId(defaultVersion.id);
 			}
 		}
 	});
 
-	// Version options for select
-	const versionOptions = createMemo((): SelectOption<string>[] => {
+	// Filter versions based on search, show stable first, limit count
+	const filteredVersions = createMemo(() => {
 		const p = pkg();
 		if (!p || !p.versions) return [];
-		return p.versions.map((v: PackageVersion) => ({
+
+		const search = versionSearch().toLowerCase().trim();
+		let versions = p.versions;
+
+		// If searching, filter by search term
+		if (search) {
+			versions = versions.filter((v) =>
+				v.version.toLowerCase().includes(search),
+			);
+		} else {
+			// When not searching, prioritize stable versions
+			const stable = versions.filter((v) => !isPrerelease(v.version));
+			// If we have stable versions, show those first (limited)
+			if (stable.length > 0) {
+				versions = stable.slice(0, MAX_DROPDOWN_VERSIONS);
+			} else {
+				// No stable versions, show limited prereleases
+				versions = versions.slice(0, MAX_DROPDOWN_VERSIONS);
+			}
+		}
+
+		return versions;
+	});
+
+	// Version options for select dropdown
+	const versionOptions = createMemo((): SelectOption<string>[] => {
+		return filteredVersions().map((v: PackageVersion) => ({
 			value: v.id,
 			label: v.version,
 		}));
+	});
+
+	// Check if there are more versions than shown
+	const hasMoreVersions = createMemo(() => {
+		const p = pkg();
+		if (!p || !p.versions) return false;
+		return p.versions.length > MAX_DROPDOWN_VERSIONS && !versionSearch();
+	});
+
+	// Total version count
+	const totalVersionCount = createMemo(() => {
+		const p = pkg();
+		return p?.versions?.length ?? 0;
 	});
 
 	// Query dependencies for selected version (use a placeholder ID if none selected)
@@ -269,27 +342,56 @@ export const Package = () => {
 								</Card>
 
 								{/* Version selector */}
-								<Show when={versionOptions().length > 0}>
+								<Show when={totalVersionCount() > 0}>
 									<Card padding="md">
 										<Stack spacing="sm">
-											<Text size="sm" weight="semibold">
-												Version
-											</Text>
-											<div class="w-48">
-												<Select
-													options={versionOptions()}
-													value={selectedVersionId()}
-													onChange={setSelectedVersionId}
-													placeholder="Select version..."
-													size="sm"
+											<Flex justify="between" align="center">
+												<Text size="sm" weight="semibold">
+													Version
+												</Text>
+												<Text size="xs" color="muted">
+													{totalVersionCount()} versions
+												</Text>
+											</Flex>
+											<Flex gap="sm" align="stretch">
+												<div class="w-48">
+													<Select
+														options={versionOptions()}
+														value={selectedVersionId()}
+														onChange={setSelectedVersionId}
+														placeholder="Select version..."
+														size="sm"
+													/>
+												</div>
+												<input
+													type="text"
+													value={versionSearch()}
+													onInput={(e) =>
+														setVersionSearch(e.currentTarget.value)
+													}
+													placeholder="Search versions..."
+													class="flex h-8 w-40 rounded-md border border-outline dark:border-outline-dark bg-transparent px-2 py-1 text-xs text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-1"
 												/>
-											</div>
+											</Flex>
+											<Show when={hasMoreVersions()}>
+												<Text size="xs" color="muted">
+													Showing {MAX_DROPDOWN_VERSIONS} stable versions.
+													Search to find older or pre-release versions.
+												</Text>
+											</Show>
 											<Show when={selectedVersion()}>
 												{(v) => (
-													<Text size="xs" color="muted">
-														Published:{" "}
-														{new Date(v().publishedAt).toLocaleDateString()}
-													</Text>
+													<Flex gap="sm" align="center">
+														<Text size="xs" color="muted">
+															Published:{" "}
+															{new Date(v().publishedAt).toLocaleDateString()}
+														</Text>
+														<Show when={isPrerelease(v().version)}>
+															<Badge variant="warning" size="sm">
+																pre-release
+															</Badge>
+														</Show>
+													</Flex>
 												)}
 											</Show>
 										</Stack>
