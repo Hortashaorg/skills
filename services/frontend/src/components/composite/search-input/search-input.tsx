@@ -91,7 +91,7 @@ export const SearchInput = (props: SearchInputProps) => {
 									{itemProps.item.rawValue.primary}
 								</div>
 								<Show when={itemProps.item.rawValue.secondary}>
-									<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted truncate">
+									<div class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted line-clamp-2">
 										{itemProps.item.rawValue.secondary}
 									</div>
 								</Show>
@@ -186,7 +186,7 @@ export const SearchInput = (props: SearchInputProps) => {
 				</div>
 
 				<Combobox.Portal>
-					<Combobox.Content class="absolute z-50 w-full mt-1 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg max-h-60 overflow-y-auto ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95 ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95">
+					<Combobox.Content class="z-50 mt-1 max-w-(--kb-popper-anchor-width) bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg max-h-60 overflow-auto ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95 ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95">
 						<Combobox.Listbox class="flex flex-col" />
 						<Show
 							when={

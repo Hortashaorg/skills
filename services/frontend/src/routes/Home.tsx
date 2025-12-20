@@ -1,4 +1,10 @@
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import {
+	mutators,
+	queries,
+	type Row,
+	useQuery,
+	useZero,
+} from "@package/database/client";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import {
 	SearchInput,
@@ -31,6 +37,9 @@ export const Home = () => {
 	const [requestedPackages, setRequestedPackages] = createSignal<
 		Map<string, string>
 	>(new Map());
+	const [selectedPackage, setSelectedPackage] = createSignal<
+		Row["packages"] | null
+	>(null);
 
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
@@ -91,8 +100,11 @@ export const Home = () => {
 	});
 
 	const handleSelect = (item: SearchResultItem) => {
-		// TODO: Navigate to package detail page
-		console.log("Selected package:", item);
+		const pkg = (packages() || []).find((p) => p.id === item.id);
+		if (pkg) {
+			setSelectedPackage(pkg);
+			setSearchValue(pkg.name);
+		}
 	};
 
 	const handleRequestPackage = async () => {
@@ -130,6 +142,40 @@ export const Home = () => {
 	const getRequestStatus = (packageName: string, registry: Registry) => {
 		const key = `${packageName.toLowerCase()}:${registry}`;
 		return requestedPackages().get(key);
+	};
+
+	const handleUpdatePackage = async () => {
+		const pkg = selectedPackage();
+		if (!pkg) return;
+
+		const write = zero().mutate(
+			mutators.packageRequests.create({
+				packageName: pkg.name,
+				registry: pkg.registry,
+			}),
+		);
+
+		const res = await write.client;
+
+		if (res.type === "error") {
+			console.error("Failed to request update:", res.error);
+			toast.error("Failed to submit update request. Please try again.");
+			return;
+		}
+
+		const key = `${pkg.name.toLowerCase()}:${pkg.registry}`;
+		setRequestedPackages((prev) => {
+			const newMap = new Map(prev);
+			newMap.set(key, "pending");
+			return newMap;
+		});
+
+		toast.success(`Update requested for "${pkg.name}"`);
+	};
+
+	const clearSelection = () => {
+		setSelectedPackage(null);
+		setSearchValue("");
 	};
 
 	const handleRegistryFilterChange = (
@@ -182,6 +228,109 @@ export const Home = () => {
 							/>
 						</div>
 					</Flex>
+
+					{/* Selected package details */}
+					<Show when={selectedPackage()}>
+						{(pkg) => (
+							<Card padding="lg">
+								<Stack spacing="md">
+									<Flex justify="between" align="start">
+										<Stack spacing="xs">
+											<Flex gap="sm" align="center">
+												<Heading level="h2">{pkg().name}</Heading>
+												<Badge variant="secondary" size="sm">
+													{pkg().registry}
+												</Badge>
+											</Flex>
+											<Show when={pkg().description}>
+												<Text color="muted" size="sm">
+													{pkg().description}
+												</Text>
+											</Show>
+										</Stack>
+										<button
+											type="button"
+											onClick={clearSelection}
+											class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition-colors p-1"
+											aria-label="Close"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="20"
+												height="20"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<title>Close</title>
+												<path d="M18 6 6 18" />
+												<path d="m6 6 12 12" />
+											</svg>
+										</button>
+									</Flex>
+
+									<Flex gap="lg" wrap="wrap">
+										<Show when={pkg().homepage}>
+											{(url) => (
+												<a
+													href={url()}
+													target="_blank"
+													rel="noopener noreferrer"
+													class="text-sm text-primary dark:text-primary-dark hover:underline"
+												>
+													Homepage
+												</a>
+											)}
+										</Show>
+										<Show when={pkg().repository}>
+											{(url) => (
+												<a
+													href={url()}
+													target="_blank"
+													rel="noopener noreferrer"
+													class="text-sm text-primary dark:text-primary-dark hover:underline"
+												>
+													Repository
+												</a>
+											)}
+										</Show>
+									</Flex>
+
+									<Flex gap="sm" align="center">
+										<Text size="xs" color="muted">
+											Last updated:{" "}
+											{new Date(pkg().lastFetchSuccess).toLocaleDateString()}
+										</Text>
+									</Flex>
+
+									<Flex gap="sm" align="center">
+										<Show
+											when={
+												!getRequestStatus(pkg().name, pkg().registry) &&
+												zero().userID !== "anon"
+											}
+											fallback={
+												<Show
+													when={getRequestStatus(pkg().name, pkg().registry)}
+												>
+													<Badge variant="info" size="md">
+														Update requested
+													</Badge>
+												</Show>
+											}
+										>
+											<Button variant="outline" onClick={handleUpdatePackage}>
+												Request Update
+											</Button>
+										</Show>
+									</Flex>
+								</Stack>
+							</Card>
+						)}
+					</Show>
 
 					{/* Not found state - show request option */}
 					<Show when={showNotFound() && !exactMatchExists()}>
@@ -240,8 +389,7 @@ export const Home = () => {
 												</select>
 											</Show>
 											<Button onClick={handleRequestPackage}>
-												Request from{" "}
-												{effectiveRequestRegistry()}
+												Request from {effectiveRequestRegistry()}
 											</Button>
 										</Flex>
 									</Show>
