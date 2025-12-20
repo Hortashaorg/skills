@@ -1,15 +1,6 @@
-import {
-	mutators,
-	queries,
-	type Row,
-	useQuery,
-	useZero,
-} from "@package/database/client";
+import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import { A } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
-import {
-	SearchInput,
-	type SearchResultItem,
-} from "@/components/composite/search-input";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -28,6 +19,8 @@ import {
 	type RegistryFilter,
 } from "@/lib/registries";
 
+const MAX_RESULTS = 20;
+
 export const Home = () => {
 	const zero = useZero();
 	const [searchValue, setSearchValue] = createSignal("");
@@ -37,9 +30,6 @@ export const Home = () => {
 	const [requestedPackages, setRequestedPackages] = createSignal<
 		Map<string, string>
 	>(new Map());
-	const [selectedPackage, setSelectedPackage] = createSignal<
-		Row["packages"] | null
-	>(null);
 
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
@@ -52,23 +42,15 @@ export const Home = () => {
 		const allPackages = packages() || [];
 		const registry = registryFilter();
 
-		return allPackages.filter((pkg) => {
-			const matchesSearch =
-				pkg.name.toLowerCase().includes(query) ||
-				pkg.description?.toLowerCase().includes(query);
-			const matchesRegistry = registry === "all" || pkg.registry === registry;
-			return matchesSearch && matchesRegistry;
-		});
-	});
-
-	// Convert packages to SearchResultItem format
-	const searchResults = createMemo((): SearchResultItem[] => {
-		return filteredPackages().map((pkg) => ({
-			id: pkg.id,
-			primary: pkg.name,
-			secondary: pkg.description || undefined,
-			label: pkg.registry,
-		}));
+		return allPackages
+			.filter((pkg) => {
+				const matchesSearch =
+					pkg.name.toLowerCase().includes(query) ||
+					pkg.description?.toLowerCase().includes(query);
+				const matchesRegistry = registry === "all" || pkg.registry === registry;
+				return matchesSearch && matchesRegistry;
+			})
+			.slice(0, MAX_RESULTS);
 	});
 
 	// Check if the exact search term exists in packages (respecting registry filter)
@@ -89,7 +71,7 @@ export const Home = () => {
 	// Show "not found" state when user has typed but no results
 	const showNotFound = createMemo(() => {
 		const query = searchValue().trim();
-		return query.length > 0 && searchResults().length === 0;
+		return query.length > 0 && filteredPackages().length === 0;
 	});
 
 	// Determine which registry to use for the request
@@ -98,14 +80,6 @@ export const Home = () => {
 		if (filter !== "all") return filter;
 		return requestRegistry();
 	});
-
-	const handleSelect = (item: SearchResultItem) => {
-		const pkg = (packages() || []).find((p) => p.id === item.id);
-		if (pkg) {
-			setSelectedPackage(pkg);
-			setSearchValue(pkg.name);
-		}
-	};
 
 	const handleRequestPackage = async () => {
 		const packageName = searchValue().trim();
@@ -142,40 +116,6 @@ export const Home = () => {
 	const getRequestStatus = (packageName: string, registry: Registry) => {
 		const key = `${packageName.toLowerCase()}:${registry}`;
 		return requestedPackages().get(key);
-	};
-
-	const handleUpdatePackage = async () => {
-		const pkg = selectedPackage();
-		if (!pkg) return;
-
-		const write = zero().mutate(
-			mutators.packageRequests.create({
-				packageName: pkg.name,
-				registry: pkg.registry,
-			}),
-		);
-
-		const res = await write.client;
-
-		if (res.type === "error") {
-			console.error("Failed to request update:", res.error);
-			toast.error("Failed to submit update request. Please try again.");
-			return;
-		}
-
-		const key = `${pkg.name.toLowerCase()}:${pkg.registry}`;
-		setRequestedPackages((prev) => {
-			const newMap = new Map(prev);
-			newMap.set(key, "pending");
-			return newMap;
-		});
-
-		toast.success(`Update requested for "${pkg.name}"`);
-	};
-
-	const clearSelection = () => {
-		setSelectedPackage(null);
-		setSearchValue("");
 	};
 
 	const handleRegistryFilterChange = (
@@ -218,118 +158,59 @@ export const Home = () => {
 							</For>
 						</select>
 						<div class="flex-1">
-							<SearchInput
+							<input
+								type="text"
 								value={searchValue()}
-								onValueChange={setSearchValue}
-								results={searchResults()}
-								onSelect={handleSelect}
+								onInput={(e) => setSearchValue(e.currentTarget.value)}
 								placeholder="Search packages..."
-								noResultsMessage={`No packages found for "${searchValue()}"`}
+								class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2"
 							/>
 						</div>
 					</Flex>
 
-					{/* Selected package details */}
-					<Show when={selectedPackage()}>
-						{(pkg) => (
-							<Card padding="lg">
-								<Stack spacing="md">
-									<Flex justify="between" align="start">
-										<Stack spacing="xs">
-											<Flex gap="sm" align="center">
-												<Heading level="h2">{pkg().name}</Heading>
-												<Badge variant="secondary" size="sm">
-													{pkg().registry}
-												</Badge>
-											</Flex>
-											<Show when={pkg().description}>
-												<Text color="muted" size="sm">
-													{pkg().description}
-												</Text>
-											</Show>
-										</Stack>
-										<button
-											type="button"
-											onClick={clearSelection}
-											class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition-colors p-1"
-											aria-label="Close"
+					{/* Search results as card grid */}
+					<Show when={filteredPackages().length > 0}>
+						<Stack spacing="sm">
+							<Text size="sm" color="muted">
+								{filteredPackages().length} result
+								{filteredPackages().length !== 1 ? "s" : ""}
+								{filteredPackages().length === MAX_RESULTS ? " (max)" : ""}
+							</Text>
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<For each={filteredPackages()}>
+									{(pkg) => (
+										<A
+											href={`/package/${encodeURIComponent(pkg.registry)}/${encodeURIComponent(pkg.name)}`}
+											class="block"
 										>
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												width="20"
-												height="20"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
+											<Card
+												padding="md"
+												class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors cursor-pointer"
 											>
-												<title>Close</title>
-												<path d="M18 6 6 18" />
-												<path d="m6 6 12 12" />
-											</svg>
-										</button>
-									</Flex>
-
-									<Flex gap="lg" wrap="wrap">
-										<Show when={pkg().homepage}>
-											{(url) => (
-												<a
-													href={url()}
-													target="_blank"
-													rel="noopener noreferrer"
-													class="text-sm text-primary dark:text-primary-dark hover:underline"
-												>
-													Homepage
-												</a>
-											)}
-										</Show>
-										<Show when={pkg().repository}>
-											{(url) => (
-												<a
-													href={url()}
-													target="_blank"
-													rel="noopener noreferrer"
-													class="text-sm text-primary dark:text-primary-dark hover:underline"
-												>
-													Repository
-												</a>
-											)}
-										</Show>
-									</Flex>
-
-									<Flex gap="sm" align="center">
-										<Text size="xs" color="muted">
-											Last updated:{" "}
-											{new Date(pkg().lastFetchSuccess).toLocaleDateString()}
-										</Text>
-									</Flex>
-
-									<Flex gap="sm" align="center">
-										<Show
-											when={
-												!getRequestStatus(pkg().name, pkg().registry) &&
-												zero().userID !== "anon"
-											}
-											fallback={
-												<Show
-													when={getRequestStatus(pkg().name, pkg().registry)}
-												>
-													<Badge variant="info" size="md">
-														Update requested
-													</Badge>
-												</Show>
-											}
-										>
-											<Button variant="outline" onClick={handleUpdatePackage}>
-												Request Update
-											</Button>
-										</Show>
-									</Flex>
-								</Stack>
-							</Card>
-						)}
+												<Stack spacing="xs">
+													<Flex gap="sm" align="center">
+														<Text
+															weight="semibold"
+															class="text-on-surface dark:text-on-surface-dark truncate"
+														>
+															{pkg.name}
+														</Text>
+														<Badge variant="secondary" size="sm">
+															{pkg.registry}
+														</Badge>
+													</Flex>
+													<Show when={pkg.description}>
+														<Text size="sm" color="muted" class="line-clamp-2">
+															{pkg.description}
+														</Text>
+													</Show>
+												</Stack>
+											</Card>
+										</A>
+									)}
+								</For>
+							</div>
+						</Stack>
 					</Show>
 
 					{/* Not found state - show request option */}
@@ -394,6 +275,17 @@ export const Home = () => {
 										</Flex>
 									</Show>
 								</Show>
+							</Stack>
+						</Card>
+					</Show>
+
+					{/* Empty state when no search */}
+					<Show when={searchValue().trim().length === 0}>
+						<Card padding="lg">
+							<Stack spacing="sm" align="center">
+								<Text color="muted" size="sm" class="text-center">
+									Start typing to search for packages
+								</Text>
 							</Stack>
 						</Card>
 					</Show>

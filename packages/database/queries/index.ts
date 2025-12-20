@@ -16,6 +16,8 @@ export const queries = defineQueries({
 		list: packagesQueries.list,
 		byId: packagesQueries.byId,
 		byName: packagesQueries.byName,
+		byNameWithVersions: packagesQueries.byNameWithVersions,
+		byIdWithVersions: packagesQueries.byIdWithVersions,
 		search: packagesQueries.search,
 	},
 	packageRequests: {

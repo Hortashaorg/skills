@@ -29,3 +29,24 @@ export const search = defineQuery(z.object({ query: z.string() }), () => {
 	// Or use a full-text search solution later
 	return zql.packages;
 });
+
+export const byNameWithVersions = defineQuery(
+	z.object({
+		name: z.string(),
+		registry: z.enum(enums.registry),
+	}),
+	({ args }) => {
+		return zql.packages
+			.where("name", args.name)
+			.related("versions", (q) => q.orderBy("publishedAt", "desc"));
+	},
+);
+
+export const byIdWithVersions = defineQuery(
+	z.object({ id: z.string() }),
+	({ args }) => {
+		return zql.packages
+			.where("id", args.id)
+			.related("versions", (q) => q.orderBy("publishedAt", "desc"));
+	},
+);

@@ -4,8 +4,8 @@
  */
 import { enums, type Registry } from "@package/database/client";
 
-// Re-export the type for convenience
-export type { Registry } from "@package/database/client";
+// Re-export the types for convenience
+export type { DependencyType, Registry } from "@package/database/client";
 
 export type RegistryFilter = Registry | "all";
 

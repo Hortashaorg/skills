@@ -79,7 +79,9 @@ async function main() {
 	console.log(`Processed: ${results.length} requests`);
 	console.log(`  Succeeded: ${succeeded}`);
 	console.log(`  Failed: ${failed}`);
-	console.log(`  Versions: ${totalVersionsNew} new, ${totalVersionsSkipped} skipped`);
+	console.log(
+		`  Versions: ${totalVersionsNew} new, ${totalVersionsSkipped} skipped`,
+	);
 	console.log(`  Dependencies created: ${totalDeps}`);
 	console.log(`  New requests scheduled: ${totalScheduled}`);
 }

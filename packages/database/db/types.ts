@@ -21,7 +21,8 @@ import {
 // Infer union types from Drizzle enums
 export type Registry = (typeof registryEnum.enumValues)[number];
 export type DependencyType = (typeof dependencyTypeEnum.enumValues)[number];
-export type PackageRequestStatus = (typeof packageRequestStatusEnum.enumValues)[number];
+export type PackageRequestStatus =
+	(typeof packageRequestStatusEnum.enumValues)[number];
 export type AuditAction = (typeof auditActionEnum.enumValues)[number];
 export type ActorType = (typeof actorTypeEnum.enumValues)[number];
 
