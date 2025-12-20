@@ -1,5 +1,6 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { newRecord } from "./helpers.ts";
 
 export const create = defineMutator(
 	z.object({
@@ -8,15 +9,14 @@ export const create = defineMutator(
 		publishedAt: z.number(),
 	}),
 	async ({ tx, args }) => {
-		const id = crypto.randomUUID();
-		const now = Date.now();
+		const record = newRecord();
 
 		await tx.mutate.packageVersions.insert({
-			id,
+			id: record.id,
 			packageId: args.packageId,
 			version: args.version,
 			publishedAt: args.publishedAt,
-			createdAt: now,
+			createdAt: record.now,
 		});
 	},
 );

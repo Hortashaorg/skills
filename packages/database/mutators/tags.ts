@@ -1,5 +1,6 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { newRecord, now } from "./helpers.ts";
 
 export const create = defineMutator(
 	z.object({
@@ -12,17 +13,16 @@ export const create = defineMutator(
 		// TODO: Check if user is admin
 		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
 
-		const id = crypto.randomUUID();
-		const now = Date.now();
+		const record = newRecord();
 
 		await tx.mutate.tags.insert({
-			id,
+			id: record.id,
 			name: args.name,
 			slug: args.slug,
 			description: args.description ?? null,
 			color: args.color ?? null,
-			createdAt: now,
-			updatedAt: now,
+			createdAt: record.now,
+			updatedAt: record.now,
 		});
 	},
 );
@@ -48,7 +48,7 @@ export const update = defineMutator(
 			updatedAt: number;
 		} = {
 			id: args.id,
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		};
 
 		if (args.name !== undefined) updates.name = args.name;

@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
+import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
@@ -8,6 +9,32 @@ import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
 import { handleMutate } from "./mutate.ts";
 import { handleQuery } from "./query.ts";
+
+const REFRESH_TOKEN_COOKIE = {
+	name: "refresh_token",
+	maxAge: 180 * 24 * 60 * 60, // 180 days in seconds
+	httpOnly: true,
+	secure: environment.NODE_ENV !== "local",
+	sameSite: "lax" as const,
+};
+
+const setRefreshToken = (c: Context, token: string) => {
+	setCookie(c, REFRESH_TOKEN_COOKIE.name, token, {
+		maxAge: REFRESH_TOKEN_COOKIE.maxAge,
+		httpOnly: REFRESH_TOKEN_COOKIE.httpOnly,
+		secure: REFRESH_TOKEN_COOKIE.secure,
+		sameSite: REFRESH_TOKEN_COOKIE.sameSite,
+	});
+};
+
+const clearRefreshToken = (c: Context) => {
+	setCookie(c, REFRESH_TOKEN_COOKIE.name, "", {
+		maxAge: 0,
+		httpOnly: REFRESH_TOKEN_COOKIE.httpOnly,
+		secure: REFRESH_TOKEN_COOKIE.secure,
+		sameSite: REFRESH_TOKEN_COOKIE.sameSite,
+	});
+};
 
 const userToken = async (sub: string, email: string) => {
 	const now = Math.floor(Date.now() / 1000);
@@ -66,12 +93,7 @@ app.post("/login", async (c) => {
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, email);
 
-		setCookie(c, "refresh_token", result.refresh_token, {
-			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
-			httpOnly: true,
-			secure: environment.NODE_ENV !== "local",
-			sameSite: "lax",
-		});
+		setRefreshToken(c, result.refresh_token);
 
 		return c.json({
 			access_token: token,
@@ -85,7 +107,7 @@ app.post("/login", async (c) => {
 });
 
 app.post("/refresh", async (c) => {
-	const refreshToken = getCookie(c, "refresh_token");
+	const refreshToken = getCookie(c, REFRESH_TOKEN_COOKIE.name);
 
 	if (!refreshToken) {
 		return c.json(
@@ -122,12 +144,7 @@ app.post("/refresh", async (c) => {
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, email);
 
-		setCookie(c, "refresh_token", result.refresh_token, {
-			maxAge: 6 * 30 * 24 * 60 * 60, // 6 months in seconds
-			httpOnly: true,
-			secure: environment.NODE_ENV !== "local",
-			sameSite: "lax",
-		});
+		setRefreshToken(c, result.refresh_token);
 
 		return c.json({
 			access_token: token,
@@ -138,25 +155,13 @@ app.post("/refresh", async (c) => {
 	const errorText = await res.text();
 	console.error("Zitadel token refresh failed:", res.status, errorText);
 
-	// Clear the invalid refresh token cookie
-	setCookie(c, "refresh_token", "", {
-		maxAge: 0,
-		httpOnly: true,
-		secure: environment.NODE_ENV !== "local",
-		sameSite: "lax",
-	});
+	clearRefreshToken(c);
 
 	return c.json({ error: "Token refresh failed" }, 401);
 });
 
 app.post("/logout", async (c) => {
-	// Clear the refresh token cookie
-	setCookie(c, "refresh_token", "", {
-		maxAge: 0,
-		httpOnly: true,
-		secure: environment.NODE_ENV !== "local",
-		sameSite: "lax",
-	});
+	clearRefreshToken(c);
 
 	return c.json({ success: true });
 });

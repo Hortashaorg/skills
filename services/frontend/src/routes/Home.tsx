@@ -16,7 +16,6 @@ import { toast } from "@/components/ui/toast";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl } from "@/lib/auth-url";
 import {
-	getRegistryLabel,
 	REGISTRY_FILTER_OPTIONS,
 	REGISTRY_OPTIONS,
 	type Registry,
@@ -133,14 +132,16 @@ export const Home = () => {
 		return requestedPackages().get(key);
 	};
 
-	const handleRegistryFilterChange = (e: Event) => {
-		const target = e.target as HTMLSelectElement;
-		setRegistryFilter(target.value as RegistryFilter);
+	const handleRegistryFilterChange = (
+		e: Event & { currentTarget: HTMLSelectElement },
+	) => {
+		setRegistryFilter(e.currentTarget.value as RegistryFilter);
 	};
 
-	const handleRequestRegistryChange = (e: Event) => {
-		const target = e.target as HTMLSelectElement;
-		setRequestRegistry(target.value as Registry);
+	const handleRequestRegistryChange = (
+		e: Event & { currentTarget: HTMLSelectElement },
+	) => {
+		setRequestRegistry(e.currentTarget.value as Registry);
 	};
 
 	return (
@@ -240,7 +241,7 @@ export const Home = () => {
 											</Show>
 											<Button onClick={handleRequestPackage}>
 												Request from{" "}
-												{getRegistryLabel(effectiveRequestRegistry())}
+												{effectiveRequestRegistry()}
 											</Button>
 										</Flex>
 									</Show>

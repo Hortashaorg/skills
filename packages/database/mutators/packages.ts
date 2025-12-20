@@ -1,6 +1,7 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
 import { enums } from "../db/types.ts";
+import { newRecord, now } from "./helpers.ts";
 
 export const upsert = defineMutator(
 	z.object({
@@ -14,8 +15,8 @@ export const upsert = defineMutator(
 		lastFetchSuccess: z.number(),
 	}),
 	async ({ tx, args }) => {
-		const id = args.id ?? crypto.randomUUID();
-		const now = Date.now();
+		const record = newRecord();
+		const id = args.id ?? record.id;
 
 		await tx.mutate.packages.upsert({
 			id,
@@ -26,8 +27,8 @@ export const upsert = defineMutator(
 			repository: args.repository ?? null,
 			lastFetchAttempt: args.lastFetchAttempt,
 			lastFetchSuccess: args.lastFetchSuccess,
-			createdAt: now,
-			updatedAt: now,
+			createdAt: record.now,
+			updatedAt: record.now,
 		});
 	},
 );
@@ -47,7 +48,7 @@ export const updateFetchTimestamps = defineMutator(
 		} = {
 			id: args.id,
 			lastFetchAttempt: args.lastFetchAttempt,
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		};
 
 		if (args.lastFetchSuccess !== undefined) {

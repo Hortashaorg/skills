@@ -1,5 +1,6 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { newRecord } from "./helpers.ts";
 
 export const create = defineMutator(
 	z.object({
@@ -10,14 +11,13 @@ export const create = defineMutator(
 		// TODO: Check if user is admin
 		// if (!ctx.roles?.includes('admin')) throw new Error('Unauthorized');
 
-		const id = crypto.randomUUID();
-		const now = Date.now();
+		const record = newRecord();
 
 		await tx.mutate.packageTags.insert({
-			id,
+			id: record.id,
 			packageId: args.packageId,
 			tagId: args.tagId,
-			createdAt: now,
+			createdAt: record.now,
 		});
 
 		// TODO: Create audit log entry

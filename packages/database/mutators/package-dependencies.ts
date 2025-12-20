@@ -1,6 +1,7 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
 import { enums } from "../db/types.ts";
+import { newRecord, now } from "./helpers.ts";
 
 export const create = defineMutator(
 	z.object({
@@ -14,11 +15,10 @@ export const create = defineMutator(
 		dependencyType: z.enum(enums.dependencyType),
 	}),
 	async ({ tx, args }) => {
-		const id = crypto.randomUUID();
-		const now = Date.now();
+		const record = newRecord();
 
 		await tx.mutate.packageDependencies.insert({
-			id,
+			id: record.id,
 			packageId: args.packageId,
 			versionId: args.versionId,
 			dependencyName: args.dependencyName,
@@ -27,8 +27,8 @@ export const create = defineMutator(
 			resolvedVersion: args.resolvedVersion,
 			resolvedVersionId: args.resolvedVersionId ?? null,
 			dependencyType: args.dependencyType,
-			createdAt: now,
-			updatedAt: now,
+			createdAt: record.now,
+			updatedAt: record.now,
 		});
 	},
 );
@@ -48,7 +48,7 @@ export const linkPackage = defineMutator(
 		} = {
 			id: args.id,
 			dependencyPackageId: args.dependencyPackageId,
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		};
 
 		if (args.resolvedVersionId) {

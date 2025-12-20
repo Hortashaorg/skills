@@ -1,6 +1,7 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
 import { enums } from "../db/types.ts";
+import { newRecord, now } from "./helpers.ts";
 
 export const create = defineMutator(
 	z.object({
@@ -13,19 +14,18 @@ export const create = defineMutator(
 		// - Check for existing pending/fetching request
 		// - Check package cooldown period
 
-		const id = crypto.randomUUID();
-		const now = Date.now();
+		const record = newRecord();
 
 		await tx.mutate.packageRequests.insert({
-			id,
+			id: record.id,
 			packageName: args.packageName,
 			registry: args.registry,
 			status: "pending",
 			errorMessage: null,
 			packageId: null,
 			attemptCount: 0,
-			createdAt: now,
-			updatedAt: now,
+			createdAt: record.now,
+			updatedAt: record.now,
 		});
 
 		// TODO: Create audit log entry
@@ -39,7 +39,7 @@ export const markFetching = defineMutator(
 		await tx.mutate.packageRequests.update({
 			id: args.id,
 			status: "fetching",
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		});
 	},
 );
@@ -54,7 +54,7 @@ export const markCompleted = defineMutator(
 			id: args.id,
 			status: "completed",
 			packageId: args.packageId,
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		});
 	},
 );
@@ -73,7 +73,7 @@ export const markFailed = defineMutator(
 			status,
 			errorMessage: args.errorMessage,
 			attemptCount: args.attemptCount,
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		});
 	},
 );
@@ -87,7 +87,7 @@ export const incrementAttempt = defineMutator(
 		await tx.mutate.packageRequests.update({
 			id: args.id,
 			attemptCount: args.attemptCount,
-			updatedAt: Date.now(),
+			updatedAt: now(),
 		});
 	},
 );

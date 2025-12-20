@@ -21,10 +21,3 @@ export const REGISTRY_FILTER_OPTIONS: {
 /** Registry options without "All" - for selecting a specific registry */
 export const REGISTRY_OPTIONS: { value: Registry; label: string }[] =
 	enums.registry.map((r) => ({ value: r, label: r }));
-
-/**
- * Get display label for a registry
- */
-export function getRegistryLabel(registry: Registry): string {
-	return registry;
-}
