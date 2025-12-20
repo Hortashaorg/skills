@@ -1,10 +1,11 @@
 import { mutators, queries, useQuery, useZero } from "@package/database/client";
-import { createMemo, createSignal, Show } from "solid-js";
+import { createMemo, createSignal, For, Show } from "solid-js";
 import {
 	SearchInput,
 	type SearchResultItem,
 } from "@/components/composite/search-input";
 import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -14,10 +15,20 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl } from "@/lib/auth-url";
+import {
+	getRegistryLabel,
+	REGISTRY_FILTER_OPTIONS,
+	REGISTRY_OPTIONS,
+	type Registry,
+	type RegistryFilter,
+} from "@/lib/registries";
 
 export const Home = () => {
 	const zero = useZero();
 	const [searchValue, setSearchValue] = createSignal("");
+	const [registryFilter, setRegistryFilter] =
+		createSignal<RegistryFilter>("all");
+	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
 	const [requestedPackages, setRequestedPackages] = createSignal<
 		Map<string, string>
 	>(new Map());
@@ -25,17 +36,21 @@ export const Home = () => {
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
 
-	// Filter packages based on search input
+	// Filter packages based on search input and registry
 	const filteredPackages = createMemo(() => {
 		const query = searchValue().toLowerCase().trim();
 		if (!query) return [];
 
 		const allPackages = packages() || [];
-		return allPackages.filter(
-			(pkg) =>
+		const registry = registryFilter();
+
+		return allPackages.filter((pkg) => {
+			const matchesSearch =
 				pkg.name.toLowerCase().includes(query) ||
-				pkg.description?.toLowerCase().includes(query),
-		);
+				pkg.description?.toLowerCase().includes(query);
+			const matchesRegistry = registry === "all" || pkg.registry === registry;
+			return matchesSearch && matchesRegistry;
+		});
 	});
 
 	// Convert packages to SearchResultItem format
@@ -48,21 +63,32 @@ export const Home = () => {
 		}));
 	});
 
-	// Check if the exact search term exists in packages
+	// Check if the exact search term exists in packages (respecting registry filter)
 	const exactMatchExists = createMemo(() => {
 		const query = searchValue().toLowerCase().trim();
 		if (!query) return false;
 
 		const allPackages = packages() || [];
-		return allPackages.some(
-			(pkg) => pkg.name.toLowerCase() === query && pkg.registry === "npm",
-		);
+		const registry = registryFilter();
+
+		return allPackages.some((pkg) => {
+			const nameMatches = pkg.name.toLowerCase() === query;
+			const registryMatches = registry === "all" || pkg.registry === registry;
+			return nameMatches && registryMatches;
+		});
 	});
 
 	// Show "not found" state when user has typed but no results
 	const showNotFound = createMemo(() => {
 		const query = searchValue().trim();
 		return query.length > 0 && searchResults().length === 0;
+	});
+
+	// Determine which registry to use for the request
+	const effectiveRequestRegistry = createMemo((): Registry => {
+		const filter = registryFilter();
+		if (filter !== "all") return filter;
+		return requestRegistry();
 	});
 
 	const handleSelect = (item: SearchResultItem) => {
@@ -74,10 +100,12 @@ export const Home = () => {
 		const packageName = searchValue().trim();
 		if (!packageName) return;
 
+		const registry = effectiveRequestRegistry();
+
 		const write = zero().mutate(
 			mutators.packageRequests.create({
 				packageName,
-				registry: "npm",
+				registry,
 			}),
 		);
 
@@ -90,17 +118,29 @@ export const Home = () => {
 		}
 
 		// Track that we requested this package
+		const key = `${packageName.toLowerCase()}:${registry}`;
 		setRequestedPackages((prev) => {
 			const newMap = new Map(prev);
-			newMap.set(packageName.toLowerCase(), "pending");
+			newMap.set(key, "pending");
 			return newMap;
 		});
 
-		toast.success(`Request submitted for "${packageName}"`);
+		toast.success(`Request submitted for "${packageName}" on ${registry}`);
 	};
 
-	const getRequestStatus = (packageName: string) => {
-		return requestedPackages().get(packageName.toLowerCase());
+	const getRequestStatus = (packageName: string, registry: Registry) => {
+		const key = `${packageName.toLowerCase()}:${registry}`;
+		return requestedPackages().get(key);
+	};
+
+	const handleRegistryFilterChange = (e: Event) => {
+		const target = e.target as HTMLSelectElement;
+		setRegistryFilter(target.value as RegistryFilter);
+	};
+
+	const handleRequestRegistryChange = (e: Event) => {
+		const target = e.target as HTMLSelectElement;
+		setRequestRegistry(target.value as Registry);
 	};
 
 	return (
@@ -113,19 +153,34 @@ export const Home = () => {
 							TechGarden
 						</Heading>
 						<Text color="muted" class="text-center" as="p">
-							Search for npm packages or request new ones
+							Search for packages or request new ones
 						</Text>
 					</Stack>
 
-					{/* Search */}
-					<SearchInput
-						value={searchValue()}
-						onValueChange={setSearchValue}
-						results={searchResults()}
-						onSelect={handleSelect}
-						placeholder="Search packages..."
-						noResultsMessage={`No packages found for "${searchValue()}"`}
-					/>
+					{/* Search with registry filter */}
+					<Flex gap="sm" align="stretch">
+						<select
+							value={registryFilter()}
+							onChange={handleRegistryFilterChange}
+							class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer"
+						>
+							<For each={REGISTRY_FILTER_OPTIONS}>
+								{(option) => (
+									<option value={option.value}>{option.label}</option>
+								)}
+							</For>
+						</select>
+						<div class="flex-1">
+							<SearchInput
+								value={searchValue()}
+								onValueChange={setSearchValue}
+								results={searchResults()}
+								onSelect={handleSelect}
+								placeholder="Search packages..."
+								noResultsMessage={`No packages found for "${searchValue()}"`}
+							/>
+						</div>
+					</Flex>
 
 					{/* Not found state - show request option */}
 					<Show when={showNotFound() && !exactMatchExists()}>
@@ -154,29 +209,42 @@ export const Home = () => {
 									}
 								>
 									<Show
-										when={!getRequestStatus(searchValue())}
+										when={
+											!getRequestStatus(
+												searchValue(),
+												effectiveRequestRegistry(),
+											)
+										}
 										fallback={
 											<Badge variant="info" size="md">
 												Request submitted
 											</Badge>
 										}
 									>
-										<Button onClick={handleRequestPackage}>
-											Request this package
-										</Button>
+										<Flex gap="sm" align="center">
+											{/* Show registry picker when "all" is selected */}
+											<Show when={registryFilter() === "all"}>
+												<select
+													value={requestRegistry()}
+													onChange={handleRequestRegistryChange}
+													class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer"
+												>
+													<For each={REGISTRY_OPTIONS}>
+														{(option) => (
+															<option value={option.value}>
+																{option.label}
+															</option>
+														)}
+													</For>
+												</select>
+											</Show>
+											<Button onClick={handleRequestPackage}>
+												Request from{" "}
+												{getRegistryLabel(effectiveRequestRegistry())}
+											</Button>
+										</Flex>
 									</Show>
 								</Show>
-							</Stack>
-						</Card>
-					</Show>
-
-					{/* Show some info for authenticated users */}
-					<Show when={zero().userID !== "anon"}>
-						<Card>
-							<Stack spacing="sm">
-								<Text size="sm" color="muted">
-									Signed in as user {zero().userID.slice(0, 8)}...
-								</Text>
 							</Stack>
 						</Card>
 					</Show>

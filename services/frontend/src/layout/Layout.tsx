@@ -17,13 +17,20 @@ export const Layout: ParentComponent = ({ children }) => {
 		await logout();
 	};
 
+	const isAnonymous = () => zero().userID === "anon";
+	const displayUserId = () => {
+		const id = zero().userID;
+		if (id === "anon") return null;
+		return id.length > 8 ? `${id.slice(0, 8)}...` : id;
+	};
+
 	return (
 		<div class="min-h-screen bg-surface dark:bg-surface-dark">
 			<header class="border-b border-outline dark:border-outline-dark">
 				<Container>
 					<Flex justify="between" align="center" class="h-16">
 						<Text size="lg" weight="semibold" as="span">
-							My App
+							TechGarden
 						</Text>
 						<Flex gap="md" align="center">
 							<Show when={connectionState().name === "connected"}>
@@ -51,7 +58,22 @@ export const Layout: ParentComponent = ({ children }) => {
 									Connection Error
 								</Badge>
 							</Show>
-							<Show when={zero().userID !== "anon"}>
+
+							{/* User info */}
+							<Show
+								when={!isAnonymous()}
+								fallback={
+									<Text size="sm" color="muted">
+										Anonymous
+									</Text>
+								}
+							>
+								<Text size="sm" color="muted">
+									{displayUserId()}
+								</Text>
+							</Show>
+
+							<Show when={!isAnonymous()}>
 								<Button variant="outline" size="sm" onClick={handleLogout}>
 									Logout
 								</Button>

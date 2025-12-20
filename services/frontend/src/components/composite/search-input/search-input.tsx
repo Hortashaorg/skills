@@ -57,6 +57,7 @@ export const SearchInput = (props: SearchInputProps) => {
 		<div class={props.class}>
 			<Combobox<SearchResultItem>
 				value={selectedItem()}
+				noResetInputOnBlur={true}
 				onChange={(item) => {
 					if (item) {
 						setSelectedItem(item);
