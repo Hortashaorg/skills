@@ -66,7 +66,7 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ### Rate Limiting & Protection
 - [ ] User request limits (10/hour)
-- [ ] Package cooldown (1 hour between fetches)
+- [x] Package cooldown (1 hour between fetches)
 - [x] Request deduplication (no duplicate pending requests)
 - [x] Retry with backoff, discard after 3 failures
 

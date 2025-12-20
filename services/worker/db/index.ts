@@ -3,4 +3,4 @@ export {
 	updateRequestStatus,
 	upsertPackage,
 } from "./mutations.ts";
-export { getExistingVersions } from "./queries.ts";
+export { findPackage, getExistingVersions } from "./queries.ts";

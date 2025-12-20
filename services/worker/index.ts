@@ -50,14 +50,18 @@ async function main() {
 		results.push(result);
 
 		if (result.success) {
-			console.log(`  ✓ Success`);
-			console.log(
-				`    Versions: ${result.versionsNew} new, ${result.versionsSkipped} skipped (${result.versionsTotal} total)`,
-			);
-			console.log(
-				`    Dependencies: ${result.dependenciesCreated} created (${result.dependenciesExisting} existing, ${result.dependenciesQueued} already queued)`,
-			);
-			console.log(`    Linked: ${result.dependenciesLinked} | New requests: ${result.newRequestsScheduled}`);
+			if (result.skippedCooldown) {
+				console.log(`  ⏭ Skipped (recently updated)`);
+			} else {
+				console.log(`  ✓ Success`);
+				console.log(
+					`    Versions: ${result.versionsNew} new, ${result.versionsSkipped} skipped (${result.versionsTotal} total)`,
+				);
+				console.log(
+					`    Dependencies: ${result.dependenciesCreated} created (${result.dependenciesExisting} existing, ${result.dependenciesQueued} already queued)`,
+				);
+				console.log(`    Linked: ${result.dependenciesLinked} | New requests: ${result.newRequestsScheduled}`);
+			}
 		} else {
 			console.log(`  ✗ Failed: ${result.error}`);
 		}
@@ -65,8 +69,9 @@ async function main() {
 	}
 
 	// Summary
-	const succeeded = results.filter((r) => r.success).length;
-	const failed = results.length - succeeded;
+	const succeeded = results.filter((r) => r.success && !r.skippedCooldown).length;
+	const skipped = results.filter((r) => r.skippedCooldown).length;
+	const failed = results.filter((r) => !r.success).length;
 	const totalVersionsNew = results.reduce(
 		(sum, r) => sum + (r.versionsNew ?? 0),
 		0,
@@ -95,6 +100,7 @@ async function main() {
 	console.log("=== Summary ===");
 	console.log(`Processed: ${results.length} requests`);
 	console.log(`  Succeeded: ${succeeded}`);
+	console.log(`  Skipped (cooldown): ${skipped}`);
 	console.log(`  Failed: ${failed}`);
 	console.log(
 		`  Versions: ${totalVersionsNew} new, ${totalVersionsSkipped} skipped`,

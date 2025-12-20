@@ -11,6 +11,7 @@ import {
 	type VersionInsert,
 } from "./db/bulk.ts";
 import {
+	findPackage,
 	getExistingVersions,
 	incrementAttempt,
 	updateRequestStatus,
@@ -18,11 +19,14 @@ import {
 } from "./db/index.ts";
 import { npm } from "./registries/index.ts";
 
+const COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+
 export interface ProcessResult {
 	requestId: string;
 	packageName: string;
 	registry: Registry;
 	success: boolean;
+	skippedCooldown?: boolean;
 	packageId?: string;
 	versionsTotal?: number;
 	versionsNew?: number;
@@ -47,13 +51,29 @@ export async function processRequest(
 	};
 
 	try {
-		// 1. Mark as fetching and increment attempt (still uses Zero for consistency)
+		// 1. Check cooldown - skip if package was recently updated
+		const existingPkg = await dbProvider.transaction(async (tx) => {
+			return findPackage(tx, request.packageName, request.registry);
+		});
+
+		if (existingPkg && Date.now() - existingPkg.updatedAt < COOLDOWN_MS) {
+			// Package was fetched recently - mark as completed without refetching
+			await dbProvider.transaction(async (tx) => {
+				await updateRequestStatus(tx, request.id, "completed", existingPkg.id);
+			});
+			result.success = true;
+			result.skippedCooldown = true;
+			result.packageId = existingPkg.id;
+			return result;
+		}
+
+		// 2. Mark as fetching and increment attempt
 		await dbProvider.transaction(async (tx) => {
 			await updateRequestStatus(tx, request.id, "fetching");
 			await incrementAttempt(tx, request.id, request.attemptCount);
 		});
 
-		// 2. Fetch from registry (outside transaction - network call)
+		// 3. Fetch from registry (outside transaction - network call)
 		const fetchResult = await npm.getPackages([request.packageName]);
 		const packageData = fetchResult.get(request.packageName);
 
@@ -65,13 +85,13 @@ export async function processRequest(
 			throw packageData;
 		}
 
-		// 3. Pre-load existing data for fast lookups
+		// 4. Pre-load existing data for fast lookups
 		const [packageNames, activeRequests] = await Promise.all([
 			loadPackageNames(request.registry),
 			loadActiveRequests(request.registry),
 		]);
 
-		// 4. Upsert package (still uses Zero transaction)
+		// 5. Upsert package
 		const packageId = await dbProvider.transaction(async (tx) => {
 			return upsertPackage(tx, packageData, request.registry);
 		});
@@ -80,7 +100,7 @@ export async function processRequest(
 		// Update cache with new package
 		packageNames.set(packageData.name, packageId);
 
-		// 5. Get existing versions and filter to only new ones
+		// 6. Get existing versions and filter to only new ones
 		const existingVersions = await dbProvider.transaction(async (tx) => {
 			return getExistingVersions(tx, packageId);
 		});
@@ -93,7 +113,7 @@ export async function processRequest(
 		result.versionsNew = newVersions.length;
 		result.versionsSkipped = existingVersions.size;
 
-		// 6. Prepare bulk inserts
+		// 7. Prepare bulk inserts
 		const now = new Date();
 		const versionInserts: VersionInsert[] = [];
 		const dependencyInserts: DependencyInsert[] = [];
@@ -153,7 +173,7 @@ export async function processRequest(
 			}
 		}
 
-		// 7. Execute bulk inserts
+		// 8. Execute bulk inserts
 		await bulkInsertVersions(versionInserts);
 		await bulkInsertDependencies(dependencyInserts);
 		await bulkInsertPendingRequests(pendingRequestInserts);
@@ -163,14 +183,14 @@ export async function processRequest(
 		result.dependenciesQueued = depsAlreadyQueued;
 		result.newRequestsScheduled = pendingRequestInserts.length;
 
-		// 8. Link any previously unlinked deps that reference this package
+		// 9. Link any previously unlinked deps that reference this package
 		const linkedCount = await bulkLinkDependencies(
 			packageId,
 			request.packageName,
 		);
 		result.dependenciesLinked = linkedCount;
 
-		// 9. Mark completed
+		// 10. Mark completed
 		await dbProvider.transaction(async (tx) => {
 			await updateRequestStatus(tx, request.id, "completed", packageId);
 		});
