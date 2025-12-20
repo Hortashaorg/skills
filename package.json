@@ -7,6 +7,7 @@
 		"all": "pnpm -r --paralell",
 		"frontend": "pnpm --filter '@service/frontend'",
 		"backend": "pnpm --filter '@service/backend'",
+		"worker": "pnpm --filter '@service/worker'",
 		"check": "biome check",
 		"format": "biome format --write",
 		"database": "pnpm --filter '@package/database'"

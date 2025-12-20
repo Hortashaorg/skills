@@ -27,22 +27,27 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Toast system
 
 ### Homepage Search Integration
-- [ ] Wire SearchInput to `packages.search` query on homepage
-- [ ] Display package results (name, description, registry badge)
-- [ ] "Not found" state when package doesn't exist in DB
-- [ ] "Request this package" button calling `packageRequests.create`
-- [ ] Show request status after submitting (pending → fetching → completed)
+- [x] Wire SearchInput to `packages.list` query on homepage
+- [x] Display package results (name, description, registry badge)
+- [x] Registry filter dropdown (All, npm, jsr, brew, apt)
+- [x] "Not found" state when package doesn't exist in DB
+- [x] "Request this package" button calling `packageRequests.create`
+- [x] Registry selection when requesting (inherits filter or manual pick)
+- [x] Show request status after submitting
+- [x] User info in navbar (Anonymous or user ID)
+- [x] Toast notifications for request feedback
 
-### Worker Service
-- [ ] Create `services/worker/` service
+### Worker Job
+- [x] Create `services/worker/` service
 - [ ] npm API client (fetch `registry.npmjs.org/{name}`)
-- [ ] Request processor: fetch → parse → store via Zero mutators
-- [ ] Polling loop (query pending requests every 30s)
-- [ ] Update request status throughout process
-- [ ] Add `pnpm worker dev` script
+- [ ] Request processor: query pending → fetch → parse → store
+- [ ] Process all pending requests in one run, then exit
+- [ ] Update request status throughout process (fetching → completed/failed)
+- [x] Add `pnpm worker start` script
+- [ ] Handle errors gracefully (mark failed, continue with next)
 
 ### End-to-End Validation
-- [ ] Search for non-existent package → request it → worker fetches → package appears
+- [ ] Search for non-existent package → request it → run worker → package appears
 
 ---
 
@@ -104,18 +109,18 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ## Current Focus
 
-**Active:** Milestone 1 - Core Data Flow
+**Active:** Milestone 1 - Worker Job
 
-**Completed:** Database schema, Zero queries/mutators, UI components
+**Completed:** Database, Zero layer, UI components, Homepage search integration
 
-**Next task:** Homepage search integration (wire SearchInput to package queries)
+**Next task:** Create worker job that processes pending package requests
 
 ---
 
 ## Notes
 
 - SearchInput is generic - pass any data, it searches and displays
-- Feature components only when truly needed (prefer composing existing UI)
+- Registry filter with extensible options in `lib/registries.ts`
 - All data access through Zero queries/mutations
-- Worker is a separate service polling the database
+- Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob
 - Anonymous users can browse; logged-in users can request packages
