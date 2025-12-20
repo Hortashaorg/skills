@@ -1,3 +1,4 @@
+export type { Row } from "@rocicorp/zero";
 export {
 	useConnectionState,
 	useQuery,

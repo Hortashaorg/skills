@@ -8,6 +8,7 @@ export { handleMutateRequest, handleQueryRequest } from "@rocicorp/zero/server";
 export { mutators } from "./mutators/index.ts";
 export { queries } from "./queries/index.ts";
 export { schema, zql } from "./zero-schema.gen.ts";
+export type { Row } from "@rocicorp/zero";
 export const dbProvider = zeroPostgresJS(
 	schema,
 	postgres(environment.ZERO_UPSTREAM_DB),
