@@ -115,6 +115,36 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ---
 
+## Milestone 5: Multi-Registry Support
+
+**Goal:** Support multiple package registries with cross-registry dependencies
+
+### Registry Adapters
+- [ ] JSR adapter (use `npm.jsr.io` - npm-compatible endpoint)
+- [ ] PyPI adapter (Python packages)
+- [ ] crates.io adapter (Rust packages)
+- [ ] Homebrew adapter (macOS packages)
+
+### Cross-Registry Dependencies
+
+**Problem:** npm packages can depend on JSR packages (e.g., `@jsr/std__path`). These show as "not found" when we only query npm.
+
+**How it works:**
+- `@jsr/std__path` on npm → `@std/path` on JSR
+- Pattern: `@jsr/{scope}__{name}` → `@{scope}/{name}`
+- JSR provides npm-compatible registry at `npm.jsr.io`
+- Package managers use `.npmrc` to route: `@jsr:registry=https://npm.jsr.io`
+
+**Implementation:**
+- [ ] Detect `@jsr/*` pattern in npm dependencies
+- [ ] Route `@jsr/*` requests to `npm.jsr.io` endpoint
+- [ ] Normalize name: `@jsr/std__path` → `@std/path`
+- [ ] Store with `registry: "jsr"` for proper linking
+- [ ] Add `dependencyRegistry` field to track source registry per dependency
+- [ ] Link cross-registry dependencies when both packages exist
+
+---
+
 ## Current Focus
 
 **Active:** Milestone 3 - User Value
