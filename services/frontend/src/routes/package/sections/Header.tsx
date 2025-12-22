@@ -52,11 +52,9 @@ export const Header = (props: HeaderProps) => {
 		);
 
 		if (existingUpvote) {
-			await zero().mutate(
-				mutators.packageUpvotes.remove({ id: existingUpvote.id }),
-			);
+			zero().mutate(mutators.packageUpvotes.remove({ id: existingUpvote.id }));
 		} else {
-			await zero().mutate(
+			zero().mutate(
 				mutators.packageUpvotes.create({ packageId: props.pkg.id }),
 			);
 		}
