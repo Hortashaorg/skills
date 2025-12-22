@@ -1,5 +1,6 @@
 import { mutators, schema, ZeroProvider } from "@package/database/client";
 import { createSignal, onMount, type ParentComponent } from "solid-js";
+import { getAndClearReturnUrl } from "@/lib/auth-url";
 import { authApi } from "./auth/auth-api";
 import type { AuthData } from "./auth/types";
 import { ConnectionStatus } from "./ConnectionStatus";
@@ -26,7 +27,15 @@ export const AppProvider: ParentComponent = (props) => {
 			try {
 				const data = await authApi.login(code);
 				setAuthData(data);
-				window.history.replaceState({}, "", window.location.pathname);
+
+				// Redirect to saved return URL or stay on current page
+				const returnUrl = getAndClearReturnUrl();
+				if (returnUrl) {
+					window.history.replaceState({}, "", returnUrl);
+					window.location.replace(returnUrl);
+				} else {
+					window.history.replaceState({}, "", window.location.pathname);
+				}
 			} catch (error) {
 				console.error("Login with code failed:", error);
 			}

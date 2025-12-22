@@ -1,5 +1,8 @@
+const RETURN_URL_KEY = "auth_return_url";
+
 /**
- * Generates the Zitadel OAuth authorization URL
+ * Generates the Zitadel OAuth authorization URL.
+ * Saves the current path to sessionStorage so we can return after login.
  */
 export function getAuthorizationUrl(): string {
 	const issuer = import.meta.env.VITE_ZITADEL_ISSUER;
@@ -21,4 +24,25 @@ export function getAuthorizationUrl(): string {
 	});
 
 	return `${issuer}/oauth/v2/authorize?${params.toString()}`;
+}
+
+/**
+ * Saves the current URL path to sessionStorage before redirecting to OAuth.
+ * Call this before navigating to getAuthorizationUrl().
+ */
+export function saveReturnUrl(): void {
+	const currentPath = window.location.pathname + window.location.search;
+	if (currentPath !== "/") {
+		sessionStorage.setItem(RETURN_URL_KEY, currentPath);
+	}
+}
+
+/**
+ * Gets and clears the saved return URL from sessionStorage.
+ * Returns null if no return URL was saved or if it was the home page.
+ */
+export function getAndClearReturnUrl(): string | null {
+	const returnUrl = sessionStorage.getItem(RETURN_URL_KEY);
+	sessionStorage.removeItem(RETURN_URL_KEY);
+	return returnUrl;
 }

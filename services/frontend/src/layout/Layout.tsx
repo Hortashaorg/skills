@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/ui/toast";
 import { logout } from "@/context/app-provider";
+import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 
 export const Layout: ParentComponent = ({ children }) => {
 	const zero = useZero();
@@ -15,6 +16,11 @@ export const Layout: ParentComponent = ({ children }) => {
 
 	const handleLogout = async () => {
 		await logout();
+	};
+
+	const handleSignIn = () => {
+		saveReturnUrl();
+		window.location.href = getAuthorizationUrl();
 	};
 
 	const isAnonymous = () => zero().userID === "anon";
@@ -59,21 +65,18 @@ export const Layout: ParentComponent = ({ children }) => {
 								</Badge>
 							</Show>
 
-							{/* User info */}
+							{/* User info and auth actions */}
 							<Show
 								when={!isAnonymous()}
 								fallback={
-									<Text size="sm" color="muted">
-										Anonymous
-									</Text>
+									<Button variant="primary" size="sm" onClick={handleSignIn}>
+										Sign in
+									</Button>
 								}
 							>
 								<Text size="sm" color="muted">
 									{displayUserId()}
 								</Text>
-							</Show>
-
-							<Show when={!isAnonymous()}>
 								<Button variant="outline" size="sm" onClick={handleLogout}>
 									Logout
 								</Button>

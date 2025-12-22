@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
-import { getAuthorizationUrl } from "@/lib/auth-url";
+import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
@@ -146,12 +146,16 @@ export const Header = (props: HeaderProps) => {
 						</Button>
 					</Show>
 					<Show when={zero().userID === "anon"}>
-						<a
-							href={getAuthorizationUrl()}
-							class="text-sm text-primary dark:text-primary-dark hover:underline"
+						<button
+							type="button"
+							onClick={() => {
+								saveReturnUrl();
+								window.location.href = getAuthorizationUrl();
+							}}
+							class="text-sm text-primary dark:text-primary-dark hover:underline cursor-pointer"
 						>
 							Sign in to request updates
-						</a>
+						</button>
 					</Show>
 				</Flex>
 			</Stack>

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
-import { getAuthorizationUrl } from "@/lib/auth-url";
+import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { REGISTRY_OPTIONS, type Registry } from "@/lib/registries";
 
 export interface RequestFormProps {
@@ -68,12 +68,15 @@ export const RequestForm = (props: RequestFormProps) => {
 				<Show
 					when={zero().userID !== "anon"}
 					fallback={
-						<a
-							href={getAuthorizationUrl()}
-							class="inline-flex items-center justify-center whitespace-nowrap rounded-radius border font-medium tracking-wide transition hover:opacity-75 cursor-pointer bg-primary border-primary text-on-primary dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark text-sm px-4 py-2"
+						<Button
+							variant="primary"
+							onClick={() => {
+								saveReturnUrl();
+								window.location.href = getAuthorizationUrl();
+							}}
 						>
 							Sign in to request
-						</a>
+						</Button>
 					}
 				>
 					<Show
