@@ -21,6 +21,7 @@ export function getAuthorizationUrl(): string {
 		redirect_uri: redirectUri,
 		response_type: "code",
 		scope: "openid email profile offline_access",
+		prompt: "select_account",
 	});
 
 	return `${issuer}/oauth/v2/authorize?${params.toString()}`;

@@ -99,9 +99,56 @@ Progress toward a deployable MVP with data flowing and utility for users.
 **Goal:** Admin features for monitoring and managing the system
 
 ### Role System
-- [ ] Add `role` column to `account` table (`"user"` | `"admin"`)
-- [ ] Query helper to check admin status
-- [ ] Route-level protection for admin pages
+
+**Current auth flow:**
+1. Frontend redirects to Zitadel OAuth
+2. Zitadel returns `code` → frontend sends to backend `/login`
+3. Backend exchanges code for tokens (access_token is opaque, not JWT)
+4. Backend decodes `id_token` claims, creates own JWT with `{ sub: account.id, email }`
+5. Frontend stores JWT, sends to Zero for auth
+
+**Zitadel claims available (from id_token):**
+- `email_verified: boolean` - is email verified?
+- `urn:zitadel:iam:org:project:roles` - roles object, e.g. `{ admin: {...} }`
+
+**Implementation steps:**
+
+1. **Backend: Extract claims** (`services/backend/index.ts`)
+   - Parse `email_verified` from id_token
+   - Parse roles from `urn:zitadel:iam:org:project:roles`
+   - Derive `isAdmin = 'admin' in roles`
+   - Include in JWT payload: `{ sub, email, emailVerified, isAdmin }`
+   - Return in `/login` and `/refresh` responses
+
+2. **Frontend: Auth context** (`context/auth/`)
+   - Update `AuthData` type: add `emailVerified`, `isAdmin`
+   - Expose via context for components to check
+
+3. **Zero context** (`packages/database/`)
+   - Update context type: `{ userID, emailVerified, isAdmin }`
+   - Available in mutators via `ctx`
+
+4. **Mutator protection** (`packages/database/mutators/`)
+   - `packageRequests.create` - require `emailVerified`
+   - `packageUpvotes.create/remove` - require `emailVerified`
+   - Future admin mutators - require `isAdmin`
+
+5. **Frontend UI gating**
+   - Show "verify email" message instead of actions for unverified users
+   - Show/hide admin nav link based on `isAdmin`
+   - Protect `/admin/*` routes (redirect non-admins)
+
+**Alternative approach (future consideration):**
+- Use Zitadel's introspection endpoint to validate opaque access_token
+- Pros: No custom JWT creation, tokens validated against Zitadel
+- Cons: Extra network call per request, Zitadel dependency for validation
+- Current approach is fine for MVP, revisit if scaling issues arise
+
+- [ ] Backend: Include `emailVerified` and `isAdmin` in JWT and responses
+- [ ] Frontend: Update AuthData type and context
+- [ ] Zero: Update context type for mutator access
+- [ ] Mutators: Gate on `emailVerified`
+- [ ] Frontend: UI for unverified users, admin route protection
 
 ### Admin Requests Dashboard
 - [ ] `/admin/requests` route - view all requests (pending, fetching, failed, completed)

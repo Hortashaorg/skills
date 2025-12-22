@@ -18,7 +18,7 @@
 	--color-on-surface-subtle: oklch(0.6 0.012 285.805);
 	--color-on-surface-strong: oklch(0.21 0.006 285.885);
 	--color-primary: oklch(0.585 0.233 277.117);
-	--color-on-primary: #000;
+	--color-on-primary: #fff;
 	--color-secondary: oklch(0.696 0.17 162.48);
 	--color-on-secondary: #000;
 	--color-outline: oklch(0.871 0.006 286.286);
