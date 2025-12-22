@@ -88,27 +88,38 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Dependency list with tabs by type (runtime, dev, peer, optional)
 - [x] Dependencies link to package page when fetched
 
-### User Dashboard
-- [ ] `/my-requests` route - view request history
-- [ ] Real-time status updates
+### Auth UX
+- [x] Sign in button in navbar (primary, prominent)
+- [x] Return to previous page after login (sessionStorage)
 
 ---
 
-## Milestone 4: Admin & Polish
+## Milestone 4: Admin & Monitoring
 
-**Goal:** Admin features and demo-ready polish
+**Goal:** Admin features for monitoring and managing the system
 
-### Authorization
-- [ ] Role system (admin vs user)
-- [ ] Admin-only mutators for tags and package-tags
-- [ ] Audit logging for admin actions
+### Role System
+- [ ] Add `role` column to `account` table (`"user"` | `"admin"`)
+- [ ] Query helper to check admin status
+- [ ] Route-level protection for admin pages
 
-### Tag System
+### Admin Requests Dashboard
+- [ ] `/admin/requests` route - view all requests (pending, fetching, failed, completed)
+- [ ] Real-time status updates
+- [ ] Retry failed requests
+- [ ] Cancel pending requests
+
+### Package Request Metadata
+- [ ] Show last fetch timestamp on package detail page
+- [ ] Show fetch status (success/failed with error message)
+- [ ] "Request update" shows pending status if already queued
+
+### Tag System (Future)
 - [ ] `/admin/tags` - tag management (CRUD)
 - [ ] Assign tags to packages
 - [ ] `/tags` and `/tags/:slug` routes for browsing by tag
 
-### Polish
+### Polish (Future)
 - [ ] Error states and edge cases
 - [ ] Loading skeletons
 - [ ] Mobile responsiveness
@@ -147,11 +158,11 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ## Current Focus
 
-**Active:** Milestone 3 - User Value
+**Active:** Milestone 4 - Admin & Monitoring
 
-**Completed:** Milestone 1 (full data flow), Milestone 2 (auto-queue, deduplication, cooldown, retry)
+**Completed:** Milestone 1 (full data flow), Milestone 2 (auto-queue, deduplication, cooldown, retry), Milestone 3 (package browsing, details, upvoting)
 
-**Next task:** User dashboard
+**Next task:** Role system
 
 ---
 
