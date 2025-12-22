@@ -64,7 +64,10 @@ export async function bulkInsertVersions(
 
 	for (let i = 0; i < versions.length; i += BATCH_SIZE) {
 		const batch = versions.slice(i, i + BATCH_SIZE);
-		await db.insert(dbSchema.packageVersions).values(batch).onConflictDoNothing();
+		await db
+			.insert(dbSchema.packageVersions)
+			.values(batch)
+			.onConflictDoNothing();
 	}
 }
 
@@ -76,7 +79,10 @@ export async function bulkInsertDependencies(
 
 	for (let i = 0; i < deps.length; i += BATCH_SIZE) {
 		const batch = deps.slice(i, i + BATCH_SIZE);
-		await db.insert(dbSchema.packageDependencies).values(batch).onConflictDoNothing();
+		await db
+			.insert(dbSchema.packageDependencies)
+			.values(batch)
+			.onConflictDoNothing();
 	}
 }
 
@@ -88,7 +94,10 @@ export async function bulkInsertPendingRequests(
 
 	for (let i = 0; i < requests.length; i += BATCH_SIZE) {
 		const batch = requests.slice(i, i + BATCH_SIZE);
-		await db.insert(dbSchema.packageRequests).values(batch).onConflictDoNothing();
+		await db
+			.insert(dbSchema.packageRequests)
+			.values(batch)
+			.onConflictDoNothing();
 	}
 }
 

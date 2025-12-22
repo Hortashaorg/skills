@@ -81,13 +81,17 @@ export const Package = () => {
 		}
 
 		// For version ranges, try to find a matching version
-		const stableVersions = versions.filter((v) => !v.isPrerelease && !v.isYanked);
+		const stableVersions = versions.filter(
+			(v) => !v.isPrerelease && !v.isYanked,
+		);
 
 		// ^X.Y.Z - find latest X.* version
 		const caretMatch = versionStr.match(/^\^(\d+)\./);
 		if (caretMatch) {
 			const major = caretMatch[1];
-			const matching = stableVersions.find((v) => v.version.startsWith(`${major}.`));
+			const matching = stableVersions.find((v) =>
+				v.version.startsWith(`${major}.`),
+			);
 			if (matching) return { version: matching, isResolved: true };
 		}
 
@@ -95,7 +99,9 @@ export const Package = () => {
 		const tildeMatch = versionStr.match(/^~(\d+\.\d+)\./);
 		if (tildeMatch) {
 			const majorMinor = tildeMatch[1];
-			const matching = stableVersions.find((v) => v.version.startsWith(`${majorMinor}.`));
+			const matching = stableVersions.find((v) =>
+				v.version.startsWith(`${majorMinor}.`),
+			);
 			if (matching) return { version: matching, isResolved: true };
 		}
 

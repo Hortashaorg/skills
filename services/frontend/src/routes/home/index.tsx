@@ -28,7 +28,7 @@ export const Home = () => {
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
 
-	// Filter packages based on search input and registry
+	// Filter packages based on search input and registry, sorted by upvotes
 	const filteredPackages = createMemo(() => {
 		const query = searchValue().toLowerCase().trim();
 		if (!query) return [];
@@ -38,12 +38,11 @@ export const Home = () => {
 
 		return allPackages
 			.filter((pkg) => {
-				const matchesSearch =
-					pkg.name.toLowerCase().includes(query) ||
-					pkg.description?.toLowerCase().includes(query);
+				const matchesSearch = pkg.name.toLowerCase().includes(query);
 				const matchesRegistry = registry === "all" || pkg.registry === registry;
 				return matchesSearch && matchesRegistry;
 			})
+			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0))
 			.slice(0, MAX_RESULTS);
 	});
 
@@ -140,7 +139,11 @@ export const Home = () => {
 					</Show>
 
 					{/* Empty state when no search - show recent packages */}
-					<Show when={searchValue().trim().length === 0 && recentPackages().length > 0}>
+					<Show
+						when={
+							searchValue().trim().length === 0 && recentPackages().length > 0
+						}
+					>
 						<Stack spacing="sm">
 							<Text size="sm" color="muted">
 								Recently updated

@@ -4,6 +4,7 @@ import * as accountQueries from "./account.ts";
 import * as packageDependenciesQueries from "./package-dependencies.ts";
 import * as packageRequestsQueries from "./package-requests.ts";
 import * as packageTagsQueries from "./package-tags.ts";
+import * as packageUpvotesQueries from "./package-upvotes.ts";
 import * as packagesQueries from "./packages.ts";
 import * as tagsQueries from "./tags.ts";
 
@@ -39,5 +40,9 @@ export const queries = defineQueries({
 	packageTags: {
 		byPackageId: packageTagsQueries.byPackageId,
 		byTagId: packageTagsQueries.byTagId,
+	},
+	packageUpvotes: {
+		byPackage: packageUpvotesQueries.byPackage,
+		byUser: packageUpvotesQueries.byUser,
 	},
 });

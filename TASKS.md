@@ -77,8 +77,8 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ### Package Browsing
 - [x] Homepage shows recently updated packages
-- [x] Search with registry filter
-- [ ] Upvoting system (affects search result ordering)
+- [x] Search with registry filter (name-only matching)
+- [x] Upvoting system (affects search result ordering)
 
 ### Package Details
 - [x] `/package/:registry/:name` route - package detail page

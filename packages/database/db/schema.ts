@@ -190,6 +190,25 @@ export const packageTags = pgTable(
 	],
 );
 
+export const packageUpvotes = pgTable(
+	"package_upvotes",
+	{
+		id: uuid().primaryKey(),
+		packageId: uuid()
+			.notNull()
+			.references(() => packages.id),
+		accountId: uuid()
+			.notNull()
+			.references(() => account.id),
+		createdAt: timestamp().notNull(),
+	},
+	(table) => [
+		unique().on(table.packageId, table.accountId),
+		index("idx_package_upvotes_package_id").on(table.packageId),
+		index("idx_package_upvotes_account_id").on(table.accountId),
+	],
+);
+
 export const auditLog = pgTable(
 	"audit_log",
 	{
@@ -222,6 +241,7 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 	}),
 	packageTags: many(packageTags),
 	requests: many(packageRequests),
+	upvotes: many(packageUpvotes),
 }));
 
 export const packageVersionsRelations = relations(
@@ -276,6 +296,17 @@ export const packageTagsRelations = relations(packageTags, ({ one }) => ({
 	tag: one(tags, {
 		fields: [packageTags.tagId],
 		references: [tags.id],
+	}),
+}));
+
+export const packageUpvotesRelations = relations(packageUpvotes, ({ one }) => ({
+	package: one(packages, {
+		fields: [packageUpvotes.packageId],
+		references: [packages.id],
+	}),
+	account: one(account, {
+		fields: [packageUpvotes.accountId],
+		references: [account.id],
 	}),
 }));
 

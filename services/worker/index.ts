@@ -60,7 +60,9 @@ async function main() {
 				console.log(
 					`    Dependencies: ${result.dependenciesCreated} created (${result.dependenciesExisting} existing, ${result.dependenciesQueued} already queued)`,
 				);
-				console.log(`    Linked: ${result.dependenciesLinked} | New requests: ${result.newRequestsScheduled}`);
+				console.log(
+					`    Linked: ${result.dependenciesLinked} | New requests: ${result.newRequestsScheduled}`,
+				);
 			}
 		} else {
 			console.log(`  ✗ Failed: ${result.error}`);
@@ -69,7 +71,9 @@ async function main() {
 	}
 
 	// Summary
-	const succeeded = results.filter((r) => r.success && !r.skippedCooldown).length;
+	const succeeded = results.filter(
+		(r) => r.success && !r.skippedCooldown,
+	).length;
 	const skipped = results.filter((r) => r.skippedCooldown).length;
 	const failed = results.filter((r) => !r.success).length;
 	const totalVersionsNew = results.reduce(

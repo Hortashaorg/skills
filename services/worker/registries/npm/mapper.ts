@@ -31,7 +31,8 @@ export function mapNpmPackage(response: NpmPackageResponse): PackageData {
 	return {
 		name: response.name,
 		description: response.description,
-		homepage: typeof response.homepage === "string" ? response.homepage : undefined,
+		homepage:
+			typeof response.homepage === "string" ? response.homepage : undefined,
 		repository: extractRepository(response.repository),
 		latestVersion: distTags.latest,
 		distTags: distTags as Record<string, string>,
@@ -90,13 +91,19 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 		}
 	}
 
-	if (version.peerDependencies && typeof version.peerDependencies === "object") {
+	if (
+		version.peerDependencies &&
+		typeof version.peerDependencies === "object"
+	) {
 		for (const [name, range] of Object.entries(version.peerDependencies)) {
 			deps.push({ name, versionRange: range, type: "peer" });
 		}
 	}
 
-	if (version.optionalDependencies && typeof version.optionalDependencies === "object") {
+	if (
+		version.optionalDependencies &&
+		typeof version.optionalDependencies === "object"
+	) {
 		for (const [name, range] of Object.entries(version.optionalDependencies)) {
 			deps.push({ name, versionRange: range, type: "optional" });
 		}

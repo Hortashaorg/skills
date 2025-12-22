@@ -249,6 +249,36 @@ const packageTagsTable = {
   primaryKey: ["id"],
   serverName: "package_tags",
 } as const;
+const packageUpvotesTable = {
+  name: "packageUpvotes",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    packageId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "package_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "package_upvotes",
+} as const;
 const packageVersionsTable = {
   name: "packageVersions",
   columns: {
@@ -479,6 +509,24 @@ const packageTagsRelationships = {
     },
   ],
 } as const;
+const packageUpvotesRelationships = {
+  package: [
+    {
+      sourceField: ["packageId"],
+      destField: ["id"],
+      destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+} as const;
 const packageVersionsRelationships = {
   package: [
     {
@@ -538,6 +586,14 @@ const packagesRelationships = {
       cardinality: "many",
     },
   ],
+  upvotes: [
+    {
+      sourceField: ["id"],
+      destField: ["packageId"],
+      destSchema: "packageUpvotes",
+      cardinality: "many",
+    },
+  ],
 } as const;
 const tagsRelationships = {
   packageTags: [
@@ -560,6 +616,7 @@ export const schema = {
     packageDependencies: packageDependenciesTable,
     packageRequests: packageRequestsTable,
     packageTags: packageTagsTable,
+    packageUpvotes: packageUpvotesTable,
     packageVersions: packageVersionsTable,
     packages: packagesTable,
     tags: tagsTable,
@@ -569,6 +626,7 @@ export const schema = {
     packageDependencies: packageDependenciesRelationships,
     packageRequests: packageRequestsRelationships,
     packageTags: packageTagsRelationships,
+    packageUpvotes: packageUpvotesRelationships,
     packageVersions: packageVersionsRelationships,
     packages: packagesRelationships,
     tags: tagsRelationships,
@@ -617,6 +675,13 @@ export type PackageRequest = Row["packageRequests"];
  * @deprecated Use Row["packageTags"] instead from "@rocicorp/zero".
  */
 export type PackageTag = Row["packageTags"];
+/**
+ * Represents a row from the "packageUpvotes" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["packageUpvotes"] instead from "@rocicorp/zero".
+ */
+export type PackageUpvote = Row["packageUpvotes"];
 /**
  * Represents a row from the "packageVersions" table.
  * This type is auto-generated from your Drizzle schema definition.

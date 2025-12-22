@@ -3,6 +3,7 @@ import "../types/context.ts";
 import * as packageDependenciesMutators from "./package-dependencies.ts";
 import * as packageRequestsMutators from "./package-requests.ts";
 import * as packageTagsMutators from "./package-tags.ts";
+import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packageVersionsMutators from "./package-versions.ts";
 import * as packagesMutators from "./packages.ts";
 import * as tagsMutators from "./tags.ts";
@@ -34,5 +35,9 @@ export const mutators = defineMutators({
 	packageTags: {
 		create: packageTagsMutators.create,
 		remove: packageTagsMutators.remove,
+	},
+	packageUpvotes: {
+		create: packageUpvotesMutators.create,
+		remove: packageUpvotesMutators.remove,
 	},
 });

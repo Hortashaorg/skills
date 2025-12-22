@@ -153,7 +153,10 @@ export async function processRequest(
 
 				if (existingPackageId) {
 					depsExisting++;
-				} else if (activeRequests.has(dep.name) || newRequestNames.has(dep.name)) {
+				} else if (
+					activeRequests.has(dep.name) ||
+					newRequestNames.has(dep.name)
+				) {
 					depsAlreadyQueued++;
 				} else {
 					// Schedule missing dependency for fetching

@@ -4,7 +4,7 @@ import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 
 export const list = defineQuery(() => {
-	return zql.packages;
+	return zql.packages.related("upvotes");
 });
 
 export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
@@ -38,7 +38,8 @@ export const byNameWithVersions = defineQuery(
 		return zql.packages
 			.where("name", args.name)
 			.where("registry", args.registry)
-			.related("versions", (q) => q.orderBy("publishedAt", "desc"));
+			.related("versions", (q) => q.orderBy("publishedAt", "desc"))
+			.related("upvotes");
 	},
 );
 
