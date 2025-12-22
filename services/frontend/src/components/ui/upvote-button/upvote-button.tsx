@@ -70,7 +70,28 @@ export const UpvoteButton = (props: UpvoteButtonProps) => {
 		"count",
 		"isUpvoted",
 		"onClick",
+		"disabled",
 	]);
+
+	// When disabled (anonymous user), render as static display
+	if (local.disabled) {
+		return (
+			<span
+				class={cn(
+					upvoteButtonVariants({ size: local.size }),
+					"cursor-default",
+					"border-outline",
+					"text-on-surface-muted",
+					"dark:border-outline-dark",
+					"dark:text-on-surface-dark-muted",
+					local.class,
+				)}
+			>
+				<ArrowUpIcon />
+				<span>{local.count}</span>
+			</span>
+		);
+	}
 
 	return (
 		<ToggleButtonPrimitive

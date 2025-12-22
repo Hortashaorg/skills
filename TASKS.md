@@ -16,8 +16,8 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Generate Zero schema types
 - [x] Define queries: `packages.search`, `packages.byName`, `packages.byId`, `packages.list`
 - [x] Define queries: `packageRequests.pending`, `packageRequests.byId`, `packageRequests.existingPending`
-- [x] Define mutators: `packageRequests.create`, `markFetching`, `markCompleted`, `markFailed`
-- [x] Define mutators: `packages.upsert`, `packageVersions.create`, `packageDependencies.create`
+- [x] Define mutators: `packageRequests.create` (auth protected)
+- [x] Define mutators: `packageUpvotes.create`, `packageUpvotes.remove` (auth protected)
 
 ### UI Components
 - [x] SearchInput composite (generic, works with any data)
@@ -27,6 +27,7 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Toast system
 - [x] Tabs component (line/pills variants, Kobalte-based)
 - [x] Select component (dropdown, Kobalte-based)
+- [x] UpvoteButton component (toggle, shows count, disabled for anon)
 
 ### Homepage Search Integration
 - [x] Wire SearchInput to `packages.list` query on homepage
@@ -86,7 +87,6 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Version selector (defaults to latest stable, search for older versions)
 - [x] Dependency list with tabs by type (runtime, dev, peer, optional)
 - [x] Dependencies link to package page when fetched
-- [ ] Dependency stats (direct count, transitive count)
 
 ### User Dashboard
 - [ ] `/my-requests` route - view request history
@@ -151,7 +151,7 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 **Completed:** Milestone 1 (full data flow), Milestone 2 (auto-queue, deduplication, cooldown, retry)
 
-**Next task:** Upvoting system or user dashboard
+**Next task:** User dashboard
 
 ---
 
@@ -159,11 +159,14 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 - Homepage uses card grid for search results (max 20), links to package detail
 - Homepage shows "Recently updated" packages when no search query
+- Homepage search filters by package name only (not description)
+- Search results sorted by upvote count (highest first)
 - Package detail page at `/package/:registry/:name` with version selector
 - Version selector supports exact versions, dist-tags (latest, next), and ranges (^1.0.0, ~2.3.0)
 - Version metadata: `latestVersion`, `distTags` on packages; `isPrerelease`, `isYanked` on versions
 - Registry filter with extensible options in `lib/registries.ts`
-- All data access through Zero queries/mutations
+- All user-facing mutators require authentication (throw if `ctx.userID === "anon"`)
+- Worker uses Zero transactions directly, not mutators (for bulk operations)
 - Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob, processes 10 requests per run
-- Anonymous users can browse; logged-in users can request packages
+- Anonymous users can browse and see upvote counts (button renders as static, non-clickable); logged-in users can request packages and upvote
 - npm schema handles edge cases: unpublished packages, malformed deps (string instead of object), unknown field types

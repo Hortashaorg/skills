@@ -1,15 +1,12 @@
 import { queries, useQuery } from "@package/database/client";
-import { A } from "@solidjs/router";
-import { createMemo, createSignal, For, Show } from "solid-js";
+import { createMemo, createSignal, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
-import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
 import type { Registry, RegistryFilter } from "@/lib/registries";
+import { RecentPackages } from "./sections/RecentPackages";
 import { RequestForm } from "./sections/RequestForm";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
@@ -144,45 +141,7 @@ export const Home = () => {
 							searchValue().trim().length === 0 && recentPackages().length > 0
 						}
 					>
-						<Stack spacing="sm">
-							<Text size="sm" color="muted">
-								Recently updated
-							</Text>
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<For each={recentPackages()}>
-									{(pkg) => (
-										<A
-											href={`/package/${encodeURIComponent(pkg.registry)}/${encodeURIComponent(pkg.name)}`}
-											class="block"
-										>
-											<Card
-												padding="md"
-												class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors cursor-pointer"
-											>
-												<Stack spacing="xs">
-													<Flex gap="sm" align="center">
-														<Text
-															weight="semibold"
-															class="text-on-surface dark:text-on-surface-dark truncate"
-														>
-															{pkg.name}
-														</Text>
-														<Badge variant="secondary" size="sm">
-															{pkg.registry}
-														</Badge>
-													</Flex>
-													<Show when={pkg.description}>
-														<Text size="sm" color="muted" class="line-clamp-2">
-															{pkg.description}
-														</Text>
-													</Show>
-												</Stack>
-											</Card>
-										</A>
-									)}
-								</For>
-							</div>
-						</Stack>
+						<RecentPackages packages={recentPackages()} />
 					</Show>
 				</Stack>
 			</Container>
