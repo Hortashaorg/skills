@@ -1,7 +1,7 @@
 import {
-	type PackageRequest,
 	type PackageRequestStatus,
 	queries,
+	type Row,
 	useQuery,
 	useZero,
 } from "@package/database/client";
@@ -52,7 +52,7 @@ export const AdminRequests = () => {
 		const requests = allRequests() ?? [];
 		const tab = activeTab();
 
-		let filtered: readonly PackageRequest[];
+		let filtered: readonly Row["packageRequests"][];
 		if (tab === "all") {
 			filtered = requests;
 		} else {
