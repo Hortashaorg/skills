@@ -100,55 +100,35 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ### Role System
 
-**Current auth flow:**
+**Auth flow:**
 1. Frontend redirects to Zitadel OAuth
 2. Zitadel returns `code` → frontend sends to backend `/login`
-3. Backend exchanges code for tokens (access_token is opaque, not JWT)
-4. Backend decodes `id_token` claims, creates own JWT with `{ sub: account.id, email }`
-5. Frontend stores JWT, sends to Zero for auth
+3. Backend exchanges code for tokens, decodes `id_token` claims
+4. Backend checks `email_verified` - rejects with 403 if false (redirects to `/verify-email`)
+5. Backend extracts `roles` from `urn:zitadel:iam:org:project:roles` claim
+6. Backend creates JWT with `{ sub, email, roles }`, returns with `roles` array
+7. Frontend stores auth data including roles, passes to ZeroProvider context
+8. Mutators access `ctx.roles` for authorization checks
 
-**Zitadel claims available (from id_token):**
-- `email_verified: boolean` - is email verified?
-- `urn:zitadel:iam:org:project:roles` - roles object, e.g. `{ admin: {...} }`
+**Usage in mutators:**
+```tsx
+if (!ctx.roles.includes("admin")) {
+  throw new Error("Admin access required");
+}
+```
 
-**Implementation steps:**
+**Adding new roles:** Just assign in Zitadel - flows through automatically.
 
-1. **Backend: Extract claims** (`services/backend/index.ts`)
-   - Parse `email_verified` from id_token
-   - Parse roles from `urn:zitadel:iam:org:project:roles`
-   - Derive `isAdmin = 'admin' in roles`
-   - Include in JWT payload: `{ sub, email, emailVerified, isAdmin }`
-   - Return in `/login` and `/refresh` responses
-
-2. **Frontend: Auth context** (`context/auth/`)
-   - Update `AuthData` type: add `emailVerified`, `isAdmin`
-   - Expose via context for components to check
-
-3. **Zero context** (`packages/database/`)
-   - Update context type: `{ userID, emailVerified, isAdmin }`
-   - Available in mutators via `ctx`
-
-4. **Mutator protection** (`packages/database/mutators/`)
-   - `packageRequests.create` - require `emailVerified`
-   - `packageUpvotes.create/remove` - require `emailVerified`
-   - Future admin mutators - require `isAdmin`
-
-5. **Frontend UI gating**
-   - Show "verify email" message instead of actions for unverified users
-   - Show/hide admin nav link based on `isAdmin`
-   - Protect `/admin/*` routes (redirect non-admins)
-
-**Alternative approach (future consideration):**
-- Use Zitadel's introspection endpoint to validate opaque access_token
-- Pros: No custom JWT creation, tokens validated against Zitadel
-- Cons: Extra network call per request, Zitadel dependency for validation
-- Current approach is fine for MVP, revisit if scaling issues arise
-
-- [ ] Backend: Include `emailVerified` and `isAdmin` in JWT and responses
-- [ ] Frontend: Update AuthData type and context
-- [ ] Zero: Update context type for mutator access
-- [ ] Mutators: Gate on `emailVerified`
-- [ ] Frontend: UI for unverified users, admin route protection
+- [x] Backend: Check `email_verified`, reject login if false
+- [x] Frontend: `/verify-email` page with link to Zitadel account management
+- [x] Backend: Extract roles from id_token, include in JWT
+- [x] Backend: Return `roles` array in `/login` and `/refresh` responses
+- [x] Frontend: Update `AuthData` type to include `roles`
+- [x] Zero: Update context type to `{ userID, roles }`
+- [x] Backend: `getAuthContext()` returns full context for queries/mutators
+- [ ] Mutators: Gate admin actions on `ctx.roles.includes("admin")`
+- [ ] Frontend: Show/hide admin nav based on roles
+- [ ] Frontend: Protect `/admin/*` routes
 
 ### Admin Requests Dashboard
 - [ ] `/admin/requests` route - view all requests (pending, fetching, failed, completed)
@@ -173,15 +153,13 @@ Progress toward a deployable MVP with data flowing and utility for users.
 
 ---
 
-## Milestone 5: Multi-Registry Support
+## Milestone 5: JSR Registry Support
 
-**Goal:** Support multiple package registries with cross-registry dependencies
+**Goal:** Support JSR as second registry for MVP (npm + JSR)
 
-### Registry Adapters
-- [ ] JSR adapter (use `npm.jsr.io` - npm-compatible endpoint)
-- [ ] PyPI adapter (Python packages)
-- [ ] crates.io adapter (Rust packages)
-- [ ] Homebrew adapter (macOS packages)
+### JSR Adapter
+- [ ] JSR adapter using `npm.jsr.io` (npm-compatible endpoint)
+- [ ] Use `/registry-adapter` skill to scaffold
 
 ### Cross-Registry Dependencies
 
@@ -191,25 +169,71 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - `@jsr/std__path` on npm → `@std/path` on JSR
 - Pattern: `@jsr/{scope}__{name}` → `@{scope}/{name}`
 - JSR provides npm-compatible registry at `npm.jsr.io`
-- Package managers use `.npmrc` to route: `@jsr:registry=https://npm.jsr.io`
 
 **Implementation:**
 - [ ] Detect `@jsr/*` pattern in npm dependencies
-- [ ] Route `@jsr/*` requests to `npm.jsr.io` endpoint
+- [ ] Route `@jsr/*` requests to JSR adapter
 - [ ] Normalize name: `@jsr/std__path` → `@std/path`
 - [ ] Store with `registry: "jsr"` for proper linking
-- [ ] Add `dependencyRegistry` field to track source registry per dependency
-- [ ] Link cross-registry dependencies when both packages exist
+
+### Future Registries (Post-MVP)
+- PyPI (Python)
+- crates.io (Rust)
+- Homebrew (macOS)
+
+---
+
+## Milestone 6: Observability
+
+**Goal:** Production-ready monitoring with Grafana
+
+### Zero Telemetry
+- [ ] Configure Zero to send telemetry
+- [ ] Set up Grafana locally
+- [ ] Dashboard for Zero metrics (connections, sync latency, errors)
+- [ ] Dashboard for worker metrics (requests processed, failures, duration)
+
+### Logging
+- [ ] Structured logging in backend and worker
+- [ ] Log aggregation in Grafana/Loki
+
+---
+
+## Milestone 7: Deployment
+
+**Goal:** Deploy horizontally scalable MVP to Kubernetes
+
+### Pre-Launch
+- [ ] Buy domain name
+- [ ] SSL certificates (cert-manager)
+- [ ] Environment secrets in Kubernetes
+
+### Kubernetes Deployment
+- [ ] Frontend deployment (static files or SSR)
+- [ ] Backend deployment (Hono API, horizontal scaling)
+- [ ] Worker CronJob (scheduled processing)
+- [ ] Zero cache server deployment
+- [ ] PostgreSQL (managed or StatefulSet)
+- [ ] Ingress configuration
+
+### Post-Launch
+- [ ] Health checks and readiness probes
+- [ ] Resource limits and autoscaling
+- [ ] Backup strategy for database
 
 ---
 
 ## Current Focus
 
-**Active:** Milestone 4 - Admin & Monitoring
+**Active:** Milestone 4 - Admin & Monitoring (admin dashboard, tag system)
 
-**Completed:** Milestone 1 (full data flow), Milestone 2 (auto-queue, deduplication, cooldown, retry), Milestone 3 (package browsing, details, upvoting)
+**Completed:**
+- Milestone 1: Core data flow
+- Milestone 2: Auto-queue, deduplication, cooldown, retry
+- Milestone 3: Package browsing, details, upvoting
+- Role system (email verification, roles in JWT/context)
 
-**Next task:** Role system
+**Next:** Finish admin features → JSR support → Observability → Deploy
 
 ---
 
