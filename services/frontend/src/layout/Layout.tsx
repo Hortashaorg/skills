@@ -1,4 +1,5 @@
 import { useConnectionState, useZero } from "@package/database/client";
+import { A } from "@solidjs/router";
 import type { ParentComponent } from "solid-js";
 import { Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
@@ -7,7 +8,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/ui/toast";
-import { logout } from "@/context/app-provider";
+import { getAuthData, logout } from "@/context/app-provider";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 
 export const Layout: ParentComponent = ({ children }) => {
@@ -24,6 +25,7 @@ export const Layout: ParentComponent = ({ children }) => {
 	};
 
 	const isAnonymous = () => zero().userID === "anon";
+	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const displayUserId = () => {
 		const id = zero().userID;
 		if (id === "anon") return null;
@@ -35,10 +37,20 @@ export const Layout: ParentComponent = ({ children }) => {
 			<header class="border-b border-outline dark:border-outline-dark">
 				<Container>
 					<Flex justify="between" align="center" class="h-16">
-						<Text size="lg" weight="semibold" as="span">
-							TechGarden
-						</Text>
+						<A href="/" class="hover:opacity-75 transition">
+							<Text size="lg" weight="semibold" as="span">
+								TechGarden
+							</Text>
+						</A>
 						<Flex gap="md" align="center">
+							<Show when={isAdmin()}>
+								<A
+									href="/admin/requests"
+									class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition"
+								>
+									Admin
+								</A>
+							</Show>
 							<Show when={connectionState().name === "connected"}>
 								<Badge variant="success" size="sm">
 									Connected

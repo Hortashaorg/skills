@@ -29,3 +29,18 @@ export const existingPending = defineQuery(
 export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.packageRequests.where("id", args.id).one();
 });
+
+// Get requests by status (for admin dashboard)
+export const byStatus = defineQuery(
+	z.object({ status: z.enum(enums.packageRequestStatus) }),
+	({ args }) =>
+		zql.packageRequests
+			.where("status", args.status)
+			.orderBy("updatedAt", "desc")
+			.limit(50),
+);
+
+// Get recent requests across all statuses (for admin dashboard)
+export const recent = defineQuery(() =>
+	zql.packageRequests.orderBy("updatedAt", "desc").limit(50),
+);

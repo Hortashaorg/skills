@@ -25,6 +25,8 @@ export const queries = defineQueries({
 		pending: packageRequestsQueries.pending,
 		existingPending: packageRequestsQueries.existingPending,
 		byId: packageRequestsQueries.byId,
+		byStatus: packageRequestsQueries.byStatus,
+		recent: packageRequestsQueries.recent,
 	},
 	packageDependencies: {
 		unlinked: packageDependenciesQueries.unlinked,

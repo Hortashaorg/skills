@@ -6,6 +6,7 @@ import { type AuthData, EmailUnverifiedError } from "./auth/types";
 import { ConnectionStatus } from "./ConnectionStatus";
 
 let _setAuthData: ((data: AuthData | null) => void) | undefined;
+let _getAuthData: (() => AuthData | null) | undefined;
 
 export const logout = async () => {
 	if (!_setAuthData)
@@ -14,10 +15,17 @@ export const logout = async () => {
 	_setAuthData(null);
 };
 
+export const getAuthData = () => {
+	if (!_getAuthData)
+		throw new Error("getAuthData called before AppProvider mounted");
+	return _getAuthData();
+};
+
 export const AppProvider: ParentComponent = (props) => {
 	const [authData, setAuthData] = createSignal<AuthData | null>(null);
 
 	_setAuthData = setAuthData;
+	_getAuthData = authData;
 
 	onMount(async () => {
 		const url = new URL(window.location.href);
