@@ -1,7 +1,4 @@
-import type {
-	PackageRequest,
-	PackageRequestStatus,
-} from "@package/database/client";
+import type { PackageRequestStatus, Row } from "@package/database/client";
 import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
@@ -9,7 +6,8 @@ import { Text } from "@/components/primitives/text";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 
 type Props = {
-	requests: readonly PackageRequest[];
+	requests: readonly Row["packageRequests"][];
+	totalCount: number;
 };
 
 const STATUS_BADGE_VARIANT: Record<
@@ -122,7 +120,7 @@ export const RequestsTable = (props: Props) => {
 				</div>
 				<Flex justify="end" class="mt-2">
 					<Text size="sm" color="muted">
-						Showing {props.requests.length} requests (max 50)
+						Showing {props.requests.length} of {props.totalCount} requests
 					</Text>
 				</Flex>
 			</Show>

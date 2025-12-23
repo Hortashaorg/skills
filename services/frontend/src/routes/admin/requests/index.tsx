@@ -1,10 +1,11 @@
 import {
+	type PackageRequest,
 	type PackageRequestStatus,
 	queries,
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { createSignal, Show } from "solid-js";
+import { createMemo, createSignal, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -13,6 +14,8 @@ import { Tabs } from "@/components/ui/tabs";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { RequestsTable } from "./sections/RequestsTable";
+
+const DISPLAY_LIMIT = 50;
 
 const STATUSES: { value: PackageRequestStatus | "all"; label: string }[] = [
 	{ value: "all", label: "Recent" },
@@ -25,43 +28,50 @@ const STATUSES: { value: PackageRequestStatus | "all"; label: string }[] = [
 
 export const AdminRequests = () => {
 	const zero = useZero();
-	const [activeTab, setActiveTab] = createSignal<string>("all");
+	const [activeTab, setActiveTab] = createSignal<string>("pending");
 
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const [recentRequests] = useQuery(() => queries.packageRequests.recent());
-	const [pendingRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "pending" }),
-	);
-	const [fetchingRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "fetching" }),
-	);
-	const [completedRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "completed" }),
-	);
-	const [failedRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "failed" }),
-	);
-	const [discardedRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "discarded" }),
-	);
+	const [allRequests] = useQuery(() => queries.packageRequests.all());
 
-	const getRequestsForTab = () => {
-		switch (activeTab()) {
-			case "pending":
-				return pendingRequests() ?? [];
-			case "fetching":
-				return fetchingRequests() ?? [];
-			case "completed":
-				return completedRequests() ?? [];
-			case "failed":
-				return failedRequests() ?? [];
-			case "discarded":
-				return discardedRequests() ?? [];
-			default:
-				return recentRequests() ?? [];
+	const counts = createMemo(() => {
+		const requests = allRequests() ?? [];
+		const result: Record<string, number> = { all: requests.length };
+		for (const status of STATUSES) {
+			if (status.value !== "all") {
+				result[status.value] = requests.filter(
+					(r) => r.status === status.value,
+				).length;
+			}
 		}
+		return result;
+	});
+
+	const getRequestsForTab = createMemo(() => {
+		const requests = allRequests() ?? [];
+		const tab = activeTab();
+
+		let filtered: readonly PackageRequest[];
+		if (tab === "all") {
+			filtered = requests;
+		} else {
+			filtered = requests.filter((r) => r.status === tab);
+		}
+
+		const sorted = [...filtered].sort((a, b) => {
+			if (tab === "pending" || tab === "fetching") {
+				return a.createdAt - b.createdAt;
+			}
+			return b.updatedAt - a.updatedAt;
+		});
+
+		return sorted.slice(0, DISPLAY_LIMIT);
+	});
+
+	const getTabLabel = (status: (typeof STATUSES)[number]) => {
+		const count = counts()[status.value] ?? 0;
+		return `${status.label} (${count})`;
 	};
 
 	return (
@@ -80,21 +90,24 @@ export const AdminRequests = () => {
 						<Heading level="h1">Package Requests</Heading>
 
 						<Tabs.Root
-							defaultValue="all"
+							defaultValue="pending"
 							value={activeTab()}
 							onChange={setActiveTab}
 						>
 							<Tabs.List variant="line">
 								{STATUSES.map((status) => (
 									<Tabs.Trigger value={status.value}>
-										{status.label}
+										{getTabLabel(status)}
 									</Tabs.Trigger>
 								))}
 							</Tabs.List>
 
 							{STATUSES.map((status) => (
 								<Tabs.Content value={status.value}>
-									<RequestsTable requests={getRequestsForTab()} />
+									<RequestsTable
+										requests={getRequestsForTab()}
+										totalCount={counts()[status.value] ?? 0}
+									/>
 								</Tabs.Content>
 							))}
 						</Tabs.Root>
