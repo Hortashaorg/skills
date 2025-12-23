@@ -1,5 +1,5 @@
 import { mutators, schema, ZeroProvider } from "@package/database/client";
-import { createSignal, onMount, type ParentComponent } from "solid-js";
+import { createSignal, onMount, type ParentComponent, Show } from "solid-js";
 import { getAndClearReturnUrl } from "@/lib/auth-url";
 import { authApi } from "./auth/auth-api";
 import { type AuthData, EmailUnverifiedError } from "./auth/types";
@@ -23,6 +23,7 @@ export const getAuthData = () => {
 
 export const AppProvider: ParentComponent = (props) => {
 	const [authData, setAuthData] = createSignal<AuthData | null>(null);
+	const [authLoading, setAuthLoading] = createSignal(true);
 
 	_setAuthData = setAuthData;
 	_getAuthData = authData;
@@ -49,6 +50,8 @@ export const AppProvider: ParentComponent = (props) => {
 					return;
 				}
 				console.error("Login with code failed:", error);
+			} finally {
+				setAuthLoading(false);
 			}
 		} else {
 			try {
@@ -62,26 +65,30 @@ export const AppProvider: ParentComponent = (props) => {
 					return;
 				}
 				console.error("Token refresh failed:", error);
+			} finally {
+				setAuthLoading(false);
 			}
 		}
 	});
 
 	return (
-		<ZeroProvider
-			userID={authData()?.userId ?? "anon"}
-			auth={authData()?.accessToken ?? null}
-			context={{
-				userID: authData()?.userId ?? "anon",
-				roles: authData()?.roles ?? [],
-			}}
-			schema={schema}
-			mutators={mutators}
-			cacheURL={import.meta.env.VITE_CACHE_BASE_URL}
-			disconnectTimeoutMs={1000 * 30} // 30 seconds
-		>
-			<ConnectionStatus setAuthData={setAuthData}>
-				{props.children}
-			</ConnectionStatus>
-		</ZeroProvider>
+		<Show when={!authLoading()} fallback={<div class="min-h-screen" />}>
+			<ZeroProvider
+				userID={authData()?.userId ?? "anon"}
+				auth={authData()?.accessToken ?? null}
+				context={{
+					userID: authData()?.userId ?? "anon",
+					roles: authData()?.roles ?? [],
+				}}
+				schema={schema}
+				mutators={mutators}
+				cacheURL={import.meta.env.VITE_CACHE_BASE_URL}
+				disconnectTimeoutMs={1000 * 30} // 30 seconds
+			>
+				<ConnectionStatus setAuthData={setAuthData}>
+					{props.children}
+				</ConnectionStatus>
+			</ZeroProvider>
+		</Show>
 	);
 };

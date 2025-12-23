@@ -4,10 +4,14 @@ import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Text } from "@/components/primitives/text";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type Props = {
 	requests: readonly Row["packageRequests"][];
 	totalCount: number;
+	page: number;
+	pageSize: number;
+	onPageChange: (page: number) => void;
 };
 
 const STATUS_BADGE_VARIANT: Record<
@@ -26,10 +30,15 @@ const formatDate = (timestamp: number) => {
 };
 
 export const RequestsTable = (props: Props) => {
+	const totalPages = () => Math.ceil(props.totalCount / props.pageSize);
+	const startIndex = () => props.page * props.pageSize + 1;
+	const endIndex = () =>
+		Math.min((props.page + 1) * props.pageSize, props.totalCount);
+
 	return (
 		<div class="mt-4">
 			<Show
-				when={props.requests.length > 0}
+				when={props.totalCount > 0}
 				fallback={
 					<Text color="muted" class="py-8 text-center">
 						No requests found.
@@ -118,10 +127,31 @@ export const RequestsTable = (props: Props) => {
 						</tbody>
 					</table>
 				</div>
-				<Flex justify="end" class="mt-2">
+				<Flex justify="between" align="center" class="mt-4">
 					<Text size="sm" color="muted">
-						Showing {props.requests.length} of {props.totalCount} requests
+						Showing {startIndex()}-{endIndex()} of {props.totalCount} requests
 					</Text>
+					<Flex gap="sm" align="center">
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={props.page === 0}
+							onClick={() => props.onPageChange(props.page - 1)}
+						>
+							Previous
+						</Button>
+						<Text size="sm" color="muted">
+							Page {props.page + 1} of {totalPages()}
+						</Text>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={props.page >= totalPages() - 1}
+							onClick={() => props.onPageChange(props.page + 1)}
+						>
+							Next
+						</Button>
+					</Flex>
 				</Flex>
 			</Show>
 		</div>

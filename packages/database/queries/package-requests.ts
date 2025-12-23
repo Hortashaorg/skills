@@ -30,5 +30,15 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.packageRequests.where("id", args.id).one();
 });
 
-// Get all requests for admin dashboard (for counting and filtering client-side)
-export const all = defineQuery(() => zql.packageRequests);
+// Get requests by status for admin dashboard (admin-only access)
+export const byStatus = defineQuery(
+	z.object({
+		status: z.enum(enums.packageRequestStatus),
+	}),
+	({ ctx, args }) => {
+		if (!ctx.roles.includes("admin")) {
+			throw new Error("Unauthorized: admin role required");
+		}
+		return zql.packageRequests.where("status", "=", args.status);
+	},
+);

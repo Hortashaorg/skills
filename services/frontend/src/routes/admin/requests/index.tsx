@@ -1,7 +1,6 @@
 import {
 	type PackageRequestStatus,
 	queries,
-	type Row,
 	useQuery,
 	useZero,
 } from "@package/database/client";
@@ -15,10 +14,9 @@ import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { RequestsTable } from "./sections/RequestsTable";
 
-const DISPLAY_LIMIT = 50;
+const PAGE_SIZE = 25;
 
-const STATUSES: { value: PackageRequestStatus | "all"; label: string }[] = [
-	{ value: "all", label: "Recent" },
+const STATUSES: { value: PackageRequestStatus; label: string }[] = [
 	{ value: "pending", label: "Pending" },
 	{ value: "fetching", label: "Fetching" },
 	{ value: "completed", label: "Completed" },
@@ -28,46 +26,69 @@ const STATUSES: { value: PackageRequestStatus | "all"; label: string }[] = [
 
 export const AdminRequests = () => {
 	const zero = useZero();
-	const [activeTab, setActiveTab] = createSignal<string>("pending");
+	const [activeTab, setActiveTab] =
+		createSignal<PackageRequestStatus>("pending");
+	const [page, setPage] = createSignal(0);
 
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const [allRequests] = useQuery(() => queries.packageRequests.all());
+	const [pendingRequests] = useQuery(() =>
+		queries.packageRequests.byStatus({ status: "pending" }),
+	);
+	const [fetchingRequests] = useQuery(() =>
+		queries.packageRequests.byStatus({ status: "fetching" }),
+	);
+	const [completedRequests] = useQuery(() =>
+		queries.packageRequests.byStatus({ status: "completed" }),
+	);
+	const [failedRequests] = useQuery(() =>
+		queries.packageRequests.byStatus({ status: "failed" }),
+	);
+	const [discardedRequests] = useQuery(() =>
+		queries.packageRequests.byStatus({ status: "discarded" }),
+	);
 
-	const counts = createMemo(() => {
-		const requests = allRequests() ?? [];
-		const result: Record<string, number> = { all: requests.length };
-		for (const status of STATUSES) {
-			if (status.value !== "all") {
-				result[status.value] = requests.filter(
-					(r) => r.status === status.value,
-				).length;
-			}
-		}
-		return result;
+	const requestsByStatus = () => ({
+		pending: pendingRequests() ?? [],
+		fetching: fetchingRequests() ?? [],
+		completed: completedRequests() ?? [],
+		failed: failedRequests() ?? [],
+		discarded: discardedRequests() ?? [],
 	});
 
-	const getRequestsForTab = createMemo(() => {
-		const requests = allRequests() ?? [];
+	const counts = () => {
+		const byStatus = requestsByStatus();
+		return {
+			pending: byStatus.pending.length,
+			fetching: byStatus.fetching.length,
+			completed: byStatus.completed.length,
+			failed: byStatus.failed.length,
+			discarded: byStatus.discarded.length,
+		};
+	};
+
+	const sortedRequestsForTab = createMemo(() => {
 		const tab = activeTab();
+		const requests = requestsByStatus()[tab];
 
-		let filtered: readonly Row["packageRequests"][];
-		if (tab === "all") {
-			filtered = requests;
-		} else {
-			filtered = requests.filter((r) => r.status === tab);
-		}
-
-		const sorted = [...filtered].sort((a, b) => {
+		return [...requests].sort((a, b) => {
 			if (tab === "pending" || tab === "fetching") {
 				return a.createdAt - b.createdAt;
 			}
 			return b.updatedAt - a.updatedAt;
 		});
-
-		return sorted.slice(0, DISPLAY_LIMIT);
 	});
+
+	const paginatedRequests = () => {
+		const start = page() * PAGE_SIZE;
+		return sortedRequestsForTab().slice(start, start + PAGE_SIZE);
+	};
+
+	const handleTabChange = (value: string) => {
+		setActiveTab(value as PackageRequestStatus);
+		setPage(0);
+	};
 
 	const getTabLabel = (status: (typeof STATUSES)[number]) => {
 		const count = counts()[status.value] ?? 0;
@@ -92,7 +113,7 @@ export const AdminRequests = () => {
 						<Tabs.Root
 							defaultValue="pending"
 							value={activeTab()}
-							onChange={setActiveTab}
+							onChange={handleTabChange}
 						>
 							<Tabs.List variant="line">
 								{STATUSES.map((status) => (
@@ -105,8 +126,11 @@ export const AdminRequests = () => {
 							{STATUSES.map((status) => (
 								<Tabs.Content value={status.value}>
 									<RequestsTable
-										requests={getRequestsForTab()}
+										requests={paginatedRequests()}
 										totalCount={counts()[status.value] ?? 0}
+										page={page()}
+										pageSize={PAGE_SIZE}
+										onPageChange={setPage}
 									/>
 								</Tabs.Content>
 							))}
