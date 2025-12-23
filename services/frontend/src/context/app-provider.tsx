@@ -62,7 +62,10 @@ export const AppProvider: ParentComponent = (props) => {
 		<ZeroProvider
 			userID={authData()?.userId ?? "anon"}
 			auth={authData()?.accessToken ?? null}
-			context={{ userID: authData()?.userId ?? "anon" }}
+			context={{
+				userID: authData()?.userId ?? "anon",
+				roles: authData()?.roles ?? [],
+			}}
 			schema={schema}
 			mutators={mutators}
 			cacheURL={import.meta.env.VITE_CACHE_BASE_URL}

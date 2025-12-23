@@ -29,6 +29,7 @@ export const authApi = {
 			return {
 				accessToken: result.access_token,
 				userId: result.sub,
+				roles: result.roles ?? [],
 			};
 		} catch (error) {
 			if (error instanceof EmailUnverifiedError) {
@@ -63,6 +64,7 @@ export const authApi = {
 		return {
 			accessToken: data.access_token,
 			userId: data.sub,
+			roles: data.roles ?? [],
 		};
 	},
 

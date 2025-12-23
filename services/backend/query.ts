@@ -1,4 +1,3 @@
-import { throwError } from "@package/common";
 import {
 	handleQueryRequest,
 	mustGetQuery,
@@ -7,12 +6,11 @@ import {
 } from "@package/database/server";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { getUserID } from "./util.ts";
+import { getAuthContext } from "./util.ts";
 
 export async function handleQuery(c: Context) {
 	try {
-		const userID = (await getUserID(c)) ?? throwError("There is always userID");
-		const ctx = { userID };
+		const ctx = await getAuthContext(c);
 		return c.json(
 			await handleQueryRequest(
 				(name, args) => {

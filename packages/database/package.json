@@ -16,7 +16,8 @@
 	},
 	"exports": {
 		"./client": "./client.ts",
-		"./server": "./server.ts"
+		"./server": "./server.ts",
+		"./types": "./types/context.ts"
 	},
 	"dependencies": {
 		"@rocicorp/zero": "^0.25.5",

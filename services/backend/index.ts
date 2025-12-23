@@ -36,13 +36,30 @@ const clearRefreshToken = (c: Context) => {
 	});
 };
 
-const userToken = async (sub: string, email: string) => {
+type ZitadelRoles = Record<string, Record<string, string>>;
+
+const parseRoles = (payload: Record<string, unknown>): string[] => {
+	const rolesObj = payload["urn:zitadel:iam:org:project:roles"] as
+		| ZitadelRoles
+		| undefined;
+	if (!rolesObj) return [];
+	return Object.keys(rolesObj);
+};
+
+type TokenClaims = {
+	sub: string;
+	email: string;
+	roles: string[];
+};
+
+const userToken = async (claims: TokenClaims) => {
 	const now = Math.floor(Date.now() / 1000);
 
 	const token = await sign(
 		{
-			sub,
-			email,
+			sub: claims.sub,
+			email: claims.email,
+			roles: claims.roles,
 			iat: now,
 			exp: now + 10 * 60,
 		},
@@ -96,14 +113,16 @@ app.post("/login", async (c) => {
 			return c.json({ error: "email_unverified" }, 403);
 		}
 
+		const roles = parseRoles(payload as Record<string, unknown>);
 		const user = await ensureUser(email);
-		const token = await userToken(user.id, email);
+		const token = await userToken({ sub: user.id, email, roles });
 
 		setRefreshToken(c, result.refresh_token);
 
 		return c.json({
 			access_token: token,
 			sub: user.id,
+			roles,
 		});
 	}
 
@@ -154,14 +173,16 @@ app.post("/refresh", async (c) => {
 			return c.json({ error: "email_unverified" }, 403);
 		}
 
+		const roles = parseRoles(payload as Record<string, unknown>);
 		const user = await ensureUser(email);
-		const token = await userToken(user.id, email);
+		const token = await userToken({ sub: user.id, email, roles });
 
 		setRefreshToken(c, result.refresh_token);
 
 		return c.json({
 			access_token: token,
 			sub: user.id,
+			roles,
 		});
 	}
 
