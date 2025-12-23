@@ -1,4 +1,4 @@
-import type { AuthData } from "./types";
+import { type AuthData, EmailUnverifiedError } from "./types";
 
 const getBaseUrl = () => {
 	const url = import.meta.env.VITE_BACKEND_BASE_URL;
@@ -15,7 +15,13 @@ export const authApi = {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			if (!res.ok) return null;
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}));
+				if (data.error === "email_unverified") {
+					throw new EmailUnverifiedError();
+				}
+				return null;
+			}
 
 			const result = await res.json();
 			if (!result.access_token || !result.sub) return null;
@@ -25,6 +31,9 @@ export const authApi = {
 				userId: result.sub,
 			};
 		} catch (error) {
+			if (error instanceof EmailUnverifiedError) {
+				throw error;
+			}
 			console.error("Token refresh failed:", error);
 			return null;
 		}
@@ -38,11 +47,15 @@ export const authApi = {
 			body: JSON.stringify({ code }),
 		});
 
+		const data = await res.json();
+
 		if (!res.ok) {
+			if (data.error === "email_unverified") {
+				throw new EmailUnverifiedError();
+			}
 			throw new Error(`Login failed: ${res.status} ${res.statusText}`);
 		}
 
-		const data = await res.json();
 		if (!data.access_token || !data.sub) {
 			throw new Error("Login response missing required fields");
 		}

@@ -2,7 +2,7 @@ import { mutators, schema, ZeroProvider } from "@package/database/client";
 import { createSignal, onMount, type ParentComponent } from "solid-js";
 import { getAndClearReturnUrl } from "@/lib/auth-url";
 import { authApi } from "./auth/auth-api";
-import type { AuthData } from "./auth/types";
+import { type AuthData, EmailUnverifiedError } from "./auth/types";
 import { ConnectionStatus } from "./ConnectionStatus";
 
 let _setAuthData: ((data: AuthData | null) => void) | undefined;
@@ -28,7 +28,6 @@ export const AppProvider: ParentComponent = (props) => {
 				const data = await authApi.login(code);
 				setAuthData(data);
 
-				// Redirect to saved return URL or stay on current page
 				const returnUrl = getAndClearReturnUrl();
 				if (returnUrl) {
 					window.history.replaceState({}, "", returnUrl);
@@ -37,12 +36,24 @@ export const AppProvider: ParentComponent = (props) => {
 					window.history.replaceState({}, "", window.location.pathname);
 				}
 			} catch (error) {
+				if (error instanceof EmailUnverifiedError) {
+					window.location.href = "/verify-email";
+					return;
+				}
 				console.error("Login with code failed:", error);
 			}
 		} else {
-			const data = await authApi.refresh();
-			if (data) {
-				setAuthData(data);
+			try {
+				const data = await authApi.refresh();
+				if (data) {
+					setAuthData(data);
+				}
+			} catch (error) {
+				if (error instanceof EmailUnverifiedError) {
+					window.location.href = "/verify-email";
+					return;
+				}
+				console.error("Token refresh failed:", error);
 			}
 		}
 	});

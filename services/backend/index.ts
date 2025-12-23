@@ -90,6 +90,12 @@ app.post("/login", async (c) => {
 		const { payload } = decode(result.id_token);
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
+		const emailVerified = payload.email_verified as boolean;
+
+		if (!emailVerified) {
+			return c.json({ error: "email_unverified" }, 403);
+		}
+
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, email);
 
@@ -141,6 +147,13 @@ app.post("/refresh", async (c) => {
 		const { payload } = decode(result.id_token);
 
 		const email = (payload.email as string) ?? throwError("No email in claim");
+		const emailVerified = payload.email_verified as boolean;
+
+		if (!emailVerified) {
+			clearRefreshToken(c);
+			return c.json({ error: "email_unverified" }, 403);
+		}
+
 		const user = await ensureUser(email);
 		const token = await userToken(user.id, email);
 

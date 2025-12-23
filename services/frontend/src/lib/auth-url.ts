@@ -47,3 +47,15 @@ export function getAndClearReturnUrl(): string | null {
 	sessionStorage.removeItem(RETURN_URL_KEY);
 	return returnUrl;
 }
+
+/**
+ * Gets the Zitadel account management URL where users can manage their profile,
+ * resend verification emails, etc.
+ */
+export function getZitadelAccountUrl(): string {
+	const issuer = import.meta.env.VITE_ZITADEL_ISSUER;
+	if (!issuer) {
+		throw new Error("VITE_ZITADEL_ISSUER is not configured");
+	}
+	return `${issuer}/ui/console/users/me`;
+}

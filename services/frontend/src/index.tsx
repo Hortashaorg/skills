@@ -5,6 +5,7 @@ import "./index.css";
 import { AppProvider } from "./context/app-provider";
 import { Home } from "./routes/home";
 import { Package } from "./routes/package";
+import { VerifyEmail } from "./routes/verify-email";
 
 const root = document.getElementById("root");
 
@@ -16,6 +17,7 @@ render(
 			<Router>
 				<Route path="/" component={Home} />
 				<Route path="/package/:registry/:name" component={Package} />
+				<Route path="/verify-email" component={VerifyEmail} />
 			</Router>
 		</AppProvider>
 	),
