@@ -138,8 +138,10 @@ if (!ctx.roles.includes("admin")) {
 - [x] Failed requests auto-retry via worker (no manual button needed)
 
 ### Tag System
-- [ ] `/admin/tags` - tag management (CRUD)
-- [ ] Assign tags to packages
+- [x] `/admin/tags` - tag management (CRUD)
+- [x] Assign tags to packages (admin-only controls on package detail page)
+- [x] Tags visible to all users on package detail page
+- [x] Admin dropdown menu in navbar (Package Requests, Tags)
 - [ ] `/tags` and `/tags/:slug` routes for browsing by tag
 
 ### Polish
@@ -221,15 +223,15 @@ if (!ctx.roles.includes("admin")) {
 
 ## Current Focus
 
-**Active:** Milestone 4 - Tag System
+**Active:** Milestone 4 - Polish & Tag Browsing
 
 **Completed:**
 - Milestone 1: Core data flow
 - Milestone 2: Auto-queue, deduplication, cooldown, retry
 - Milestone 3: Package browsing, details, upvoting
-- Milestone 4: Role system, admin requests dashboard
+- Milestone 4: Role system, admin requests dashboard, tag management
 
-**Next:** Tag system → Polish → JSR support (npm + JSR only) → Observability → Deploy
+**Next:** Tag browsing pages → Polish → JSR support (npm + JSR only) → Observability → Deploy
 
 ---
 
