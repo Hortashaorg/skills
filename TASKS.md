@@ -250,3 +250,220 @@ if (!ctx.roles.includes("admin")) {
 - Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob, processes 10 requests per run
 - Anonymous users can browse and see upvote counts (button renders as static, non-clickable); logged-in users can request packages and upvote
 - npm schema handles edge cases: unpublished packages, malformed deps (string instead of object), unknown field types
+
+---
+
+## Polish & Refactor Backlog (Dec 2024)
+
+Comprehensive list of improvements for maintainability, UX, DX, and scalability.
+
+---
+
+### Navigation & Layout Architecture
+
+**Problem**: Navbar is flat with no sense of hierarchy or "where am I" indication.
+
+#### Active State Highlighting
+- [ ] Highlight current section in navbar (Home, Admin, etc.)
+- [ ] Use `useLocation()` to determine active route
+- [ ] Style: border-bottom, background, or text color change
+
+#### Breadcrumbs
+- [ ] Create `Breadcrumb` component for deep pages
+- [ ] Package detail: `Home > npm > lodash > v4.17.21`
+- [ ] Admin: `Home > Admin > Tags > Edit "frontend"`
+- [ ] Auto-generate from route params where possible
+
+#### Layout Variants
+- [ ] `DefaultLayout` - navbar + content (current)
+- [ ] `AdminLayout` - navbar + sidebar + content
+- [ ] `PackageLayout` - navbar + sticky package header + tabbed content
+- [ ] Consider shared layout components vs route-specific
+
+---
+
+### Package Feature Component
+
+**Problem**: Packages displayed inconsistently across the app with duplicated logic.
+
+| Context | Current File | Display Style |
+|---------|--------------|---------------|
+| Search results | `ResultsGrid.tsx` | Card with upvote |
+| Recent packages | `RecentPackages.tsx` | Same card (duplicated!) |
+| Package detail | `Header.tsx` | Full header |
+| Dependencies | `DependencyItem.tsx` | Compact link |
+| Tag browse (future) | - | Probably card |
+
+#### Unified PackageDisplay Component
+- [ ] Create `components/feature/package-display/`
+- [ ] Variants: `card`, `header`, `compact`, `list-item`
+- [ ] Props: `package`, `variant`, `showUpvote`, `showRegistry`, `showDescription`
+- [ ] Consolidate all package rendering through this component
+- [ ] Single place to update when package schema changes
+
+---
+
+### Zero Performance & Loading States
+
+**Problem**: Basic loading with no preloading or smart caching.
+
+#### Preloading
+- [ ] Investigate Zero's preload capabilities
+- [ ] Preload package data on link hover/focus
+- [ ] Cache warming on app init for common queries
+
+#### Loading States
+- [ ] Replace spinners with skeleton loaders
+- [ ] Staggered loading: show available data first, load details progressively
+- [ ] Critical path: package name, version list (immediate)
+- [ ] Secondary: dependencies, tags (can defer)
+
+#### Query Optimization
+- [ ] Audit which queries fetch too much data
+- [ ] Consider query prioritization patterns
+- [ ] Investigate Zero suspense support for declarative loading
+
+---
+
+### AI Code Confidence & Security
+
+**Problem**: AI generates GUI code - how do we ensure state management and security are correct?
+
+#### Route-Level Auth Guards
+- [ ] Move auth checks from component-level to route-level
+- [ ] Create route middleware: `{ path: "/admin/*", guard: requireAdmin }`
+- [ ] Prevents AI from forgetting auth checks on new pages
+
+#### Security Integration Tests
+- [ ] Test anon users can't access protected mutations
+- [ ] Test non-admins can't access admin mutations
+- [ ] Test URL params are validated before use
+- [ ] Example: `expect(mutators.tags.create({...}, anonContext)).toThrow()`
+
+#### CLAUDE.md Security Checklist
+Add to documentation:
+```
+## Security Checklist for AI-Generated Code
+- [ ] Mutators check `ctx.userID !== "anon"` for user actions
+- [ ] Admin mutators check `ctx.roles.includes("admin")`
+- [ ] Admin pages wrapped in `<AuthGuard requireAdmin>`
+- [ ] No sensitive data in client-side logs
+- [ ] URL params validated before use in queries
+```
+
+#### State Management Lint Rules
+- [ ] Consider lint rules or review checklist:
+  - "Does this signal need to be a signal, or can it be derived?"
+  - "Is this memo necessary, or is it a simple derivation?"
+  - "Are there unnecessary re-renders from signal updates?"
+
+---
+
+### Code Duplication (~400 LOC to eliminate)
+
+#### Component Extraction
+
+| Extract To | From Files | Saves |
+|------------|------------|-------|
+| `PackageCard` | `ResultsGrid.tsx`, `RecentPackages.tsx` | ~95 LOC |
+| `AuthGuard` | `admin/requests/index.tsx`, `admin/tags/index.tsx` | ~30 LOC |
+| `Table` components | `RequestsTable.tsx`, `TagsList.tsx` | ~40 LOC |
+
+#### Hook Extraction
+
+| Hook | Duplicated In | Saves |
+|------|---------------|-------|
+| `usePackageUpvote()` | `Header.tsx`, `ResultsGrid.tsx`, `RecentPackages.tsx` | ~90 LOC |
+| `useRequestUpdate()` | `Header.tsx`, `RequestForm.tsx`, `VersionSelector.tsx` | ~100 LOC |
+| `useVersionSelection()` | `package/index.tsx` (consolidate 4 signals) | Complexity |
+
+#### Utility Extraction
+
+| Utility | Usage Count | Location |
+|---------|-------------|----------|
+| `buildPackageUrl(registry, name)` | 8+ times | `lib/url.ts` |
+| `buildPackageKey(name, registry)` | 3+ times | `lib/url.ts` |
+| `formatDate(timestamp)` | 3+ times | `@package/common` |
+
+---
+
+### Database Cleanup
+
+#### Unused Queries
+Remove or document why kept (for future `/tags/:slug` page, etc.):
+- `packages.byId`, `packages.byName`, `packages.byIdWithVersions`
+- `packageTags.byPackageId`, `packageTags.byTagId`
+- `packageUpvotes.byPackage`, `packageUpvotes.byUser`
+- `tags.byId`, `tags.bySlug`, `tags.withPackages`
+- `packageRequests.existingPending`, `packageRequests.byId`
+- `packageDependencies.unlinked`, `packageDependencies.byPackageId`
+- `account.allAccounts`
+
+#### Broken Queries
+- [ ] `packages.search` - accepts `query` arg but ignores it, returns all packages
+- [ ] Fix implementation or remove and document client-side filtering
+
+---
+
+### Component API Consistency
+
+| Component | Issue | Fix |
+|-----------|-------|-----|
+| Text | Uses `color` not `variant` | Rename to `variant` |
+| Card | Uses `padding` not `size` | Rename to `size` |
+| Select | No variant prop | Add variant support |
+| Heading | Mixes `level` + `color` | Separate semantic from visual |
+
+---
+
+### State Simplification
+
+#### Over-memoization
+These don't need `createMemo` - use plain functions:
+- `home/index.tsx`: `recentPackages`, `showNotFound`, `effectiveRequestRegistry`
+- `package/sections/Dependencies.tsx`: `hasDependencies`
+
+#### Signal Consolidation
+- `package/index.tsx`: 4 version-related signals → single `versionState` object or hook
+
+---
+
+### Missing UI Components
+
+| Component | Use Case | Priority |
+|-----------|----------|----------|
+| `IconButton` | Small clickable icons (PackageTags ×) | Low |
+| `EmptyState` | "No results found" patterns | Medium |
+| `Skeleton` | Loading placeholders | Medium |
+| `Table`, `TableHeader`, `TableRow` | Admin tables | Low |
+
+---
+
+### Large Components to Split
+
+| File | Lines | Suggestion |
+|------|-------|------------|
+| `package/index.tsx` | 280 | Extract `lib/version-resolution.ts` |
+| `VersionSelector.tsx` | 265 | Split: `VersionButtonGroup` + `VersionSearch` |
+| `RequestsTable.tsx` | 160 | Extract `TableHeader`, `TableRow` |
+
+---
+
+### Inline Styling to Extract
+
+| Pattern | Files | Solution |
+|---------|-------|----------|
+| Select element styling | `SearchBar.tsx`, `RequestForm.tsx` | CVA variant or styled component |
+| Version button styling | `VersionSelector.tsx` (2x) | `VersionButton` component |
+| Table header styling | `RequestsTable.tsx`, `TagsList.tsx` | `TableHeader` component |
+
+---
+
+### What's Working Well (Keep!)
+- Zero query patterns - sections query independently
+- CVA usage - consistent across UI components
+- Storybook coverage - all components have comprehensive stories
+- Accessibility - Kobalte primitives used correctly, proper ARIA
+- Mutator patterns - consistent Zod validation and auth checks
+- Type exports - clean, well-organized, easy to import
+- Component composition - primitives → ui → composite hierarchy
