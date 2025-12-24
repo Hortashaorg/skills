@@ -425,11 +425,6 @@ const tagsTable = {
       optional: true,
       customType: null as unknown as string,
     },
-    color: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
     createdAt: {
       type: "number",
       optional: false,

@@ -4,6 +4,7 @@ import { render } from "solid-js/web";
 import "./index.css";
 import { AppProvider } from "./context/app-provider";
 import { AdminRequests } from "./routes/admin/requests";
+import { AdminTags } from "./routes/admin/tags";
 import { Home } from "./routes/home";
 import { Package } from "./routes/package";
 import { VerifyEmail } from "./routes/verify-email";
@@ -20,6 +21,7 @@ render(
 				<Route path="/package/:registry/:name" component={Package} />
 				<Route path="/verify-email" component={VerifyEmail} />
 				<Route path="/admin/requests" component={AdminRequests} />
+				<Route path="/admin/tags" component={AdminTags} />
 			</Router>
 		</AppProvider>
 	),

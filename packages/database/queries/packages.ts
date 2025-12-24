@@ -51,3 +51,10 @@ export const byIdWithVersions = defineQuery(
 			.related("versions", (q) => q.orderBy("publishedAt", "desc"));
 	},
 );
+
+export const byIdWithTags = defineQuery(
+	z.object({ id: z.string() }),
+	({ args }) => {
+		return zql.packages.where("id", args.id).related("packageTags").one();
+	},
+);

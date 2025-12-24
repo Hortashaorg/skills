@@ -166,7 +166,6 @@ export const tags = pgTable("tags", {
 	name: text().notNull().unique(),
 	slug: text().notNull().unique(),
 	description: text(),
-	color: text(),
 	createdAt: timestamp().notNull(),
 	updatedAt: timestamp().notNull(),
 });

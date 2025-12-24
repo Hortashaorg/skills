@@ -5,6 +5,7 @@ import { zql } from "../zero-schema.gen.ts";
 export const byPackageId = defineQuery(
 	z.object({ packageId: z.string() }),
 	({ args }) => {
+		// Try without .related() to debug sync issue
 		return zql.packageTags.where("packageId", args.packageId);
 	},
 );

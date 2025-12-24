@@ -9,6 +9,7 @@ import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
 import { Dependencies } from "./sections/Dependencies";
 import { Header } from "./sections/Header";
+import { PackageTags } from "./sections/PackageTags";
 import { VersionSelector } from "./sections/VersionSelector";
 
 type PackageVersion = Row["packageVersions"];
@@ -243,6 +244,9 @@ export const Package = () => {
 							<>
 								{/* Package header */}
 								<Header pkg={p()} />
+
+								{/* Tags */}
+								<PackageTags packageId={p().id} />
 
 								{/* Version selector */}
 								<VersionSelector

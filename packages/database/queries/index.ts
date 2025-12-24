@@ -19,6 +19,7 @@ export const queries = defineQueries({
 		byName: packagesQueries.byName,
 		byNameWithVersions: packagesQueries.byNameWithVersions,
 		byIdWithVersions: packagesQueries.byIdWithVersions,
+		byIdWithTags: packagesQueries.byIdWithTags,
 		search: packagesQueries.search,
 	},
 	packageRequests: {
@@ -37,6 +38,7 @@ export const queries = defineQueries({
 		byId: tagsQueries.byId,
 		bySlug: tagsQueries.bySlug,
 		withPackages: tagsQueries.withPackages,
+		all: tagsQueries.all,
 	},
 	packageTags: {
 		byPackageId: packageTagsQueries.byPackageId,

@@ -1,0 +1,159 @@
+import {
+	mutators,
+	queries,
+	type Row,
+	useQuery,
+	useZero,
+} from "@package/database/client";
+import { createSignal, Show } from "solid-js";
+import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
+import { Heading } from "@/components/primitives/heading";
+import { Stack } from "@/components/primitives/stack";
+import { Text } from "@/components/primitives/text";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { getAuthData } from "@/context/app-provider";
+import { Layout } from "@/layout/Layout";
+import { TagForm } from "./sections/TagForm";
+import { TagsList } from "./sections/TagsList";
+
+type TagWithPackages = Row["tags"] & {
+	packageTags: readonly Row["packageTags"][];
+};
+
+export const AdminTags = () => {
+	const zero = useZero();
+
+	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
+	const isLoggedIn = () => zero().userID !== "anon";
+
+	const [allTags] = useQuery(() => queries.tags.all());
+
+	const [showForm, setShowForm] = createSignal(false);
+	const [editingTag, setEditingTag] = createSignal<TagWithPackages | null>(
+		null,
+	);
+
+	const sortedTags = () => {
+		const tags = allTags() ?? [];
+		return [...tags].sort((a, b) => a.name.localeCompare(b.name));
+	};
+
+	const handleCreate = () => {
+		setEditingTag(null);
+		setShowForm(true);
+	};
+
+	const handleEdit = (tag: TagWithPackages) => {
+		setEditingTag(tag);
+		setShowForm(true);
+	};
+
+	const handleDelete = async (tag: TagWithPackages) => {
+		if (
+			!confirm(
+				`Delete tag "${tag.name}"? This will remove it from all packages.`,
+			)
+		) {
+			return;
+		}
+
+		try {
+			const result = await zero().mutate(mutators.tags.remove({ id: tag.id }))
+				.client;
+			if (result.type === "error") {
+				throw result.error;
+			}
+		} catch (err) {
+			console.error("Failed to delete tag:", err);
+			alert("Failed to delete tag. Please try again.");
+		}
+	};
+
+	const handleSave = async (data: { name: string; description?: string }) => {
+		try {
+			const editing = editingTag();
+			if (editing) {
+				const result = await zero().mutate(
+					mutators.tags.update({
+						id: editing.id,
+						name: data.name,
+						description: data.description,
+					}),
+				).client;
+				if (result.type === "error") {
+					throw result.error;
+				}
+			} else {
+				const result = await zero().mutate(
+					mutators.tags.create({
+						name: data.name,
+						description: data.description,
+					}),
+				).client;
+				if (result.type === "error") {
+					throw result.error;
+				}
+			}
+			setShowForm(false);
+			setEditingTag(null);
+		} catch (err) {
+			console.error("Failed to save tag:", err);
+			alert("Failed to save tag. Please try again.");
+		}
+	};
+
+	const handleCancel = () => {
+		setShowForm(false);
+		setEditingTag(null);
+	};
+
+	return (
+		<Layout>
+			<Container size="lg">
+				<Stack spacing="lg" class="py-8">
+					<Show when={!isLoggedIn()}>
+						<Text>Please sign in to access this page.</Text>
+					</Show>
+
+					<Show when={isLoggedIn() && !isAdmin()}>
+						<Text>Unauthorized - admin role required.</Text>
+					</Show>
+
+					<Show when={isLoggedIn() && isAdmin()}>
+						<Flex justify="between" align="center">
+							<Heading level="h1">Tags</Heading>
+							<Show when={!showForm()}>
+								<Button variant="primary" onClick={handleCreate}>
+									Create Tag
+								</Button>
+							</Show>
+						</Flex>
+
+						<Show when={showForm()}>
+							<Card padding="lg">
+								<TagForm
+									editingTag={editingTag()}
+									onSave={handleSave}
+									onCancel={handleCancel}
+								/>
+							</Card>
+						</Show>
+
+						<TagsList
+							tags={sortedTags()}
+							onEdit={handleEdit}
+							onDelete={handleDelete}
+						/>
+
+						<Text size="sm" color="muted">
+							{sortedTags().length} tag{sortedTags().length !== 1 ? "s" : ""}{" "}
+							total
+						</Text>
+					</Show>
+				</Stack>
+			</Container>
+		</Layout>
+	);
+};

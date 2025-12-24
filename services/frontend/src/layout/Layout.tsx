@@ -44,12 +44,44 @@ export const Layout: ParentComponent = ({ children }) => {
 						</A>
 						<Flex gap="md" align="center">
 							<Show when={isAdmin()}>
-								<A
-									href="/admin/requests"
-									class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition"
-								>
-									Admin
-								</A>
+								<div class="relative group">
+									<button
+										type="button"
+										class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition flex items-center gap-1"
+									>
+										Admin
+										<svg
+											class="w-4 h-4"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<title>Expand</title>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg>
+									</button>
+									<div class="absolute right-0 top-full pt-1 hidden group-hover:block z-50">
+										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg min-w-40">
+											<A
+												href="/admin/requests"
+												class="block px-4 py-2 text-sm text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+											>
+												Package Requests
+											</A>
+											<A
+												href="/admin/tags"
+												class="block px-4 py-2 text-sm text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+											>
+												Tags
+											</A>
+										</div>
+									</div>
+								</div>
 							</Show>
 							<Show when={connectionState().name === "connected"}>
 								<Badge variant="success" size="sm">

@@ -20,3 +20,11 @@ export const bySlug = defineQuery(
 export const withPackages = defineQuery(() => {
 	return zql.tags;
 });
+
+// Admin-only query with package counts
+export const all = defineQuery(({ ctx }) => {
+	if (!ctx.roles.includes("admin")) {
+		throw new Error("Unauthorized: admin role required");
+	}
+	return zql.tags.related("packageTags");
+});
