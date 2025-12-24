@@ -126,27 +126,23 @@ if (!ctx.roles.includes("admin")) {
 - [x] Frontend: Update `AuthData` type to include `roles`
 - [x] Zero: Update context type to `{ userID, roles }`
 - [x] Backend: `getAuthContext()` returns full context for queries/mutators
-- [ ] Mutators: Gate admin actions on `ctx.roles.includes("admin")`
-- [ ] Frontend: Show/hide admin nav based on roles
-- [ ] Frontend: Protect `/admin/*` routes
+- [x] Queries: Gate admin queries on `ctx.roles.includes("admin")`
+- [x] Frontend: Show/hide admin nav based on roles
+- [x] Frontend: Protect `/admin/*` routes (component-level auth check)
 
 ### Admin Requests Dashboard
-- [ ] `/admin/requests` route - view all requests (pending, fetching, failed, completed)
-- [ ] Real-time status updates
-- [ ] Retry failed requests
-- [ ] Cancel pending requests
+- [x] `/admin/requests` route - view all requests by status (pending, fetching, completed, failed, discarded)
+- [x] Real-time status updates (via Zero sync)
+- [x] Pagination with 25 items per page
+- [x] Tab counts showing total per status
+- [x] Failed requests auto-retry via worker (no manual button needed)
 
-### Package Request Metadata
-- [ ] Show last fetch timestamp on package detail page
-- [ ] Show fetch status (success/failed with error message)
-- [ ] "Request update" shows pending status if already queued
-
-### Tag System (Future)
+### Tag System
 - [ ] `/admin/tags` - tag management (CRUD)
 - [ ] Assign tags to packages
 - [ ] `/tags` and `/tags/:slug` routes for browsing by tag
 
-### Polish (Future)
+### Polish
 - [ ] Error states and edge cases
 - [ ] Loading skeletons
 - [ ] Mobile responsiveness
@@ -155,7 +151,7 @@ if (!ctx.roles.includes("admin")) {
 
 ## Milestone 5: JSR Registry Support
 
-**Goal:** Support JSR as second registry for MVP (npm + JSR)
+**Goal:** Support JSR as second registry (npm + JSR only for MVP)
 
 ### JSR Adapter
 - [ ] JSR adapter using `npm.jsr.io` (npm-compatible endpoint)
@@ -176,10 +172,10 @@ if (!ctx.roles.includes("admin")) {
 - [ ] Normalize name: `@jsr/std__path` → `@std/path`
 - [ ] Store with `registry: "jsr"` for proper linking
 
-### Future Registries (Post-MVP)
-- PyPI (Python)
-- crates.io (Rust)
-- Homebrew (macOS)
+### Registry Scope for MVP
+- npm + JSR only
+- Remove brew/apt from UI registry filter
+- Future registries (PyPI, crates.io, Homebrew) post-MVP
 
 ---
 
@@ -225,15 +221,15 @@ if (!ctx.roles.includes("admin")) {
 
 ## Current Focus
 
-**Active:** Milestone 4 - Admin & Monitoring (admin dashboard, tag system)
+**Active:** Milestone 4 - Tag System
 
 **Completed:**
 - Milestone 1: Core data flow
 - Milestone 2: Auto-queue, deduplication, cooldown, retry
 - Milestone 3: Package browsing, details, upvoting
-- Role system (email verification, roles in JWT/context)
+- Milestone 4: Role system, admin requests dashboard
 
-**Next:** Finish admin features → JSR support → Observability → Deploy
+**Next:** Tag system → Polish → JSR support (npm + JSR only) → Observability → Deploy
 
 ---
 
