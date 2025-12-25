@@ -253,220 +253,100 @@ if (!ctx.roles.includes("admin")) {
 
 ---
 
-## Polish & Refactor Backlog (Dec 2024)
+## MVP Completion Checklist (Dec 2025)
 
-Comprehensive list of improvements for maintainability, UX, DX, and scalability.
-
----
-
-### Navigation & Layout Architecture
-
-**Problem**: Navbar is flat with no sense of hierarchy or "where am I" indication.
-
-#### Active State Highlighting
-- [x] Highlight current section in navbar (Home, Admin, etc.)
-- [x] Use `useLocation()` to determine active route
-- [x] Style: border-bottom, background, or text color change
-
-#### Breadcrumbs
-- [x] Create `Breadcrumb` component for deep pages
-- [x] Package detail: `Home > npm > lodash`
-- [x] Admin: `Home > Admin > Tags`
-- [x] Auto-generate from route params (centralized in `lib/breadcrumbs.ts`)
-- [x] Resolver mechanism for dynamic labels (UUID → name via Zero queries)
-
-#### Layout Variants
-- [ ] `DefaultLayout` - navbar + content (current)
-- [ ] `AdminLayout` - navbar + sidebar + content
-- [ ] `PackageLayout` - navbar + sticky package header + tabbed content
-- [ ] Consider shared layout components vs route-specific
+Prioritized tasks to ship a "good enough" MVP. Work top-to-bottom.
 
 ---
 
-### Package Feature Component
+### Phase 1: Complete Core Features
 
-**Problem**: Packages displayed inconsistently across the app with duplicated logic.
+Must-have functionality before deployment.
 
-| Context | Current File | Display Style |
-|---------|--------------|---------------|
-| Search results | `ResultsGrid.tsx` | Card with upvote |
-| Recent packages | `RecentPackages.tsx` | Same card (duplicated!) |
-| Package detail | `Header.tsx` | Full header |
-| Dependencies | `DependencyItem.tsx` | Compact link |
-| Tag browse (future) | - | Probably card |
-
-#### PackageCard Component
-- [x] Create `components/feature/package-card/` (pure UI, no business logic)
-- [x] Props: `name`, `registry`, `description`, `href`, `upvoteCount`, `isUpvoted`, `upvoteDisabled`, `onUpvote`
-- [x] Used by `ResultsGrid` and `RecentPackages`
-- [x] Storybook stories with Light/Dark variants
-- [ ] Consider additional variants: `header`, `compact`, `list-item` (future)
+- [ ] **Tag browsing pages** - `/tags` (grid of tags) and `/tags/:slug` (packages with tag)
+- [ ] **404 page** - Handle unknown routes gracefully
+- [ ] **Error boundary** - Catch React errors, show friendly message
 
 ---
 
-### Zero Performance & Loading States
+### Phase 2: UX Polish
 
-**Problem**: Basic loading with no preloading or smart caching.
+Make it feel finished.
 
-#### Preloading
-- [ ] Investigate Zero's preload capabilities
-- [ ] Preload package data on link hover/focus
-- [ ] Cache warming on app init for common queries
-
-#### Loading States
-- [ ] Replace spinners with skeleton loaders
-- [ ] Staggered loading: show available data first, load details progressively
-- [ ] Critical path: package name, version list (immediate)
-- [ ] Secondary: dependencies, tags (can defer)
-
-#### Query Optimization
-- [ ] Audit which queries fetch too much data
-- [ ] Consider query prioritization patterns
-- [ ] Investigate Zero suspense support for declarative loading
+- [ ] **Empty states** - Create `EmptyState` component for "no results" patterns
+- [ ] **Loading skeletons** - Replace "Loading..." text with skeleton placeholders
+- [ ] **Mobile responsiveness** - Test and fix layout on small screens
+- [ ] **Connection status** - Hide "Connected" badge (only show errors/offline)
 
 ---
 
-### AI Code Confidence & Security
+### Phase 3: Production Readiness
 
-**Problem**: AI generates GUI code - how do we ensure state management and security are correct?
+Before going live.
 
-#### Route-Level Auth Guards
-- [ ] Move auth checks from component-level to route-level
-- [ ] Create route middleware: `{ path: "/admin/*", guard: requireAdmin }`
-- [ ] Prevents AI from forgetting auth checks on new pages
-
-#### Security Integration Tests
-- [ ] Test anon users can't access protected mutations
-- [ ] Test non-admins can't access admin mutations
-- [ ] Test URL params are validated before use
-- [ ] Example: `expect(mutators.tags.create({...}, anonContext)).toThrow()`
-
-#### CLAUDE.md Security Checklist
-Add to documentation:
-```
-## Security Checklist for AI-Generated Code
-- [ ] Mutators check `ctx.userID !== "anon"` for user actions
-- [ ] Admin mutators check `ctx.roles.includes("admin")`
-- [ ] Admin pages wrapped in `<AuthGuard requireAdmin>`
-- [ ] No sensitive data in client-side logs
-- [ ] URL params validated before use in queries
-```
-
-#### State Management Lint Rules
-- [ ] Consider lint rules or review checklist:
-  - "Does this signal need to be a signal, or can it be derived?"
-  - "Is this memo necessary, or is it a simple derivation?"
-  - "Are there unnecessary re-renders from signal updates?"
+- [ ] **Production build** - Verify `pnpm build` works, no errors
+- [ ] **Environment config** - Document required env vars for deployment
+- [ ] **Meta tags** - Basic SEO (title, description, og:image)
+- [ ] **Favicon** - Add proper favicon
 
 ---
 
-### Code Duplication (~400 LOC to eliminate)
+### Phase 4: JSR Support (Milestone 5)
 
-#### Component Extraction
+Second registry support.
 
-| Extract To | From Files | Saves | Status |
-|------------|------------|-------|--------|
-| `PackageCard` | `ResultsGrid.tsx`, `RecentPackages.tsx` | ~95 LOC | ✅ Done |
-| `AuthGuard` | `admin/requests/index.tsx`, `admin/tags/index.tsx` | ~30 LOC | ✅ Done |
-| `Table` components | `RequestsTable.tsx`, `TagsList.tsx` | ~40 LOC | |
-
-#### Hook Extraction
-
-| Hook | Duplicated In | Saves | Status |
-|------|---------------|-------|--------|
-| `createPackageUpvote()` | `Header.tsx`, `ResultsGrid.tsx`, `RecentPackages.tsx` | ~90 LOC | ✅ Done |
-| `createPackageRequest()` | `Header.tsx`, `RequestForm.tsx`, `VersionSelector.tsx` | ~50 LOC | ✅ Done |
-| `useVersionSelection()` | `package/index.tsx` (consolidate 4 signals) | Complexity | |
-
-#### Utility Extraction
-
-| Utility | Usage Count | Location | Status |
-|---------|-------------|----------|--------|
-| `buildPackageUrl(registry, name)` | 5 locations | `lib/url.ts` | ✅ Done |
-| `buildPackageKey(name, registry)` | 3+ times | `lib/url.ts` | |
-| `formatDate(timestamp)` | 3+ times | `@package/common` | |
+- [ ] **JSR adapter** - Use `/registry-adapter` skill to scaffold
+- [ ] **Cross-registry deps** - Detect `@jsr/*` pattern, route to JSR
+- [ ] **UI update** - Keep npm + JSR in registry filter, remove brew/apt
 
 ---
 
-### Database Cleanup
+### Post-MVP Backlog
 
-#### Unused Queries
-Remove or document why kept (for future `/tags/:slug` page, etc.):
-- `packages.byId`, `packages.byName`, `packages.byIdWithVersions`
-- `packageTags.byPackageId`, `packageTags.byTagId`
-- `packageUpvotes.byPackage`, `packageUpvotes.byUser`
-- `tags.byId`, `tags.bySlug`, `tags.withPackages`
-- `packageRequests.existingPending`, `packageRequests.byId`
-- `packageDependencies.unlinked`, `packageDependencies.byPackageId`
-- `account.allAccounts`
+Nice-to-haves, defer until after launch.
 
-#### Broken Queries
-- [x] `packages.search` - deleted (was accepting `query` arg but ignoring it)
-- [x] Client-side filtering via `.includes()` used instead (Zero doesn't support LIKE)
+#### Performance & Optimization
+- [ ] Zero preloading on link hover
+- [ ] Query optimization audit
+- [ ] Staggered loading (critical → secondary data)
 
----
+#### Code Quality
+- [ ] `formatDate()` utility in `@package/common`
+- [ ] `useVersionSelection()` hook to consolidate signals
+- [ ] Remove over-memoization (use plain functions)
+- [ ] Security integration tests
 
-### Component API Consistency
+#### Component Polish
+- [ ] Component API consistency (rename `color` → `variant`)
+- [ ] Extract Table components from admin pages
+- [ ] Split large components (VersionSelector, package/index.tsx)
 
-| Component | Issue | Fix |
-|-----------|-------|-----|
-| Text | Uses `color` not `variant` | Rename to `variant` |
-| Card | Uses `padding` not `size` | Rename to `size` |
-| Select | No variant prop | Add variant support |
-| Heading | Mixes `level` + `color` | Separate semantic from visual |
+#### Documentation
+- [ ] Security checklist in CLAUDE.md
+- [ ] Update README with deployment instructions
 
 ---
 
-### State Simplification
+## Completed (Archive)
 
-#### Over-memoization
-These don't need `createMemo` - use plain functions:
-- `home/index.tsx`: `recentPackages`, `showNotFound`, `effectiveRequestRegistry`
-- `package/sections/Dependencies.tsx`: `hasDependencies`
+### Navigation ✅
+- [x] Active state highlighting in navbar
+- [x] Breadcrumbs with auto-generation from routes
+- [x] Breadcrumb resolver for dynamic labels (UUID → name)
 
-#### Signal Consolidation
-- `package/index.tsx`: 4 version-related signals → single `versionState` object or hook
-
----
-
-### Missing UI Components
-
-| Component | Use Case | Priority |
-|-----------|----------|----------|
-| `IconButton` | Small clickable icons (PackageTags ×) | Low |
-| `EmptyState` | "No results found" patterns | Medium |
-| `Skeleton` | Loading placeholders | Medium |
-| `Table`, `TableHeader`, `TableRow` | Admin tables | Low |
-
----
-
-### Large Components to Split
-
-| File | Lines | Suggestion |
-|------|-------|------------|
-| `package/index.tsx` | 280 | Extract `lib/version-resolution.ts` |
-| `VersionSelector.tsx` | 265 | Split: `VersionButtonGroup` + `VersionSearch` |
-| `RequestsTable.tsx` | 160 | Extract `TableHeader`, `TableRow` |
-
----
-
-### Inline Styling to Extract
-
-| Pattern | Files | Solution |
-|---------|-------|----------|
-| Select element styling | `SearchBar.tsx`, `RequestForm.tsx` | CVA variant or styled component |
-| Version button styling | `VersionSelector.tsx` (2x) | `VersionButton` component |
-| Table header styling | `RequestsTable.tsx`, `TagsList.tsx` | `TableHeader` component |
-
----
+### Code Consolidation ✅
+- [x] `PackageCard` feature component
+- [x] `AuthGuard` composite component
+- [x] `createPackageUpvote()` hook
+- [x] `createPackageRequest()` hook
+- [x] `buildPackageUrl()` utility
+- [x] Fixed broken `packages.search` query
 
 ### What's Working Well (Keep!)
 - Zero query patterns - sections query independently
 - CVA usage - consistent across UI components
-- Storybook coverage - all components have comprehensive stories
-- Storybook decorators - `MemoryRouter` + `Route` wrapper enables components using `<A>` links
-- Accessibility - Kobalte primitives used correctly, proper ARIA
-- Mutator patterns - consistent Zod validation and auth checks
-- Type exports - clean, well-organized, easy to import
-- Component composition - primitives → ui → composite → feature hierarchy
-- Business logic in hooks - `createPackageUpvote` pattern for reusable logic
+- Storybook coverage - comprehensive stories with light/dark variants
+- Accessibility - Kobalte primitives, proper ARIA
+- Mutator patterns - Zod validation and auth checks
+- Component hierarchy - primitives → ui → composite → feature
+- Business logic in hooks - reusable patterns
