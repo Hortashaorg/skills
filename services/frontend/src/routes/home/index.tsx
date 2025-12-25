@@ -1,5 +1,5 @@
 import { queries, useQuery } from "@package/database/client";
-import { createMemo, createSignal, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -11,7 +11,7 @@ import { RequestForm } from "./sections/RequestForm";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
 
-const MAX_RESULTS = 20;
+const PAGE_SIZE = 20;
 
 export const Home = () => {
 	const [searchValue, setSearchValue] = createSignal("");
@@ -21,9 +21,17 @@ export const Home = () => {
 	const [requestedPackages, setRequestedPackages] = createSignal<
 		Map<string, string>
 	>(new Map());
+	const [page, setPage] = createSignal(0);
 
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
+
+	// Reset page when search or registry changes
+	createEffect(
+		on([searchValue, registryFilter], () => {
+			setPage(0);
+		}),
+	);
 
 	// Filter packages based on search input and registry, sorted by upvotes
 	const filteredPackages = createMemo(() => {
@@ -39,8 +47,13 @@ export const Home = () => {
 				const matchesRegistry = registry === "all" || pkg.registry === registry;
 				return matchesSearch && matchesRegistry;
 			})
-			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0))
-			.slice(0, MAX_RESULTS);
+			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0));
+	});
+
+	// Paginate filtered results
+	const paginatedPackages = createMemo(() => {
+		const start = page() * PAGE_SIZE;
+		return filteredPackages().slice(start, start + PAGE_SIZE);
 	});
 
 	// Recently updated packages for empty state
@@ -120,7 +133,13 @@ export const Home = () => {
 					/>
 
 					{/* Search results as card grid */}
-					<ResultsGrid packages={filteredPackages()} maxResults={MAX_RESULTS} />
+					<ResultsGrid
+						packages={paginatedPackages()}
+						totalCount={filteredPackages().length}
+						page={page()}
+						pageSize={PAGE_SIZE}
+						onPageChange={setPage}
+					/>
 
 					{/* Not found state - show request option */}
 					<Show when={showNotFound() && !exactMatchExists()}>

@@ -5,6 +5,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
@@ -16,17 +17,24 @@ type Package = Row["packages"] & {
 
 export interface ResultsGridProps {
 	packages: readonly Package[];
-	maxResults: number;
+	totalCount: number;
+	page: number;
+	pageSize: number;
+	onPageChange: (page: number) => void;
 }
 
 export const ResultsGrid = (props: ResultsGridProps) => {
+	const totalPages = () => Math.ceil(props.totalCount / props.pageSize);
+	const startIndex = () => props.page * props.pageSize + 1;
+	const endIndex = () =>
+		Math.min((props.page + 1) * props.pageSize, props.totalCount);
+
 	return (
-		<Show when={props.packages.length > 0}>
+		<Show when={props.totalCount > 0}>
 			<Stack spacing="sm">
 				<Text size="sm" color="muted">
-					{props.packages.length} result
-					{props.packages.length !== 1 ? "s" : ""}
-					{props.packages.length === props.maxResults ? " (max)" : ""}
+					Showing {startIndex()}-{endIndex()} of {props.totalCount} result
+					{props.totalCount !== 1 ? "s" : ""}
 				</Text>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<For each={props.packages}>
@@ -74,6 +82,33 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 						}}
 					</For>
 				</div>
+
+				{/* Pagination controls */}
+				<Show when={totalPages() > 1}>
+					<Flex justify="between" align="center" class="mt-2">
+						<Text size="sm" color="muted">
+							Page {props.page + 1} of {totalPages()}
+						</Text>
+						<Flex gap="sm" align="center">
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={props.page === 0}
+								onClick={() => props.onPageChange(props.page - 1)}
+							>
+								Previous
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={props.page >= totalPages() - 1}
+								onClick={() => props.onPageChange(props.page + 1)}
+							>
+								Next
+							</Button>
+						</Flex>
+					</Flex>
+				</Show>
 			</Stack>
 		</Show>
 	);
