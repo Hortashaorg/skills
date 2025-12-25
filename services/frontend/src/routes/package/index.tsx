@@ -198,28 +198,6 @@ export const Package = () => {
 		<Layout>
 			<Container size="md">
 				<Stack spacing="lg" class="py-8">
-					{/* Back link */}
-					<A
-						href="/"
-						class="inline-flex items-center gap-1 text-sm text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition-colors"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<title>Back</title>
-							<path d="m15 18-6-6 6-6" />
-						</svg>
-						Back to search
-					</A>
-
 					<Show
 						when={pkg()}
 						fallback={

@@ -1,5 +1,5 @@
-import { mutators, type Row, useZero } from "@package/database/client";
-import { createSignal, Show } from "solid-js";
+import { type Row, useZero } from "@package/database/client";
+import { Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -7,8 +7,8 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
+import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 
@@ -22,28 +22,11 @@ export interface HeaderProps {
 
 export const Header = (props: HeaderProps) => {
 	const zero = useZero();
-	const [requestedUpdate, setRequestedUpdate] = createSignal(false);
 	const upvote = createPackageUpvote(() => props.pkg);
-
-	const handleRequestUpdate = async () => {
-		const write = zero().mutate(
-			mutators.packageRequests.create({
-				packageName: props.pkg.name,
-				registry: props.pkg.registry,
-			}),
-		);
-
-		const res = await write.client;
-
-		if (res.type === "error") {
-			console.error("Failed to request update:", res.error);
-			toast.error("Failed to submit update request. Please try again.");
-			return;
-		}
-
-		setRequestedUpdate(true);
-		toast.success(`Update requested for "${props.pkg.name}"`);
-	};
+	const request = createPackageRequest(() => ({
+		packageName: props.pkg.name,
+		registry: props.pkg.registry,
+	}));
 
 	return (
 		<Card padding="lg">
@@ -108,16 +91,16 @@ export const Header = (props: HeaderProps) => {
 				{/* Update button */}
 				<Flex gap="sm" align="center">
 					<Show
-						when={!requestedUpdate() && zero().userID !== "anon"}
+						when={!request.isRequested() && !request.isDisabled()}
 						fallback={
-							<Show when={requestedUpdate()}>
+							<Show when={request.isRequested()}>
 								<Badge variant="info" size="md">
 									Update requested
 								</Badge>
 							</Show>
 						}
 					>
-						<Button variant="outline" onClick={handleRequestUpdate}>
+						<Button variant="outline" onClick={() => request.submit()}>
 							Request Update
 						</Button>
 					</Show>

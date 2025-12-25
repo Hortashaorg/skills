@@ -4,11 +4,11 @@ import {
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { createMemo, createSignal, Show } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
+import { AuthGuard } from "@/components/composite/auth-guard";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
-import { Text } from "@/components/primitives/text";
 import { Tabs } from "@/components/ui/tabs";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
@@ -99,15 +99,7 @@ export const AdminRequests = () => {
 		<Layout>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
-					<Show when={!isLoggedIn()}>
-						<Text>Please sign in to access this page.</Text>
-					</Show>
-
-					<Show when={isLoggedIn() && !isAdmin()}>
-						<Text>Unauthorized - admin role required.</Text>
-					</Show>
-
-					<Show when={isLoggedIn() && isAdmin()}>
+					<AuthGuard hasAccess={isLoggedIn() && isAdmin()}>
 						<Heading level="h1">Package Requests</Heading>
 
 						<Tabs.Root
@@ -135,7 +127,7 @@ export const AdminRequests = () => {
 								</Tabs.Content>
 							))}
 						</Tabs.Root>
-					</Show>
+					</AuthGuard>
 				</Stack>
 			</Container>
 		</Layout>

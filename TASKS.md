@@ -264,15 +264,16 @@ Comprehensive list of improvements for maintainability, UX, DX, and scalability.
 **Problem**: Navbar is flat with no sense of hierarchy or "where am I" indication.
 
 #### Active State Highlighting
-- [ ] Highlight current section in navbar (Home, Admin, etc.)
-- [ ] Use `useLocation()` to determine active route
-- [ ] Style: border-bottom, background, or text color change
+- [x] Highlight current section in navbar (Home, Admin, etc.)
+- [x] Use `useLocation()` to determine active route
+- [x] Style: border-bottom, background, or text color change
 
 #### Breadcrumbs
-- [ ] Create `Breadcrumb` component for deep pages
-- [ ] Package detail: `Home > npm > lodash > v4.17.21`
-- [ ] Admin: `Home > Admin > Tags > Edit "frontend"`
-- [ ] Auto-generate from route params where possible
+- [x] Create `Breadcrumb` component for deep pages
+- [x] Package detail: `Home > npm > lodash`
+- [x] Admin: `Home > Admin > Tags`
+- [x] Auto-generate from route params (centralized in `lib/breadcrumbs.ts`)
+- [x] Resolver mechanism for dynamic labels (UUID → name via Zero queries)
 
 #### Layout Variants
 - [ ] `DefaultLayout` - navbar + content (current)
@@ -294,12 +295,12 @@ Comprehensive list of improvements for maintainability, UX, DX, and scalability.
 | Dependencies | `DependencyItem.tsx` | Compact link |
 | Tag browse (future) | - | Probably card |
 
-#### Unified PackageDisplay Component
-- [ ] Create `components/feature/package-display/`
-- [ ] Variants: `card`, `header`, `compact`, `list-item`
-- [ ] Props: `package`, `variant`, `showUpvote`, `showRegistry`, `showDescription`
-- [ ] Consolidate all package rendering through this component
-- [ ] Single place to update when package schema changes
+#### PackageCard Component
+- [x] Create `components/feature/package-card/` (pure UI, no business logic)
+- [x] Props: `name`, `registry`, `description`, `href`, `upvoteCount`, `isUpvoted`, `upvoteDisabled`, `onUpvote`
+- [x] Used by `ResultsGrid` and `RecentPackages`
+- [x] Storybook stories with Light/Dark variants
+- [ ] Consider additional variants: `header`, `compact`, `list-item` (future)
 
 ---
 
@@ -363,18 +364,18 @@ Add to documentation:
 
 #### Component Extraction
 
-| Extract To | From Files | Saves |
-|------------|------------|-------|
-| `PackageCard` | `ResultsGrid.tsx`, `RecentPackages.tsx` | ~95 LOC |
-| `AuthGuard` | `admin/requests/index.tsx`, `admin/tags/index.tsx` | ~30 LOC |
-| `Table` components | `RequestsTable.tsx`, `TagsList.tsx` | ~40 LOC |
+| Extract To | From Files | Saves | Status |
+|------------|------------|-------|--------|
+| `PackageCard` | `ResultsGrid.tsx`, `RecentPackages.tsx` | ~95 LOC | ✅ Done |
+| `AuthGuard` | `admin/requests/index.tsx`, `admin/tags/index.tsx` | ~30 LOC | ✅ Done |
+| `Table` components | `RequestsTable.tsx`, `TagsList.tsx` | ~40 LOC | |
 
 #### Hook Extraction
 
 | Hook | Duplicated In | Saves | Status |
 |------|---------------|-------|--------|
 | `createPackageUpvote()` | `Header.tsx`, `ResultsGrid.tsx`, `RecentPackages.tsx` | ~90 LOC | ✅ Done |
-| `useRequestUpdate()` | `Header.tsx`, `RequestForm.tsx`, `VersionSelector.tsx` | ~100 LOC | |
+| `createPackageRequest()` | `Header.tsx`, `RequestForm.tsx`, `VersionSelector.tsx` | ~50 LOC | ✅ Done |
 | `useVersionSelection()` | `package/index.tsx` (consolidate 4 signals) | Complexity | |
 
 #### Utility Extraction
@@ -400,8 +401,8 @@ Remove or document why kept (for future `/tags/:slug` page, etc.):
 - `account.allAccounts`
 
 #### Broken Queries
-- [ ] `packages.search` - accepts `query` arg but ignores it, returns all packages
-- [ ] Fix implementation or remove and document client-side filtering
+- [x] `packages.search` - deleted (was accepting `query` arg but ignoring it)
+- [x] Client-side filtering via `.includes()` used instead (Zero doesn't support LIKE)
 
 ---
 
@@ -463,7 +464,9 @@ These don't need `createMemo` - use plain functions:
 - Zero query patterns - sections query independently
 - CVA usage - consistent across UI components
 - Storybook coverage - all components have comprehensive stories
+- Storybook decorators - `MemoryRouter` + `Route` wrapper enables components using `<A>` links
 - Accessibility - Kobalte primitives used correctly, proper ARIA
 - Mutator patterns - consistent Zod validation and auth checks
 - Type exports - clean, well-organized, easy to import
-- Component composition - primitives → ui → composite hierarchy
+- Component composition - primitives → ui → composite → feature hierarchy
+- Business logic in hooks - `createPackageUpvote` pattern for reusable logic

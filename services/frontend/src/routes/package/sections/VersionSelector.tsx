@@ -1,4 +1,4 @@
-import { mutators, type Row, useZero } from "@package/database/client";
+import type { Row } from "@package/database/client";
 import { useNavigate } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
@@ -7,7 +7,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
+import { createPackageRequest } from "@/hooks/createPackageRequest";
 import type { Registry } from "@/lib/registries";
 
 type PackageVersion = Row["packageVersions"];
@@ -24,10 +24,12 @@ export interface VersionSelectorProps {
 }
 
 export const VersionSelector = (props: VersionSelectorProps) => {
-	const zero = useZero();
 	const navigate = useNavigate();
 	const [inputValue, setInputValue] = createSignal("");
-	const [requestedUpdate, setRequestedUpdate] = createSignal(false);
+	const request = createPackageRequest(() => ({
+		packageName: props.packageName,
+		registry: props.registry,
+	}));
 
 	// Get dist-tags as array for display
 	const distTagsArray = createMemo(() => {
@@ -68,27 +70,6 @@ export const VersionSelector = (props: VersionSelectorProps) => {
 		if (e.key === "Enter") {
 			handleFind();
 		}
-	};
-
-	// Handle requesting an update for missing version
-	const handleRequestUpdate = async () => {
-		const write = zero().mutate(
-			mutators.packageRequests.create({
-				packageName: props.packageName,
-				registry: props.registry,
-			}),
-		);
-
-		const res = await write.client;
-
-		if (res.type === "error") {
-			console.error("Failed to request update:", res.error);
-			toast.error("Failed to submit update request. Please try again.");
-			return;
-		}
-
-		setRequestedUpdate(true);
-		toast.success(`Update requested for "${props.packageName}"`);
 	};
 
 	return (
@@ -233,21 +214,23 @@ export const VersionSelector = (props: VersionSelectorProps) => {
 
 									{/* Request update option for not found versions */}
 									<Show when={props.versionNotFound}>
-										<Show when={!requestedUpdate() && zero().userID !== "anon"}>
+										<Show
+											when={!request.isRequested() && !request.isDisabled()}
+										>
 											<Button
 												variant="outline"
 												size="sm"
-												onClick={handleRequestUpdate}
+												onClick={() => request.submit()}
 											>
 												Request package update
 											</Button>
 										</Show>
-										<Show when={requestedUpdate()}>
+										<Show when={request.isRequested()}>
 											<Badge variant="info" size="sm">
 												Update requested
 											</Badge>
 										</Show>
-										<Show when={zero().userID === "anon"}>
+										<Show when={request.isDisabled()}>
 											<Text size="xs" color="muted">
 												Sign in to request an update.
 											</Text>

@@ -1,4 +1,4 @@
-import { mutators, useZero } from "@package/database/client";
+import { useZero } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -6,7 +6,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
+import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { REGISTRY_OPTIONS, type Registry } from "@/lib/registries";
 
@@ -22,6 +22,10 @@ export interface RequestFormProps {
 
 export const RequestForm = (props: RequestFormProps) => {
 	const zero = useZero();
+	const request = createPackageRequest(() => ({
+		packageName: props.searchValue.trim(),
+		registry: props.effectiveRegistry,
+	}));
 
 	const handleRegistryChange = (
 		e: Event & { currentTarget: HTMLSelectElement },
@@ -29,29 +33,9 @@ export const RequestForm = (props: RequestFormProps) => {
 		props.onRegistryChange(e.currentTarget.value as Registry);
 	};
 
-	const handleRequestPackage = async () => {
-		const packageName = props.searchValue.trim();
-		if (!packageName) return;
-
-		const write = zero().mutate(
-			mutators.packageRequests.create({
-				packageName,
-				registry: props.effectiveRegistry,
-			}),
-		);
-
-		const res = await write.client;
-
-		if (res.type === "error") {
-			console.error("Failed to request package:", res.error);
-			toast.error("Failed to submit request. Please try again.");
-			return;
-		}
-
-		props.onRequestSubmitted();
-		toast.success(
-			`Request submitted for "${packageName}" on ${props.effectiveRegistry}`,
-		);
+	const handleRequestPackage = () => {
+		if (!props.searchValue.trim()) return;
+		request.submit({ onSuccess: props.onRequestSubmitted });
 	};
 
 	return (

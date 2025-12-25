@@ -6,6 +6,7 @@ import {
 	useZero,
 } from "@package/database/client";
 import { createSignal, Show } from "solid-js";
+import { AuthGuard } from "@/components/composite/auth-guard";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -113,15 +114,7 @@ export const AdminTags = () => {
 		<Layout>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
-					<Show when={!isLoggedIn()}>
-						<Text>Please sign in to access this page.</Text>
-					</Show>
-
-					<Show when={isLoggedIn() && !isAdmin()}>
-						<Text>Unauthorized - admin role required.</Text>
-					</Show>
-
-					<Show when={isLoggedIn() && isAdmin()}>
+					<AuthGuard hasAccess={isLoggedIn() && isAdmin()}>
 						<Flex justify="between" align="center">
 							<Heading level="h1">Tags</Heading>
 							<Show when={!showForm()}>
@@ -151,7 +144,7 @@ export const AdminTags = () => {
 							{sortedTags().length} tag{sortedTags().length !== 1 ? "s" : ""}{" "}
 							total
 						</Text>
-					</Show>
+					</AuthGuard>
 				</Stack>
 			</Container>
 		</Layout>
