@@ -1,12 +1,12 @@
+import { MemoryRouter, Route } from "@solidjs/router";
+import type { JSX } from "solid-js";
 import type { Decorator } from "storybook-solidjs-vite";
 
-export const withTheme: Decorator = (Story, context) => {
-	// Check for story-level theme parameter first, then fall back to global
-	const themeMode =
-		context.parameters.theme || context.globals.themeMode || "light";
-
-	// Single dark mode
-	if (themeMode === "dark") {
+const ThemeWrapper = (props: {
+	mode: "light" | "dark" | "side-by-side";
+	children: JSX.Element;
+}) => {
+	if (props.mode === "dark") {
 		return (
 			<div
 				class="dark"
@@ -19,13 +19,12 @@ export const withTheme: Decorator = (Story, context) => {
 					"justify-content": "center",
 				}}
 			>
-				<Story />
+				{props.children}
 			</div>
 		);
 	}
 
-	// Single light mode
-	if (themeMode === "light") {
+	if (props.mode === "light") {
 		return (
 			<div
 				style={{
@@ -37,12 +36,12 @@ export const withTheme: Decorator = (Story, context) => {
 					"justify-content": "center",
 				}}
 			>
-				<Story />
+				{props.children}
 			</div>
 		);
 	}
 
-	// Side-by-side mode (default for visual browsing)
+	// Side-by-side mode
 	return (
 		<div
 			style={{
@@ -64,7 +63,7 @@ export const withTheme: Decorator = (Story, context) => {
 					"justify-content": "center",
 				}}
 			>
-				<Story />
+				{props.children}
 			</div>
 			<div
 				style={{
@@ -76,8 +75,34 @@ export const withTheme: Decorator = (Story, context) => {
 					"justify-content": "center",
 				}}
 			>
-				<Story />
+				{props.children}
 			</div>
 		</div>
+	);
+};
+
+export const withTheme: Decorator = (Story, context) => {
+	// Check for story-level theme parameter first, then fall back to global
+	const themeMode =
+		context.parameters.theme || context.globals.themeMode || "light";
+
+	const mode =
+		themeMode === "dark"
+			? "dark"
+			: themeMode === "light"
+				? "light"
+				: "side-by-side";
+
+	return (
+		<MemoryRouter>
+			<Route
+				path="*"
+				component={() => (
+					<ThemeWrapper mode={mode}>
+						<Story />
+					</ThemeWrapper>
+				)}
+			/>
+		</MemoryRouter>
 	);
 };

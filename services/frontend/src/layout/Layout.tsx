@@ -1,5 +1,5 @@
 import { useConnectionState, useZero } from "@package/database/client";
-import { A } from "@solidjs/router";
+import { A, useLocation } from "@solidjs/router";
 import type { ParentComponent } from "solid-js";
 import { Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
@@ -14,6 +14,7 @@ import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 export const Layout: ParentComponent = ({ children }) => {
 	const zero = useZero();
 	const connectionState = useConnectionState();
+	const location = useLocation();
 
 	const handleLogout = async () => {
 		await logout();
@@ -26,6 +27,7 @@ export const Layout: ParentComponent = ({ children }) => {
 
 	const isAnonymous = () => zero().userID === "anon";
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
+	const isActive = (path: string) => location.pathname.startsWith(path);
 	const displayUserId = () => {
 		const id = zero().userID;
 		if (id === "anon") return null;
@@ -47,7 +49,13 @@ export const Layout: ParentComponent = ({ children }) => {
 								<div class="relative group">
 									<button
 										type="button"
-										class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition flex items-center gap-1"
+										class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition flex items-center gap-1"
+										classList={{
+											"text-primary dark:text-primary-dark font-medium":
+												isActive("/admin"),
+											"text-on-surface-muted dark:text-on-surface-dark-muted":
+												!isActive("/admin"),
+										}}
 									>
 										Admin
 										<svg
@@ -69,13 +77,25 @@ export const Layout: ParentComponent = ({ children }) => {
 										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg min-w-40">
 											<A
 												href="/admin/requests"
-												class="block px-4 py-2 text-sm text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												classList={{
+													"text-primary dark:text-primary-dark font-medium":
+														isActive("/admin/requests"),
+													"text-on-surface dark:text-on-surface-dark":
+														!isActive("/admin/requests"),
+												}}
 											>
 												Package Requests
 											</A>
 											<A
 												href="/admin/tags"
-												class="block px-4 py-2 text-sm text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												classList={{
+													"text-primary dark:text-primary-dark font-medium":
+														isActive("/admin/tags"),
+													"text-on-surface dark:text-on-surface-dark":
+														!isActive("/admin/tags"),
+												}}
 											>
 												Tags
 											</A>

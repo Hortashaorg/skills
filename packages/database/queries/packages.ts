@@ -23,12 +23,6 @@ export const byName = defineQuery(
 	},
 );
 
-export const search = defineQuery(z.object({ query: z.string() }), () => {
-	// Zero uses exact matching only - no LIKE/pattern queries
-	// Filter client-side with .includes() or add full-text search later
-	return zql.packages;
-});
-
 export const byNameWithVersions = defineQuery(
 	z.object({
 		name: z.string(),

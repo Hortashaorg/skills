@@ -20,7 +20,6 @@ export const queries = defineQueries({
 		byNameWithVersions: packagesQueries.byNameWithVersions,
 		byIdWithVersions: packagesQueries.byIdWithVersions,
 		byIdWithTags: packagesQueries.byIdWithTags,
-		search: packagesQueries.search,
 	},
 	packageRequests: {
 		pending: packageRequestsQueries.pending,
