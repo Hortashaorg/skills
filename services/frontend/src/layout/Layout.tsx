@@ -7,7 +7,7 @@ import {
 import { A, useLocation, useParams } from "@solidjs/router";
 import {
 	createMemo,
-	For,
+	Index,
 	Match,
 	type ParentComponent,
 	Show,
@@ -231,9 +231,16 @@ export const Layout: ParentComponent = (props) => {
 						<Container>
 							<div class="py-3">
 								<Breadcrumbs.Root>
-									<For each={crumbs()}>
-										{(crumb) => <BreadcrumbItem crumb={crumb} />}
-									</For>
+									<Index each={crumbs()}>
+										{(crumb, index) => (
+											<>
+												<Show when={index > 0}>
+													<Breadcrumbs.Separator />
+												</Show>
+												<BreadcrumbItem crumb={crumb()} />
+											</>
+										)}
+									</Index>
 								</Breadcrumbs.Root>
 							</div>
 						</Container>
