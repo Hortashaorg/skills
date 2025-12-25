@@ -371,19 +371,19 @@ Add to documentation:
 
 #### Hook Extraction
 
-| Hook | Duplicated In | Saves |
-|------|---------------|-------|
-| `usePackageUpvote()` | `Header.tsx`, `ResultsGrid.tsx`, `RecentPackages.tsx` | ~90 LOC |
-| `useRequestUpdate()` | `Header.tsx`, `RequestForm.tsx`, `VersionSelector.tsx` | ~100 LOC |
-| `useVersionSelection()` | `package/index.tsx` (consolidate 4 signals) | Complexity |
+| Hook | Duplicated In | Saves | Status |
+|------|---------------|-------|--------|
+| `createPackageUpvote()` | `Header.tsx`, `ResultsGrid.tsx`, `RecentPackages.tsx` | ~90 LOC | ✅ Done |
+| `useRequestUpdate()` | `Header.tsx`, `RequestForm.tsx`, `VersionSelector.tsx` | ~100 LOC | |
+| `useVersionSelection()` | `package/index.tsx` (consolidate 4 signals) | Complexity | |
 
 #### Utility Extraction
 
-| Utility | Usage Count | Location |
-|---------|-------------|----------|
-| `buildPackageUrl(registry, name)` | 8+ times | `lib/url.ts` |
-| `buildPackageKey(name, registry)` | 3+ times | `lib/url.ts` |
-| `formatDate(timestamp)` | 3+ times | `@package/common` |
+| Utility | Usage Count | Location | Status |
+|---------|-------------|----------|--------|
+| `buildPackageUrl(registry, name)` | 5 locations | `lib/url.ts` | ✅ Done |
+| `buildPackageKey(name, registry)` | 3+ times | `lib/url.ts` | |
+| `formatDate(timestamp)` | 3+ times | `@package/common` | |
 
 ---
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
+import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 
 type Package = Row["packages"] & {
@@ -22,6 +23,7 @@ export interface HeaderProps {
 export const Header = (props: HeaderProps) => {
 	const zero = useZero();
 	const [requestedUpdate, setRequestedUpdate] = createSignal(false);
+	const upvote = createPackageUpvote(() => props.pkg);
 
 	const handleRequestUpdate = async () => {
 		const write = zero().mutate(
@@ -43,30 +45,6 @@ export const Header = (props: HeaderProps) => {
 		toast.success(`Update requested for "${props.pkg.name}"`);
 	};
 
-	const handleUpvoteClick = async () => {
-		const userId = zero().userID;
-		if (userId === "anon") return;
-
-		const existingUpvote = props.pkg.upvotes?.find(
-			(u) => u.accountId === userId,
-		);
-
-		if (existingUpvote) {
-			zero().mutate(mutators.packageUpvotes.remove({ id: existingUpvote.id }));
-		} else {
-			zero().mutate(
-				mutators.packageUpvotes.create({ packageId: props.pkg.id }),
-			);
-		}
-	};
-
-	const isUpvoted = () => {
-		const userId = zero().userID;
-		return props.pkg.upvotes?.some((u) => u.accountId === userId) ?? false;
-	};
-
-	const upvoteCount = () => props.pkg.upvotes?.length ?? 0;
-
 	return (
 		<Card padding="lg">
 			<Stack spacing="md">
@@ -83,10 +61,10 @@ export const Header = (props: HeaderProps) => {
 						</Show>
 					</Stack>
 					<UpvoteButton
-						count={upvoteCount()}
-						isUpvoted={isUpvoted()}
-						disabled={zero().userID === "anon"}
-						onClick={handleUpvoteClick}
+						count={upvote.upvoteCount()}
+						isUpvoted={upvote.isUpvoted()}
+						disabled={upvote.isDisabled()}
+						onClick={upvote.toggle}
 						size="md"
 					/>
 				</Flex>

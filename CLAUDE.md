@@ -93,10 +93,14 @@ Regenerates `zero-schema.gen.ts`. Never edit generated file directly.
 ### Don't block UI on `needs-auth`
 `ConnectionStatus` handles token refresh automatically. Only handle `disconnected`.
 
-### URL encode route params for scoped packages
+### Use `buildPackageUrl` for package links
 ```tsx
-// Building URLs (handles @scope/pkg)
-href={`/package/${encodeURIComponent(registry)}/${encodeURIComponent(name)}`}
+import { buildPackageUrl } from "@/lib/url";
+
+// Building URLs (handles @scope/pkg encoding)
+href={buildPackageUrl(registry, name)}
+href={buildPackageUrl(registry, name, version)} // with version param
+
 // Reading params
 const name = () => decodeURIComponent(params.name);
 ```

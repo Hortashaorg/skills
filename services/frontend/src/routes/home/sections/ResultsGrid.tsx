@@ -1,5 +1,4 @@
 import type { Row } from "@package/database/client";
-import { mutators, useZero } from "@package/database/client";
 import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
@@ -8,6 +7,8 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
+import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { buildPackageUrl } from "@/lib/url";
 
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
@@ -19,21 +20,6 @@ export interface ResultsGridProps {
 }
 
 export const ResultsGrid = (props: ResultsGridProps) => {
-	const zero = useZero();
-
-	const handleUpvoteClick = async (pkg: Package) => {
-		const userId = zero().userID;
-		if (userId === "anon") return;
-
-		const existingUpvote = pkg.upvotes?.find((u) => u.accountId === userId);
-
-		if (existingUpvote) {
-			zero().mutate(mutators.packageUpvotes.remove({ id: existingUpvote.id }));
-		} else {
-			zero().mutate(mutators.packageUpvotes.create({ packageId: pkg.id }));
-		}
-	};
-
 	return (
 		<Show when={props.packages.length > 0}>
 			<Stack spacing="sm">
@@ -45,10 +31,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<For each={props.packages}>
 						{(pkg) => {
-							const userId = zero().userID;
-							const isUpvoted = () =>
-								pkg.upvotes?.some((u) => u.accountId === userId) ?? false;
-							const upvoteCount = () => pkg.upvotes?.length ?? 0;
+							const upvote = createPackageUpvote(() => pkg);
 
 							return (
 								<Card
@@ -58,7 +41,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 									<Stack spacing="xs">
 										<Flex gap="sm" align="center" justify="between">
 											<A
-												href={`/package/${encodeURIComponent(pkg.registry)}/${encodeURIComponent(pkg.name)}`}
+												href={buildPackageUrl(pkg.registry, pkg.name)}
 												class="flex items-center gap-2 min-w-0 flex-1"
 											>
 												<Text
@@ -72,16 +55,14 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 												</Badge>
 											</A>
 											<UpvoteButton
-												count={upvoteCount()}
-												isUpvoted={isUpvoted()}
-												disabled={userId === "anon"}
-												onClick={() => handleUpvoteClick(pkg)}
+												count={upvote.upvoteCount()}
+												isUpvoted={upvote.isUpvoted()}
+												disabled={upvote.isDisabled()}
+												onClick={upvote.toggle}
 											/>
 										</Flex>
 										<Show when={pkg.description}>
-											<A
-												href={`/package/${encodeURIComponent(pkg.registry)}/${encodeURIComponent(pkg.name)}`}
-											>
+											<A href={buildPackageUrl(pkg.registry, pkg.name)}>
 												<Text size="sm" color="muted" class="line-clamp-2">
 													{pkg.description}
 												</Text>

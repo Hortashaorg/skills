@@ -5,6 +5,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import type { Registry } from "@/lib/registries";
+import { buildPackageUrl } from "@/lib/url";
 
 type PackageDependency = Row["packageDependencies"];
 
@@ -30,7 +31,11 @@ export const DependencyItem = (props: DependencyItemProps) => {
 					}
 				>
 					<A
-						href={`/package/${encodeURIComponent(props.registry)}/${encodeURIComponent(props.dep.dependencyName)}?v=${encodeURIComponent(props.dep.dependencyVersionRange)}`}
+						href={buildPackageUrl(
+							props.registry,
+							props.dep.dependencyName,
+							props.dep.dependencyVersionRange,
+						)}
 						class="text-sm text-primary dark:text-primary-dark hover:underline"
 					>
 						{props.dep.dependencyName}

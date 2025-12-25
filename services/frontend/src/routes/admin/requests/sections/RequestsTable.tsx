@@ -5,6 +5,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Text } from "@/components/primitives/text";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { buildPackageUrl } from "@/lib/url";
 
 type Props = {
 	requests: readonly Row["packageRequests"][];
@@ -79,7 +80,10 @@ export const RequestsTable = (props: Props) => {
 												fallback={<Text size="sm">{request.packageName}</Text>}
 											>
 												<A
-													href={`/package/${encodeURIComponent(request.registry)}/${encodeURIComponent(request.packageName)}`}
+													href={buildPackageUrl(
+														request.registry,
+														request.packageName,
+													)}
 													class="text-primary dark:text-primary-dark hover:underline"
 												>
 													{request.packageName}

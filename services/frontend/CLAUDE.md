@@ -62,12 +62,38 @@ Import pattern: `import { Button } from "@/components/ui/button"`
 | Utilities | kebab-case | `auth-url.ts` |
 | Stories | PascalCase + suffix | `Button.stories.tsx` |
 
+## Utilities & Hooks
+
+```
+lib/           # Pure utilities (stateless, no app context)
+├── utils.ts   # cn() for class merging
+├── url.ts     # buildPackageUrl()
+└── registries.ts
+
+hooks/         # Reusable business logic (uses Zero, auth, mutators)
+└── createPackageUpvote.ts
+```
+
+**When to use which:**
+- `lib/` = Pure functions, no dependencies on Zero/auth/context
+- `hooks/` = Factory functions that use `useZero()`, mutators, or other app context
+
+**Example hook usage:**
+```tsx
+import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+
+const upvote = createPackageUpvote(() => pkg);
+// upvote.isUpvoted(), upvote.upvoteCount(), upvote.isDisabled(), upvote.toggle()
+```
+
 ## Common Patterns
 
-**URL params with scoped packages:**
+**Package URLs:**
 ```tsx
-// Building URLs (handles @scope/pkg)
-href={`/package/${encodeURIComponent(registry)}/${encodeURIComponent(name)}`}
+import { buildPackageUrl } from "@/lib/url";
+
+href={buildPackageUrl(registry, name)}
+href={buildPackageUrl(registry, name, version)} // with version param
 
 // Reading params
 const params = useParams<{ registry: string; name: string }>();
