@@ -51,10 +51,13 @@ Polish and improvements to pick from before/after deploy.
 
 ### Done
 
-- [x] **Denormalized upvote count** - `upvoteCount` column on packages table for server-side sorting by popularity
-- [x] **Server-side search** - `packages.search` query with ILIKE, registry filter, tag filter, sorted by upvotes
-- [x] **Load more pagination** - Progressive loading for search results beyond initial limit
+- [x] **Denormalized upvote count** - `upvoteCount` column on packages table, updated via mutator for server-side sorting
+- [x] **Server-side search** - `packages.search` query with ILIKE, registry filter, tag filter, sorted by `upvoteCount`
+- [x] **Load more pagination** - Progressive loading for search results beyond initial 100 limit
 - [x] **URL-synced state hook** - `createUrlSignal` for cleaner URL state management
+- [x] **useQuery result.type pattern** - Loading states via `result().type !== "complete"` (replaces `useConnectionState`)
+- [x] **Server-side sorting in admin** - Request queries handle sort order per status
+- [x] **Updated CLAUDE.md** - Correct ZQL capabilities (LIKE, IN, compound filters, tx.run pattern)
 - [x] QueryBoundary component (loading states, stories, applied to package page + dependencies section)
 - [x] ErrorFallback stories
 - [x] Tag filtering on homepage (multi-select, URL persistence)
@@ -70,12 +73,7 @@ Polish and improvements to pick from before/after deploy.
 - [x] Loading state for initial page load
 - [x] Homepage refactor - unified ResultsGrid (loading/empty/results in one component)
 - [x] Registry filter synced to URL (`?registry=npm`)
-- [x] Consolidated package request into EmptyState action (removed duplicate "not found" UIs)
-- [x] `createUrlSignal` hook for URL-synced state (reduces boilerplate)
-- [x] `useQuery` result.type pattern for loading states (replaces `useConnectionState` hack)
-- [x] Server-side search filtering (`packages.search` query with ILIKE, registry, tag filters)
-- [x] Server-side sorting in admin requests (query handles sort order per status)
-- [x] Updated CLAUDE.md with correct ZQL capabilities (LIKE, IN, compound filters)
+- [x] Consolidated package request into EmptyState action
 
 ---
 
@@ -244,8 +242,9 @@ Polish and improvements to pick from before/after deploy.
 ## Notes
 
 - Homepage uses unified `ResultsGrid` component handling loading/empty/results states
-- No filters → "Recently updated" (sorted by updatedAt)
-- With filters → search results (sorted by upvotes)
+- No filters → "Recently updated" (sorted by `updatedAt` desc)
+- With filters → search results (sorted by `upvoteCount` desc, then name asc)
+- "Load more" button when search results hit limit (100 → 200 → 300...)
 - All filters synced to URL (`?q=...&registry=...&tags=...`)
 - Package detail page at `/package/:registry/:name` with version selector
 - Version selector supports exact versions, dist-tags (latest, next), and ranges
@@ -257,11 +256,13 @@ Polish and improvements to pick from before/after deploy.
 
 ## What's Working Well
 
-- Zero query patterns - sections query independently
+- Zero query patterns - sections query independently, `result.type` for loading states
 - QueryBoundary for loading/empty states - consistent pattern across pages
+- Server-side filtering/sorting - ZQL handles ILIKE, IN, orderBy
+- Denormalized counts - `upvoteCount` updated via `tx.run()` in mutators
 - CVA usage - consistent across UI components
 - Storybook coverage - comprehensive stories with light/dark variants
 - Accessibility - Kobalte primitives, proper ARIA
-- Mutator patterns - Zod validation and auth checks
+- Mutator patterns - Zod validation, auth checks, cross-table updates
 - Component hierarchy - primitives → ui → composite → feature
-- Business logic in hooks - reusable patterns
+- Business logic in hooks - reusable patterns (`createPackageUpvote`, `createUrlSignal`)
