@@ -173,7 +173,7 @@ const packageRequestsTable = {
     registry: {
       type: "string",
       optional: false,
-      customType: null as unknown as "npm" | "jsr" | "brew" | "apt",
+      customType: null as unknown as "npm",
     },
     status: {
       type: "string",
@@ -342,7 +342,7 @@ const packagesTable = {
     registry: {
       type: "string",
       optional: false,
-      customType: null as unknown as "npm" | "jsr" | "brew" | "apt",
+      customType: null as unknown as "npm",
     },
     description: {
       type: "string",

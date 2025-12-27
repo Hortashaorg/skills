@@ -2,13 +2,97 @@
 
 > **Product definition:** See [MVP.md](./MVP.md) for full feature specs and schema.
 
-Progress toward a deployable MVP with data flowing and utility for users.
+---
+
+## Current Status
+
+**Domain:** `tech-garden.dev` (staging: `test.tech-garden.dev`)
+
+**Completed:**
+- Milestone 1: Core Data Flow (search → request → fetch → display)
+- Milestone 2: Data Population (auto-queue dependencies, rate limiting)
+- Milestone 3: User Value (browsing, details, upvoting, auth UX)
+- Milestone 4: Admin & Tags (role system, admin dashboard, tag management)
+
+**Next:** Deploy to staging → Monitoring → Iterate
 
 ---
 
-## Milestone 1: Core Data Flow
+## Backlog
 
-**Goal:** End-to-end flow working: search → request → fetch → display
+Polish and improvements to pick from before/after deploy.
+
+### High Priority
+
+- [ ] **Production build** - Verify `pnpm build` works
+- [ ] **Mobile nav** - Test and fix navbar on small screens
+
+### Medium Priority
+
+- [ ] **Empty states** - `EmptyState` component for "no results"
+- [ ] **Loading skeletons** - Replace "Loading..." text
+- [ ] **Full mobile audit** - Layout fixes across all pages
+
+### Low Priority (Post-Launch)
+
+- [ ] Zero preloading on link hover
+- [ ] Query optimization audit
+- [ ] `formatDate()` utility in `@package/common`
+- [ ] Extract Table components from admin pages
+- [ ] Split large components (VersionSelector, package/index.tsx)
+- [ ] Update README with deployment instructions
+
+### Done
+
+- [x] Tag filtering on homepage (multi-select, URL persistence)
+- [x] Tags on package cards (max 3, "+X more" overflow)
+- [x] 404 page
+- [x] Error boundary
+- [x] Meta tags (title, description)
+- [x] Favicon (SVG seedling)
+- [x] Connection status cleanup (hide "Connected")
+
+---
+
+## Future Milestones
+
+### Milestone 5: Observability
+
+**Goal:** Production-ready monitoring
+
+- [ ] Configure Zero telemetry
+- [ ] Set up Grafana dashboards (connections, sync latency, errors)
+- [ ] Worker metrics (requests processed, failures, duration)
+- [ ] Structured logging in backend and worker
+
+### Milestone 6: Deployment
+
+**Goal:** Deploy to Kubernetes
+
+**Pre-Launch:**
+- [x] Buy domain name (`tech-garden.dev`)
+- [ ] SSL certificates (cert-manager)
+- [ ] Environment secrets in Kubernetes
+
+**Infrastructure:**
+- [ ] Frontend deployment
+- [ ] Backend deployment (Hono API)
+- [ ] Worker CronJob
+- [ ] Zero cache server
+- [ ] PostgreSQL
+- [ ] Ingress configuration
+
+**Post-Launch:**
+- [ ] Health checks and readiness probes
+- [ ] Resource limits and autoscaling
+- [ ] Backup strategy for database
+
+---
+
+## Completed Milestones (Archive)
+
+<details>
+<summary>Milestone 1: Core Data Flow</summary>
 
 ### Database & Zero Layer
 - [x] Create migration with all MVP tables
@@ -32,7 +116,7 @@ Progress toward a deployable MVP with data flowing and utility for users.
 ### Homepage Search Integration
 - [x] Wire SearchInput to `packages.list` query on homepage
 - [x] Display package results (name, description, registry badge)
-- [x] Registry filter dropdown (All, npm, jsr, brew, apt)
+- [x] Registry filter dropdown
 - [x] "Not found" state when package doesn't exist in DB
 - [x] "Request this package" button calling `packageRequests.create`
 - [x] Registry selection when requesting (inherits filter or manual pick)
@@ -53,11 +137,10 @@ Progress toward a deployable MVP with data flowing and utility for users.
 ### End-to-End Validation
 - [x] Search for non-existent package → request it → run worker → package appears
 
----
+</details>
 
-## Milestone 2: Data Population
-
-**Goal:** Database grows automatically through dependency chains
+<details>
+<summary>Milestone 2: Data Population</summary>
 
 ### Auto-Queue Dependencies
 - [x] Parse dependencies from npm response (runtime, dev, peer, optional)
@@ -70,11 +153,10 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Request deduplication (no duplicate pending requests)
 - [x] Retry with backoff, discard after 3 failures
 
----
+</details>
 
-## Milestone 3: User Value
-
-**Goal:** Useful features for both anonymous and logged-in users
+<details>
+<summary>Milestone 3: User Value</summary>
 
 ### Package Browsing
 - [x] Homepage shows recently updated packages
@@ -92,33 +174,12 @@ Progress toward a deployable MVP with data flowing and utility for users.
 - [x] Sign in button in navbar (primary, prominent)
 - [x] Return to previous page after login (sessionStorage)
 
----
+</details>
 
-## Milestone 4: Admin & Monitoring
-
-**Goal:** Admin features for monitoring and managing the system
+<details>
+<summary>Milestone 4: Admin & Tags</summary>
 
 ### Role System
-
-**Auth flow:**
-1. Frontend redirects to Zitadel OAuth
-2. Zitadel returns `code` → frontend sends to backend `/login`
-3. Backend exchanges code for tokens, decodes `id_token` claims
-4. Backend checks `email_verified` - rejects with 403 if false (redirects to `/verify-email`)
-5. Backend extracts `roles` from `urn:zitadel:iam:org:project:roles` claim
-6. Backend creates JWT with `{ sub, email, roles }`, returns with `roles` array
-7. Frontend stores auth data including roles, passes to ZeroProvider context
-8. Mutators access `ctx.roles` for authorization checks
-
-**Usage in mutators:**
-```tsx
-if (!ctx.roles.includes("admin")) {
-  throw new Error("Admin access required");
-}
-```
-
-**Adding new roles:** Just assign in Zitadel - flows through automatically.
-
 - [x] Backend: Check `email_verified`, reject login if false
 - [x] Frontend: `/verify-email` page with link to Zitadel account management
 - [x] Backend: Extract roles from id_token, include in JWT
@@ -131,11 +192,11 @@ if (!ctx.roles.includes("admin")) {
 - [x] Frontend: Protect `/admin/*` routes (component-level auth check)
 
 ### Admin Requests Dashboard
-- [x] `/admin/requests` route - view all requests by status (pending, fetching, completed, failed, discarded)
+- [x] `/admin/requests` route - view all requests by status
 - [x] Real-time status updates (via Zero sync)
 - [x] Pagination with 25 items per page
 - [x] Tab counts showing total per status
-- [x] Failed requests auto-retry via worker (no manual button needed)
+- [x] Failed requests auto-retry via worker
 
 ### Tag System
 - [x] `/admin/tags` - tag management (CRUD)
@@ -146,96 +207,12 @@ if (!ctx.roles.includes("admin")) {
 - [x] Tags displayed on package cards (max 3, "+X more" overflow)
 - [x] Search and tags synced to URL (`?q=react&tags=cli`)
 
-### Polish
-- [ ] Error states and edge cases
-- [ ] Loading skeletons
-- [ ] Mobile responsiveness
+### Navigation
+- [x] Active state highlighting in navbar
+- [x] Breadcrumbs with auto-generation from routes
+- [x] Breadcrumb resolver for dynamic labels (UUID → name)
 
----
-
-## Milestone 5: JSR Registry Support
-
-**Goal:** Support JSR as second registry (npm + JSR only for MVP)
-
-### JSR Adapter
-- [ ] JSR adapter using `npm.jsr.io` (npm-compatible endpoint)
-- [ ] Use `/registry-adapter` skill to scaffold
-
-### Cross-Registry Dependencies
-
-**Problem:** npm packages can depend on JSR packages (e.g., `@jsr/std__path`). These show as "not found" when we only query npm.
-
-**How it works:**
-- `@jsr/std__path` on npm → `@std/path` on JSR
-- Pattern: `@jsr/{scope}__{name}` → `@{scope}/{name}`
-- JSR provides npm-compatible registry at `npm.jsr.io`
-
-**Implementation:**
-- [ ] Detect `@jsr/*` pattern in npm dependencies
-- [ ] Route `@jsr/*` requests to JSR adapter
-- [ ] Normalize name: `@jsr/std__path` → `@std/path`
-- [ ] Store with `registry: "jsr"` for proper linking
-
-### Registry Scope for MVP
-- npm + JSR only
-- Remove brew/apt from UI registry filter
-- Future registries (PyPI, crates.io, Homebrew) post-MVP
-
----
-
-## Milestone 6: Observability
-
-**Goal:** Production-ready monitoring with Grafana
-
-### Zero Telemetry
-- [ ] Configure Zero to send telemetry
-- [ ] Set up Grafana locally
-- [ ] Dashboard for Zero metrics (connections, sync latency, errors)
-- [ ] Dashboard for worker metrics (requests processed, failures, duration)
-
-### Logging
-- [ ] Structured logging in backend and worker
-- [ ] Log aggregation in Grafana/Loki
-
----
-
-## Milestone 7: Deployment
-
-**Goal:** Deploy horizontally scalable MVP to Kubernetes
-
-### Pre-Launch
-- [x] Buy domain name (`tech-garden.dev`)
-- [ ] SSL certificates (cert-manager)
-- [ ] Environment secrets in Kubernetes
-
-### Kubernetes Deployment
-- [ ] Frontend deployment (static files or SSR)
-- [ ] Backend deployment (Hono API, horizontal scaling)
-- [ ] Worker CronJob (scheduled processing)
-- [ ] Zero cache server deployment
-- [ ] PostgreSQL (managed or StatefulSet)
-- [ ] Ingress configuration
-
-### Post-Launch
-- [ ] Health checks and readiness probes
-- [ ] Resource limits and autoscaling
-- [ ] Backup strategy for database
-
----
-
-## Current Focus
-
-**Active:** MVP Polish & Deployment Prep
-
-**Domain:** `tech-garden.dev` (staging: `test.tech-garden.dev`)
-
-**Completed Milestones:**
-- Milestone 1: Core data flow
-- Milestone 2: Auto-queue, deduplication, cooldown, retry
-- Milestone 3: Package browsing, details, upvoting
-- Milestone 4: Role system, admin dashboard, tag system
-
-**Next:** Polish → Deploy to staging → Monitoring → Iterate
+</details>
 
 ---
 
@@ -243,109 +220,17 @@ if (!ctx.roles.includes("admin")) {
 
 - Homepage uses card grid for search results (max 20), links to package detail
 - Homepage shows "Recently updated" packages when no search query
-- Homepage search filters by package name only (not description)
 - Search results sorted by upvote count (highest first)
 - Package detail page at `/package/:registry/:name` with version selector
-- Version selector supports exact versions, dist-tags (latest, next), and ranges (^1.0.0, ~2.3.0)
-- Version metadata: `latestVersion`, `distTags` on packages; `isPrerelease`, `isYanked` on versions
-- Registry filter with extensible options in `lib/registries.ts`
-- All user-facing mutators require authentication (throw if `ctx.userID === "anon"`)
-- Worker uses Zero transactions directly, not mutators (for bulk operations)
-- Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob, processes 10 requests per run
-- Anonymous users can browse and see upvote counts (button renders as static, non-clickable); logged-in users can request packages and upvote
-- npm schema handles edge cases: unpublished packages, malformed deps (string instead of object), unknown field types
+- Version selector supports exact versions, dist-tags (latest, next), and ranges
+- All user-facing mutators require authentication
+- Worker runs as a job (not daemon) - scheduled via Kubernetes CronJob
+- Anonymous users can browse; logged-in users can request packages and upvote
 
 ---
 
-## MVP Completion Checklist (Dec 2025)
+## What's Working Well
 
-Prioritized tasks to ship a "good enough" MVP.
-
----
-
-### Phase 1: Critical (Must Deploy)
-
-- [x] Tag filtering on homepage
-- [x] Tags on package cards
-- [x] **404 page** - Handle unknown routes gracefully
-- [x] **Error boundary** - Catch errors, show friendly message
-- [ ] **Production build** - Verify `pnpm build` works
-
----
-
-### Phase 2: High Value Polish
-
-Quick wins that make it feel complete.
-
-- [x] **Meta tags** - Title, description for SEO
-- [x] **Favicon** - SVG seedling favicon
-- [x] **Connection status** - Only show errors/offline (hide "Connected")
-- [ ] **Mobile nav** - Test and fix navbar on small screens
-
----
-
-### Phase 3: Nice to Have
-
-Improve UX but not blocking launch.
-
-- [ ] **Empty states** - `EmptyState` component for "no results"
-- [ ] **Loading skeletons** - Replace "Loading..." text
-- [ ] **Full mobile audit** - Layout fixes across all pages
-
----
-
-### Phase 4: Post-Launch
-
-Defer until after staging is live.
-
-- [ ] **JSR adapter** - Second registry support
-- [ ] **Cross-registry deps** - Handle `@jsr/*` pattern
-- [ ] **Remove brew/apt** - Keep npm + JSR only in UI
-
----
-
-### Post-MVP Backlog
-
-Nice-to-haves, defer until after launch.
-
-#### Performance & Optimization
-- [ ] Zero preloading on link hover
-- [ ] Query optimization audit
-- [ ] Staggered loading (critical → secondary data)
-
-#### Code Quality
-- [ ] `formatDate()` utility in `@package/common`
-- [ ] `useVersionSelection()` hook to consolidate signals
-- [ ] Remove over-memoization (use plain functions)
-- [ ] Security integration tests
-
-#### Component Polish
-- [ ] Component API consistency (rename `color` → `variant`)
-- [ ] Extract Table components from admin pages
-- [ ] Split large components (VersionSelector, package/index.tsx)
-
-#### Documentation
-- [ ] Security checklist in CLAUDE.md
-- [ ] Update README with deployment instructions
-
----
-
-## Completed (Archive)
-
-### Navigation ✅
-- [x] Active state highlighting in navbar
-- [x] Breadcrumbs with auto-generation from routes
-- [x] Breadcrumb resolver for dynamic labels (UUID → name)
-
-### Code Consolidation ✅
-- [x] `PackageCard` feature component
-- [x] `AuthGuard` composite component
-- [x] `createPackageUpvote()` hook
-- [x] `createPackageRequest()` hook
-- [x] `buildPackageUrl()` utility
-- [x] Fixed broken `packages.search` query
-
-### What's Working Well (Keep!)
 - Zero query patterns - sections query independently
 - CVA usage - consistent across UI components
 - Storybook coverage - comprehensive stories with light/dark variants

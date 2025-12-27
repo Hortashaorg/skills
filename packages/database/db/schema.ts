@@ -17,7 +17,7 @@ import {
 // Enums
 // ============================================================================
 
-export const registryEnum = pgEnum("registry", ["npm", "jsr", "brew", "apt"]);
+export const registryEnum = pgEnum("registry", ["npm"]);
 
 export const dependencyTypeEnum = pgEnum("dependency_type", [
 	"runtime",
