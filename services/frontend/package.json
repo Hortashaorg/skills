@@ -38,7 +38,7 @@
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
 		"@solidjs/router": "^0.15.4",
-		"@std/uuid": "jsr:^1.0.9",
+		"@std/uuid": "jsr:^1.1.0",
 		"@tailwindcss/vite": "^4.1.18",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",

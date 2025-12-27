@@ -37,6 +37,7 @@ Polish and improvements to pick from before/after deploy.
 
 ### Done
 
+- [x] QueryBoundary component + loading state patterns documented
 - [x] Tag filtering on homepage (multi-select, URL persistence)
 - [x] Tags on package cards (max 3, "+X more" overflow)
 - [x] 404 page

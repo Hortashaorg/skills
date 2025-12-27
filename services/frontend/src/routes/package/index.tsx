@@ -1,6 +1,12 @@
-import { queries, type Row, useQuery } from "@package/database/client";
+import {
+	queries,
+	type Row,
+	useConnectionState,
+	useQuery,
+} from "@package/database/client";
 import { A, useParams, useSearchParams } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
+import { QueryBoundary } from "@/components/composite/query-boundary";
 import { Container } from "@/components/primitives/container";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -29,6 +35,11 @@ export const Package = () => {
 			registry: registry(),
 		}),
 	);
+	const connectionState = useConnectionState();
+
+	// Loading state
+	const isLoading = () =>
+		packageData() === undefined || connectionState().name === "connecting";
 
 	// Get the package (query filters by name + registry, should be 0 or 1 result)
 	const pkg = createMemo(() => {
@@ -198,9 +209,11 @@ export const Package = () => {
 		<Layout>
 			<Container size="md">
 				<Stack spacing="lg" class="py-8">
-					<Show
-						when={pkg()}
-						fallback={
+					<QueryBoundary
+						data={pkg()}
+						isLoading={isLoading()}
+						hasData={!!pkg()}
+						emptyFallback={
 							<Card padding="lg">
 								<Stack spacing="md" align="center">
 									<Text weight="semibold">Package not found</Text>
@@ -221,21 +234,21 @@ export const Package = () => {
 						{(p) => (
 							<>
 								{/* Package header */}
-								<Header pkg={p()} />
+								<Header pkg={p} />
 
 								{/* Tags */}
-								<PackageTags packageId={p().id} />
+								<PackageTags packageId={p.id} />
 
 								{/* Version selector */}
 								<VersionSelector
 									versions={sortedVersions()}
-									distTags={p().distTags}
+									distTags={p.distTags}
 									selectedVersion={selectedVersion()}
 									versionNotFound={versionNotFound()}
 									resolvedFrom={resolvedFrom()}
 									onVersionChange={handleVersionChange}
-									registry={p().registry}
-									packageName={p().name}
+									registry={p.registry}
+									packageName={p.name}
 								/>
 
 								{/* Dependencies */}
@@ -243,13 +256,13 @@ export const Package = () => {
 									{(versionId) => (
 										<Dependencies
 											versionId={versionId()}
-											registry={p().registry}
+											registry={p.registry}
 										/>
 									)}
 								</Show>
 							</>
 						)}
-					</Show>
+					</QueryBoundary>
 				</Stack>
 			</Container>
 		</Layout>

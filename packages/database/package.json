@@ -20,7 +20,7 @@
 		"./types": "./types/context.ts"
 	},
 	"dependencies": {
-		"@rocicorp/zero": "^0.25.5",
+		"@rocicorp/zero": "^0.25.6",
 		"drizzle-orm": "^0.45.1",
 		"drizzle-zero": "0.17.0",
 		"jose": "^6.1.3",

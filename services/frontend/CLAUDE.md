@@ -41,6 +41,49 @@ const [dependencies] = useQuery(() =>
 
 No need to prop-drill query results - sections can query independently.
 
+## Query Loading States
+
+Zero's `useQuery` returns `undefined` while loading, then actual data. Use `useConnectionState()` to detect initial connection.
+
+**Single-query pages - use QueryBoundary:**
+```tsx
+import { QueryBoundary } from "@/components/composite/query-boundary";
+
+const [pkg] = useQuery(() => queries.packages.byName({ name }));
+const connectionState = useConnectionState();
+const isLoading = () =>
+  pkg() === undefined || connectionState().name === "connecting";
+
+<QueryBoundary
+  data={pkg()}
+  isLoading={isLoading()}
+  hasData={!!pkg()}
+  emptyFallback={<NotFound />}
+>
+  {(p) => <PackageDetails pkg={p} />}
+</QueryBoundary>
+```
+
+**Multi-query pages - use Show with unified isLoading:**
+```tsx
+const [dataA] = useQuery(() => queries.a());
+const [dataB] = useQuery(() => queries.b());
+const connectionState = useConnectionState();
+
+const isLoading = () =>
+  connectionState().name === "connecting" ||
+  dataA() === undefined ||
+  dataB() === undefined;
+
+<Show when={!isLoading()} fallback={<Loading />}>
+  <Content dataA={dataA()} dataB={dataB()} />
+</Show>
+```
+
+**When to use which:**
+- `QueryBoundary` = Primary data with empty state handling (package detail, search results)
+- `<Show>` = Multiple queries feeding one UI, no distinct empty state needed
+
 ## Component Tiers
 
 ```
