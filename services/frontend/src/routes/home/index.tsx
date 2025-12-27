@@ -9,10 +9,8 @@ import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Layout } from "@/layout/Layout";
 import type { Registry, RegistryFilter } from "@/lib/registries";
-import { RecentPackages } from "./sections/RecentPackages";
 import { RequestForm } from "./sections/RequestForm";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
@@ -80,20 +78,23 @@ export const Home = () => {
 	const hasActiveFilters = () =>
 		searchValue().trim().length > 0 || selectedTagSlugs().length > 0;
 
-	// Filter packages based on search input, registry, and tags, sorted by upvotes
-	const filteredPackages = createMemo(() => {
+	// Unified package list - either filtered results or recent packages
+	const displayPackages = createMemo(() => {
+		const allPackages = packages() || [];
 		const query = searchValue().toLowerCase().trim();
 		const tagSlugs = selectedTagSlugs();
-
-		// Return empty if no search query AND no tags selected
-		if (!query && tagSlugs.length === 0) return [];
-
-		const allPackages = packages() || [];
 		const registry = registryFilter();
 
+		// If no filters, show recent packages sorted by updatedAt
+		if (!query && tagSlugs.length === 0) {
+			return [...allPackages]
+				.sort((a, b) => b.updatedAt - a.updatedAt)
+				.slice(0, PAGE_SIZE);
+		}
+
+		// With filters, filter and sort by upvotes
 		return allPackages
 			.filter((pkg) => {
-				// Search matches if no query or name includes query
 				const matchesSearch = !query || pkg.name.toLowerCase().includes(query);
 				const matchesRegistry = registry === "all" || pkg.registry === registry;
 				const matchesTags =
@@ -104,18 +105,16 @@ export const Home = () => {
 			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0));
 	});
 
-	// Paginate filtered results
-	const paginatedPackages = createMemo(() => {
-		const start = page() * PAGE_SIZE;
-		return filteredPackages().slice(start, start + PAGE_SIZE);
-	});
+	// Total count for pagination (only applies when filters are active)
+	const totalCount = () => displayPackages().length;
 
-	// Recently updated packages for empty state
-	const recentPackages = createMemo(() => {
-		const allPackages = packages() || [];
-		return [...allPackages]
-			.sort((a, b) => b.updatedAt - a.updatedAt)
-			.slice(0, 8);
+	// Paginate results (only when filters are active)
+	const paginatedPackages = createMemo(() => {
+		if (!hasActiveFilters()) {
+			return displayPackages();
+		}
+		const start = page() * PAGE_SIZE;
+		return displayPackages().slice(start, start + PAGE_SIZE);
 	});
 
 	// Check if the exact search term exists in packages (respecting registry filter)
@@ -133,10 +132,13 @@ export const Home = () => {
 		});
 	});
 
-	// Show "not found" state when filters are active but no results
-	const showNotFound = createMemo(() => {
-		return hasActiveFilters() && filteredPackages().length === 0;
-	});
+	// Show request form when searching for something that doesn't exist
+	const showRequestForm = () =>
+		hasActiveFilters() &&
+		!isLoading() &&
+		totalCount() === 0 &&
+		!exactMatchExists() &&
+		searchValue().trim().length > 0;
 
 	// Determine which registry to use for the request
 	const effectiveRequestRegistry = createMemo((): Registry => {
@@ -163,6 +165,14 @@ export const Home = () => {
 		return requestedPackages().has(key);
 	});
 
+	// Empty state message based on filter type
+	const emptyMessage = () => {
+		if (selectedTagSlugs().length > 0 && !searchValue().trim()) {
+			return "No packages match the selected tags.";
+		}
+		return "No packages found";
+	};
+
 	return (
 		<Layout>
 			<Container size="md">
@@ -187,47 +197,20 @@ export const Home = () => {
 						onTagsChange={setSelectedTagSlugs}
 					/>
 
-					{/* Search results as card grid */}
+					{/* Unified package grid - handles loading, empty, and results */}
 					<ResultsGrid
 						packages={paginatedPackages()}
-						totalCount={filteredPackages().length}
+						totalCount={totalCount()}
 						page={page()}
 						pageSize={PAGE_SIZE}
 						onPageChange={setPage}
+						isLoading={isLoading()}
+						hasActiveFilters={hasActiveFilters()}
+						emptyMessage={emptyMessage()}
 					/>
 
-					{/* Not found state - show empty state and request option (only after loading) */}
-					<Show when={showNotFound() && !isLoading()}>
-						<EmptyState
-							icon={
-								<svg
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-									class="w-full h-full"
-									aria-hidden="true"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="1.5"
-										d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-									/>
-								</svg>
-							}
-							title="No packages found"
-							description={
-								selectedTagSlugs().length > 0 && !searchValue().trim()
-									? "No packages match the selected tags."
-									: "Try a different search term or adjust your filters."
-							}
-						/>
-					</Show>
-
 					{/* Request form when package doesn't exist */}
-					<Show
-						when={showNotFound() && !exactMatchExists() && searchValue().trim()}
-					>
+					<Show when={showRequestForm()}>
 						<RequestForm
 							searchValue={searchValue()}
 							effectiveRegistry={effectiveRequestRegistry()}
@@ -237,44 +220,6 @@ export const Home = () => {
 							onRegistryChange={setRequestRegistry}
 							onRequestSubmitted={handleRequestSubmitted}
 						/>
-					</Show>
-
-					{/* Loading state */}
-					<Show when={isLoading() && !hasActiveFilters()}>
-						<div class="flex justify-center py-12">
-							<div class="flex items-center gap-2 text-on-surface-muted dark:text-on-surface-dark-muted">
-								<svg
-									class="animate-spin h-5 w-5"
-									fill="none"
-									viewBox="0 0 24 24"
-									aria-hidden="true"
-								>
-									<circle
-										class="opacity-25"
-										cx="12"
-										cy="12"
-										r="10"
-										stroke="currentColor"
-										stroke-width="4"
-									/>
-									<path
-										class="opacity-75"
-										fill="currentColor"
-										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-									/>
-								</svg>
-								<span class="text-sm">Loading packages...</span>
-							</div>
-						</div>
-					</Show>
-
-					{/* Empty state when no filters - show recent packages */}
-					<Show
-						when={
-							!isLoading() && !hasActiveFilters() && recentPackages().length > 0
-						}
-					>
-						<RecentPackages packages={recentPackages()} />
 					</Show>
 				</Stack>
 			</Container>
