@@ -5,7 +5,7 @@ import {
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { createMemo, createSignal, Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { AuthGuard } from "@/components/composite/auth-guard";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
@@ -80,21 +80,12 @@ export const AdminRequests = () => {
 		};
 	};
 
-	const sortedRequestsForTab = createMemo(() => {
-		const tab = activeTab();
-		const requests = requestsByStatus()[tab];
-
-		return [...requests].sort((a, b) => {
-			if (tab === "pending" || tab === "fetching") {
-				return a.createdAt - b.createdAt;
-			}
-			return b.updatedAt - a.updatedAt;
-		});
-	});
+	// Requests are already sorted by the query (pending/fetching by createdAt, others by updatedAt)
+	const requestsForTab = () => requestsByStatus()[activeTab()];
 
 	const paginatedRequests = () => {
 		const start = page() * PAGE_SIZE;
-		return sortedRequestsForTab().slice(start, start + PAGE_SIZE);
+		return requestsForTab().slice(start, start + PAGE_SIZE);
 	};
 
 	const handleTabChange = (value: string) => {

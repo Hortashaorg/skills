@@ -18,10 +18,10 @@ export const existingPending = defineQuery(
 		registry: z.enum(enums.registry),
 	}),
 	({ args }) => {
-		// Zero doesn't support IN operator - filter status client-side
 		return zql.packageRequests
 			.where("packageName", args.packageName)
-			.where("registry", args.registry);
+			.where("registry", args.registry)
+			.where("status", "IN", ["pending", "fetching"]);
 	},
 );
 
@@ -31,6 +31,7 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 });
 
 // Get requests by status for admin dashboard (admin-only access)
+// Pending/fetching sorted by createdAt (FIFO), others by updatedAt (newest first)
 export const byStatus = defineQuery(
 	z.object({
 		status: z.enum(enums.packageRequestStatus),
@@ -39,6 +40,14 @@ export const byStatus = defineQuery(
 		if (!ctx.roles.includes("admin")) {
 			throw new Error("Unauthorized: admin role required");
 		}
-		return zql.packageRequests.where("status", "=", args.status);
+
+		const isPending = args.status === "pending" || args.status === "fetching";
+
+		return zql.packageRequests
+			.where("status", args.status)
+			.orderBy(
+				isPending ? "createdAt" : "updatedAt",
+				isPending ? "asc" : "desc",
+			);
 	},
 );

@@ -26,27 +26,53 @@ await tx.mutate.table.update({
 
 ## ZQL Query Capabilities
 
-**Supported:**
+**Filtering:**
 ```tsx
-.where("field", value)              // Exact match
-.where("field", "=", value)         // Explicit operator
+.where("field", value)              // Exact match (= is default)
+.where("field", "=", value)         // Explicit equals
 .where("field", "!=", value)        // Not equal
-.where("field", ">", value)         // Comparison operators: >, <, >=, <=
+.where("field", ">", value)         // Comparison: >, <, >=, <=
 .where("field", "IS", null)         // NULL check
 .where("field", "IS NOT", null)     // NOT NULL check
-.where(...).where(...)              // Multiple conditions (AND)
-.orderBy("field", "asc" | "desc")   // Sorting
-.limit(n)                           // Limit results
-.one()                              // Single result (returns T | undefined)
-.related("relation")                // Include relations
-.related("relation", q => q.where(...))  // Filter relations
+.where("field", "LIKE", "%foo%")    // Pattern matching (case-sensitive)
+.where("field", "ILIKE", "%foo%")   // Pattern matching (case-insensitive)
+.where("field", "IN", [...])        // Array containment
+.where("field", "NOT IN", [...])    // Array exclusion
+.where(...).where(...)              // Chain = AND logic
 ```
 
-**Not supported (filter client-side):**
+**Compound filters:**
 ```tsx
-.where("field", "LIKE", "%foo%")    // Pattern matching
-.where("field", "IN", [...])        // IN operator
+.where(({ cmp, or, and, not, exists }) =>
+  or(
+    cmp("status", "active"),
+    and(cmp("priority", ">", 5), not(cmp("archived", true)))
+  )
+)
+.whereExists("comments")            // Has related rows
+.whereExists("comments", q => q.where("approved", true))
+```
+
+**Ordering, limiting, paging:**
+```tsx
+.orderBy("field", "asc" | "desc")   // Sorting (chainable)
+.limit(n)                           // Limit results
+.start(row)                         // Cursor pagination (after row)
+.start(row, { inclusive: true })    // Include the cursor row
+.one()                              // Single result (T | undefined)
+```
+
+**Relations:**
+```tsx
+.related("relation")                // Include related rows
+.related("relation", q => q.where(...).orderBy(...).limit(...))
+```
+
+**Not supported:**
+```tsx
 .where("field", null)               // Use "IS" operator instead
+// Column projection - always returns full row
+// orderBy/limit in junction (many-to-many) relations
 ```
 
 ## Query Pattern
@@ -126,6 +152,29 @@ export const update = defineMutator(
     });
   }
 );
+
+// Querying within a mutator (use tx.run with zql)
+export const updateWithQuery = defineMutator(
+  z.object({ id: z.string() }),
+  async ({ tx, args }) => {
+    const entity = await tx.run(zql.entity.one().where("id", "=", args.id));
+    if (entity) {
+      await tx.mutate.entity.update({
+        id: args.id,
+        count: entity.count + 1,
+        updatedAt: now(),
+      });
+    }
+  }
+);
+```
+
+**Cross-table mutations:** To mutate table B from table A's mutator, register table B in mutators/index.ts (even with empty `{}`):
+```tsx
+export const mutators = defineMutators({
+  tableA: { create: ... },
+  tableB: {},  // Enables tx.mutate.tableB in tableA mutators
+});
 ```
 
 ## Re-export in Index Files

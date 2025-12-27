@@ -27,6 +27,11 @@ export interface ResultsGridProps {
 	onPageChange: (page: number) => void;
 	isLoading?: boolean;
 	hasActiveFilters?: boolean;
+	/** When false, pagination shows "Page X" instead of "Page X of Y" (for limited/capped results) */
+	hasExactTotal?: boolean;
+	/** When true and on last page, shows "Load more" button */
+	canLoadMore?: boolean;
+	onLoadMore?: () => void;
 	emptyMessage?: string;
 	emptyDescription?: string;
 	emptyAction?: JSX.Element;
@@ -63,6 +68,9 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 	const headerText = () => {
 		if (props.hasActiveFilters) {
+			if (props.hasExactTotal === false) {
+				return `Showing ${startIndex()}-${endIndex()}`;
+			}
 			return `Showing ${startIndex()}-${endIndex()} of ${props.totalCount} result${props.totalCount !== 1 ? "s" : ""}`;
 		}
 		return "Recently updated";
@@ -133,7 +141,8 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 					<Show when={totalPages() > 1}>
 						<Flex justify="between" align="center" class="mt-2">
 							<Text size="sm" color="muted">
-								Page {props.page + 1} of {totalPages()}
+								Page {props.page + 1}
+								{props.hasExactTotal !== false && ` of ${totalPages()}`}
 							</Text>
 							<Flex gap="sm" align="center">
 								<Button
@@ -144,14 +153,31 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 								>
 									Previous
 								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									disabled={props.page >= totalPages() - 1}
-									onClick={() => props.onPageChange(props.page + 1)}
+								<Show
+									when={
+										props.page >= totalPages() - 1 &&
+										props.canLoadMore &&
+										props.onLoadMore
+									}
+									fallback={
+										<Button
+											variant="outline"
+											size="sm"
+											disabled={props.page >= totalPages() - 1}
+											onClick={() => props.onPageChange(props.page + 1)}
+										>
+											Next
+										</Button>
+									}
 								>
-									Next
-								</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={props.onLoadMore}
+									>
+										Load more
+									</Button>
+								</Show>
 							</Flex>
 						</Flex>
 					</Show>

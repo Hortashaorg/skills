@@ -51,6 +51,10 @@ Polish and improvements to pick from before/after deploy.
 
 ### Done
 
+- [x] **Denormalized upvote count** - `upvoteCount` column on packages table for server-side sorting by popularity
+- [x] **Server-side search** - `packages.search` query with ILIKE, registry filter, tag filter, sorted by upvotes
+- [x] **Load more pagination** - Progressive loading for search results beyond initial limit
+- [x] **URL-synced state hook** - `createUrlSignal` for cleaner URL state management
 - [x] QueryBoundary component (loading states, stories, applied to package page + dependencies section)
 - [x] ErrorFallback stories
 - [x] Tag filtering on homepage (multi-select, URL persistence)
@@ -67,6 +71,11 @@ Polish and improvements to pick from before/after deploy.
 - [x] Homepage refactor - unified ResultsGrid (loading/empty/results in one component)
 - [x] Registry filter synced to URL (`?registry=npm`)
 - [x] Consolidated package request into EmptyState action (removed duplicate "not found" UIs)
+- [x] `createUrlSignal` hook for URL-synced state (reduces boilerplate)
+- [x] `useQuery` result.type pattern for loading states (replaces `useConnectionState` hack)
+- [x] Server-side search filtering (`packages.search` query with ILIKE, registry, tag filters)
+- [x] Server-side sorting in admin requests (query handles sort order per status)
+- [x] Updated CLAUDE.md with correct ZQL capabilities (LIKE, IN, compound filters)
 
 ---
 

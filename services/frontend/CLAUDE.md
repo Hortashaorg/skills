@@ -13,7 +13,7 @@ routes/
 │   └── sections/
 │       ├── SearchBar.tsx   # PascalCase components
 │       ├── ResultsGrid.tsx
-│       └── RequestForm.tsx
+│       └── TagFilter.tsx
 └── package/
     ├── index.tsx
     ├── sections/           # UI sections of the page
@@ -43,20 +43,35 @@ No need to prop-drill query results - sections can query independently.
 
 ## Query Loading States
 
-Zero's `useQuery` returns `undefined` while loading, then actual data. Use `useConnectionState()` to detect initial connection.
+Zero's `useQuery` returns a tuple: `[data, result]`. Use `result().type` for loading/complete states:
+
+```tsx
+// result.type values:
+// - "unknown"  = local data only, server not confirmed
+// - "complete" = server has responded, data is authoritative
+// - "error"    = query failed
+```
+
+**Recommended pattern - use result.type:**
+```tsx
+const [pkg, pkgResult] = useQuery(() => queries.packages.byName({ name }));
+
+// Loading: not yet complete
+const isLoading = () => pkgResult().type !== "complete";
+
+// Empty: no data AND confirmed from server (avoids 404 flicker)
+const isEmpty = () => !pkg() && pkgResult().type === "complete";
+```
 
 **Single-query pages - use QueryBoundary:**
 ```tsx
 import { QueryBoundary } from "@/components/composite/query-boundary";
 
-const [pkg] = useQuery(() => queries.packages.byName({ name }));
-const connectionState = useConnectionState();
-const isLoading = () =>
-  pkg() === undefined || connectionState().name === "connecting";
+const [pkg, pkgResult] = useQuery(() => queries.packages.byName({ name }));
 
 <QueryBoundary
   data={pkg()}
-  isLoading={isLoading()}
+  isLoading={pkgResult().type !== "complete"}
   hasData={!!pkg()}
   emptyFallback={<NotFound />}
 >
@@ -64,20 +79,13 @@ const isLoading = () =>
 </QueryBoundary>
 ```
 
-**Multi-query pages - use Show with unified isLoading:**
+**Multi-query pages:**
 ```tsx
-const [dataA] = useQuery(() => queries.a());
-const [dataB] = useQuery(() => queries.b());
-const connectionState = useConnectionState();
+const [dataA, resultA] = useQuery(() => queries.a());
+const [dataB, resultB] = useQuery(() => queries.b());
 
 const isLoading = () =>
-  connectionState().name === "connecting" ||
-  dataA() === undefined ||
-  dataB() === undefined;
-
-<Show when={!isLoading()} fallback={<Loading />}>
-  <Content dataA={dataA()} dataB={dataB()} />
-</Show>
+  resultA().type !== "complete" || resultB().type !== "complete";
 ```
 
 **When to use which:**

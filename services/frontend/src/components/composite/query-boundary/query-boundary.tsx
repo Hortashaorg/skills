@@ -4,15 +4,18 @@ import { Spinner } from "@/components/ui/spinner";
 /**
  * QueryBoundary - Handles loading/empty/data states for Zero queries.
  *
- * Provides a consistent pattern for rendering query results with proper
- * loading and empty state handling.
+ * Use result.type from useQuery for accurate loading state:
+ * - "complete" = server has responded, data is authoritative
+ * - "unknown" = local data only, server not yet confirmed
+ * - "error" = query failed
  *
  * @example
- * // Array data
+ * // Recommended: use result.type for loading
+ * const [packages, result] = useQuery(queries.packages.list);
+ *
  * <QueryBoundary
  *   data={packages()}
- *   isLoading={isLoading()}
- *   loadingFallback={<Spinner />}
+ *   isLoading={result().type !== "complete"}
  *   emptyFallback={<EmptyState title="No packages" />}
  * >
  *   {(packages) => <For each={packages}>{...}</For>}
@@ -20,11 +23,12 @@ import { Spinner } from "@/components/ui/spinner";
  *
  * @example
  * // Single object (use hasData for custom empty check)
+ * const [pkg, result] = useQuery(() => queries.packages.byName({ name }));
+ *
  * <QueryBoundary
  *   data={pkg()}
- *   isLoading={isLoading()}
+ *   isLoading={result().type !== "complete"}
  *   hasData={!!pkg()}
- *   loadingFallback={<Spinner />}
  *   emptyFallback={<NotFound />}
  * >
  *   {(pkg) => <PackageDetails pkg={pkg} />}

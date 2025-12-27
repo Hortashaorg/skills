@@ -1,10 +1,4 @@
-import {
-	queries,
-	useConnectionState,
-	useQuery,
-	useZero,
-} from "@package/database/client";
-import { useSearchParams } from "@solidjs/router";
+import { queries, useQuery, useZero } from "@package/database/client";
 import {
 	createEffect,
 	createMemo,
@@ -22,6 +16,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
+import {
+	createUrlArraySignal,
+	createUrlSignal,
+	createUrlStringSignal,
+} from "@/hooks/createUrlSignal";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import {
@@ -36,82 +35,74 @@ const PAGE_SIZE = 20;
 
 export const Home = () => {
 	const zero = useZero();
-	const [searchParams, setSearchParams] = useSearchParams();
 
-	// Initialize state from URL params
-	const [searchValue, setSearchValue] = createSignal(
-		(searchParams.q as string) ?? "",
+	// URL-synced state
+	const [searchValue, setSearchValue] = createUrlStringSignal("q");
+	const [registryFilter, setRegistryFilter] = createUrlSignal<RegistryFilter>(
+		"registry",
+		"all",
+		{
+			parse: (v) => (v as RegistryFilter) || "all",
+			serialize: (v) => (v !== "all" ? v : undefined),
+		},
 	);
-	const [registryFilter, setRegistryFilter] = createSignal<RegistryFilter>(
-		(searchParams.registry as RegistryFilter) ?? "all",
-	);
-	const [selectedTagSlugs, setSelectedTagSlugs] = createSignal<string[]>(
-		searchParams.tags
-			? String(searchParams.tags).split(",").filter(Boolean)
-			: [],
-	);
+	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
+
+	// Local state (not URL-synced)
 	const [page, setPage] = createSignal(0);
+	const [searchLimit, setSearchLimit] = createSignal(100);
 	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
-
-	// Sync filters to URL
-	createEffect(
-		on(
-			[searchValue, registryFilter, selectedTagSlugs],
-			([query, registry, slugs]) => {
-				setSearchParams(
-					{
-						q: query.trim() || undefined,
-						registry: registry !== "all" ? registry : undefined,
-						tags: slugs.length > 0 ? slugs.join(",") : undefined,
-					},
-					{ replace: true },
-				);
-			},
-		),
-	);
-
-	// Query all packages and filter client-side
-	const [packages] = useQuery(queries.packages.list);
-	const connectionState = useConnectionState();
-
-	// Loading state
-	const isLoading = () =>
-		packages() === undefined || connectionState().name === "connecting";
-
-	// Reset page when filters change
-	createEffect(
-		on([searchValue, registryFilter, selectedTagSlugs], () => setPage(0)),
-	);
 
 	// Check if any filters are active
 	const hasActiveFilters = () =>
 		searchValue().trim().length > 0 || selectedTagSlugs().length > 0;
 
-	// Unified package list - either filtered results or recent packages
-	const displayPackages = createMemo(() => {
-		const allPackages = packages() || [];
-		const query = searchValue().toLowerCase().trim();
-		const tagSlugs = selectedTagSlugs();
+	// Use different queries based on whether filters are active
+	// Recent packages when no filters, search results when filters active
+	const [recentPackages, recentResult] = useQuery(() =>
+		queries.packages.recent({ limit: PAGE_SIZE }),
+	);
+
+	const [searchResults, searchResult] = useQuery(() => {
 		const registry = registryFilter();
+		return queries.packages.search({
+			query: searchValue().trim() || undefined,
+			registry: registry !== "all" ? (registry as Registry) : undefined,
+			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
+			limit: searchLimit(),
+		});
+	});
 
-		// If no filters, show recent packages sorted by updatedAt
-		if (!query && tagSlugs.length === 0) {
-			return [...allPackages]
-				.sort((a, b) => b.updatedAt - a.updatedAt)
-				.slice(0, PAGE_SIZE);
+	// Loading state based on which query is active
+	const isLoading = () =>
+		hasActiveFilters()
+			? searchResult().type !== "complete"
+			: recentResult().type !== "complete";
+
+	// Reset page and limit when filters change
+	createEffect(
+		on([searchValue, registryFilter, selectedTagSlugs], () => {
+			setPage(0);
+			setSearchLimit(100);
+		}),
+	);
+
+	// Check if we can load more results (current results equal limit)
+	const canLoadMore = () =>
+		hasActiveFilters() && (searchResults()?.length ?? 0) >= searchLimit();
+
+	const handleLoadMore = () => {
+		setSearchLimit((prev) => prev + 100);
+	};
+
+	// Display packages - use appropriate query result
+	// Search results are sorted alphabetically by name (server-side)
+	// Recently updated are sorted by updatedAt (server-side)
+	const displayPackages = createMemo(() => {
+		if (!hasActiveFilters()) {
+			return recentPackages() ?? [];
 		}
-
-		// With filters, filter and sort by upvotes
-		return allPackages
-			.filter((pkg) => {
-				const matchesSearch = !query || pkg.name.toLowerCase().includes(query);
-				const matchesRegistry = registry === "all" || pkg.registry === registry;
-				const matchesTags =
-					tagSlugs.length === 0 ||
-					pkg.packageTags?.some((pt) => tagSlugs.includes(pt.tag?.slug ?? ""));
-				return matchesSearch && matchesRegistry && matchesTags;
-			})
-			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0));
+		return searchResults() ?? [];
 	});
 
 	const totalCount = () => displayPackages().length;
@@ -256,6 +247,9 @@ export const Home = () => {
 						onPageChange={setPage}
 						isLoading={isLoading()}
 						hasActiveFilters={hasActiveFilters()}
+						hasExactTotal={!hasActiveFilters()}
+						canLoadMore={canLoadMore()}
+						onLoadMore={handleLoadMore}
 						emptyMessage={emptyMessage()}
 						emptyDescription={emptyDescription()}
 						emptyAction={emptyAction()}

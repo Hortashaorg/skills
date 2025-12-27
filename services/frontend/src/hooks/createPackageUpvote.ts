@@ -27,7 +27,10 @@ export function createPackageUpvote(pkg: () => PackageWithUpvotes) {
 		try {
 			if (existingUpvote) {
 				const res = await zero().mutate(
-					mutators.packageUpvotes.remove({ id: existingUpvote.id }),
+					mutators.packageUpvotes.remove({
+						id: existingUpvote.id,
+						packageId: pkg().id,
+					}),
 				).client;
 				if (res.type === "error") {
 					throw res.error;

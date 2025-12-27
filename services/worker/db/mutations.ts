@@ -44,6 +44,7 @@ export async function upsertPackage(
 		repository: data.repository ?? null,
 		latestVersion: data.latestVersion ?? null,
 		distTags: data.distTags ?? null,
+		upvoteCount: 0,
 		lastFetchAttempt: now,
 		lastFetchSuccess: now,
 		createdAt: now,

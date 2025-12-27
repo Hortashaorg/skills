@@ -1,0 +1,1 @@
+ALTER TABLE "packages" ALTER COLUMN "upvote_count" DROP DEFAULT;

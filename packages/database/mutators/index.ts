@@ -6,6 +6,8 @@ import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as tagsMutators from "./tags.ts";
 
 export const mutators = defineMutators({
+	// packages registered to enable tx.mutate.packages in packageUpvotes mutators
+	packages: {},
 	packageRequests: {
 		create: packageRequestsMutators.create,
 	},

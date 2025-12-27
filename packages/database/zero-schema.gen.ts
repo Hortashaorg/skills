@@ -375,6 +375,12 @@ const packagesTable = {
       >,
       serverName: "dist_tags",
     },
+    upvoteCount: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "upvote_count",
+    },
     lastFetchAttempt: {
       type: "number",
       optional: false,

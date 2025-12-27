@@ -54,3 +54,53 @@ export const byIdWithTags = defineQuery(
 		return zql.packages.where("id", args.id).related("packageTags").one();
 	},
 );
+
+// Recently updated packages for homepage default view
+export const recent = defineQuery(
+	z.object({ limit: z.number().default(20) }),
+	({ args }) => {
+		return zql.packages
+			.orderBy("updatedAt", "desc")
+			.limit(args.limit)
+			.related("upvotes")
+			.related("packageTags", (pt) => pt.related("tag"));
+	},
+);
+
+// Search packages with filters (server-side filtering)
+export const search = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		registry: z.enum(enums.registry).optional(),
+		tagSlugs: z.array(z.string()).optional(),
+		limit: z.number().default(100),
+	}),
+	({ args }) => {
+		let q = zql.packages;
+
+		// Text search on name (case-insensitive)
+		if (args.query?.trim()) {
+			q = q.where("name", "ILIKE", `%${args.query.trim()}%`);
+		}
+
+		// Registry filter
+		if (args.registry) {
+			q = q.where("registry", args.registry);
+		}
+
+		// Tag filter - packages that have ANY of the specified tags
+		const tagSlugs = args.tagSlugs;
+		if (tagSlugs?.length) {
+			q = q.whereExists("packageTags", (pt) =>
+				pt.whereExists("tag", (t) => t.where("slug", "IN", tagSlugs)),
+			);
+		}
+
+		return q
+			.orderBy("upvoteCount", "desc")
+			.orderBy("name", "asc")
+			.limit(args.limit)
+			.related("upvotes")
+			.related("packageTags", (pt) => pt.related("tag"));
+	},
+);

@@ -40,13 +40,17 @@ const byNameAndRegistry = defineQuery(
     .related("versions")
 );
 
-// Use (frontend)
-const [pkg] = useQuery(() => queries.packages.byNameAndRegistry({ name, registry }));
+// Use (frontend) - destructure both data and result
+const [pkg, pkgResult] = useQuery(() => queries.packages.byNameAndRegistry({ name, registry }));
+
+// Loading state: result.type tells us query completion status
+const isLoading = () => pkgResult().type !== "complete";
+const isEmpty = () => pkg()?.length === 0 && pkgResult().type === "complete";
 ```
 
-**ZQL supports:** `.where()` chaining, comparison operators, `IS NULL`, `.orderBy()`, `.limit()`, `.one()`, `.related()`
+**ZQL supports:** `.where()` chaining, comparison operators, `IS NULL`, `LIKE`, `ILIKE`, `IN`, `.orderBy()`, `.limit()`, `.one()`, `.related()`, compound filters with `and/or/not`
 
-**Not supported:** `LIKE`, `IN` operator — filter client-side instead
+**Not supported:** Column projection (always full row), `orderBy`/`limit` in junction relations
 
 ## Auth Check
 
