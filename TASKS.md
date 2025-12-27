@@ -143,6 +143,8 @@ if (!ctx.roles.includes("admin")) {
 - [x] Tags visible to all users on package detail page
 - [x] Admin dropdown menu in navbar (Package Requests, Tags)
 - [x] Tag filtering on homepage search (multi-select dropdown with URL persistence)
+- [x] Tags displayed on package cards (max 3, "+X more" overflow)
+- [x] Search and tags synced to URL (`?q=react&tags=cli`)
 
 ### Polish
 - [ ] Error states and edge cases
@@ -202,7 +204,7 @@ if (!ctx.roles.includes("admin")) {
 **Goal:** Deploy horizontally scalable MVP to Kubernetes
 
 ### Pre-Launch
-- [ ] Buy domain name
+- [x] Buy domain name (`tech-garden.dev`)
 - [ ] SSL certificates (cert-manager)
 - [ ] Environment secrets in Kubernetes
 
@@ -223,15 +225,17 @@ if (!ctx.roles.includes("admin")) {
 
 ## Current Focus
 
-**Active:** Milestone 4 - Polish & Tag Browsing
+**Active:** MVP Polish & Deployment Prep
 
-**Completed:**
+**Domain:** `tech-garden.dev` (staging: `test.tech-garden.dev`)
+
+**Completed Milestones:**
 - Milestone 1: Core data flow
 - Milestone 2: Auto-queue, deduplication, cooldown, retry
 - Milestone 3: Package browsing, details, upvoting
-- Milestone 4: Role system, admin requests dashboard, tag management
+- Milestone 4: Role system, admin dashboard, tag system
 
-**Next:** Tag browsing pages → Polish → JSR support (npm + JSR only) → Observability → Deploy
+**Next:** Polish → Deploy to staging → Monitoring → Iterate
 
 ---
 
@@ -255,49 +259,48 @@ if (!ctx.roles.includes("admin")) {
 
 ## MVP Completion Checklist (Dec 2025)
 
-Prioritized tasks to ship a "good enough" MVP. Work top-to-bottom.
+Prioritized tasks to ship a "good enough" MVP.
 
 ---
 
-### Phase 1: Complete Core Features
+### Phase 1: Critical (Must Deploy)
 
-Must-have functionality before deployment.
-
-- [x] **Tag filtering on homepage** - Multi-select tag filter with URL persistence (`?tags=react,cli`)
+- [x] Tag filtering on homepage
+- [x] Tags on package cards
 - [ ] **404 page** - Handle unknown routes gracefully
-- [ ] **Error boundary** - Catch React errors, show friendly message
+- [ ] **Error boundary** - Catch errors, show friendly message
+- [ ] **Production build** - Verify `pnpm build` works
 
 ---
 
-### Phase 2: UX Polish
+### Phase 2: High Value Polish
 
-Make it feel finished.
+Quick wins that make it feel complete.
 
-- [ ] **Empty states** - Create `EmptyState` component for "no results" patterns
-- [ ] **Loading skeletons** - Replace "Loading..." text with skeleton placeholders
-- [ ] **Mobile responsiveness** - Test and fix layout on small screens
-- [ ] **Connection status** - Hide "Connected" badge (only show errors/offline)
-
----
-
-### Phase 3: Production Readiness
-
-Before going live.
-
-- [ ] **Production build** - Verify `pnpm build` works, no errors
-- [ ] **Environment config** - Document required env vars for deployment
-- [ ] **Meta tags** - Basic SEO (title, description, og:image)
-- [ ] **Favicon** - Add proper favicon
+- [ ] **Meta tags** - Title, description, og:image for SEO/sharing
+- [ ] **Favicon** - Proper favicon and app icons
+- [ ] **Connection status** - Only show errors/offline (hide "Connected")
+- [ ] **Mobile nav** - Test and fix navbar on small screens
 
 ---
 
-### Phase 4: JSR Support (Milestone 5)
+### Phase 3: Nice to Have
 
-Second registry support.
+Improve UX but not blocking launch.
 
-- [ ] **JSR adapter** - Use `/registry-adapter` skill to scaffold
-- [ ] **Cross-registry deps** - Detect `@jsr/*` pattern, route to JSR
-- [ ] **UI update** - Keep npm + JSR in registry filter, remove brew/apt
+- [ ] **Empty states** - `EmptyState` component for "no results"
+- [ ] **Loading skeletons** - Replace "Loading..." text
+- [ ] **Full mobile audit** - Layout fixes across all pages
+
+---
+
+### Phase 4: Post-Launch
+
+Defer until after staging is live.
+
+- [ ] **JSR adapter** - Second registry support
+- [ ] **Cross-registry deps** - Handle `@jsr/*` pattern
+- [ ] **Remove brew/apt** - Keep npm + JSR only in UI
 
 ---
 
