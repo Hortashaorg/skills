@@ -1,7 +1,6 @@
 import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
-import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -32,7 +31,8 @@ export const PackageCard = (props: PackageCardProps) => {
 			padding="md"
 			class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors"
 		>
-			<Stack spacing="xs">
+			<div class="flex flex-col h-full gap-1">
+				{/* Header */}
 				<Flex gap="sm" align="center" justify="between">
 					<A href={props.href} class="flex items-center gap-2 min-w-0 flex-1">
 						<Text
@@ -52,15 +52,19 @@ export const PackageCard = (props: PackageCardProps) => {
 						onClick={props.onUpvote}
 					/>
 				</Flex>
+
+				{/* Description - grows to fill space */}
 				<Show when={props.description}>
-					<A href={props.href}>
+					<A href={props.href} class="flex-1">
 						<Text size="sm" color="muted" class="line-clamp-2">
 							{props.description}
 						</Text>
 					</A>
 				</Show>
+
+				{/* Tags - stick to bottom */}
 				<Show when={props.tags && props.tags.length > 0}>
-					<Flex gap="xs" align="center" class="flex-wrap">
+					<Flex gap="xs" align="center" class="flex-wrap mt-auto pt-2">
 						<For each={props.tags?.slice(0, MAX_VISIBLE_TAGS)}>
 							{(tag) => (
 								<Badge variant="info" size="sm">
@@ -75,7 +79,7 @@ export const PackageCard = (props: PackageCardProps) => {
 						</Show>
 					</Flex>
 				</Show>
-			</Stack>
+			</div>
 		</Card>
 	);
 };
