@@ -9,8 +9,9 @@ import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { usePackageRequest } from "@/hooks/usePackageRequest";
 import { Layout } from "@/layout/Layout";
-import type { Registry, RegistryFilter } from "@/lib/registries";
+import type { RegistryFilter } from "@/lib/registries";
 import { RequestForm } from "./sections/RequestForm";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
@@ -20,58 +21,48 @@ const PAGE_SIZE = 20;
 export const Home = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 
-	const [searchValue, setSearchValue] = createSignal("");
-	const [registryFilter, setRegistryFilter] =
-		createSignal<RegistryFilter>("all");
-	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
-	const [requestedPackages, setRequestedPackages] = createSignal<
-		Map<string, string>
-	>(new Map());
+	// Initialize state from URL params
+	const [searchValue, setSearchValue] = createSignal(
+		(searchParams.q as string) ?? "",
+	);
+	const [registryFilter, setRegistryFilter] = createSignal<RegistryFilter>(
+		(searchParams.registry as RegistryFilter) ?? "all",
+	);
+	const [selectedTagSlugs, setSelectedTagSlugs] = createSignal<string[]>(
+		searchParams.tags
+			? String(searchParams.tags).split(",").filter(Boolean)
+			: [],
+	);
 	const [page, setPage] = createSignal(0);
 
-	// Parse initial values from URL
-	const initialSearch = () => (searchParams.q as string) ?? "";
-	const initialTags = () => {
-		const tagsParam = searchParams.tags as string | undefined;
-		return tagsParam ? tagsParam.split(",").filter(Boolean) : [];
-	};
-
-	// Initialize signals from URL
-	const [selectedTagSlugs, setSelectedTagSlugs] = createSignal<string[]>(
-		initialTags(),
-	);
-
-	// Set initial search value from URL (only on mount)
-	if (initialSearch()) {
-		setSearchValue(initialSearch());
-	}
-
-	// Sync search and tags to URL
+	// Sync filters to URL
 	createEffect(
-		on([searchValue, selectedTagSlugs], ([query, slugs]) => {
-			setSearchParams(
-				{
-					q: query.trim() || undefined,
-					tags: slugs.length > 0 ? slugs.join(",") : undefined,
-				},
-				{ replace: true },
-			);
-		}),
+		on(
+			[searchValue, registryFilter, selectedTagSlugs],
+			([query, registry, slugs]) => {
+				setSearchParams(
+					{
+						q: query.trim() || undefined,
+						registry: registry !== "all" ? registry : undefined,
+						tags: slugs.length > 0 ? slugs.join(",") : undefined,
+					},
+					{ replace: true },
+				);
+			},
+		),
 	);
 
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
 	const connectionState = useConnectionState();
 
-	// Loading state - true when packages haven't loaded yet or Zero is connecting
+	// Loading state
 	const isLoading = () =>
 		packages() === undefined || connectionState().name === "connecting";
 
-	// Reset page when search, registry, or tags change
+	// Reset page when filters change
 	createEffect(
-		on([searchValue, registryFilter, selectedTagSlugs], () => {
-			setPage(0);
-		}),
+		on([searchValue, registryFilter, selectedTagSlugs], () => setPage(0)),
 	);
 
 	// Check if any filters are active
@@ -105,31 +96,20 @@ export const Home = () => {
 			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0));
 	});
 
-	// Total count for pagination (only applies when filters are active)
 	const totalCount = () => displayPackages().length;
 
 	// Paginate results (only when filters are active)
 	const paginatedPackages = createMemo(() => {
-		if (!hasActiveFilters()) {
-			return displayPackages();
-		}
+		if (!hasActiveFilters()) return displayPackages();
 		const start = page() * PAGE_SIZE;
 		return displayPackages().slice(start, start + PAGE_SIZE);
 	});
 
-	// Check if the exact search term exists in packages (respecting registry filter)
-	const exactMatchExists = createMemo(() => {
-		const query = searchValue().toLowerCase().trim();
-		if (!query) return false;
-
-		const allPackages = packages() || [];
-		const registry = registryFilter();
-
-		return allPackages.some((pkg) => {
-			const nameMatches = pkg.name.toLowerCase() === query;
-			const registryMatches = registry === "all" || pkg.registry === registry;
-			return nameMatches && registryMatches;
-		});
+	// Package request logic
+	const request = usePackageRequest({
+		searchValue,
+		registryFilter,
+		packages,
 	});
 
 	// Show request form when searching for something that doesn't exist
@@ -137,33 +117,8 @@ export const Home = () => {
 		hasActiveFilters() &&
 		!isLoading() &&
 		totalCount() === 0 &&
-		!exactMatchExists() &&
+		!request.exactMatchExists() &&
 		searchValue().trim().length > 0;
-
-	// Determine which registry to use for the request
-	const effectiveRequestRegistry = createMemo((): Registry => {
-		const filter = registryFilter();
-		if (filter !== "all") return filter;
-		return requestRegistry();
-	});
-
-	const handleRequestSubmitted = () => {
-		const packageName = searchValue().trim();
-		const registry = effectiveRequestRegistry();
-		const key = `${packageName.toLowerCase()}:${registry}`;
-		setRequestedPackages((prev) => {
-			const newMap = new Map(prev);
-			newMap.set(key, "pending");
-			return newMap;
-		});
-	};
-
-	const isRequested = createMemo(() => {
-		const packageName = searchValue().trim();
-		const registry = effectiveRequestRegistry();
-		const key = `${packageName.toLowerCase()}:${registry}`;
-		return requestedPackages().has(key);
-	});
 
 	// Empty state message based on filter type
 	const emptyMessage = () => {
@@ -213,12 +168,12 @@ export const Home = () => {
 					<Show when={showRequestForm()}>
 						<RequestForm
 							searchValue={searchValue()}
-							effectiveRegistry={effectiveRequestRegistry()}
-							requestRegistry={requestRegistry()}
+							effectiveRegistry={request.effectiveRegistry()}
+							requestRegistry={request.requestRegistry()}
 							showRegistryPicker={registryFilter() === "all"}
-							isRequested={isRequested()}
-							onRegistryChange={setRequestRegistry}
-							onRequestSubmitted={handleRequestSubmitted}
+							isRequested={request.isRequested()}
+							onRegistryChange={request.setRequestRegistry}
+							onRequestSubmitted={request.markRequested}
 						/>
 					</Show>
 				</Stack>

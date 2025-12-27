@@ -48,6 +48,9 @@ Polish and improvements to pick from before/after deploy.
 - [x] Production build verified
 - [x] EmptyState component for "no results" UI
 - [x] Loading state for initial page load
+- [x] Homepage refactor - unified ResultsGrid (loading/empty/results in one component)
+- [x] Registry filter synced to URL (`?registry=npm`)
+- [x] Extracted `usePackageRequest` hook for cleaner homepage
 
 ---
 
@@ -215,9 +218,10 @@ Polish and improvements to pick from before/after deploy.
 
 ## Notes
 
-- Homepage uses card grid for search results (max 20), links to package detail
-- Homepage shows "Recently updated" packages when no search query
-- Search results sorted by upvote count (highest first)
+- Homepage uses unified `ResultsGrid` component handling loading/empty/results states
+- No filters → "Recently updated" (sorted by updatedAt)
+- With filters → search results (sorted by upvotes)
+- All filters synced to URL (`?q=...&registry=...&tags=...`)
 - Package detail page at `/package/:registry/:name` with version selector
 - Version selector supports exact versions, dist-tags (latest, next), and ranges
 - All user-facing mutators require authentication
