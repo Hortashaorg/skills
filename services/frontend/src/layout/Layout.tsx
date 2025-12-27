@@ -179,11 +179,6 @@ export const Layout: ParentComponent = (props) => {
 									</div>
 								</div>
 							</Show>
-							<Show when={connectionState().name === "connected"}>
-								<Badge variant="success" size="sm">
-									Connected
-								</Badge>
-							</Show>
 							<Show when={connectionState().name === "connecting"}>
 								<Badge variant="info" size="sm">
 									Connecting...
@@ -196,7 +191,7 @@ export const Layout: ParentComponent = (props) => {
 							</Show>
 							<Show when={connectionState().name === "needs-auth"}>
 								<Badge variant="info" size="sm">
-									Refreshing token...
+									Refreshing...
 								</Badge>
 							</Show>
 							<Show when={connectionState().name === "error"}>

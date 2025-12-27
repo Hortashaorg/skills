@@ -267,8 +267,8 @@ Prioritized tasks to ship a "good enough" MVP.
 
 - [x] Tag filtering on homepage
 - [x] Tags on package cards
-- [ ] **404 page** - Handle unknown routes gracefully
-- [ ] **Error boundary** - Catch errors, show friendly message
+- [x] **404 page** - Handle unknown routes gracefully
+- [x] **Error boundary** - Catch errors, show friendly message
 - [ ] **Production build** - Verify `pnpm build` works
 
 ---
@@ -277,9 +277,9 @@ Prioritized tasks to ship a "good enough" MVP.
 
 Quick wins that make it feel complete.
 
-- [ ] **Meta tags** - Title, description, og:image for SEO/sharing
-- [ ] **Favicon** - Proper favicon and app icons
-- [ ] **Connection status** - Only show errors/offline (hide "Connected")
+- [x] **Meta tags** - Title, description for SEO
+- [x] **Favicon** - SVG seedling favicon
+- [x] **Connection status** - Only show errors/offline (hide "Connected")
 - [ ] **Mobile nav** - Test and fix navbar on small screens
 
 ---
