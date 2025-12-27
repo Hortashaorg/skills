@@ -1,10 +1,15 @@
-import { queries, useQuery } from "@package/database/client";
+import {
+	queries,
+	useConnectionState,
+	useQuery,
+} from "@package/database/client";
 import { useSearchParams } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Layout } from "@/layout/Layout";
 import type { Registry, RegistryFilter } from "@/lib/registries";
 import { RecentPackages } from "./sections/RecentPackages";
@@ -58,6 +63,11 @@ export const Home = () => {
 
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
+	const connectionState = useConnectionState();
+
+	// Loading state - true when packages haven't loaded yet or Zero is connecting
+	const isLoading = () =>
+		packages() === undefined || connectionState().name === "connecting";
 
 	// Reset page when search, registry, or tags change
 	createEffect(
@@ -186,8 +196,38 @@ export const Home = () => {
 						onPageChange={setPage}
 					/>
 
-					{/* Not found state - show request option */}
-					<Show when={showNotFound() && !exactMatchExists()}>
+					{/* Not found state - show empty state and request option (only after loading) */}
+					<Show when={showNotFound() && !isLoading()}>
+						<EmptyState
+							icon={
+								<svg
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+									class="w-full h-full"
+									aria-hidden="true"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="1.5"
+										d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+									/>
+								</svg>
+							}
+							title="No packages found"
+							description={
+								selectedTagSlugs().length > 0 && !searchValue().trim()
+									? "No packages match the selected tags."
+									: "Try a different search term or adjust your filters."
+							}
+						/>
+					</Show>
+
+					{/* Request form when package doesn't exist */}
+					<Show
+						when={showNotFound() && !exactMatchExists() && searchValue().trim()}
+					>
 						<RequestForm
 							searchValue={searchValue()}
 							effectiveRegistry={effectiveRequestRegistry()}
@@ -199,8 +239,41 @@ export const Home = () => {
 						/>
 					</Show>
 
+					{/* Loading state */}
+					<Show when={isLoading() && !hasActiveFilters()}>
+						<div class="flex justify-center py-12">
+							<div class="flex items-center gap-2 text-on-surface-muted dark:text-on-surface-dark-muted">
+								<svg
+									class="animate-spin h-5 w-5"
+									fill="none"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+								>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									/>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									/>
+								</svg>
+								<span class="text-sm">Loading packages...</span>
+							</div>
+						</div>
+					</Show>
+
 					{/* Empty state when no filters - show recent packages */}
-					<Show when={!hasActiveFilters() && recentPackages().length > 0}>
+					<Show
+						when={
+							!isLoading() && !hasActiveFilters() && recentPackages().length > 0
+						}
+					>
 						<RecentPackages packages={recentPackages()} />
 					</Show>
 				</Stack>

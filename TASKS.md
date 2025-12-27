@@ -24,8 +24,6 @@ Polish and improvements to pick from before/after deploy.
 
 ### Medium Priority
 
-- [ ] **Empty states** - `EmptyState` component for "no results"
-- [ ] **Loading skeletons** - Replace "Loading..." text
 - [ ] **Full mobile audit** - Layout fixes across all pages
 
 ### Low Priority (Post-Launch)
@@ -48,6 +46,8 @@ Polish and improvements to pick from before/after deploy.
 - [x] Connection status cleanup (hide "Connected")
 - [x] Mobile-friendly navbar (hamburger menu, responsive layout)
 - [x] Production build verified
+- [x] EmptyState component for "no results" UI
+- [x] Loading state for initial page load
 
 ---
 
