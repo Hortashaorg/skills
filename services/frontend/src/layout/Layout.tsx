@@ -7,6 +7,7 @@ import {
 import { A, useLocation, useParams } from "@solidjs/router";
 import {
 	createMemo,
+	createSignal,
 	Index,
 	Match,
 	type ParentComponent,
@@ -87,6 +88,7 @@ export const Layout: ParentComponent = (props) => {
 	const connectionState = useConnectionState();
 	const location = useLocation();
 	const params = useParams();
+	const [mobileMenuOpen, setMobileMenuOpen] = createSignal(false);
 
 	const breadcrumbs = createMemo(() =>
 		getBreadcrumbs(location.pathname, params),
@@ -110,17 +112,25 @@ export const Layout: ParentComponent = (props) => {
 		return id.length > 8 ? `${id.slice(0, 8)}...` : id;
 	};
 
+	const closeMobileMenu = () => setMobileMenuOpen(false);
+
 	return (
 		<div class="min-h-screen bg-surface dark:bg-surface-dark">
 			<header class="border-b border-outline dark:border-outline-dark">
 				<Container>
-					<Flex justify="between" align="center" class="h-16">
-						<A href="/" class="hover:opacity-75 transition">
+					<Flex justify="between" align="center" class="h-14">
+						<A
+							href="/"
+							class="hover:opacity-75 transition"
+							onClick={closeMobileMenu}
+						>
 							<Text size="lg" weight="semibold" as="span">
 								TechGarden
 							</Text>
 						</A>
-						<Flex gap="md" align="center">
+
+						{/* Desktop navigation */}
+						<Flex gap="md" align="center" class="hidden sm:flex">
 							<Show when={isAdmin()}>
 								<div class="relative group">
 									<button
@@ -217,7 +227,124 @@ export const Layout: ParentComponent = (props) => {
 								</Button>
 							</Show>
 						</Flex>
+
+						{/* Mobile hamburger button */}
+						<button
+							type="button"
+							class="sm:hidden p-2 text-on-surface dark:text-on-surface-dark"
+							onClick={() => setMobileMenuOpen(!mobileMenuOpen())}
+						>
+							<svg
+								class="w-6 h-6"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<title>Menu</title>
+								<Show
+									when={mobileMenuOpen()}
+									fallback={
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 6h16M4 12h16M4 18h16"
+										/>
+									}
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</Show>
+							</svg>
+						</button>
 					</Flex>
+
+					{/* Mobile menu */}
+					<Show when={mobileMenuOpen()}>
+						<div class="sm:hidden border-t border-outline dark:border-outline-dark py-4 space-y-4">
+							{/* Connection status */}
+							<Show when={connectionState().name === "connecting"}>
+								<Badge variant="info" size="sm">
+									Connecting...
+								</Badge>
+							</Show>
+							<Show when={connectionState().name === "disconnected"}>
+								<Badge variant="warning" size="sm">
+									Offline
+								</Badge>
+							</Show>
+							<Show when={connectionState().name === "error"}>
+								<Badge variant="danger" size="sm">
+									Connection Error
+								</Badge>
+							</Show>
+
+							{/* Admin links */}
+							<Show when={isAdmin()}>
+								<div class="space-y-2">
+									<Text size="sm" color="muted" class="font-medium">
+										Admin
+									</Text>
+									<A
+										href="/admin/requests"
+										class="block py-2 text-sm"
+										classList={{
+											"text-primary dark:text-primary-dark font-medium":
+												isActive("/admin/requests"),
+											"text-on-surface dark:text-on-surface-dark":
+												!isActive("/admin/requests"),
+										}}
+										onClick={closeMobileMenu}
+									>
+										Package Requests
+									</A>
+									<A
+										href="/admin/tags"
+										class="block py-2 text-sm"
+										classList={{
+											"text-primary dark:text-primary-dark font-medium":
+												isActive("/admin/tags"),
+											"text-on-surface dark:text-on-surface-dark":
+												!isActive("/admin/tags"),
+										}}
+										onClick={closeMobileMenu}
+									>
+										Tags
+									</A>
+								</div>
+							</Show>
+
+							{/* Auth actions */}
+							<div class="pt-2 border-t border-outline dark:border-outline-dark">
+								<Show
+									when={!isAnonymous()}
+									fallback={
+										<Button
+											variant="primary"
+											size="sm"
+											onClick={handleSignIn}
+											class="w-full"
+										>
+											Sign in
+										</Button>
+									}
+								>
+									<Flex justify="between" align="center">
+										<Text size="sm" color="muted">
+											{displayUserId()}
+										</Text>
+										<Button variant="outline" size="sm" onClick={handleLogout}>
+											Logout
+										</Button>
+									</Flex>
+								</Show>
+							</div>
+						</div>
+					</Show>
 				</Container>
 			</header>
 			<Show when={breadcrumbs()}>

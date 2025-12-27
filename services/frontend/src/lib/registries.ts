@@ -14,7 +14,7 @@ export const REGISTRY_FILTER_OPTIONS: {
 	value: RegistryFilter;
 	label: string;
 }[] = [
-	{ value: "all", label: "All Registries" },
+	{ value: "all", label: "All" },
 	...enums.registry.map((r) => ({ value: r, label: r })),
 ];
 

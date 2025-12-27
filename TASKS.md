@@ -22,11 +22,6 @@
 
 Polish and improvements to pick from before/after deploy.
 
-### High Priority
-
-- [ ] **Production build** - Verify `pnpm build` works
-- [ ] **Mobile nav** - Test and fix navbar on small screens
-
 ### Medium Priority
 
 - [ ] **Empty states** - `EmptyState` component for "no results"
@@ -51,6 +46,8 @@ Polish and improvements to pick from before/after deploy.
 - [x] Meta tags (title, description)
 - [x] Favicon (SVG seedling)
 - [x] Connection status cleanup (hide "Connected")
+- [x] Mobile-friendly navbar (hamburger menu, responsive layout)
+- [x] Production build verified
 
 ---
 
