@@ -4,7 +4,9 @@ import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 
 export const list = defineQuery(() => {
-	return zql.packages.related("upvotes");
+	return zql.packages
+		.related("upvotes")
+		.related("packageTags", (pt) => pt.related("tag"));
 });
 
 export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {

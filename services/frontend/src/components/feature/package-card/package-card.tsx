@@ -1,11 +1,16 @@
 import { A } from "@solidjs/router";
-import { Show } from "solid-js";
+import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
+
+export interface PackageTag {
+	name: string;
+	slug: string;
+}
 
 export interface PackageCardProps {
 	name: string;
@@ -16,7 +21,10 @@ export interface PackageCardProps {
 	isUpvoted: boolean;
 	upvoteDisabled: boolean;
 	onUpvote: () => void;
+	tags?: readonly PackageTag[];
 }
+
+const MAX_VISIBLE_TAGS = 3;
 
 export const PackageCard = (props: PackageCardProps) => {
 	return (
@@ -50,6 +58,22 @@ export const PackageCard = (props: PackageCardProps) => {
 							{props.description}
 						</Text>
 					</A>
+				</Show>
+				<Show when={props.tags && props.tags.length > 0}>
+					<Flex gap="xs" align="center" class="flex-wrap">
+						<For each={props.tags?.slice(0, MAX_VISIBLE_TAGS)}>
+							{(tag) => (
+								<Badge variant="info" size="sm">
+									{tag.name}
+								</Badge>
+							)}
+						</For>
+						<Show when={(props.tags?.length ?? 0) > MAX_VISIBLE_TAGS}>
+							<Text size="xs" color="muted">
+								+{(props.tags?.length ?? 0) - MAX_VISIBLE_TAGS} more
+							</Text>
+						</Show>
+					</Flex>
 				</Show>
 			</Stack>
 		</Card>

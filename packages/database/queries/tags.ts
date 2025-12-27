@@ -28,3 +28,8 @@ export const all = defineQuery(({ ctx }) => {
 	}
 	return zql.tags.related("packageTags");
 });
+
+// Public query with package counts for tag filter
+export const listWithCounts = defineQuery(() => {
+	return zql.tags.related("packageTags");
+});

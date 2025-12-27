@@ -8,8 +8,13 @@ import { Button } from "@/components/ui/button";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { buildPackageUrl } from "@/lib/url";
 
+type PackageTag = Row["packageTags"] & {
+	tag?: Row["tags"];
+};
+
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
+	packageTags?: readonly PackageTag[];
 };
 
 export interface ResultsGridProps {
@@ -37,6 +42,18 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 					<For each={props.packages}>
 						{(pkg) => {
 							const upvote = createPackageUpvote(() => pkg);
+							const tags = () =>
+								pkg.packageTags
+									?.filter(
+										(
+											pt,
+										): pt is typeof pt & { tag: NonNullable<typeof pt.tag> } =>
+											!!pt.tag,
+									)
+									.map((pt) => ({
+										name: pt.tag.name,
+										slug: pt.tag.slug,
+									})) ?? [];
 
 							return (
 								<PackageCard
@@ -48,6 +65,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 									isUpvoted={upvote.isUpvoted()}
 									upvoteDisabled={upvote.isDisabled()}
 									onUpvote={upvote.toggle}
+									tags={tags()}
 								/>
 							);
 						}}

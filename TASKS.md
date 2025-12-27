@@ -142,7 +142,7 @@ if (!ctx.roles.includes("admin")) {
 - [x] Assign tags to packages (admin-only controls on package detail page)
 - [x] Tags visible to all users on package detail page
 - [x] Admin dropdown menu in navbar (Package Requests, Tags)
-- [ ] `/tags` and `/tags/:slug` routes for browsing by tag
+- [x] Tag filtering on homepage search (multi-select dropdown with URL persistence)
 
 ### Polish
 - [ ] Error states and edge cases
@@ -263,7 +263,7 @@ Prioritized tasks to ship a "good enough" MVP. Work top-to-bottom.
 
 Must-have functionality before deployment.
 
-- [ ] **Tag browsing pages** - `/tags` (grid of tags) and `/tags/:slug` (packages with tag)
+- [x] **Tag filtering on homepage** - Multi-select tag filter with URL persistence (`?tags=react,cli`)
 - [ ] **404 page** - Handle unknown routes gracefully
 - [ ] **Error boundary** - Catch React errors, show friendly message
 

@@ -1,12 +1,15 @@
 import { For } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { REGISTRY_FILTER_OPTIONS, type RegistryFilter } from "@/lib/registries";
+import { TagFilter } from "./TagFilter";
 
 export interface SearchBarProps {
 	searchValue: string;
 	registryFilter: RegistryFilter;
+	selectedTagSlugs: string[];
 	onSearchChange: (value: string) => void;
 	onRegistryChange: (value: RegistryFilter) => void;
+	onTagsChange: (slugs: string[]) => void;
 }
 
 export const SearchBar = (props: SearchBarProps) => {
@@ -27,6 +30,10 @@ export const SearchBar = (props: SearchBarProps) => {
 					{(option) => <option value={option.value}>{option.label}</option>}
 				</For>
 			</select>
+			<TagFilter
+				selectedTagSlugs={props.selectedTagSlugs}
+				onTagsChange={props.onTagsChange}
+			/>
 			<div class="flex-1">
 				<input
 					type="text"

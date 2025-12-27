@@ -1,4 +1,5 @@
 import { queries, useQuery } from "@package/database/client";
+import { useSearchParams } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
@@ -14,6 +15,8 @@ import { SearchBar } from "./sections/SearchBar";
 const PAGE_SIZE = 20;
 
 export const Home = () => {
+	const [searchParams, setSearchParams] = useSearchParams();
+
 	const [searchValue, setSearchValue] = createSignal("");
 	const [registryFilter, setRegistryFilter] =
 		createSignal<RegistryFilter>("all");
@@ -23,29 +26,70 @@ export const Home = () => {
 	>(new Map());
 	const [page, setPage] = createSignal(0);
 
+	// Parse initial values from URL
+	const initialSearch = () => (searchParams.q as string) ?? "";
+	const initialTags = () => {
+		const tagsParam = searchParams.tags as string | undefined;
+		return tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+	};
+
+	// Initialize signals from URL
+	const [selectedTagSlugs, setSelectedTagSlugs] = createSignal<string[]>(
+		initialTags(),
+	);
+
+	// Set initial search value from URL (only on mount)
+	if (initialSearch()) {
+		setSearchValue(initialSearch());
+	}
+
+	// Sync search and tags to URL
+	createEffect(
+		on([searchValue, selectedTagSlugs], ([query, slugs]) => {
+			setSearchParams(
+				{
+					q: query.trim() || undefined,
+					tags: slugs.length > 0 ? slugs.join(",") : undefined,
+				},
+				{ replace: true },
+			);
+		}),
+	);
+
 	// Query all packages and filter client-side
 	const [packages] = useQuery(queries.packages.list);
 
-	// Reset page when search or registry changes
+	// Reset page when search, registry, or tags change
 	createEffect(
-		on([searchValue, registryFilter], () => {
+		on([searchValue, registryFilter, selectedTagSlugs], () => {
 			setPage(0);
 		}),
 	);
 
-	// Filter packages based on search input and registry, sorted by upvotes
+	// Check if any filters are active
+	const hasActiveFilters = () =>
+		searchValue().trim().length > 0 || selectedTagSlugs().length > 0;
+
+	// Filter packages based on search input, registry, and tags, sorted by upvotes
 	const filteredPackages = createMemo(() => {
 		const query = searchValue().toLowerCase().trim();
-		if (!query) return [];
+		const tagSlugs = selectedTagSlugs();
+
+		// Return empty if no search query AND no tags selected
+		if (!query && tagSlugs.length === 0) return [];
 
 		const allPackages = packages() || [];
 		const registry = registryFilter();
 
 		return allPackages
 			.filter((pkg) => {
-				const matchesSearch = pkg.name.toLowerCase().includes(query);
+				// Search matches if no query or name includes query
+				const matchesSearch = !query || pkg.name.toLowerCase().includes(query);
 				const matchesRegistry = registry === "all" || pkg.registry === registry;
-				return matchesSearch && matchesRegistry;
+				const matchesTags =
+					tagSlugs.length === 0 ||
+					pkg.packageTags?.some((pt) => tagSlugs.includes(pt.tag?.slug ?? ""));
+				return matchesSearch && matchesRegistry && matchesTags;
 			})
 			.sort((a, b) => (b.upvotes?.length ?? 0) - (a.upvotes?.length ?? 0));
 	});
@@ -79,10 +123,9 @@ export const Home = () => {
 		});
 	});
 
-	// Show "not found" state when user has typed but no results
+	// Show "not found" state when filters are active but no results
 	const showNotFound = createMemo(() => {
-		const query = searchValue().trim();
-		return query.length > 0 && filteredPackages().length === 0;
+		return hasActiveFilters() && filteredPackages().length === 0;
 	});
 
 	// Determine which registry to use for the request
@@ -124,12 +167,14 @@ export const Home = () => {
 						</Text>
 					</Stack>
 
-					{/* Search with registry filter */}
+					{/* Search with registry and tag filters */}
 					<SearchBar
 						searchValue={searchValue()}
 						registryFilter={registryFilter()}
+						selectedTagSlugs={selectedTagSlugs()}
 						onSearchChange={setSearchValue}
 						onRegistryChange={setRegistryFilter}
+						onTagsChange={setSelectedTagSlugs}
 					/>
 
 					{/* Search results as card grid */}
@@ -154,12 +199,8 @@ export const Home = () => {
 						/>
 					</Show>
 
-					{/* Empty state when no search - show recent packages */}
-					<Show
-						when={
-							searchValue().trim().length === 0 && recentPackages().length > 0
-						}
-					>
+					{/* Empty state when no filters - show recent packages */}
+					<Show when={!hasActiveFilters() && recentPackages().length > 0}>
 						<RecentPackages packages={recentPackages()} />
 					</Show>
 				</Stack>

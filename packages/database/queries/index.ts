@@ -38,6 +38,7 @@ export const queries = defineQueries({
 		bySlug: tagsQueries.bySlug,
 		withPackages: tagsQueries.withPackages,
 		all: tagsQueries.all,
+		listWithCounts: tagsQueries.listWithCounts,
 	},
 	packageTags: {
 		byPackageId: packageTagsQueries.byPackageId,
