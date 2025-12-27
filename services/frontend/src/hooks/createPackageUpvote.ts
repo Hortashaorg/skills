@@ -1,4 +1,5 @@
 import { mutators, useZero } from "@package/database/client";
+import { toast } from "@/components/ui/toast";
 
 type PackageWithUpvotes = {
 	id: string;
@@ -23,10 +24,25 @@ export function createPackageUpvote(pkg: () => PackageWithUpvotes) {
 
 		const existingUpvote = pkg().upvotes?.find((u) => u.accountId === userId);
 
-		if (existingUpvote) {
-			zero().mutate(mutators.packageUpvotes.remove({ id: existingUpvote.id }));
-		} else {
-			zero().mutate(mutators.packageUpvotes.create({ packageId: pkg().id }));
+		try {
+			if (existingUpvote) {
+				const res = await zero().mutate(
+					mutators.packageUpvotes.remove({ id: existingUpvote.id }),
+				).client;
+				if (res.type === "error") {
+					throw res.error;
+				}
+			} else {
+				const res = await zero().mutate(
+					mutators.packageUpvotes.create({ packageId: pkg().id }),
+				).client;
+				if (res.type === "error") {
+					throw res.error;
+				}
+			}
+		} catch (err) {
+			console.error("Failed to toggle upvote:", err);
+			toast.error("Failed to update upvote. Please try again.");
 		}
 	};
 

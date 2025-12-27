@@ -6,6 +6,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { REGISTRY_OPTIONS, type Registry } from "@/lib/registries";
@@ -76,7 +77,9 @@ export const RequestForm = (props: RequestFormProps) => {
 								<select
 									value={props.requestRegistry}
 									onChange={handleRegistryChange}
-									class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer"
+									aria-label="Select registry for package request"
+									disabled={request.isSubmitting()}
+									class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 								>
 									<For each={REGISTRY_OPTIONS}>
 										{(option) => (
@@ -85,8 +88,17 @@ export const RequestForm = (props: RequestFormProps) => {
 									</For>
 								</select>
 							</Show>
-							<Button onClick={handleRequestPackage}>
-								Request from {props.effectiveRegistry}
+							<Button
+								onClick={handleRequestPackage}
+								disabled={request.isSubmitting()}
+							>
+								<Show
+									when={request.isSubmitting()}
+									fallback={`Request from ${props.effectiveRegistry}`}
+								>
+									<Spinner size="sm" srText="Requesting package" />
+									<span class="ml-2">Requesting...</span>
+								</Show>
 							</Button>
 						</Flex>
 					</Show>

@@ -24,6 +24,7 @@ export const SearchBar = (props: SearchBarProps) => {
 			<select
 				value={props.registryFilter}
 				onChange={handleRegistryChange}
+				aria-label="Filter by registry"
 				class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer"
 			>
 				<For each={REGISTRY_FILTER_OPTIONS}>
@@ -40,6 +41,7 @@ export const SearchBar = (props: SearchBarProps) => {
 					value={props.searchValue}
 					onInput={(e) => props.onSearchChange(e.currentTarget.value)}
 					placeholder="Search packages..."
+					aria-label="Search packages"
 					class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2"
 				/>
 			</div>

@@ -22,9 +22,20 @@
 
 Polish and improvements to pick from before/after deploy.
 
+### High Priority
+
+- [x] **Accessibility: ARIA labels** - Add labels to form inputs (SearchBar, RequestForm, VersionSelector)
+- [x] **Form UX: Button loading states** - Disable + spinner on submit buttons (TagForm, RequestForm)
+- [x] **Error handling: Mutation feedback** - Show toast on upvote/request failures
+- [x] **Shared Spinner component** - Extract to `components/ui/spinner` with size variants
+
 ### Medium Priority
 
 - [ ] **Full mobile audit** - Layout fixes across all pages
+- [ ] **Form validation UX** - Real-time feedback, inline errors, character counts
+- [ ] **Shared Pagination component** - Extract from ResultsGrid + RequestsTable
+- [ ] **Accessibility: Hamburger menu** - Add aria-label to mobile nav toggle
+- [ ] **Edge cases: Long text tooltips** - Add title attributes to truncated package names/descriptions
 
 ### Low Priority (Post-Launch)
 
@@ -34,10 +45,14 @@ Polish and improvements to pick from before/after deploy.
 - [ ] Extract Table components from admin pages
 - [ ] Split large components (VersionSelector, package/index.tsx)
 - [ ] Update README with deployment instructions
+- [ ] **Version list virtualization** - For packages with 1000+ versions
+- [ ] **Empty state improvements** - More helpful CTAs and context messages
+- [ ] **Dark mode contrast audit** - Verify WCAG AA compliance
 
 ### Done
 
-- [x] QueryBoundary component + loading state patterns documented
+- [x] QueryBoundary component (loading states, stories, applied to package page + dependencies section)
+- [x] ErrorFallback stories
 - [x] Tag filtering on homepage (multi-select, URL persistence)
 - [x] Tags on package cards (max 3, "+X more" overflow)
 - [x] 404 page
@@ -234,6 +249,7 @@ Polish and improvements to pick from before/after deploy.
 ## What's Working Well
 
 - Zero query patterns - sections query independently
+- QueryBoundary for loading/empty states - consistent pattern across pages
 - CVA usage - consistent across UI components
 - Storybook coverage - comprehensive stories with light/dark variants
 - Accessibility - Kobalte primitives, proper ARIA

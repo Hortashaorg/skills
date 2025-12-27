@@ -10,33 +10,40 @@ type RequestParams = {
 export function createPackageRequest(params: () => RequestParams) {
 	const zero = useZero();
 	const [isRequested, setIsRequested] = createSignal(false);
+	const [isSubmitting, setIsSubmitting] = createSignal(false);
 
 	const isDisabled = () => zero().userID === "anon";
 
 	const submit = async (options?: { onSuccess?: () => void }) => {
-		if (isDisabled()) return;
+		if (isDisabled() || isSubmitting()) return;
 
-		const { packageName, registry } = params();
-		const write = zero().mutate(
-			mutators.packageRequests.create({ packageName, registry }),
-		);
+		setIsSubmitting(true);
+		try {
+			const { packageName, registry } = params();
+			const write = zero().mutate(
+				mutators.packageRequests.create({ packageName, registry }),
+			);
 
-		const res = await write.client;
+			const res = await write.client;
 
-		if (res.type === "error") {
-			console.error("Failed to request package:", res.error);
-			toast.error("Failed to submit request. Please try again.");
-			return;
+			if (res.type === "error") {
+				console.error("Failed to request package:", res.error);
+				toast.error("Failed to submit request. Please try again.");
+				return;
+			}
+
+			setIsRequested(true);
+			options?.onSuccess?.();
+			toast.success(`Request submitted for "${packageName}"`);
+		} finally {
+			setIsSubmitting(false);
 		}
-
-		setIsRequested(true);
-		options?.onSuccess?.();
-		toast.success(`Request submitted for "${packageName}"`);
 	};
 
 	return {
 		isRequested,
 		isDisabled,
+		isSubmitting,
 		submit,
 	};
 }

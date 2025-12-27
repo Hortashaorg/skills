@@ -4,6 +4,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	TextField,
 	TextFieldInput,
@@ -16,7 +17,7 @@ type TagWithPackages = Row["tags"] & {
 
 type Props = {
 	editingTag: TagWithPackages | null;
-	onSave: (data: { name: string; description?: string }) => void;
+	onSave: (data: { name: string; description?: string }) => Promise<void>;
 	onCancel: () => void;
 };
 
@@ -26,8 +27,9 @@ export const TagForm = (props: Props) => {
 		props.editingTag?.description ?? "",
 	);
 	const [error, setError] = createSignal<string>();
+	const [isSubmitting, setIsSubmitting] = createSignal(false);
 
-	const handleSubmit = (e: Event) => {
+	const handleSubmit = async (e: Event) => {
 		e.preventDefault();
 		setError(undefined);
 
@@ -48,10 +50,15 @@ export const TagForm = (props: Props) => {
 			return;
 		}
 
-		props.onSave({
-			name: nameValue,
-			description: descValue || undefined,
-		});
+		setIsSubmitting(true);
+		try {
+			await props.onSave({
+				name: nameValue,
+				description: descValue || undefined,
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	return (
@@ -78,11 +85,22 @@ export const TagForm = (props: Props) => {
 				</Show>
 
 				<Flex gap="sm" justify="end">
-					<Button type="button" variant="outline" onClick={props.onCancel}>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={props.onCancel}
+						disabled={isSubmitting()}
+					>
 						Cancel
 					</Button>
-					<Button type="submit" variant="primary">
-						{props.editingTag ? "Update" : "Create"}
+					<Button type="submit" variant="primary" disabled={isSubmitting()}>
+						<Show
+							when={isSubmitting()}
+							fallback={props.editingTag ? "Update" : "Create"}
+						>
+							<Spinner size="sm" srText="Saving tag" />
+							<span class="ml-2">Saving...</span>
+						</Show>
 					</Button>
 				</Flex>
 			</Stack>

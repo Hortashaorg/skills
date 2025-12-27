@@ -156,6 +156,7 @@ export const VersionSelector = (props: VersionSelectorProps) => {
 							onInput={(e) => setInputValue(e.currentTarget.value)}
 							onKeyDown={handleKeyDown}
 							placeholder="Enter version or range..."
+							aria-label="Enter version number or range"
 							class="flex-1 h-10 rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark"
 						/>
 						<Button variant="outline" size="md" onClick={handleFind}>
