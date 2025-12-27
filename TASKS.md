@@ -66,7 +66,7 @@ Polish and improvements to pick from before/after deploy.
 - [x] Loading state for initial page load
 - [x] Homepage refactor - unified ResultsGrid (loading/empty/results in one component)
 - [x] Registry filter synced to URL (`?registry=npm`)
-- [x] Extracted `usePackageRequest` hook for cleaner homepage
+- [x] Consolidated package request into EmptyState action (removed duplicate "not found" UIs)
 
 ---
 

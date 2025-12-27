@@ -2,23 +2,40 @@ import {
 	queries,
 	useConnectionState,
 	useQuery,
+	useZero,
 } from "@package/database/client";
 import { useSearchParams } from "@solidjs/router";
-import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	on,
+	Show,
+} from "solid-js";
 import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { usePackageRequest } from "@/hooks/usePackageRequest";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { Layout } from "@/layout/Layout";
-import type { RegistryFilter } from "@/lib/registries";
-import { RequestForm } from "./sections/RequestForm";
+import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import {
+	REGISTRY_OPTIONS,
+	type Registry,
+	type RegistryFilter,
+} from "@/lib/registries";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
 
 const PAGE_SIZE = 20;
 
 export const Home = () => {
+	const zero = useZero();
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	// Initialize state from URL params
@@ -34,6 +51,7 @@ export const Home = () => {
 			: [],
 	);
 	const [page, setPage] = createSignal(0);
+	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
 
 	// Sync filters to URL
 	createEffect(
@@ -105,19 +123,23 @@ export const Home = () => {
 		return displayPackages().slice(start, start + PAGE_SIZE);
 	});
 
-	// Package request logic
-	const request = usePackageRequest({
-		searchValue,
-		registryFilter,
-		packages,
-	});
+	// Effective registry for request (use filter if specific, otherwise requestRegistry)
+	const effectiveRegistry = (): Registry =>
+		registryFilter() !== "all"
+			? (registryFilter() as Registry)
+			: requestRegistry();
 
-	// Show request form when searching for something that doesn't exist
-	const showRequestForm = () =>
+	// Package request hook
+	const packageRequest = createPackageRequest(() => ({
+		packageName: searchValue().trim(),
+		registry: effectiveRegistry(),
+	}));
+
+	// Can show request option when searching for something not in DB
+	const canRequest = () =>
 		hasActiveFilters() &&
 		!isLoading() &&
 		totalCount() === 0 &&
-		!request.exactMatchExists() &&
 		searchValue().trim().length > 0;
 
 	// Empty state message based on filter type
@@ -125,7 +147,80 @@ export const Home = () => {
 		if (selectedTagSlugs().length > 0 && !searchValue().trim()) {
 			return "No packages match the selected tags.";
 		}
+		if (canRequest()) {
+			return `"${searchValue()}" not found`;
+		}
 		return "No packages found";
+	};
+
+	const emptyDescription = () => {
+		if (canRequest()) {
+			return "This package isn't in our database yet. Request it to add it.";
+		}
+		return "Try a different search term or adjust your filters.";
+	};
+
+	// Handle registry change for request
+	const handleRegistryChange = (
+		e: Event & { currentTarget: HTMLSelectElement },
+	) => {
+		setRequestRegistry(e.currentTarget.value as Registry);
+	};
+
+	// Build the empty state action (request button)
+	const emptyAction = () => {
+		if (!canRequest()) return undefined;
+
+		const isLoggedIn = zero().userID !== "anon";
+
+		if (!isLoggedIn) {
+			return (
+				<Button
+					variant="primary"
+					onClick={() => {
+						saveReturnUrl();
+						window.location.href = getAuthorizationUrl();
+					}}
+				>
+					Sign in to request
+				</Button>
+			);
+		}
+
+		if (packageRequest.isRequested()) {
+			return <Badge variant="success">Request submitted</Badge>;
+		}
+
+		return (
+			<Flex gap="sm" align="center">
+				<Show when={registryFilter() === "all"}>
+					<select
+						value={requestRegistry()}
+						onChange={handleRegistryChange}
+						aria-label="Select registry for package request"
+						disabled={packageRequest.isSubmitting()}
+						class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						<For each={REGISTRY_OPTIONS}>
+							{(option) => <option value={option.value}>{option.label}</option>}
+						</For>
+					</select>
+				</Show>
+				<Button
+					variant="primary"
+					onClick={() => packageRequest.submit()}
+					disabled={packageRequest.isSubmitting()}
+				>
+					<Show
+						when={packageRequest.isSubmitting()}
+						fallback={`Request from ${effectiveRegistry()}`}
+					>
+						<Spinner size="sm" srText="Requesting package" />
+						<span class="ml-2">Requesting...</span>
+					</Show>
+				</Button>
+			</Flex>
+		);
 	};
 
 	return (
@@ -162,20 +257,9 @@ export const Home = () => {
 						isLoading={isLoading()}
 						hasActiveFilters={hasActiveFilters()}
 						emptyMessage={emptyMessage()}
+						emptyDescription={emptyDescription()}
+						emptyAction={emptyAction()}
 					/>
-
-					{/* Request form when package doesn't exist */}
-					<Show when={showRequestForm()}>
-						<RequestForm
-							searchValue={searchValue()}
-							effectiveRegistry={request.effectiveRegistry()}
-							requestRegistry={request.requestRegistry()}
-							showRegistryPicker={registryFilter() === "all"}
-							isRequested={request.isRequested()}
-							onRegistryChange={request.setRequestRegistry}
-							onRequestSubmitted={request.markRequested}
-						/>
-					</Show>
 				</Stack>
 			</Container>
 		</Layout>

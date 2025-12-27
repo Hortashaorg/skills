@@ -1,5 +1,5 @@
 import type { Row } from "@package/database/client";
-import { For, Match, Show, Switch } from "solid-js";
+import { For, type JSX, Match, Show, Switch } from "solid-js";
 import { PackageCard } from "@/components/feature/package-card";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -29,6 +29,7 @@ export interface ResultsGridProps {
 	hasActiveFilters?: boolean;
 	emptyMessage?: string;
 	emptyDescription?: string;
+	emptyAction?: JSX.Element;
 }
 
 const LoadingSpinner = () => (
@@ -83,6 +84,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 						props.emptyDescription ??
 						"Try a different search term or adjust your filters."
 					}
+					action={props.emptyAction}
 				/>
 			</Match>
 
