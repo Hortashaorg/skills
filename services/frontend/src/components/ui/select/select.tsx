@@ -191,7 +191,7 @@ export function Select<T extends string>(props: SelectProps<T>) {
 				)}
 			>
 				<SelectPrimitive.Value<SelectOption<T>>>
-					{(state) => state.selectedOption().label}
+					{(state) => state.selectedOption()?.label}
 				</SelectPrimitive.Value>
 				<SelectPrimitive.Icon class="text-on-surface-muted dark:text-on-surface-dark-muted">
 					<svg
