@@ -9,7 +9,8 @@ RUN apt-get update && \
 # Install curl and build tools for native modules
 RUN apt-get update && \
     apt-get install -y curl wget python3 build-essential libreadline-dev && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    npm install -g node-gyp
 
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 ENV PATH="/root/.local/share/pnpm:$PATH"
