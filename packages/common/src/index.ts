@@ -1,4 +1,4 @@
-export const throwError = (message: string) => {
+export const throwError = (message: string): never => {
 	throw new Error(message);
 };
 

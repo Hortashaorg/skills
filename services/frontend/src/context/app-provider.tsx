@@ -1,6 +1,7 @@
 import { mutators, schema, ZeroProvider } from "@package/database/client";
 import { createSignal, onMount, type ParentComponent, Show } from "solid-js";
 import { getAndClearReturnUrl } from "@/lib/auth-url";
+import { getConfig } from "@/lib/config";
 import { authApi } from "./auth/auth-api";
 import { type AuthData, EmailUnverifiedError } from "./auth/types";
 import { ConnectionStatus } from "./ConnectionStatus";
@@ -82,7 +83,7 @@ export const AppProvider: ParentComponent = (props) => {
 				}}
 				schema={schema}
 				mutators={mutators}
-				cacheURL={import.meta.env.VITE_CACHE_BASE_URL}
+				cacheURL={getConfig().zeroUrl}
 				disconnectTimeoutMs={1000 * 30} // 30 seconds
 			>
 				<ConnectionStatus setAuthData={setAuthData}>

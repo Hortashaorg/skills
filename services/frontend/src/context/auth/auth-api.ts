@@ -1,15 +1,10 @@
+import { getConfig } from "@/lib/config";
 import { type AuthData, EmailUnverifiedError } from "./types";
-
-const getBaseUrl = () => {
-	const url = import.meta.env.VITE_BACKEND_BASE_URL;
-	if (!url) throw new Error("VITE_BACKEND_BASE_URL not set");
-	return url;
-};
 
 export const authApi = {
 	async refresh(): Promise<AuthData | null> {
 		try {
-			const res = await fetch(`${getBaseUrl()}/refresh`, {
+			const res = await fetch(`${getConfig().backendUrl}/refresh`, {
 				method: "POST",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
@@ -41,7 +36,7 @@ export const authApi = {
 	},
 
 	async login(code: string): Promise<AuthData> {
-		const res = await fetch(`${getBaseUrl()}/login`, {
+		const res = await fetch(`${getConfig().backendUrl}/login`, {
 			method: "POST",
 			credentials: "include",
 			headers: { "Content-Type": "application/json" },
@@ -70,7 +65,7 @@ export const authApi = {
 
 	async logout(): Promise<void> {
 		try {
-			await fetch(`${getBaseUrl()}/logout`, {
+			await fetch(`${getConfig().backendUrl}/logout`, {
 				method: "POST",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },

@@ -1,3 +1,5 @@
+import { getConfig } from "./config";
+
 const RETURN_URL_KEY = "auth_return_url";
 
 /**
@@ -5,26 +7,17 @@ const RETURN_URL_KEY = "auth_return_url";
  * Saves the current path to sessionStorage so we can return after login.
  */
 export function getAuthorizationUrl(): string {
-	const issuer = import.meta.env.VITE_ZITADEL_ISSUER;
-	const clientId = import.meta.env.VITE_ZITADEL_CLIENT_ID;
-	const redirectUri = import.meta.env.VITE_FRONTEND_URL;
-
-	if (!issuer || !clientId) {
-		console.error("Missing Zitadel configuration:", { issuer, clientId });
-		throw new Error(
-			"Zitadel configuration is missing. Please set VITE_ZITADEL_ISSUER and VITE_ZITADEL_CLIENT_ID in your environment.",
-		);
-	}
+	const config = getConfig();
 
 	const params = new URLSearchParams({
-		client_id: clientId,
-		redirect_uri: redirectUri,
+		client_id: config.zitadelClientId,
+		redirect_uri: config.frontendUrl,
 		response_type: "code",
 		scope: "openid email profile offline_access",
 		prompt: "select_account",
 	});
 
-	return `${issuer}/oauth/v2/authorize?${params.toString()}`;
+	return `${config.zitadelIssuer}/oauth/v2/authorize?${params.toString()}`;
 }
 
 /**
@@ -53,9 +46,6 @@ export function getAndClearReturnUrl(): string | null {
  * resend verification emails, etc.
  */
 export function getZitadelAccountUrl(): string {
-	const issuer = import.meta.env.VITE_ZITADEL_ISSUER;
-	if (!issuer) {
-		throw new Error("VITE_ZITADEL_ISSUER is not configured");
-	}
-	return `${issuer}/ui/console/users/me`;
+	const config = getConfig();
+	return `${config.zitadelIssuer}/ui/console/users/me`;
 }

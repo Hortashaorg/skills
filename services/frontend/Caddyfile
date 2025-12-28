@@ -1,5 +1,12 @@
 :80 {
 	root * /srv
+
+	# Runtime config from environment variables
+	handle /config.json {
+		header Content-Type application/json
+		respond `{"frontendUrl":"{$FRONTEND_URL}","backendUrl":"{$BACKEND_URL}","zeroUrl":"{$ZERO_URL}","zitadelIssuer":"{$ZITADEL_ISSUER}","zitadelClientId":"{$ZITADEL_CLIENT_ID}"}`
+	}
+
 	file_server
 	try_files {path} /index.html
 }

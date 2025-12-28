@@ -1,0 +1,7 @@
+{
+  "frontendUrl": "http://localhost:4321",
+  "backendUrl": "http://localhost:4000",
+  "zeroUrl": "http://localhost:4848",
+  "zitadelIssuer": "https://zitadel.kalena.site",
+  "zitadelClientId": "350921609730588897"
+}
