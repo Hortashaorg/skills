@@ -36,3 +36,11 @@ RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 RUN echo "Port 2221" >> /etc/ssh/sshd_config
+
+FROM base AS service
+COPY . .
+RUN pnpm install --frozen-lockfile
+
+FROM caddy:2-alpine AS frontend
+COPY services/frontend/dist /srv
+COPY services/frontend/Caddyfile /etc/caddy/Caddyfile
