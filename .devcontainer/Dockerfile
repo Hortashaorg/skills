@@ -6,9 +6,9 @@ WORKDIR /skills
 RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
-# Install curl
+# Install curl and build tools for native modules
 RUN apt-get update && \
-    apt-get install -y curl wget && \
+    apt-get install -y curl wget python3 build-essential libreadline-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
@@ -23,9 +23,9 @@ RUN curl -1sLf 'https://artifacts-cli.infisical.com/setup.deb.sh' | bash && \
 
 FROM base AS local
 
-# Install git, openssh-server Python, and build tools for native modules. Python and other dependencies are needed for zero-sqlite3 install script
+# Install git and openssh-server for development
 RUN apt-get update && \
-    apt-get install -y git openssh-server python3 build-essential libreadline-dev && \
+    apt-get install -y git openssh-server && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Claude
