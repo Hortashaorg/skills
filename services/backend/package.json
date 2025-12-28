@@ -4,7 +4,8 @@
 	"type": "module",
 	"scripts": {
 		"typecheck": "tsc  --noEmit",
-		"dev": "node --watch ./index.ts"
+		"dev": "node --watch ./index.ts",
+		"start": "node ./index.ts"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.7",
