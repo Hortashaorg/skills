@@ -73,7 +73,7 @@ const app = new Hono();
 app.use(
 	"*",
 	cors({
-		origin: ["http://localhost:4321", environment.CACHE_BASE_URL],
+		origin: [environment.FRONTEND_URL, environment.CACHE_BASE_URL],
 		credentials: true,
 	}),
 );
