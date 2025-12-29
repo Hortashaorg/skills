@@ -41,40 +41,40 @@ TechGarden aggregates package metadata from multiple sources (npm, jsr, brew, ap
 - **Reward contributors**: Recognize and gamify knowledge sharing
 - **Discover hidden gems**: Find packages through relationships, not just search keywords
 
-## MVP Scope
+## Phases
 
-### Phase 1: Foundation (Current)
+### Phase 1: Foundation ✅
 
-**Focus**: Data curation - fetch, store, tag, and browse packages
+**Status**: Complete - [tech-garden.dev](https://tech-garden.dev) is live
 
-**Package Sources**: npm only (validate data model before expanding)
+- Package search, browsing, and details (npm)
+- User authentication (OAuth)
+- Package requests with auto-queue dependencies
+- Upvoting system
+- Admin dashboard (tags, request management)
+- Worker processing packages continuously
 
-**Package Data**:
-- Basic metadata: name, description, versions, source registry
-- Dependencies: enable package linking and relationship analysis
+### Phase 2: Projects (Current)
 
-**Tagging**: Admin-only to ensure quality (transition to community tagging later)
+**Focus**: Explore what value emerges from letting users create projects with package selections
 
-**Features**:
-- Fetch npm packages via API
-- Store package metadata and dependencies
-- Browse packages with search and filtering
-- Tag packages (admin users only)
-- View package details and dependency graphs
+- Project creation and management
+- Associate packages with projects
+- Discover what metadata/relations become useful through experimentation
+- GDPR-compliant user data handling
 
-### Phase 2: Community Features
+This phase is exploratory - build the foundation and iterate based on what we learn.
+
+### Phase 3: Engagement (Deferred)
+
+**Requires**: Active user base to be meaningful
 
 - User XP and contribution tracking
 - Leaderboards for package experts
 - Tag voting and suggestions
 - Q&A system for package-specific help
 
-### Phase 3: Insights & Discovery
-
-- Project creation with tech stack selection
-- Package recommendation engine
-- Similar project discovery
-- Usage pattern analysis
+Deferred until there's a community to engage with these features.
 
 ### Phase 4: Expansion
 
@@ -94,7 +94,7 @@ TechGarden aggregates package metadata from multiple sources (npm, jsr, brew, ap
 ## Design Principles
 
 - **Data quality over quantity**: Curated and validated information
-- **Community-driven growth**: Enable users to contribute and improve data
-- **Simple to complex**: Start with core features, add depth over time
+- **Explore before optimizing**: Build features, see what's valuable, iterate
+- **Solo-first features**: Build things that work without needing other users first
 - **Real-time collaboration**: Zero enables live updates across users
-- **Rewarding contributions**: Gamification that encourages high-quality participation
+- **Community features when there's a community**: Defer gamification until there's critical mass
