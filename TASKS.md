@@ -4,6 +4,22 @@
 
 ---
 
+## Investigation: WebSocket Connection Issues
+
+**Problem:** Intermittent WebSocket timeouts through Cloudflare Tunnel. Zero client times out after 10s, connections eventually succeed on retry.
+
+### Test Scenarios
+- [ ] Local frontend → Production (through Cloudflare) - add `localhost:4321` to backend CORS
+- [ ] NodePort bypass - expose Zero directly, skip Cloudflare entirely
+- [ ] Minimal WebSocket test service - isolate Zero vs raw WebSocket behavior
+
+### Findings
+- Zero hardcodes `CONNECT_TIMEOUT_MS = 10_000` (not configurable)
+- Internal cluster connections work perfectly
+- "context canceled" errors suggest Cloudflare edge aborting before completion
+
+---
+
 ## Milestone 7: Projects Feature
 
 **Goal:** Users can create projects and associate packages with them

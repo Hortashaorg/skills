@@ -1,0 +1,7 @@
+{
+	"frontendUrl": "http://localhost:4321",
+	"backendUrl": "https://api.tech-garden.dev",
+	"zeroUrl": "https://sync.tech-garden.dev",
+	"zitadelIssuer": "https://zitadel.kalena.site",
+	"zitadelClientId": "353095488234390117"
+}
