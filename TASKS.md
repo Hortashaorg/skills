@@ -48,6 +48,38 @@
 
 ---
 
+## Milestone 8b: Route Restructure
+
+**Goal:** Reorganize routes for public browsing vs user content, add landing page
+
+### New Route Structure
+```
+/                  → Landing page (intro to TechGarden)
+/packages          → Browse all packages (public)
+/projects          → Browse all projects (public)
+/me                → User profile
+/me/projects       → User's own projects
+```
+
+### 8b.1 Landing Page
+- [ ] Create `/` landing page with intro to TechGarden
+- [ ] Hero section with value proposition
+- [ ] Feature highlights (projects, packages, collaboration)
+- [ ] CTAs to browse packages/projects or sign up
+
+### 8b.2 Browse Pages
+- [ ] `/packages` - Public package listing with search/filters
+- [ ] `/projects` - Public project listing (all users' projects)
+- [ ] Update navbar to link to browse pages
+
+### 8b.3 User Profile & Namespace
+- [ ] `/me` - User profile page (info, link to projects, settings)
+- [ ] Move `/projects` → `/me/projects` (user's own projects)
+- [ ] Update `/projects/new` → `/me/projects/new`
+- [ ] Update all internal links and redirects
+
+---
+
 ## Milestone 9: GDPR & Data Strategy
 
 **Goal:** Establish patterns for user data handling before we accumulate more user content
@@ -58,7 +90,7 @@
 - [ ] Privacy policy page (`/privacy`)
 
 ### 9.2 User Rights
-- [ ] Account settings page (`/settings`)
+- [ ] Add settings/GDPR controls to `/me` profile page (created in 8b)
 - [ ] Data export: download your data as JSON
 - [ ] Account deletion flow with clear cascade behavior
 
