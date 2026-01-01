@@ -37,7 +37,7 @@ const byNameAndRegistry = defineQuery(
   ({ args }) => zql.packages
     .where("name", args.name)
     .where("registry", args.registry)
-    .related("versions")
+    .related("releaseChannels")
 );
 
 // Use (frontend) - destructure both data and result

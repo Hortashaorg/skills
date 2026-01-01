@@ -223,12 +223,13 @@ export const entityTags = pgTable("entity_tags", {
 }, (table) => [unique().on(table.entityId, table.tagId)]);
 
 // Immutable tables: id + createdAt only (never updated after creation)
-// Example: packageVersions - versions are immutable once published
-export const packageVersions = pgTable("package_versions", {
+// Example: channelDependencies - dependencies are recreated on update, not modified
+export const channelDependencies = pgTable("channel_dependencies", {
   id: uuid().primaryKey(),
-  version: text().notNull(),
+  channelId: uuid().notNull().references(() => packageReleaseChannels.id),
+  dependencyPackageId: uuid().notNull().references(() => packages.id),
   createdAt: timestamp().notNull(),
-  // No updatedAt - records never change
+  // No updatedAt - records are deleted and recreated on change
 });
 ```
 

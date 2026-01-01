@@ -16,11 +16,10 @@ routes/
 │       └── TagFilter.tsx
 └── package/
     ├── index.tsx
-    ├── sections/           # UI sections of the page
-    │   ├── Header.tsx
-    │   └── Dependencies.tsx
-    └── components/         # Page-specific reusable components
-        └── DependencyItem.tsx
+    └── sections/           # UI sections of the page
+        ├── Header.tsx
+        ├── ChannelSelector.tsx
+        └── Dependencies.tsx
 ```
 
 **Conventions:**
@@ -35,7 +34,7 @@ Zero queries share a local SQLite cache. Same query in multiple components stays
 ```tsx
 // In Dependencies.tsx section - makes its own query
 const [dependencies] = useQuery(() =>
-  queries.packageDependencies.byVersionId({ versionId: props.versionId })
+  queries.channelDependencies.byChannelId({ channelId: props.channelId })
 );
 ```
 
@@ -163,7 +162,7 @@ if (zero().userID === "anon") {
 ```tsx
 // Zero returns readonly arrays - use readonly in prop types
 interface Props {
-  versions: readonly PackageVersion[];  // Not PackageVersion[]
+  channels: readonly ReleaseChannel[];  // Not ReleaseChannel[]
 }
 ```
 
