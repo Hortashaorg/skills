@@ -3,7 +3,7 @@ import { createSignal } from "solid-js";
 import { toast } from "@/components/ui/toast";
 
 type RequestParams = {
-	packageName: string;
+	name: string;
 	registry: Registry;
 };
 
@@ -19,9 +19,9 @@ export function createPackageRequest(params: () => RequestParams) {
 
 		setIsSubmitting(true);
 		try {
-			const { packageName, registry } = params();
+			const { name, registry } = params();
 			const write = zero().mutate(
-				mutators.packageRequests.create({ packageName, registry }),
+				mutators.packages.requestPackage({ name, registry }),
 			);
 
 			const res = await write.client;
@@ -34,7 +34,7 @@ export function createPackageRequest(params: () => RequestParams) {
 
 			setIsRequested(true);
 			options?.onSuccess?.();
-			toast.success(`Request submitted for "${packageName}"`);
+			toast.success(`Request submitted for "${name}"`);
 		} finally {
 			setIsSubmitting(false);
 		}

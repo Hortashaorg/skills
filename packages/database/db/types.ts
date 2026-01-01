@@ -14,15 +14,16 @@ import {
 	actorTypeEnum,
 	auditActionEnum,
 	dependencyTypeEnum,
-	packageRequestStatusEnum,
+	fetchStatusEnum,
+	packageStatusEnum,
 	registryEnum,
 } from "./schema.ts";
 
 // Infer union types from Drizzle enums
 export type Registry = (typeof registryEnum.enumValues)[number];
 export type DependencyType = (typeof dependencyTypeEnum.enumValues)[number];
-export type PackageRequestStatus =
-	(typeof packageRequestStatusEnum.enumValues)[number];
+export type FetchStatus = (typeof fetchStatusEnum.enumValues)[number];
+export type PackageStatus = (typeof packageStatusEnum.enumValues)[number];
 export type AuditAction = (typeof auditActionEnum.enumValues)[number];
 export type ActorType = (typeof actorTypeEnum.enumValues)[number];
 
@@ -31,7 +32,8 @@ export type ActorType = (typeof actorTypeEnum.enumValues)[number];
 export const enums = {
 	registry: registryEnum.enumValues,
 	dependencyType: dependencyTypeEnum.enumValues,
-	packageRequestStatus: packageRequestStatusEnum.enumValues,
+	fetchStatus: fetchStatusEnum.enumValues,
+	packageStatus: packageStatusEnum.enumValues,
 	auditAction: auditActionEnum.enumValues,
 	actorType: actorTypeEnum.enumValues,
 } as const;

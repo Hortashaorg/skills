@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
+import { count, db, dbSchema, eq } from "@package/database/server";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
@@ -210,6 +211,17 @@ app.post("/api/mutate", async (c) => {
 
 app.post("/api/query", async (c) => {
 	return handleQuery(c);
+});
+
+app.get("/api/stats", async (c) => {
+	const [pending] = await db
+		.select({ count: count() })
+		.from(dbSchema.packageFetches)
+		.where(eq(dbSchema.packageFetches.status, "pending"));
+
+	return c.json({
+		pendingFetches: pending?.count ?? 0,
+	});
 });
 
 serve({

@@ -1,0 +1,1 @@
+ALTER TABLE "packages" ALTER COLUMN "status" DROP DEFAULT;

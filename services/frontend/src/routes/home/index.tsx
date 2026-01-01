@@ -122,7 +122,7 @@ export const Home = () => {
 
 	// Package request hook
 	const packageRequest = createPackageRequest(() => ({
-		packageName: searchValue().trim(),
+		name: searchValue().trim(),
 		registry: effectiveRegistry(),
 	}));
 

@@ -21,11 +21,21 @@ export interface PackageCardProps {
 	upvoteDisabled: boolean;
 	onUpvote: () => void;
 	tags?: readonly PackageTag[];
+	/** Status badge for failed/placeholder packages */
+	status?: "failed" | "placeholder";
+	/** Failure reason to show */
+	failureReason?: string | null;
+	/** Version range to display */
+	versionRange?: string;
 }
 
 const MAX_VISIBLE_TAGS = 3;
 
 export const PackageCard = (props: PackageCardProps) => {
+	const hasStatus = () => props.status === "failed" || props.status === "placeholder";
+	const hasTags = () => props.tags && props.tags.length > 0;
+	const hasFooter = () => hasTags() || props.versionRange || hasStatus();
+
 	return (
 		<Card
 			padding="md"
@@ -62,21 +72,43 @@ export const PackageCard = (props: PackageCardProps) => {
 					</A>
 				</Show>
 
-				{/* Tags - stick to bottom */}
-				<Show when={props.tags && props.tags.length > 0}>
-					<Flex gap="xs" align="center" class="flex-wrap mt-auto pt-2">
-						<For each={props.tags?.slice(0, MAX_VISIBLE_TAGS)}>
-							{(tag) => (
-								<Badge variant="info" size="sm">
-									{tag.name}
+				{/* Footer: Tags, version range, and status */}
+				<Show when={hasFooter()}>
+					<Flex gap="xs" align="center" justify="between" class="flex-wrap mt-auto pt-2">
+						{/* Left side: Tags */}
+						<Flex gap="xs" align="center" class="flex-wrap">
+							<For each={props.tags?.slice(0, MAX_VISIBLE_TAGS)}>
+								{(tag) => (
+									<Badge variant="info" size="sm">
+										{tag.name}
+									</Badge>
+								)}
+							</For>
+							<Show when={(props.tags?.length ?? 0) > MAX_VISIBLE_TAGS}>
+								<Text size="xs" color="muted">
+									+{(props.tags?.length ?? 0) - MAX_VISIBLE_TAGS} more
+								</Text>
+							</Show>
+						</Flex>
+
+						{/* Right side: Version range and status */}
+						<Flex gap="xs" align="center">
+							<Show when={props.versionRange}>
+								<Badge variant="secondary" size="sm">
+									{props.versionRange}
 								</Badge>
-							)}
-						</For>
-						<Show when={(props.tags?.length ?? 0) > MAX_VISIBLE_TAGS}>
-							<Text size="xs" color="muted">
-								+{(props.tags?.length ?? 0) - MAX_VISIBLE_TAGS} more
-							</Text>
-						</Show>
+							</Show>
+							<Show when={props.status === "placeholder"}>
+								<Badge variant="warning" size="sm">
+									not fetched
+								</Badge>
+							</Show>
+							<Show when={props.status === "failed"}>
+								<Badge variant="danger" size="sm">
+									{props.failureReason || "failed"}
+								</Badge>
+							</Show>
+						</Flex>
 					</Flex>
 				</Show>
 			</div>

@@ -11,6 +11,7 @@ export { handleMutateRequest, handleQueryRequest } from "@rocicorp/zero/server";
 // Re-export drizzle-orm utilities for workers
 export {
 	and,
+	count,
 	eq,
 	inArray,
 	isNotNull,
@@ -41,7 +42,8 @@ export type {
 	ActorType,
 	AuditAction,
 	DependencyType,
-	PackageRequestStatus,
+	FetchStatus,
+	PackageStatus,
 	Registry,
 } from "./db/types.ts";
 export { enums } from "./db/types.ts";

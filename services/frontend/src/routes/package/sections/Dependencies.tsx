@@ -6,25 +6,71 @@ import {
 } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { QueryBoundary } from "@/components/composite/query-boundary";
+import { PackageCard } from "@/components/feature/package-card";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
+import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import type { DependencyType, Registry } from "@/lib/registries";
-import { DependencyItem } from "../components/DependencyItem";
+import { buildPackageUrl } from "@/lib/url";
 
-type PackageDependency = Row["packageDependencies"];
+type ChannelDependency = Row["channelDependencies"] & {
+	dependencyPackage: Row["packages"] & {
+		upvotes?: readonly Row["packageUpvotes"][];
+		packageTags?: readonly (Row["packageTags"] & {
+			tag: Row["tags"];
+		})[];
+	};
+};
 
 export interface DependenciesProps {
-	versionId: string;
+	channelId: string;
 	registry: Registry;
 }
 
+const DependencyCard = (props: {
+	dep: ChannelDependency;
+	registry: Registry;
+}) => {
+	const pkg = () => props.dep.dependencyPackage;
+	const upvote = createPackageUpvote(pkg);
+
+	const tags = () =>
+		pkg().packageTags?.map((pt) => ({
+			name: pt.tag.name,
+			slug: pt.tag.slug,
+		})) ?? [];
+
+	const status = () => {
+		const s = pkg().status;
+		if (s === "failed" || s === "placeholder") return s;
+		return undefined;
+	};
+
+	return (
+		<PackageCard
+			name={pkg().name}
+			registry={pkg().registry}
+			description={pkg().description}
+			href={buildPackageUrl(pkg().registry, pkg().name)}
+			upvoteCount={upvote.upvoteCount()}
+			isUpvoted={upvote.isUpvoted()}
+			upvoteDisabled={upvote.isDisabled()}
+			onUpvote={upvote.toggle}
+			tags={tags()}
+			status={status()}
+			failureReason={pkg().failureReason}
+			versionRange={props.dep.dependencyVersionRange}
+		/>
+	);
+};
+
 export const Dependencies = (props: DependenciesProps) => {
 	const [dependencies] = useQuery(() =>
-		queries.packageDependencies.byVersionId({
-			versionId: props.versionId,
+		queries.channelDependencies.byChannelId({
+			channelId: props.channelId,
 		}),
 	);
 	const connectionState = useConnectionState();
@@ -42,18 +88,18 @@ export const Dependencies = (props: DependenciesProps) => {
 					isLoading={isLoading()}
 					emptyFallback={
 						<Text color="muted" size="sm">
-							No dependencies for this version.
+							No dependencies for this channel.
 						</Text>
 					}
 				>
 					{(deps) => {
-						const byType: Record<DependencyType, PackageDependency[]> = {
+						const byType: Record<DependencyType, ChannelDependency[]> = {
 							runtime: [],
 							dev: [],
 							peer: [],
 							optional: [],
 						};
-						for (const dep of deps) {
+						for (const dep of deps as ChannelDependency[]) {
 							byType[dep.dependencyType].push(dep);
 						}
 
@@ -73,13 +119,23 @@ export const Dependencies = (props: DependenciesProps) => {
 						if (!hasAny) {
 							return (
 								<Text color="muted" size="sm">
-									No dependencies for this version.
+									No dependencies for this channel.
 								</Text>
 							);
 						}
 
+						// Find first non-empty tab for default
+						const defaultTab =
+							counts.runtime > 0
+								? "runtime"
+								: counts.dev > 0
+									? "dev"
+									: counts.peer > 0
+										? "peer"
+										: "optional";
+
 						return (
-							<Tabs.Root defaultValue="runtime">
+							<Tabs.Root defaultValue={defaultTab}>
 								<Tabs.List variant="line">
 									<Show when={counts.runtime > 0}>
 										<Tabs.Trigger value="runtime" variant="line">
@@ -106,16 +162,16 @@ export const Dependencies = (props: DependenciesProps) => {
 								<For each={["runtime", "dev", "peer", "optional"] as const}>
 									{(depType) => (
 										<Tabs.Content value={depType}>
-											<Stack spacing="sm" class="mt-4">
+											<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 												<For each={byType[depType]}>
 													{(dep) => (
-														<DependencyItem
+														<DependencyCard
 															dep={dep}
 															registry={props.registry}
 														/>
 													)}
 												</For>
-											</Stack>
+											</div>
 										</Tabs.Content>
 									)}
 								</For>

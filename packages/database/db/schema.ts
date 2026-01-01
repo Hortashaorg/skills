@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	boolean,
 	index,
 	integer,
 	jsonb,
@@ -26,12 +25,10 @@ export const dependencyTypeEnum = pgEnum("dependency_type", [
 	"optional",
 ]);
 
-export const packageRequestStatusEnum = pgEnum("package_request_status", [
+export const fetchStatusEnum = pgEnum("fetch_status", [
 	"pending",
-	"fetching",
 	"completed",
 	"failed",
-	"discarded",
 ]);
 
 export const auditActionEnum = pgEnum("audit_action", [
@@ -43,6 +40,12 @@ export const auditActionEnum = pgEnum("audit_action", [
 ]);
 
 export const actorTypeEnum = pgEnum("actor_type", ["user", "worker", "system"]);
+
+export const packageStatusEnum = pgEnum("package_status", [
+	"active",
+	"failed",
+	"placeholder",
+]);
 
 // ============================================================================
 // Users
@@ -66,6 +69,8 @@ export const packages = pgTable(
 		id: uuid().primaryKey(),
 		name: text().notNull(),
 		registry: registryEnum().notNull(),
+		status: packageStatusEnum().notNull(),
+		failureReason: text(),
 		description: text(),
 		homepage: text(),
 		repository: text(),
@@ -79,87 +84,67 @@ export const packages = pgTable(
 	},
 	(table) => [
 		unique().on(table.name, table.registry),
-		index("idx_packages_name").on(table.name),
-		index("idx_packages_registry").on(table.registry),
 		index("idx_packages_upvote_count").on(table.upvoteCount),
-		index("idx_packages_last_fetch_attempt").on(table.lastFetchAttempt),
-		index("idx_packages_created_at").on(table.createdAt),
 	],
 );
 
-export const packageVersions = pgTable(
-	"package_versions",
+export const packageReleaseChannels = pgTable(
+	"package_release_channels",
 	{
 		id: uuid().primaryKey(),
 		packageId: uuid()
 			.notNull()
 			.references(() => packages.id),
+		channel: text().notNull(),
 		version: text().notNull(),
 		publishedAt: timestamp().notNull(),
-		isPrerelease: boolean().notNull(),
-		isYanked: boolean().notNull(),
 		createdAt: timestamp().notNull(),
+		updatedAt: timestamp().notNull(),
 	},
-	(table) => [
-		unique().on(table.packageId, table.version),
-		index("idx_package_versions_package_id").on(table.packageId),
-		index("idx_package_versions_published_at").on(table.publishedAt),
-		index("idx_package_versions_stable")
-			.on(table.packageId, table.publishedAt)
-			.where(sql`${table.isPrerelease} = false AND ${table.isYanked} = false`),
-	],
+	(table) => [unique().on(table.packageId, table.channel)],
 );
 
-export const packageDependencies = pgTable(
-	"package_dependencies",
+export const channelDependencies = pgTable(
+	"channel_dependencies",
 	{
 		id: uuid().primaryKey(),
-		packageId: uuid()
+		channelId: uuid()
+			.notNull()
+			.references(() => packageReleaseChannels.id),
+		dependencyPackageId: uuid()
 			.notNull()
 			.references(() => packages.id),
-		versionId: uuid()
-			.notNull()
-			.references(() => packageVersions.id),
-		dependencyName: text().notNull(),
-		dependencyPackageId: uuid().references(() => packages.id),
 		dependencyVersionRange: text().notNull(),
 		dependencyType: dependencyTypeEnum().notNull(),
 		createdAt: timestamp().notNull(),
-		updatedAt: timestamp().notNull(),
 	},
 	(table) => [
-		index("idx_package_dependencies_package_id").on(table.packageId),
-		index("idx_package_dependencies_version_id").on(table.versionId),
-		index("idx_package_dependencies_dependency_name").on(table.dependencyName),
-		index("idx_package_dependencies_dependency_package_id").on(
+		index("idx_channel_dependencies_channel_id").on(table.channelId),
+		unique().on(
+			table.channelId,
 			table.dependencyPackageId,
+			table.dependencyType,
 		),
-		index("idx_package_dependencies_unlinked")
-			.on(table.dependencyName, table.createdAt)
-			.where(sql`${table.dependencyPackageId} IS NULL`),
 	],
 );
 
-export const packageRequests = pgTable(
-	"package_requests",
+export const packageFetches = pgTable(
+	"package_fetches",
 	{
 		id: uuid().primaryKey(),
-		packageName: text().notNull(),
-		registry: registryEnum().notNull(),
-		status: packageRequestStatusEnum().notNull(),
+		packageId: uuid()
+			.notNull()
+			.references(() => packages.id),
+		status: fetchStatusEnum().notNull(),
 		errorMessage: text(),
-		packageId: uuid().references(() => packages.id),
-		attemptCount: integer().notNull(),
 		createdAt: timestamp().notNull(),
-		updatedAt: timestamp().notNull(),
+		completedAt: timestamp(),
 	},
 	(table) => [
-		index("idx_package_requests_unique_pending")
-			.on(table.packageName, table.registry, table.status)
-			.where(sql`${table.status} IN ('pending', 'fetching')`),
-		index("idx_package_requests_status_created")
+		index("idx_package_fetches_package_id").on(table.packageId),
+		index("idx_package_fetches_pending")
 			.on(table.status, table.createdAt)
-			.where(sql`${table.status} IN ('pending', 'fetching')`),
+			.where(sql`${table.status} = 'pending'`),
 	],
 );
 
@@ -186,7 +171,6 @@ export const packageTags = pgTable(
 	},
 	(table) => [
 		unique().on(table.packageId, table.tagId),
-		index("idx_package_tags_package_id").on(table.packageId),
 		index("idx_package_tags_tag_id").on(table.tagId),
 	],
 );
@@ -205,85 +189,41 @@ export const packageUpvotes = pgTable(
 	},
 	(table) => [
 		unique().on(table.packageId, table.accountId),
-		index("idx_package_upvotes_package_id").on(table.packageId),
 		index("idx_package_upvotes_account_id").on(table.accountId),
 	],
 );
 
-export const auditLog = pgTable(
-	"audit_log",
-	{
-		id: uuid().primaryKey(),
-		entityType: text().notNull(),
-		entityId: uuid(),
-		action: auditActionEnum().notNull(),
-		actorType: actorTypeEnum().notNull(),
-		actorId: uuid().references(() => account.id),
-		metadata: jsonb(),
-		createdAt: timestamp().notNull(),
-	},
-	(table) => [
-		index("idx_audit_log_entity").on(table.entityType, table.entityId),
-		index("idx_audit_log_action").on(table.action),
-		index("idx_audit_log_actor").on(table.actorType, table.actorId),
-		index("idx_audit_log_created_at").on(table.createdAt),
-	],
-);
+export const auditLog = pgTable("audit_log", {
+	id: uuid().primaryKey(),
+	entityType: text().notNull(),
+	entityId: uuid(),
+	action: auditActionEnum().notNull(),
+	actorType: actorTypeEnum().notNull(),
+	actorId: uuid().references(() => account.id),
+	metadata: jsonb(),
+	createdAt: timestamp().notNull(),
+});
 
 // ============================================================================
 // Relations
 // ============================================================================
 
 export const packagesRelations = relations(packages, ({ many }) => ({
-	versions: many(packageVersions),
-	dependencies: many(packageDependencies),
-	dependents: many(packageDependencies, {
+	releaseChannels: many(packageReleaseChannels),
+	channelDependents: many(channelDependencies, {
 		relationName: "dependencyPackage",
 	}),
 	packageTags: many(packageTags),
-	requests: many(packageRequests),
+	fetches: many(packageFetches),
 	upvotes: many(packageUpvotes),
 }));
 
-export const packageVersionsRelations = relations(
-	packageVersions,
-	({ one, many }) => ({
-		package: one(packages, {
-			fields: [packageVersions.packageId],
-			references: [packages.id],
-		}),
-		dependencies: many(packageDependencies),
+export const packageFetchesRelations = relations(packageFetches, ({ one }) => ({
+	package: one(packages, {
+		fields: [packageFetches.packageId],
+		references: [packages.id],
 	}),
-);
-
-export const packageDependenciesRelations = relations(
-	packageDependencies,
-	({ one }) => ({
-		package: one(packages, {
-			fields: [packageDependencies.packageId],
-			references: [packages.id],
-		}),
-		version: one(packageVersions, {
-			fields: [packageDependencies.versionId],
-			references: [packageVersions.id],
-		}),
-		dependencyPackage: one(packages, {
-			fields: [packageDependencies.dependencyPackageId],
-			references: [packages.id],
-			relationName: "dependencyPackage",
-		}),
-	}),
-);
-
-export const packageRequestsRelations = relations(
-	packageRequests,
-	({ one }) => ({
-		package: one(packages, {
-			fields: [packageRequests.packageId],
-			references: [packages.id],
-		}),
-	}),
-);
+}));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
 	packageTags: many(packageTags),
@@ -317,3 +257,29 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
 		references: [account.id],
 	}),
 }));
+
+export const packageReleaseChannelsRelations = relations(
+	packageReleaseChannels,
+	({ one, many }) => ({
+		package: one(packages, {
+			fields: [packageReleaseChannels.packageId],
+			references: [packages.id],
+		}),
+		dependencies: many(channelDependencies),
+	}),
+);
+
+export const channelDependenciesRelations = relations(
+	channelDependencies,
+	({ one }) => ({
+		channel: one(packageReleaseChannels, {
+			fields: [channelDependencies.channelId],
+			references: [packageReleaseChannels.id],
+		}),
+		dependencyPackage: one(packages, {
+			fields: [channelDependencies.dependencyPackageId],
+			references: [packages.id],
+			relationName: "dependencyPackage",
+		}),
+	}),
+);

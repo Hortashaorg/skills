@@ -106,6 +106,34 @@
       "when": 1766852067891,
       "tag": "0014_lame_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1767276565582,
+      "tag": "0015_workable_puppet_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1767276605530,
+      "tag": "0016_smooth_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1767277871608,
+      "tag": "0017_optimal_marvel_apes",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1767283284641,
+      "tag": "0018_warm_logan",
+      "breakpoints": true
     }
   ]
 }
