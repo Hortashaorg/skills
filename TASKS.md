@@ -15,44 +15,7 @@
 - Heavy graph may contribute to slow initial sync
 
 ### Related
-- Schema simplification (Milestone 7) should reduce sync payload significantly
-
----
-
-## Milestone 7: Schema Simplification
-
-**Goal:** Reduce data graph size by storing only notable versions instead of all versions
-
-### Current Schema (heavy)
-```
-packages → packageVersions (100+ per package) → packageDependencies (per version)
-```
-
-### Target Schema (light)
-```
-packages (metadata, latestVersion, latestStableVersion)
-packageReleaseChannels (1-3 per package: stable, next, beta, canary)
-packageDependencies (per channel, not per version)
-```
-
-### 7.1 Schema Changes
-- [ ] Add `packageReleaseChannels` table (packageId, channel, version, publishedAt)
-- [ ] Update `packageDependencies` to reference channel instead of version
-- [ ] Add channel enum: `stable`, `next`, `beta`, `canary`, `experimental`
-- [ ] Keep `latestVersion` and add `latestStableVersion` to packages
-
-### 7.2 Migration Strategy
-- [ ] Create new tables alongside existing
-- [ ] Worker: populate release channels from existing versions (extract latest per dist-tag)
-- [ ] Worker: populate new dependencies from latest version deps
-- [ ] Update queries to use new structure
-- [ ] Update frontend to use release channels
-- [ ] Drop old `packageVersions` table (after verification)
-
-### 7.3 Worker Updates
-- [ ] Fetch logic: only store notable versions (from dist-tags)
-- [ ] Dependency linking: link to packages, associate with channel
-- [ ] Re-fetch strategy: update channels when package is refreshed
+- ✅ Schema simplification (Milestone 7) completed - should reduce sync payload significantly
 
 ---
 
@@ -117,6 +80,30 @@ packageDependencies (per channel, not per version)
 ---
 
 ## Completed
+
+### Milestone 7: Schema Simplification
+
+Reduced data graph by storing release channels instead of all versions.
+
+**Schema Changes:**
+- `packageReleaseChannels` table (1-3 per package vs 100+ versions)
+- `channelDependencies` linked to channels, not versions
+- `packageFetches` replaced `packageRequests` for simpler fetch tracking
+- Package status: `active`, `failed`, `placeholder`
+
+**Worker Improvements:**
+- Single LEFT JOIN query for placeholder scheduling
+- Batch placeholder creation with `ensurePackagesExist`
+- Efficient dependency resolution: O(deps) not O(all packages)
+- Cooldown marks fetches as failed, not completed
+
+**Frontend Updates:**
+- Fetch history section on package pages
+- Status/version badges integrated into PackageCard
+- Admin dashboard: top 25 pending fetches, failed packages grid
+- Backend stats endpoint for accurate pending count
+
+---
 
 ### Milestone 1-6 (MVP)
 
