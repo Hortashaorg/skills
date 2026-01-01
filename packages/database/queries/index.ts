@@ -1,7 +1,7 @@
 import { defineQueries } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountQueries from "./account.ts";
-import * as packageDependenciesQueries from "./package-dependencies.ts";
+import * as channelDependenciesQueries from "./channel-dependencies.ts";
 import * as packageRequestsQueries from "./package-requests.ts";
 import * as packageTagsQueries from "./package-tags.ts";
 import * as packageUpvotesQueries from "./package-upvotes.ts";
@@ -17,8 +17,8 @@ export const queries = defineQueries({
 		list: packagesQueries.list,
 		byId: packagesQueries.byId,
 		byName: packagesQueries.byName,
-		byNameWithVersions: packagesQueries.byNameWithVersions,
-		byIdWithVersions: packagesQueries.byIdWithVersions,
+		byNameWithChannels: packagesQueries.byNameWithChannels,
+		byIdWithChannels: packagesQueries.byIdWithChannels,
 		byIdWithTags: packagesQueries.byIdWithTags,
 		recent: packagesQueries.recent,
 		search: packagesQueries.search,
@@ -29,10 +29,8 @@ export const queries = defineQueries({
 		byId: packageRequestsQueries.byId,
 		byStatus: packageRequestsQueries.byStatus,
 	},
-	packageDependencies: {
-		unlinked: packageDependenciesQueries.unlinked,
-		byVersionId: packageDependenciesQueries.byVersionId,
-		byPackageId: packageDependenciesQueries.byPackageId,
+	channelDependencies: {
+		byChannelId: channelDependenciesQueries.byChannelId,
 	},
 	tags: {
 		list: tagsQueries.list,

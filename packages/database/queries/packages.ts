@@ -5,6 +5,7 @@ import { zql } from "../zero-schema.gen.ts";
 
 export const list = defineQuery(() => {
 	return zql.packages
+		.where("status", "active")
 		.related("upvotes")
 		.related("packageTags", (pt) => pt.related("tag"));
 });
@@ -25,7 +26,7 @@ export const byName = defineQuery(
 	},
 );
 
-export const byNameWithVersions = defineQuery(
+export const byNameWithChannels = defineQuery(
 	z.object({
 		name: z.string(),
 		registry: z.enum(enums.registry),
@@ -34,17 +35,15 @@ export const byNameWithVersions = defineQuery(
 		return zql.packages
 			.where("name", args.name)
 			.where("registry", args.registry)
-			.related("versions", (q) => q.orderBy("publishedAt", "desc"))
+			.related("releaseChannels")
 			.related("upvotes");
 	},
 );
 
-export const byIdWithVersions = defineQuery(
+export const byIdWithChannels = defineQuery(
 	z.object({ id: z.string() }),
 	({ args }) => {
-		return zql.packages
-			.where("id", args.id)
-			.related("versions", (q) => q.orderBy("publishedAt", "desc"));
+		return zql.packages.where("id", args.id).related("releaseChannels");
 	},
 );
 
@@ -60,6 +59,7 @@ export const recent = defineQuery(
 	z.object({ limit: z.number().default(20) }),
 	({ args }) => {
 		return zql.packages
+			.where("status", "active")
 			.orderBy("updatedAt", "desc")
 			.limit(args.limit)
 			.related("upvotes")
@@ -76,7 +76,7 @@ export const search = defineQuery(
 		limit: z.number().default(100),
 	}),
 	({ args }) => {
-		let q = zql.packages;
+		let q = zql.packages.where("status", "active");
 
 		// Text search on name (case-insensitive)
 		if (args.query?.trim()) {
