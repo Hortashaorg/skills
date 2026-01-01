@@ -6,6 +6,7 @@ import * as packageFetchesQueries from "./package-fetches.ts";
 import * as packageTagsQueries from "./package-tags.ts";
 import * as packageUpvotesQueries from "./package-upvotes.ts";
 import * as packagesQueries from "./packages.ts";
+import * as projectsQueries from "./projects.ts";
 import * as tagsQueries from "./tags.ts";
 
 export const queries = defineQueries({
@@ -49,5 +50,10 @@ export const queries = defineQueries({
 	packageUpvotes: {
 		byPackage: packageUpvotesQueries.byPackage,
 		byUser: packageUpvotesQueries.byUser,
+	},
+	projects: {
+		mine: projectsQueries.mine,
+		byId: projectsQueries.byId,
+		list: projectsQueries.list,
 	},
 });

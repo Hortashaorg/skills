@@ -378,6 +378,75 @@ const packagesTable = {
   },
   primaryKey: ["id"],
 } as const;
+const projectPackagesTable = {
+  name: "projectPackages",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    packageId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "package_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_packages",
+} as const;
+const projectsTable = {
+  name: "projects",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    name: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    description: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const tagsTable = {
   name: "tags",
   columns: {
@@ -415,6 +484,24 @@ const tagsTable = {
     },
   },
   primaryKey: ["id"],
+} as const;
+const accountRelationships = {
+  projects: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "projects",
+      cardinality: "many",
+    },
+  ],
+  upvotes: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "packageUpvotes",
+      cardinality: "many",
+    },
+  ],
 } as const;
 const auditLogRelationships = {
   actor: [
@@ -549,6 +636,50 @@ const packagesRelationships = {
       cardinality: "many",
     },
   ],
+  projectPackages: [
+    {
+      sourceField: ["id"],
+      destField: ["packageId"],
+      destSchema: "projectPackages",
+      cardinality: "many",
+    },
+  ],
+} as const;
+const projectPackagesRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  package: [
+    {
+      sourceField: ["packageId"],
+      destField: ["id"],
+      destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const projectsRelationships = {
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+  projectPackages: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectPackages",
+      cardinality: "many",
+    },
+  ],
 } as const;
 const tagsRelationships = {
   packageTags: [
@@ -574,9 +705,12 @@ export const schema = {
     packageTags: packageTagsTable,
     packageUpvotes: packageUpvotesTable,
     packages: packagesTable,
+    projectPackages: projectPackagesTable,
+    projects: projectsTable,
     tags: tagsTable,
   },
   relationships: {
+    account: accountRelationships,
     auditLog: auditLogRelationships,
     channelDependencies: channelDependenciesRelationships,
     packageFetches: packageFetchesRelationships,
@@ -584,6 +718,8 @@ export const schema = {
     packageTags: packageTagsRelationships,
     packageUpvotes: packageUpvotesRelationships,
     packages: packagesRelationships,
+    projectPackages: projectPackagesRelationships,
+    projects: projectsRelationships,
     tags: tagsRelationships,
   },
   enableLegacyQueries: false,
@@ -651,6 +787,20 @@ export type PackageUpvote = Row["packageUpvotes"];
  * @deprecated Use Row["packages"] instead from "@rocicorp/zero".
  */
 export type Package = Row["packages"];
+/**
+ * Represents a row from the "projectPackages" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["projectPackages"] instead from "@rocicorp/zero".
+ */
+export type ProjectPackage = Row["projectPackages"];
+/**
+ * Represents a row from the "projects" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["projects"] instead from "@rocicorp/zero".
+ */
+export type Project = Row["projects"];
 /**
  * Represents a row from the "tags" table.
  * This type is auto-generated from your Drizzle schema definition.
