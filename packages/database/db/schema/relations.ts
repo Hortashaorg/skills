@@ -102,13 +102,16 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 	projectPackages: many(projectPackages),
 }));
 
-export const projectPackagesRelations = relations(projectPackages, ({ one }) => ({
-	project: one(projects, {
-		fields: [projectPackages.projectId],
-		references: [projects.id],
+export const projectPackagesRelations = relations(
+	projectPackages,
+	({ one }) => ({
+		project: one(projects, {
+			fields: [projectPackages.projectId],
+			references: [projects.id],
+		}),
+		package: one(packages, {
+			fields: [projectPackages.packageId],
+			references: [packages.id],
+		}),
 	}),
-	package: one(packages, {
-		fields: [projectPackages.packageId],
-		references: [packages.id],
-	}),
-}));
+);

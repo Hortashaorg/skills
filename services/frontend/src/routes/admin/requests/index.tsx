@@ -160,9 +160,7 @@ export const AdminRequests = () => {
 									<Heading level="h2">Failed Packages</Heading>
 									<Show
 										when={(failedPackages() ?? []).length > 0}
-										fallback={
-											<Text color="muted">No failed packages.</Text>
-										}
+										fallback={<Text color="muted">No failed packages.</Text>}
 									>
 										<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 											<For each={failedPackages()}>
@@ -180,7 +178,11 @@ export const AdminRequests = () => {
 																	<Text weight="semibold" class="break-all">
 																		{pkg.name}
 																	</Text>
-																	<Badge variant="secondary" size="sm" class="shrink-0">
+																	<Badge
+																		variant="secondary"
+																		size="sm"
+																		class="shrink-0"
+																	>
 																		{pkg.registry}
 																	</Badge>
 																</Flex>

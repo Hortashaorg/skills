@@ -1,4 +1,11 @@
-import { index, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgTable,
+	text,
+	timestamp,
+	unique,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { account } from "./account.ts";
 import { packages } from "./packages.ts";
 

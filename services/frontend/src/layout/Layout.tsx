@@ -131,6 +131,20 @@ export const Layout: ParentComponent = (props) => {
 
 						{/* Desktop navigation */}
 						<Flex gap="md" align="center" class="hidden sm:flex">
+							<Show when={!isAnonymous()}>
+								<A
+									href="/projects"
+									class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
+									classList={{
+										"text-primary dark:text-primary-dark font-medium":
+											isActive("/projects"),
+										"text-on-surface-muted dark:text-on-surface-dark-muted":
+											!isActive("/projects"),
+									}}
+								>
+									Projects
+								</A>
+							</Show>
 							<Show when={isAdmin()}>
 								<div class="relative group">
 									<button
@@ -281,6 +295,23 @@ export const Layout: ParentComponent = (props) => {
 								<Badge variant="danger" size="sm">
 									Connection Error
 								</Badge>
+							</Show>
+
+							{/* Projects link */}
+							<Show when={!isAnonymous()}>
+								<A
+									href="/projects"
+									class="block py-2 text-sm"
+									classList={{
+										"text-primary dark:text-primary-dark font-medium":
+											isActive("/projects"),
+										"text-on-surface dark:text-on-surface-dark":
+											!isActive("/projects"),
+									}}
+									onClick={closeMobileMenu}
+								>
+									Projects
+								</A>
 							</Show>
 
 							{/* Admin links */}

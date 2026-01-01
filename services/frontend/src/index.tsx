@@ -11,6 +11,9 @@ import { AdminTags } from "./routes/admin/tags";
 import { Home } from "./routes/home";
 import { NotFound } from "./routes/not-found";
 import { Package } from "./routes/package";
+import { Projects } from "./routes/projects";
+import { ProjectDetail } from "./routes/projects/detail";
+import { NewProject } from "./routes/projects/new";
 import { VerifyEmail } from "./routes/verify-email";
 
 const root = document.getElementById("root");
@@ -27,6 +30,9 @@ loadConfig().then(() => {
 					<Router>
 						<Route path="/" component={Home} />
 						<Route path="/package/:registry/:name" component={Package} />
+						<Route path="/projects" component={Projects} />
+						<Route path="/projects/new" component={NewProject} />
+						<Route path="/projects/:id" component={ProjectDetail} />
 						<Route path="/verify-email" component={VerifyEmail} />
 						<Route path="/admin/requests" component={AdminRequests} />
 						<Route path="/admin/tags" component={AdminTags} />

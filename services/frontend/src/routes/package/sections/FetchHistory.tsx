@@ -1,4 +1,8 @@
-import { queries, useConnectionState, useQuery } from "@package/database/client";
+import {
+	queries,
+	useConnectionState,
+	useQuery,
+} from "@package/database/client";
 import { For } from "solid-js";
 import { QueryBoundary } from "@/components/composite/query-boundary";
 import { Flex } from "@/components/primitives/flex";
