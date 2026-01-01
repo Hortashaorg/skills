@@ -158,20 +158,20 @@ export const AdminRequests = () => {
 													>
 														<Card
 															padding="md"
-															class="hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors"
+															class="hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors h-full"
 														>
-															<Stack spacing="xs">
-																<Flex justify="between" align="start">
-																	<Text weight="semibold" class="truncate">
+															<Stack spacing="sm">
+																<Flex justify="between" align="start" gap="sm">
+																	<Text weight="semibold" class="break-all">
 																		{pkg.name}
 																	</Text>
-																	<Badge variant="secondary" size="sm">
+																	<Badge variant="secondary" size="sm" class="shrink-0">
 																		{pkg.registry}
 																	</Badge>
 																</Flex>
-																<Badge variant="danger" size="sm">
+																<Text size="sm" color="danger">
 																	{pkg.failureReason || "failed"}
-																</Badge>
+																</Text>
 															</Stack>
 														</Card>
 													</A>

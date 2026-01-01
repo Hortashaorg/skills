@@ -76,7 +76,7 @@ const DependencyCard = (props: {
 				</div>
 			</Show>
 			{/* Version range badge */}
-			<div class="absolute bottom-2 right-2">
+			<div class="absolute bottom-2 left-2">
 				<Badge variant="secondary" size="sm">
 					{props.dep.dependencyVersionRange}
 				</Badge>
