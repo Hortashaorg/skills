@@ -100,37 +100,53 @@ export async function upsertPackage(
 	return id;
 }
 
-/** Create or get a placeholder package for a dependency */
-export async function getOrCreatePlaceholder(
-	tx: Transaction,
-	name: string,
+/** Bulk create placeholder packages, returns map of name -> id */
+export async function bulkCreatePlaceholders(
+	names: string[],
 	registry: Registry,
-): Promise<string> {
-	const existing = await findPackage(tx, name, registry);
-	if (existing) {
-		return existing.id;
+): Promise<Map<string, string>> {
+	if (names.length === 0) return new Map();
+
+	const now = new Date();
+
+	// Insert with ON CONFLICT DO NOTHING
+	for (let i = 0; i < names.length; i += BATCH_SIZE) {
+		const batch = names.slice(i, i + BATCH_SIZE);
+		await db
+			.insert(dbSchema.packages)
+			.values(
+				batch.map((name) => ({
+					id: crypto.randomUUID(),
+					name,
+					registry,
+					status: "placeholder" as const,
+					failureReason: null,
+					description: null,
+					homepage: null,
+					repository: null,
+					latestVersion: null,
+					distTags: null,
+					upvoteCount: 0,
+					lastFetchAttempt: new Date(0),
+					lastFetchSuccess: new Date(0),
+					createdAt: now,
+					updatedAt: now,
+				})),
+			)
+			.onConflictDoNothing();
 	}
 
-	const id = crypto.randomUUID();
-	const now = Date.now();
-	await tx.mutate.packages.insert({
-		id,
-		name,
-		registry,
-		status: "placeholder",
-		failureReason: null,
-		description: null,
-		homepage: null,
-		repository: null,
-		latestVersion: null,
-		distTags: null,
-		upvoteCount: 0,
-		lastFetchAttempt: 0,
-		lastFetchSuccess: 0,
-		createdAt: now,
-		updatedAt: now,
-	});
-	return id;
+	// Fetch IDs for all requested names (including pre-existing)
+	const rows = await db
+		.select({ id: dbSchema.packages.id, name: dbSchema.packages.name })
+		.from(dbSchema.packages)
+		.where(inArray(dbSchema.packages.name, names));
+
+	const map = new Map<string, string>();
+	for (const row of rows) {
+		map.set(row.name, row.id);
+	}
+	return map;
 }
 
 /** Mark a package as failed */

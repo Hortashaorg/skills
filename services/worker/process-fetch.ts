@@ -10,12 +10,12 @@ import {
 	type Registry,
 } from "@package/database/server";
 import {
+	bulkCreatePlaceholders,
 	type ChannelDependencyInsert,
 	deleteChannelDependencies,
 	deleteReleaseChannels,
 	getExistingChannels,
 	getExistingDependencies,
-	getOrCreatePlaceholder,
 	insertChannelDependencies,
 	insertReleaseChannel,
 	loadPackageNames,
@@ -124,6 +124,28 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		const createdPlaceholders = new Set<string>();
 		const now = Date.now();
 
+		// Collect all missing dependency names across all channels
+		const missingDepNames = new Set<string>();
+		for (const channel of packageData.releaseChannels) {
+			for (const dep of channel.dependencies) {
+				if (!packageNames.has(dep.name)) {
+					missingDepNames.add(dep.name);
+				}
+			}
+		}
+
+		// Batch create placeholders for all missing dependencies
+		if (missingDepNames.size > 0) {
+			const placeholderMap = await bulkCreatePlaceholders(
+				[...missingDepNames],
+				pkg.registry,
+			);
+			for (const [name, id] of placeholderMap) {
+				packageNames.set(name, id);
+				createdPlaceholders.add(name);
+			}
+		}
+
 		// Process each channel from new data
 		const processedChannelNames = new Set<string>();
 
@@ -156,18 +178,6 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 					updatedAt: new Date(now),
 				});
 				channelsCreated++;
-			}
-
-			// Create placeholders for missing dependencies
-			// (scheduler will create fetches for them on next run)
-			for (const dep of channel.dependencies) {
-				if (!packageNames.has(dep.name)) {
-					const id = await dbProvider.transaction(async (tx) => {
-						return getOrCreatePlaceholder(tx, dep.name, pkg.registry);
-					});
-					packageNames.set(dep.name, id);
-					createdPlaceholders.add(dep.name);
-				}
 			}
 
 			// Build dependencies with resolved IDs

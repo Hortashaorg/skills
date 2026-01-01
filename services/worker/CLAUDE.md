@@ -4,23 +4,23 @@ Background job processor that fetches package metadata from registries.
 
 ## How It Works
 
-Runs as a CronJob - processes up to 50 pending/failed `packageRequests`, then exits.
+Runs as a CronJob - processes up to 50 pending `packageFetches`, then exits.
 
 ```
-1. Query pending + failed requests (limit 50)
-2. For each request:
-   - Update status → "fetching"
+1. Schedule fetches for placeholder packages without pending fetches
+2. Query pending fetches (limit 50)
+3. For each fetch:
+   - Check cooldown (skip if recently updated)
    - Fetch from registry (npm)
-   - Upsert package record with status
+   - Upsert package record
    - Sync release channels (diff-based: insert/update/delete)
    - Sync channel dependencies (diff-based)
-   - Create placeholder packages for missing dependencies
-   - Schedule requests for placeholder packages
-   - Update status → "completed" or "failed"
-3. Exit
+   - Batch create placeholder packages for missing dependencies
+   - Mark fetch as completed or failed
+4. Exit
 ```
 
-**Error handling:** Failed requests retry up to 3 times, then marked "discarded".
+**Two-step flow:** Scheduler creates fetches for placeholders, processor handles fetching. Placeholders get fetches on next run.
 
 ## Registry Adapters
 
@@ -31,23 +31,30 @@ registries/
     ├── client.ts  # HTTP fetch with retry (408/429/5xx)
     ├── schema.ts  # Zod validation for API responses
     ├── mapper.ts  # Transform npm → common format (dist-tags → channels)
-    └── index.ts   # Export getPackage(name)
+    └── index.ts   # Export getPackages(names)
 ```
 
 **To add a new registry:** Use `/registry-adapter` skill.
 
-## Database Operations
+## Database Operations (`db.ts`)
 
-**Mutations** (`db/mutations.ts`):
+**Package Operations:**
 | Function | Purpose |
 |----------|---------|
+| `findPackage()` | Get by name + registry |
+| `loadPackageNames()` | Load all package names for registry into Map |
 | `upsertPackage()` | Create or update package metadata |
-| `getOrCreatePlaceholder()` | Create placeholder for missing dependency |
+| `bulkCreatePlaceholders()` | Batch create placeholders, returns name → id map |
 | `markPackageFailed()` | Mark package as failed with reason |
-| `createPendingRequest()` | Schedule package for processing |
-| `updateRequestStatus()` | Set status + error message |
 
-**Bulk Operations** (`db/bulk.ts`):
+**Fetch Operations:**
+| Function | Purpose |
+|----------|---------|
+| `markFetchCompleted()` | Mark fetch as completed |
+| `markFetchFailed()` | Mark fetch as failed with error |
+| `bulkInsertPendingFetches()` | Batch insert pending fetches |
+
+**Release Channel Operations:**
 | Function | Purpose |
 |----------|---------|
 | `getExistingChannels()` | Get current channels for diff |
@@ -58,35 +65,18 @@ registries/
 | `insertChannelDependencies()` | Add new dependencies |
 | `deleteChannelDependencies()` | Remove stale dependencies |
 
-**Queries** (`db/queries.ts`):
-| Function | Purpose |
-|----------|---------|
-| `findPackage()` | Get by name + registry |
-| `findActiveRequest()` | Check for pending/fetching request |
-
 ## Key Patterns
-
-**Always include timestamps:**
-```tsx
-await db.update(packages).set({
-  ...data,
-  updatedAt: Date.now(),  // Required!
-});
-```
 
 **Diff-based updates:** Channels and dependencies use diff logic to minimize WAL writes:
 1. Fetch existing records
 2. Compare with new data
 3. Only insert/update/delete what changed
 
-**Placeholder packages:** When a dependency package doesn't exist:
-1. Create placeholder with `status: "placeholder"`
-2. Schedule a request to fetch it
-3. Dependencies always link to a real package record
+**Batch placeholder creation:** Missing dependencies are collected across all channels, then created in a single batch insert with `ON CONFLICT DO NOTHING`.
 
 **Package status:**
 - `active` - Successfully fetched
 - `failed` - Fetch failed (404, rate limited, etc.)
 - `placeholder` - Created as dependency reference, not yet fetched
 
-**Sequential processing:** Requests processed one-by-one to prevent race conditions.
+**Sequential processing:** Fetches processed one-by-one to prevent race conditions.
