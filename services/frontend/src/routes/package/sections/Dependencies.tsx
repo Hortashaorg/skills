@@ -10,7 +10,6 @@ import { PackageCard } from "@/components/feature/package-card";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
@@ -44,44 +43,27 @@ const DependencyCard = (props: {
 			slug: pt.tag.slug,
 		})) ?? [];
 
-	const isFailed = () => pkg().status === "failed";
-	const isPlaceholder = () => pkg().status === "placeholder";
+	const status = () => {
+		const s = pkg().status;
+		if (s === "failed" || s === "placeholder") return s;
+		return undefined;
+	};
 
 	return (
-		<div class="relative">
-			<PackageCard
-				name={pkg().name}
-				registry={pkg().registry}
-				description={pkg().description}
-				href={buildPackageUrl(pkg().registry, pkg().name)}
-				upvoteCount={upvote.upvoteCount()}
-				isUpvoted={upvote.isUpvoted()}
-				upvoteDisabled={upvote.isDisabled()}
-				onUpvote={upvote.toggle}
-				tags={tags()}
-			/>
-			{/* Overlay badges for failed/placeholder packages */}
-			<Show when={isFailed() || isPlaceholder()}>
-				<div class="absolute top-2 right-2">
-					<Show when={isFailed()}>
-						<Badge variant="danger" size="sm">
-							{pkg().failureReason || "failed"}
-						</Badge>
-					</Show>
-					<Show when={isPlaceholder()}>
-						<Badge variant="secondary" size="sm">
-							not fetched
-						</Badge>
-					</Show>
-				</div>
-			</Show>
-			{/* Version range badge */}
-			<div class="absolute bottom-2 left-2">
-				<Badge variant="secondary" size="sm">
-					{props.dep.dependencyVersionRange}
-				</Badge>
-			</div>
-		</div>
+		<PackageCard
+			name={pkg().name}
+			registry={pkg().registry}
+			description={pkg().description}
+			href={buildPackageUrl(pkg().registry, pkg().name)}
+			upvoteCount={upvote.upvoteCount()}
+			isUpvoted={upvote.isUpvoted()}
+			upvoteDisabled={upvote.isDisabled()}
+			onUpvote={upvote.toggle}
+			tags={tags()}
+			status={status()}
+			failureReason={pkg().failureReason}
+			versionRange={props.dep.dependencyVersionRange}
+		/>
 	);
 };
 
