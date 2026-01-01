@@ -4,7 +4,6 @@
  */
 
 import {
-	and,
 	db,
 	type dbProvider,
 	dbSchema,
@@ -48,37 +47,6 @@ export async function loadPackageNames(
 		map.set(row.name, row.id);
 	}
 	return map;
-}
-
-/** Load names of packages that are placeholders (need fetching) */
-export async function loadPlaceholderPackages(
-	registry: Registry,
-): Promise<Map<string, string>> {
-	const rows = await db
-		.select({ id: dbSchema.packages.id, name: dbSchema.packages.name })
-		.from(dbSchema.packages)
-		.where(
-			and(
-				eq(dbSchema.packages.registry, registry),
-				eq(dbSchema.packages.status, "placeholder"),
-			),
-		);
-
-	const map = new Map<string, string>();
-	for (const row of rows) {
-		map.set(row.name, row.id);
-	}
-	return map;
-}
-
-/** Load package IDs that have pending fetches */
-export async function loadPendingFetchPackageIds(): Promise<Set<string>> {
-	const rows = await db
-		.select({ packageId: dbSchema.packageFetches.packageId })
-		.from(dbSchema.packageFetches)
-		.where(eq(dbSchema.packageFetches.status, "pending"));
-
-	return new Set(rows.map((r) => r.packageId));
 }
 
 // ============================================================================
@@ -210,24 +178,6 @@ export async function markPackageFailed(
 // ============================================================================
 // Fetch Mutations
 // ============================================================================
-
-/** Create a pending fetch for a package */
-export async function createPendingFetch(
-	tx: Transaction,
-	packageId: string,
-): Promise<string> {
-	const id = crypto.randomUUID();
-	const now = Date.now();
-	await tx.mutate.packageFetches.insert({
-		id,
-		packageId,
-		status: "pending",
-		errorMessage: null,
-		createdAt: now,
-		completedAt: null,
-	});
-	return id;
-}
 
 /** Mark fetch as completed */
 export async function markFetchCompleted(

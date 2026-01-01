@@ -10,7 +10,6 @@ import {
 	type Registry,
 } from "@package/database/server";
 import {
-	bulkInsertPendingFetches,
 	type ChannelDependencyInsert,
 	deleteChannelDependencies,
 	deleteReleaseChannels,
@@ -20,8 +19,6 @@ import {
 	insertChannelDependencies,
 	insertReleaseChannel,
 	loadPackageNames,
-	loadPendingFetchPackageIds,
-	loadPlaceholderPackages,
 	markFetchCompleted,
 	markFetchFailed,
 	markPackageFailed,
@@ -38,22 +35,18 @@ export interface ProcessResult {
 	packageName: string;
 	registry: Registry;
 	success: boolean;
-	skippedCooldown?: boolean;
 	channelsCreated?: number;
 	channelsUpdated?: number;
 	channelsDeleted?: number;
 	depsCreated?: number;
 	depsDeleted?: number;
 	placeholdersCreated?: number;
-	newFetchesScheduled?: number;
 	error?: string;
 }
 
 interface FetchRecord {
 	id: string;
 	packageId: string;
-	status: string;
-	createdAt: number;
 }
 
 /** Process a single pending fetch */
@@ -73,14 +66,8 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		.then((rows) => rows[0]);
 
 	if (!pkg) {
-		return {
-			fetchId: fetch.id,
-			packageId: fetch.packageId,
-			packageName: "unknown",
-			registry: "npm",
-			success: false,
-			error: "Package not found",
-		};
+		// This should never happen - fetches are always linked to packages
+		throw new Error(`Package not found for fetch ${fetch.id}`);
 	}
 
 	const result: ProcessResult = {
@@ -92,20 +79,19 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 	};
 
 	try {
-		// 1. Check cooldown - skip if package was recently updated
+		// Check cooldown - fail if package was recently updated
 		if (
 			pkg.status === "active" &&
 			Date.now() - pkg.updatedAt.getTime() < COOLDOWN_MS
 		) {
 			await dbProvider.transaction(async (tx) => {
-				await markFetchCompleted(tx, fetch.id);
+				await markFetchFailed(tx, fetch.id, "recently_updated");
 			});
-			result.success = true;
-			result.skippedCooldown = true;
+			result.error = "recently_updated";
 			return result;
 		}
 
-		// 2. Fetch from registry
+		// Fetch from registry
 		const fetchResult = await npm.getPackages([pkg.name]);
 		const packageData = fetchResult.get(pkg.name);
 
@@ -117,22 +103,17 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 			throw packageData;
 		}
 
-		// 4. Pre-load caches
-		const [packageNames, pendingFetchPackageIds, placeholderPackages] =
-			await Promise.all([
-				loadPackageNames(pkg.registry),
-				loadPendingFetchPackageIds(),
-				loadPlaceholderPackages(pkg.registry),
-			]);
+		// Load existing package names for dependency resolution
+		const packageNames = await loadPackageNames(pkg.registry);
 
-		// 5. Upsert package
+		// Upsert package
 		const packageId = await dbProvider.transaction(async (tx) => {
 			return upsertPackage(tx, packageData, pkg.registry);
 		});
 		result.packageId = packageId;
 		packageNames.set(packageData.name, packageId);
 
-		// 6. Get existing channels for diff
+		// Get existing channels for diff
 		const existingChannels = await getExistingChannels(packageId);
 
 		// Track stats
@@ -141,14 +122,9 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		let depsCreated = 0;
 		let depsDeleted = 0;
 		const createdPlaceholders = new Set<string>();
-		const newFetches: Array<{
-			id: string;
-			packageId: string;
-			createdAt: number;
-		}> = [];
 		const now = Date.now();
 
-		// 7. Process each channel from new data
+		// Process each channel from new data
 		const processedChannelNames = new Set<string>();
 
 		for (const channel of packageData.releaseChannels) {
@@ -182,55 +158,19 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 				channelsCreated++;
 			}
 
-			// 8. Collect missing dependency names first
-			const missingDepNames: string[] = [];
+			// Create placeholders for missing dependencies
+			// (scheduler will create fetches for them on next run)
 			for (const dep of channel.dependencies) {
 				if (!packageNames.has(dep.name)) {
-					missingDepNames.push(dep.name);
-				}
-
-				// Schedule fetch for missing packages OR existing placeholders
-				const depPackageId = packageNames.get(dep.name);
-				const isPlaceholder = depPackageId && placeholderPackages.has(dep.name);
-				const needsFetch = !depPackageId || isPlaceholder;
-
-				if (needsFetch) {
-					const targetPackageId = depPackageId || "pending";
-					if (
-						targetPackageId !== "pending" &&
-						!pendingFetchPackageIds.has(targetPackageId) &&
-						!newFetches.some((f) => f.packageId === targetPackageId)
-					) {
-						newFetches.push({
-							id: crypto.randomUUID(),
-							packageId: targetPackageId,
-							createdAt: now,
-						});
-					}
-				}
-			}
-
-			// 9. Create placeholders for missing dependencies
-			for (const name of missingDepNames) {
-				if (!packageNames.has(name)) {
 					const id = await dbProvider.transaction(async (tx) => {
-						return getOrCreatePlaceholder(tx, name, pkg.registry);
+						return getOrCreatePlaceholder(tx, dep.name, pkg.registry);
 					});
-					packageNames.set(name, id);
-					createdPlaceholders.add(name);
-
-					// Schedule fetch for newly created placeholder
-					if (!pendingFetchPackageIds.has(id)) {
-						newFetches.push({
-							id: crypto.randomUUID(),
-							packageId: id,
-							createdAt: now,
-						});
-					}
+					packageNames.set(dep.name, id);
+					createdPlaceholders.add(dep.name);
 				}
 			}
 
-			// 10. Now build dependencies with resolved IDs
+			// Build dependencies with resolved IDs
 			const newDeps: ChannelDependencyInsert[] = [];
 			for (const dep of channel.dependencies) {
 				const depPackageId = packageNames.get(dep.name);
@@ -250,7 +190,7 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 				});
 			}
 
-			// 11. Diff dependencies for this channel
+			// Diff dependencies for this channel
 			if (existing) {
 				const existingDeps = await getExistingDependencies(channelId);
 				const newDepKeys = new Set(
@@ -286,7 +226,7 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 			}
 		}
 
-		// 12. Delete channels that no longer exist
+		// Delete channels that no longer exist
 		const channelsToDelete: string[] = [];
 		for (const [channelName, { id }] of existingChannels) {
 			if (!processedChannelNames.has(channelName)) {
@@ -303,19 +243,15 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 			await deleteReleaseChannels(channelsToDelete);
 		}
 
-		// 13. Schedule new fetches
-		await bulkInsertPendingFetches(newFetches);
-
-		// 14. Update result stats
+		// Update result stats
 		result.channelsCreated = channelsCreated;
 		result.channelsUpdated = channelsUpdated;
 		result.channelsDeleted = channelsToDelete.length;
 		result.depsCreated = depsCreated;
 		result.depsDeleted = depsDeleted;
 		result.placeholdersCreated = createdPlaceholders.size;
-		result.newFetchesScheduled = newFetches.length;
 
-		// 15. Mark completed
+		// Mark completed
 		await dbProvider.transaction(async (tx) => {
 			await markFetchCompleted(tx, fetch.id);
 		});

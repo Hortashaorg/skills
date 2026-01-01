@@ -29,8 +29,6 @@ async function main() {
 		.select({
 			id: dbSchema.packageFetches.id,
 			packageId: dbSchema.packageFetches.packageId,
-			status: dbSchema.packageFetches.status,
-			createdAt: dbSchema.packageFetches.createdAt,
 		})
 		.from(dbSchema.packageFetches)
 		.where(eq(dbSchema.packageFetches.status, "pending"))
@@ -48,29 +46,18 @@ async function main() {
 
 	// Process fetches sequentially to avoid race conditions
 	for (const fetch of pendingFetches) {
-		const result = await processFetch({
-			id: fetch.id,
-			packageId: fetch.packageId,
-			status: fetch.status,
-			createdAt: fetch.createdAt.getTime(),
-		});
+		const result = await processFetch(fetch);
 
 		console.log(`Processing: ${result.packageName} (${result.registry})...`);
 		results.push(result);
 
 		if (result.success) {
-			if (result.skippedCooldown) {
-				console.log(`  ⏭ Skipped (recently updated)`);
-			} else {
-				console.log(`  ✓ Success`);
-				console.log(
-					`    Channels: +${result.channelsCreated} ~${result.channelsUpdated} -${result.channelsDeleted}`,
-				);
-				console.log(`    Deps: +${result.depsCreated} -${result.depsDeleted}`);
-				console.log(
-					`    Placeholders: ${result.placeholdersCreated} | Fetches: ${result.newFetchesScheduled}`,
-				);
-			}
+			console.log(`  ✓ Success`);
+			console.log(
+				`    Channels: +${result.channelsCreated} ~${result.channelsUpdated} -${result.channelsDeleted}`,
+			);
+			console.log(`    Deps: +${result.depsCreated} -${result.depsDeleted}`);
+			console.log(`    Placeholders: ${result.placeholdersCreated}`);
 		} else {
 			console.log(`  ✗ Failed: ${result.error}`);
 		}
@@ -78,10 +65,7 @@ async function main() {
 	}
 
 	// Summary
-	const succeeded = results.filter(
-		(r) => r.success && !r.skippedCooldown,
-	).length;
-	const skipped = results.filter((r) => r.skippedCooldown).length;
+	const succeeded = results.filter((r) => r.success).length;
 	const failed = results.filter((r) => !r.success).length;
 	const totalChannelsCreated = results.reduce(
 		(sum, r) => sum + (r.channelsCreated ?? 0),
@@ -107,22 +91,16 @@ async function main() {
 		(sum, r) => sum + (r.placeholdersCreated ?? 0),
 		0,
 	);
-	const totalScheduled = results.reduce(
-		(sum, r) => sum + (r.newFetchesScheduled ?? 0),
-		0,
-	);
 
 	console.log("=== Summary ===");
 	console.log(`Processed: ${results.length} fetches`);
 	console.log(`  Succeeded: ${succeeded}`);
-	console.log(`  Skipped (cooldown): ${skipped}`);
 	console.log(`  Failed: ${failed}`);
 	console.log(
 		`  Channels: +${totalChannelsCreated} ~${totalChannelsUpdated} -${totalChannelsDeleted}`,
 	);
 	console.log(`  Deps: +${totalDepsCreated} -${totalDepsDeleted}`);
 	console.log(`  Placeholders: ${totalPlaceholders}`);
-	console.log(`  Fetches scheduled: ${totalScheduled}`);
 }
 
 main()
