@@ -36,6 +36,23 @@ export async function loadPackageNames(
 	return map;
 }
 
+/** Load names of packages that are placeholders (need fetching) */
+export async function loadPlaceholderNames(
+	registry: Registry,
+): Promise<Set<string>> {
+	const rows = await db
+		.select({ name: dbSchema.packages.name })
+		.from(dbSchema.packages)
+		.where(
+			and(
+				eq(dbSchema.packages.registry, registry),
+				eq(dbSchema.packages.status, "placeholder"),
+			),
+		);
+
+	return new Set(rows.map((r) => r.name));
+}
+
 /** Load all active (pending/fetching) request package names */
 export async function loadActiveRequests(
 	registry: Registry,

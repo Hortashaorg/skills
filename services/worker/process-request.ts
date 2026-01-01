@@ -10,6 +10,7 @@ import {
 	insertReleaseChannel,
 	loadActiveRequests,
 	loadPackageNames,
+	loadPlaceholderNames,
 	type RequestInsert,
 	updateReleaseChannel,
 } from "./db/bulk.ts";
@@ -92,9 +93,10 @@ export async function processRequest(
 		}
 
 		// 4. Pre-load caches
-		const [packageNames, activeRequests] = await Promise.all([
+		const [packageNames, activeRequests, placeholderNames] = await Promise.all([
 			loadPackageNames(request.registry),
 			loadActiveRequests(request.registry),
+			loadPlaceholderNames(request.registry),
 		]);
 
 		// 5. Upsert package
@@ -112,7 +114,7 @@ export async function processRequest(
 		let channelsUpdated = 0;
 		let depsCreated = 0;
 		let depsDeleted = 0;
-		const placeholderNames = new Set<string>();
+		const createdPlaceholders = new Set<string>();
 		const pendingRequestInserts: RequestInsert[] = [];
 		const newRequestNames = new Set<string>();
 		const now = new Date();
@@ -158,12 +160,13 @@ export async function processRequest(
 			for (const dep of channel.dependencies) {
 				if (!packageNames.has(dep.name)) {
 					missingDepNames.push(dep.name);
-					placeholderNames.add(dep.name);
 				}
 
-				// Schedule request for missing packages
+				// Schedule request for missing packages OR existing placeholders
+				const needsRequest =
+					!packageNames.has(dep.name) || placeholderNames.has(dep.name);
 				if (
-					!packageNames.has(dep.name) &&
+					needsRequest &&
 					!activeRequests.has(dep.name) &&
 					!newRequestNames.has(dep.name)
 				) {
@@ -189,6 +192,7 @@ export async function processRequest(
 						return getOrCreatePlaceholder(tx, name, request.registry);
 					});
 					packageNames.set(name, id);
+					createdPlaceholders.add(name);
 				}
 			}
 
@@ -278,7 +282,7 @@ export async function processRequest(
 		result.channelsDeleted = channelsToDelete.length;
 		result.depsCreated = depsCreated;
 		result.depsDeleted = depsDeleted;
-		result.placeholdersCreated = placeholderNames.size;
+		result.placeholdersCreated = createdPlaceholders.size;
 		result.newRequestsScheduled = pendingRequestInserts.length;
 
 		// 15. Mark completed
