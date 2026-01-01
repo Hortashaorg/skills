@@ -82,8 +82,8 @@ export async function getOrCreatePlaceholder(
 		latestVersion: null,
 		distTags: null,
 		upvoteCount: 0,
-		lastFetchAttempt: now,
-		lastFetchSuccess: now,
+		lastFetchAttempt: 0,
+		lastFetchSuccess: 0,
 		createdAt: now,
 		updatedAt: now,
 	});
@@ -125,7 +125,7 @@ export async function markPackageFailed(
 		distTags: null,
 		upvoteCount: 0,
 		lastFetchAttempt: now,
-		lastFetchSuccess: now,
+		lastFetchSuccess: 0,
 		createdAt: now,
 		updatedAt: now,
 	});
