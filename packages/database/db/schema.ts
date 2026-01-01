@@ -86,12 +86,7 @@ export const packages = pgTable(
 	},
 	(table) => [
 		unique().on(table.name, table.registry),
-		index("idx_packages_name").on(table.name),
-		index("idx_packages_registry").on(table.registry),
-		index("idx_packages_status").on(table.status),
 		index("idx_packages_upvote_count").on(table.upvoteCount),
-		index("idx_packages_last_fetch_attempt").on(table.lastFetchAttempt),
-		index("idx_packages_created_at").on(table.createdAt),
 	],
 );
 
@@ -108,10 +103,7 @@ export const packageReleaseChannels = pgTable(
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
 	},
-	(table) => [
-		unique().on(table.packageId, table.channel),
-		index("idx_release_channels_package_id").on(table.packageId),
-	],
+	(table) => [unique().on(table.packageId, table.channel)],
 );
 
 export const channelDependencies = pgTable(
@@ -130,9 +122,6 @@ export const channelDependencies = pgTable(
 	},
 	(table) => [
 		index("idx_channel_dependencies_channel_id").on(table.channelId),
-		index("idx_channel_dependencies_dep_package_id").on(
-			table.dependencyPackageId,
-		),
 		unique().on(
 			table.channelId,
 			table.dependencyPackageId,
@@ -187,7 +176,6 @@ export const packageTags = pgTable(
 	},
 	(table) => [
 		unique().on(table.packageId, table.tagId),
-		index("idx_package_tags_package_id").on(table.packageId),
 		index("idx_package_tags_tag_id").on(table.tagId),
 	],
 );
@@ -206,30 +194,20 @@ export const packageUpvotes = pgTable(
 	},
 	(table) => [
 		unique().on(table.packageId, table.accountId),
-		index("idx_package_upvotes_package_id").on(table.packageId),
 		index("idx_package_upvotes_account_id").on(table.accountId),
 	],
 );
 
-export const auditLog = pgTable(
-	"audit_log",
-	{
-		id: uuid().primaryKey(),
-		entityType: text().notNull(),
-		entityId: uuid(),
-		action: auditActionEnum().notNull(),
-		actorType: actorTypeEnum().notNull(),
-		actorId: uuid().references(() => account.id),
-		metadata: jsonb(),
-		createdAt: timestamp().notNull(),
-	},
-	(table) => [
-		index("idx_audit_log_entity").on(table.entityType, table.entityId),
-		index("idx_audit_log_action").on(table.action),
-		index("idx_audit_log_actor").on(table.actorType, table.actorId),
-		index("idx_audit_log_created_at").on(table.createdAt),
-	],
-);
+export const auditLog = pgTable("audit_log", {
+	id: uuid().primaryKey(),
+	entityType: text().notNull(),
+	entityId: uuid(),
+	action: auditActionEnum().notNull(),
+	actorType: actorTypeEnum().notNull(),
+	actorId: uuid().references(() => account.id),
+	metadata: jsonb(),
+	createdAt: timestamp().notNull(),
+});
 
 // ============================================================================
 // Relations
