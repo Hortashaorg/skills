@@ -17,6 +17,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
@@ -44,6 +45,10 @@ export const ProjectDetail = () => {
 	const [editName, setEditName] = createSignal("");
 	const [editDescription, setEditDescription] = createSignal("");
 	const [packageSearch, setPackageSearch] = createSignal("");
+	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
+	const [removePackageId, setRemovePackageId] = createSignal<string | null>(
+		null,
+	);
 
 	// Search for packages to add
 	const [searchResults, searchResultsStatus] = useQuery(() =>
