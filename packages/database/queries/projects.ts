@@ -12,7 +12,11 @@ export const mine = defineQuery(({ ctx }) => {
 export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.projects
 		.where("id", args.id)
-		.related("projectPackages", (pp) => pp.related("package"))
+		.related("projectPackages", (pp) =>
+			pp.related("package", (pkg) =>
+				pkg.related("packageTags", (pt) => pt.related("tag")),
+			),
+		)
 		.related("account")
 		.one();
 });

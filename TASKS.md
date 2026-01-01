@@ -24,23 +24,27 @@
 **Goal:** Users can create projects and associate packages with them
 
 ### 8.1 Database & Zero Layer
-- [ ] Schema: `projects` table (id, name, description, userId, createdAt, updatedAt)
-- [ ] Schema: `project_packages` table (id, projectId, packageId, createdAt) - unique on (projectId, packageId)
-- [ ] Migration and `pnpm database zero`
-- [ ] Queries: `projects.mine`, `projects.byId`, `projects.public`
-- [ ] Mutators: `projects.create`, `projects.update`, `projects.delete`
-- [ ] Mutators: `projectPackages.add`, `projectPackages.remove`
+- [x] Schema: `projects` table (id, name, description, accountId, createdAt, updatedAt)
+- [x] Schema: `projectPackages` table (id, projectId, packageId, createdAt) - unique on (projectId, packageId)
+- [x] Migration and `pnpm database zero`
+- [x] Queries: `projects.mine`, `projects.byId`, `projects.list`
+- [x] Mutators: `projects.create`, `projects.update`, `projects.remove`
+- [x] Mutators: `projectPackages.add`, `projectPackages.remove`
+- [x] Split schema into domain files (`db/schema/` folder)
 
 ### 8.2 Project Pages
-- [ ] `/projects` - List user's projects (requires auth)
-- [ ] `/projects/new` - Create project form
-- [ ] `/projects/:id` - Project detail with package list
-- [ ] `/projects/:id/edit` - Edit project metadata
+- [x] `/projects` - List user's projects (requires auth)
+- [x] `/projects/new` - Create project form
+- [x] `/projects/:id` - Project detail with package list
+- [x] Inline editing for name/description (replaced separate edit page)
+- [x] Package search to add packages directly on project page
+- [x] Packages grouped by tags (packages with multiple tags appear in multiple sections)
+- [x] AlertDialog component for delete/remove confirmations
 
 ### 8.3 Package Integration
 - [ ] "Add to project" button on package detail page
 - [ ] Project selector dropdown/modal
-- [ ] Remove package from project on project detail page
+- [x] Remove package from project on project detail page
 
 ---
 

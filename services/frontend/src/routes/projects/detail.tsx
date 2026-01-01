@@ -78,6 +78,37 @@ export const ProjectDetail = () => {
 		() => new Set(packages().map((p) => p.id)),
 	);
 
+	// Group packages by tag - packages with multiple tags appear in multiple groups
+	const packagesByTag = createMemo(() => {
+		const pkgs = packages();
+		const groups: Record<string, typeof pkgs> = {};
+		const uncategorized: typeof pkgs = [];
+
+		for (const pkg of pkgs) {
+			const tags = pkg.packageTags ?? [];
+			if (tags.length === 0) {
+				uncategorized.push(pkg);
+			} else {
+				for (const pt of tags) {
+					const tagName = pt.tag?.name;
+					if (tagName) {
+						if (!groups[tagName]) {
+							groups[tagName] = [];
+						}
+						groups[tagName].push(pkg);
+					}
+				}
+			}
+		}
+
+		// Sort tag names alphabetically
+		const sortedTags = Object.keys(groups).sort((a, b) =>
+			a.toLowerCase().localeCompare(b.toLowerCase()),
+		);
+
+		return { groups, sortedTags, uncategorized };
+	});
+
 	const packageSearchResults = createMemo((): SearchResultItem[] => {
 		const results = searchResults() ?? [];
 		const existing = existingPackageIds();
@@ -423,32 +454,81 @@ export const ProjectDetail = () => {
 												</Card>
 											}
 										>
-											<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-												<For each={packages()}>
-													{(pkg) => {
-														const upvote = createPackageUpvote(
-															() => pkg as Package,
-														);
-														return (
-															<PackageCard
-																name={pkg.name}
-																registry={pkg.registry}
-																description={pkg.description}
-																href={buildPackageUrl(pkg.registry, pkg.name)}
-																upvoteCount={upvote.upvoteCount()}
-																isUpvoted={upvote.isUpvoted()}
-																upvoteDisabled={upvote.isDisabled()}
-																onUpvote={upvote.toggle}
-																onRemove={
-																	isOwner()
-																		? () => setRemovePackageId(pkg.id)
-																		: undefined
-																}
-															/>
-														);
-													}}
+											<Stack spacing="lg">
+												{/* Tagged sections */}
+												<For each={packagesByTag().sortedTags}>
+													{(tagName) => (
+														<Stack spacing="sm">
+															<Heading level="h3">{tagName}</Heading>
+															<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+																<For each={packagesByTag().groups[tagName]}>
+																	{(pkg) => {
+																		const upvote = createPackageUpvote(
+																			() => pkg as Package,
+																		);
+																		return (
+																			<PackageCard
+																				name={pkg.name}
+																				registry={pkg.registry}
+																				description={pkg.description}
+																				href={buildPackageUrl(
+																					pkg.registry,
+																					pkg.name,
+																				)}
+																				upvoteCount={upvote.upvoteCount()}
+																				isUpvoted={upvote.isUpvoted()}
+																				upvoteDisabled={upvote.isDisabled()}
+																				onUpvote={upvote.toggle}
+																				onRemove={
+																					isOwner()
+																						? () => setRemovePackageId(pkg.id)
+																						: undefined
+																				}
+																			/>
+																		);
+																	}}
+																</For>
+															</div>
+														</Stack>
+													)}
 												</For>
-											</div>
+
+												{/* Uncategorized section */}
+												<Show when={packagesByTag().uncategorized.length > 0}>
+													<Stack spacing="sm">
+														<Heading level="h3">Uncategorized</Heading>
+														<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+															<For each={packagesByTag().uncategorized}>
+																{(pkg) => {
+																	const upvote = createPackageUpvote(
+																		() => pkg as Package,
+																	);
+																	return (
+																		<PackageCard
+																			name={pkg.name}
+																			registry={pkg.registry}
+																			description={pkg.description}
+																			href={buildPackageUrl(
+																				pkg.registry,
+																				pkg.name,
+																			)}
+																			upvoteCount={upvote.upvoteCount()}
+																			isUpvoted={upvote.isUpvoted()}
+																			upvoteDisabled={upvote.isDisabled()}
+																			onUpvote={upvote.toggle}
+																			onRemove={
+																				isOwner()
+																					? () => setRemovePackageId(pkg.id)
+																					: undefined
+																			}
+																		/>
+																	);
+																}}
+															</For>
+														</div>
+													</Stack>
+												</Show>
+											</Stack>
 										</Show>
 									</Stack>
 								</>
