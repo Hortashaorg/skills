@@ -153,27 +153,17 @@ export async function processRequest(
 				channelsCreated++;
 			}
 
-			// 8. Resolve dependency package IDs (create placeholders if needed)
-			const newDeps: ChannelDependencyInsert[] = [];
+			// 8. Collect missing dependency names first
+			const missingDepNames: string[] = [];
 			for (const dep of channel.dependencies) {
-				const depPackageId = packageNames.get(dep.name);
-
-				if (!depPackageId) {
+				if (!packageNames.has(dep.name)) {
+					missingDepNames.push(dep.name);
 					placeholderNames.add(dep.name);
 				}
 
-				newDeps.push({
-					id: crypto.randomUUID(),
-					channelId,
-					dependencyPackageId: depPackageId ?? dep.name, // Temp: name until resolved
-					dependencyVersionRange: dep.versionRange,
-					dependencyType: dep.type,
-					createdAt: now,
-				});
-
 				// Schedule request for missing packages
 				if (
-					!depPackageId &&
+					!packageNames.has(dep.name) &&
 					!activeRequests.has(dep.name) &&
 					!newRequestNames.has(dep.name)
 				) {
@@ -192,8 +182,8 @@ export async function processRequest(
 				}
 			}
 
-			// 9. Create placeholders now
-			for (const name of placeholderNames) {
+			// 9. Create placeholders for missing dependencies
+			for (const name of missingDepNames) {
 				if (!packageNames.has(name)) {
 					const id = await dbProvider.transaction(async (tx) => {
 						return getOrCreatePlaceholder(tx, name, request.registry);
@@ -202,17 +192,27 @@ export async function processRequest(
 				}
 			}
 
-			// Resolve placeholder IDs in new deps
-			for (const dep of newDeps) {
-				if (!dep.dependencyPackageId.includes("-")) {
-					const resolvedId = packageNames.get(dep.dependencyPackageId);
-					if (resolvedId) {
-						dep.dependencyPackageId = resolvedId;
-					}
+			// 10. Now build dependencies with resolved IDs
+			const newDeps: ChannelDependencyInsert[] = [];
+			for (const dep of channel.dependencies) {
+				const depPackageId = packageNames.get(dep.name);
+				if (!depPackageId) {
+					throw new Error(
+						`Failed to resolve package ID for dependency: ${dep.name}`,
+					);
 				}
+
+				newDeps.push({
+					id: crypto.randomUUID(),
+					channelId,
+					dependencyPackageId: depPackageId,
+					dependencyVersionRange: dep.versionRange,
+					dependencyType: dep.type,
+					createdAt: now,
+				});
 			}
 
-			// 10. Diff dependencies for this channel
+			// 11. Diff dependencies for this channel
 			if (existing) {
 				const existingDeps = await getExistingDependencies(channelId);
 				const newDepKeys = new Set(
@@ -251,7 +251,7 @@ export async function processRequest(
 			}
 		}
 
-		// 11. Delete channels that no longer exist
+		// 12. Delete channels that no longer exist
 		const channelsToDelete: string[] = [];
 		for (const [channelName, { id }] of existingChannels) {
 			if (!processedChannelNames.has(channelName)) {
@@ -269,10 +269,10 @@ export async function processRequest(
 			await deleteReleaseChannels(channelsToDelete);
 		}
 
-		// 12. Schedule new requests
+		// 13. Schedule new requests
 		await bulkInsertPendingRequests(pendingRequestInserts);
 
-		// 13. Update result stats
+		// 14. Update result stats
 		result.channelsCreated = channelsCreated;
 		result.channelsUpdated = channelsUpdated;
 		result.channelsDeleted = channelsToDelete.length;
@@ -281,7 +281,7 @@ export async function processRequest(
 		result.placeholdersCreated = placeholderNames.size;
 		result.newRequestsScheduled = pendingRequestInserts.length;
 
-		// 14. Mark completed
+		// 15. Mark completed
 		await dbProvider.transaction(async (tx) => {
 			await updateRequestStatus(tx, request.id, "completed", packageId);
 		});
