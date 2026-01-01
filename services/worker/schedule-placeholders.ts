@@ -2,48 +2,37 @@
  * Schedule fetches for placeholder packages that don't have pending fetches.
  */
 
-import type { Registry } from "@package/database/server";
-import {
-	bulkInsertPendingFetches,
-	loadPendingFetchPackageIds,
-	loadPlaceholderPackages,
-} from "./db.ts";
-
-const registries: Registry[] = ["npm"];
+import { and, db, dbSchema, eq, isNull } from "@package/database/server";
+import { bulkInsertPendingFetches } from "./db.ts";
 
 export async function scheduleFetchesForPlaceholders(): Promise<number> {
-	let totalScheduled = 0;
+	// Single query: placeholders with no pending fetch
+	const rows = await db
+		.select({ id: dbSchema.packages.id })
+		.from(dbSchema.packages)
+		.leftJoin(
+			dbSchema.packageFetches,
+			and(
+				eq(dbSchema.packageFetches.packageId, dbSchema.packages.id),
+				eq(dbSchema.packageFetches.status, "pending"),
+			),
+		)
+		.where(
+			and(
+				eq(dbSchema.packages.status, "placeholder"),
+				isNull(dbSchema.packageFetches.id),
+			),
+		);
 
-	for (const registry of registries) {
-		// Load placeholder packages and packages with pending fetches
-		const [placeholders, pendingPackageIds] = await Promise.all([
-			loadPlaceholderPackages(registry),
-			loadPendingFetchPackageIds(),
-		]);
+	if (rows.length === 0) return 0;
 
-		// Find placeholders that don't have pending fetches
-		const needsFetch: Array<{
-			id: string;
-			packageId: string;
-			createdAt: number;
-		}> = [];
-		const now = Date.now();
+	const now = Date.now();
+	const fetches = rows.map((row) => ({
+		id: crypto.randomUUID(),
+		packageId: row.id,
+		createdAt: now,
+	}));
 
-		for (const [_name, packageId] of placeholders) {
-			if (!pendingPackageIds.has(packageId)) {
-				needsFetch.push({
-					id: crypto.randomUUID(),
-					packageId,
-					createdAt: now,
-				});
-			}
-		}
-
-		if (needsFetch.length === 0) continue;
-
-		await bulkInsertPendingFetches(needsFetch);
-		totalScheduled += needsFetch.length;
-	}
-
-	return totalScheduled;
+	await bulkInsertPendingFetches(fetches);
+	return fetches.length;
 }
