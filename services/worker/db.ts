@@ -4,6 +4,7 @@
  */
 
 import {
+	and,
 	db,
 	type dbProvider,
 	dbSchema,
@@ -140,7 +141,12 @@ export async function bulkCreatePlaceholders(
 	const rows = await db
 		.select({ id: dbSchema.packages.id, name: dbSchema.packages.name })
 		.from(dbSchema.packages)
-		.where(inArray(dbSchema.packages.name, names));
+		.where(
+			and(
+				inArray(dbSchema.packages.name, names),
+				eq(dbSchema.packages.registry, registry),
+			),
+		);
 
 	const map = new Map<string, string>();
 	for (const row of rows) {
