@@ -22,6 +22,7 @@ export const queries = defineQueries({
 		byIdWithTags: packagesQueries.byIdWithTags,
 		recent: packagesQueries.recent,
 		search: packagesQueries.search,
+		failed: packagesQueries.failed,
 	},
 	packageFetches: {
 		pending: packageFetchesQueries.pending,

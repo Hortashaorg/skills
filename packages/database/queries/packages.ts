@@ -67,6 +67,14 @@ export const recent = defineQuery(
 	},
 );
 
+// Failed packages for admin dashboard
+export const failed = defineQuery(() => {
+	return zql.packages
+		.where("status", "failed")
+		.orderBy("updatedAt", "desc")
+		.limit(50);
+});
+
 // Search packages with filters (server-side filtering)
 export const search = defineQuery(
 	z.object({

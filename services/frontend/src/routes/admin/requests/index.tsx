@@ -1,33 +1,36 @@
 import {
-	type FetchStatus,
 	queries,
+	type Row,
 	useConnectionState,
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { createSignal, Show } from "solid-js";
+import { A } from "@solidjs/router";
+import { For, Show } from "solid-js";
 import { AuthGuard } from "@/components/composite/auth-guard";
 import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
+import { Text } from "@/components/primitives/text";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { Tabs } from "@/components/ui/tabs";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
-import { FetchesTable } from "./sections/FetchesTable";
+import { buildPackageUrl } from "@/lib/url";
 
-const PAGE_SIZE = 25;
+type FetchWithPackage = Row["packageFetches"] & {
+	package?: Row["packages"] | null;
+};
 
-const STATUSES: { value: FetchStatus; label: string }[] = [
-	{ value: "pending", label: "Pending" },
-	{ value: "completed", label: "Completed" },
-	{ value: "failed", label: "Failed" },
-];
+const formatDate = (timestamp: number | null) => {
+	if (!timestamp) return "-";
+	return new Date(timestamp).toLocaleString();
+};
 
 export const AdminRequests = () => {
 	const zero = useZero();
-	const [activeTab, setActiveTab] = createSignal<FetchStatus>("pending");
-	const [page, setPage] = createSignal(0);
 
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
@@ -35,92 +38,149 @@ export const AdminRequests = () => {
 	const [pendingFetches] = useQuery(() =>
 		queries.packageFetches.byStatus({ status: "pending" }),
 	);
-	const [completedFetches] = useQuery(() =>
-		queries.packageFetches.byStatus({ status: "completed" }),
-	);
-	const [failedFetches] = useQuery(() =>
-		queries.packageFetches.byStatus({ status: "failed" }),
-	);
+	const [failedPackages] = useQuery(() => queries.packages.failed());
 	const connectionState = useConnectionState();
 
 	const isLoading = () =>
 		connectionState().name === "connecting" ||
 		pendingFetches() === undefined ||
-		completedFetches() === undefined ||
-		failedFetches() === undefined;
+		failedPackages() === undefined;
 
-	const fetchesByStatus = () => ({
-		pending: pendingFetches() ?? [],
-		completed: completedFetches() ?? [],
-		failed: failedFetches() ?? [],
-	});
-
-	const counts = () => {
-		const byStatus = fetchesByStatus();
-		return {
-			pending: byStatus.pending.length,
-			completed: byStatus.completed.length,
-			failed: byStatus.failed.length,
-		};
-	};
-
-	const fetchesForTab = () => fetchesByStatus()[activeTab()];
-
-	const paginatedFetches = () => {
-		const start = page() * PAGE_SIZE;
-		return fetchesForTab().slice(start, start + PAGE_SIZE);
-	};
-
-	const handleTabChange = (value: string) => {
-		setActiveTab(value as FetchStatus);
-		setPage(0);
-	};
-
-	const getTabLabel = (status: (typeof STATUSES)[number]) => {
-		const count = counts()[status.value] ?? 0;
-		return `${status.label} (${count})`;
-	};
+	// Top 25 pending fetches
+	const topPending = () => (pendingFetches() ?? []).slice(0, 25);
 
 	return (
 		<Layout>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
 					<AuthGuard hasAccess={isLoggedIn() && isAdmin()}>
-						<Heading level="h1">Package Fetches</Heading>
+						<Heading level="h1">Admin Dashboard</Heading>
 
 						<Show
 							when={!isLoading()}
 							fallback={
 								<div class="flex justify-center py-12">
-									<Spinner label="Loading fetches..." />
+									<Spinner label="Loading..." />
 								</div>
 							}
 						>
-							<Tabs.Root
-								defaultValue="pending"
-								value={activeTab()}
-								onChange={handleTabChange}
-							>
-								<Tabs.List variant="line">
-									{STATUSES.map((status) => (
-										<Tabs.Trigger value={status.value}>
-											{getTabLabel(status)}
-										</Tabs.Trigger>
-									))}
-								</Tabs.List>
+							{/* Pending Fetches Section */}
+							<Card padding="lg">
+								<Stack spacing="md">
+									<Heading level="h2">Pending Fetches</Heading>
+									<Show
+										when={topPending().length > 0}
+										fallback={
+											<Text color="muted">No pending fetches in queue.</Text>
+										}
+									>
+										<div class="overflow-x-auto">
+											<table class="w-full text-sm">
+												<thead>
+													<tr class="border-b border-outline dark:border-outline-dark">
+														<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
+															Package
+														</th>
+														<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
+															Registry
+														</th>
+														<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
+															Created
+														</th>
+													</tr>
+												</thead>
+												<tbody>
+													<For each={topPending() as FetchWithPackage[]}>
+														{(fetch) => (
+															<tr class="border-b border-outline/50 dark:border-outline-dark/50">
+																<td class="py-3 px-2">
+																	<Show
+																		when={fetch.package}
+																		fallback={
+																			<Text size="sm" color="muted">
+																				Unknown
+																			</Text>
+																		}
+																	>
+																		{(pkg) => (
+																			<A
+																				href={buildPackageUrl(
+																					pkg().registry,
+																					pkg().name,
+																				)}
+																				class="text-primary dark:text-primary-dark hover:underline"
+																			>
+																				{pkg().name}
+																			</A>
+																		)}
+																	</Show>
+																</td>
+																<td class="py-3 px-2">
+																	<Show when={fetch.package}>
+																		{(pkg) => (
+																			<Badge variant="secondary" size="sm">
+																				{pkg().registry}
+																			</Badge>
+																		)}
+																	</Show>
+																</td>
+																<td class="py-3 px-2">
+																	<Text size="sm" color="muted">
+																		{formatDate(fetch.createdAt)}
+																	</Text>
+																</td>
+															</tr>
+														)}
+													</For>
+												</tbody>
+											</table>
+										</div>
+									</Show>
+								</Stack>
+							</Card>
 
-								{STATUSES.map((status) => (
-									<Tabs.Content value={status.value}>
-										<FetchesTable
-											fetches={paginatedFetches()}
-											totalCount={counts()[status.value] ?? 0}
-											page={page()}
-											pageSize={PAGE_SIZE}
-											onPageChange={setPage}
-										/>
-									</Tabs.Content>
-								))}
-							</Tabs.Root>
+							{/* Failed Packages Section */}
+							<Card padding="lg">
+								<Stack spacing="md">
+									<Heading level="h2">Failed Packages</Heading>
+									<Show
+										when={(failedPackages() ?? []).length > 0}
+										fallback={
+											<Text color="muted">No failed packages.</Text>
+										}
+									>
+										<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+											<For each={failedPackages()}>
+												{(pkg) => (
+													<A
+														href={buildPackageUrl(pkg.registry, pkg.name)}
+														class="block"
+													>
+														<Card
+															padding="md"
+															class="hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors"
+														>
+															<Stack spacing="xs">
+																<Flex justify="between" align="start">
+																	<Text weight="semibold" class="truncate">
+																		{pkg.name}
+																	</Text>
+																	<Badge variant="secondary" size="sm">
+																		{pkg.registry}
+																	</Badge>
+																</Flex>
+																<Badge variant="danger" size="sm">
+																	{pkg.failureReason || "failed"}
+																</Badge>
+															</Stack>
+														</Card>
+													</A>
+												)}
+											</For>
+										</div>
+									</Show>
+								</Stack>
+							</Card>
 						</Show>
 					</AuthGuard>
 				</Stack>

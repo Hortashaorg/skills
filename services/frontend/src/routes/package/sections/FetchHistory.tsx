@@ -62,32 +62,31 @@ export const FetchHistory = (props: FetchHistoryProps) => {
 						<Stack spacing="sm">
 							<For each={fetchList.slice(0, 10)}>
 								{(fetch) => (
-									<Flex
-										justify="between"
-										align="center"
-										class="py-2 border-b border-neutral-200 dark:border-neutral-700 last:border-b-0"
+									<Stack
+										spacing="xs"
+										class="py-3 border-b border-neutral-200 dark:border-neutral-700 last:border-b-0"
 									>
-										<Flex align="center" gap="md">
-											<Badge variant={statusVariant(fetch.status)} size="sm">
-												{fetch.status}
-											</Badge>
-											<Text size="sm" color="muted">
-												{formatDate(fetch.createdAt)}
-											</Text>
-										</Flex>
-										<Flex align="center" gap="md">
+										<Flex justify="between" align="center">
+											<Flex align="center" gap="md">
+												<Badge variant={statusVariant(fetch.status)} size="sm">
+													{fetch.status}
+												</Badge>
+												<Text size="sm" color="muted">
+													{formatDate(fetch.createdAt)}
+												</Text>
+											</Flex>
 											{fetch.completedAt && (
 												<Text size="sm" color="muted">
 													Completed: {formatDate(fetch.completedAt)}
 												</Text>
 											)}
-											{fetch.errorMessage && (
-												<Text size="sm" color="danger" class="max-w-xs truncate">
-													{fetch.errorMessage}
-												</Text>
-											)}
 										</Flex>
-									</Flex>
+										{fetch.errorMessage && (
+											<Text size="sm" color="danger">
+												{fetch.errorMessage}
+											</Text>
+										)}
+									</Stack>
 								)}
 							</For>
 						</Stack>
