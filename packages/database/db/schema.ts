@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	boolean,
 	index,
 	integer,
 	jsonb,
@@ -44,6 +43,12 @@ export const auditActionEnum = pgEnum("audit_action", [
 
 export const actorTypeEnum = pgEnum("actor_type", ["user", "worker", "system"]);
 
+export const packageStatusEnum = pgEnum("package_status", [
+	"active",
+	"failed",
+	"placeholder",
+]);
+
 // ============================================================================
 // Users
 // ============================================================================
@@ -66,6 +71,8 @@ export const packages = pgTable(
 		id: uuid().primaryKey(),
 		name: text().notNull(),
 		registry: registryEnum().notNull(),
+		status: packageStatusEnum().notNull(),
+		failureReason: text(),
 		description: text(),
 		homepage: text(),
 		repository: text(),
@@ -81,62 +88,56 @@ export const packages = pgTable(
 		unique().on(table.name, table.registry),
 		index("idx_packages_name").on(table.name),
 		index("idx_packages_registry").on(table.registry),
+		index("idx_packages_status").on(table.status),
 		index("idx_packages_upvote_count").on(table.upvoteCount),
 		index("idx_packages_last_fetch_attempt").on(table.lastFetchAttempt),
 		index("idx_packages_created_at").on(table.createdAt),
 	],
 );
 
-export const packageVersions = pgTable(
-	"package_versions",
+export const packageReleaseChannels = pgTable(
+	"package_release_channels",
 	{
 		id: uuid().primaryKey(),
 		packageId: uuid()
 			.notNull()
 			.references(() => packages.id),
+		channel: text().notNull(),
 		version: text().notNull(),
 		publishedAt: timestamp().notNull(),
-		isPrerelease: boolean().notNull(),
-		isYanked: boolean().notNull(),
-		createdAt: timestamp().notNull(),
-	},
-	(table) => [
-		unique().on(table.packageId, table.version),
-		index("idx_package_versions_package_id").on(table.packageId),
-		index("idx_package_versions_published_at").on(table.publishedAt),
-		index("idx_package_versions_stable")
-			.on(table.packageId, table.publishedAt)
-			.where(sql`${table.isPrerelease} = false AND ${table.isYanked} = false`),
-	],
-);
-
-export const packageDependencies = pgTable(
-	"package_dependencies",
-	{
-		id: uuid().primaryKey(),
-		packageId: uuid()
-			.notNull()
-			.references(() => packages.id),
-		versionId: uuid()
-			.notNull()
-			.references(() => packageVersions.id),
-		dependencyName: text().notNull(),
-		dependencyPackageId: uuid().references(() => packages.id),
-		dependencyVersionRange: text().notNull(),
-		dependencyType: dependencyTypeEnum().notNull(),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
 	},
 	(table) => [
-		index("idx_package_dependencies_package_id").on(table.packageId),
-		index("idx_package_dependencies_version_id").on(table.versionId),
-		index("idx_package_dependencies_dependency_name").on(table.dependencyName),
-		index("idx_package_dependencies_dependency_package_id").on(
+		unique().on(table.packageId, table.channel),
+		index("idx_release_channels_package_id").on(table.packageId),
+	],
+);
+
+export const channelDependencies = pgTable(
+	"channel_dependencies",
+	{
+		id: uuid().primaryKey(),
+		channelId: uuid()
+			.notNull()
+			.references(() => packageReleaseChannels.id),
+		dependencyPackageId: uuid()
+			.notNull()
+			.references(() => packages.id),
+		dependencyVersionRange: text().notNull(),
+		dependencyType: dependencyTypeEnum().notNull(),
+		createdAt: timestamp().notNull(),
+	},
+	(table) => [
+		index("idx_channel_dependencies_channel_id").on(table.channelId),
+		index("idx_channel_dependencies_dep_package_id").on(
 			table.dependencyPackageId,
 		),
-		index("idx_package_dependencies_unlinked")
-			.on(table.dependencyName, table.createdAt)
-			.where(sql`${table.dependencyPackageId} IS NULL`),
+		unique().on(
+			table.channelId,
+			table.dependencyPackageId,
+			table.dependencyType,
+		),
 	],
 );
 
@@ -235,45 +236,14 @@ export const auditLog = pgTable(
 // ============================================================================
 
 export const packagesRelations = relations(packages, ({ many }) => ({
-	versions: many(packageVersions),
-	dependencies: many(packageDependencies),
-	dependents: many(packageDependencies, {
+	releaseChannels: many(packageReleaseChannels),
+	channelDependents: many(channelDependencies, {
 		relationName: "dependencyPackage",
 	}),
 	packageTags: many(packageTags),
 	requests: many(packageRequests),
 	upvotes: many(packageUpvotes),
 }));
-
-export const packageVersionsRelations = relations(
-	packageVersions,
-	({ one, many }) => ({
-		package: one(packages, {
-			fields: [packageVersions.packageId],
-			references: [packages.id],
-		}),
-		dependencies: many(packageDependencies),
-	}),
-);
-
-export const packageDependenciesRelations = relations(
-	packageDependencies,
-	({ one }) => ({
-		package: one(packages, {
-			fields: [packageDependencies.packageId],
-			references: [packages.id],
-		}),
-		version: one(packageVersions, {
-			fields: [packageDependencies.versionId],
-			references: [packageVersions.id],
-		}),
-		dependencyPackage: one(packages, {
-			fields: [packageDependencies.dependencyPackageId],
-			references: [packages.id],
-			relationName: "dependencyPackage",
-		}),
-	}),
-);
 
 export const packageRequestsRelations = relations(
 	packageRequests,
@@ -317,3 +287,29 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
 		references: [account.id],
 	}),
 }));
+
+export const packageReleaseChannelsRelations = relations(
+	packageReleaseChannels,
+	({ one, many }) => ({
+		package: one(packages, {
+			fields: [packageReleaseChannels.packageId],
+			references: [packages.id],
+		}),
+		dependencies: many(channelDependencies),
+	}),
+);
+
+export const channelDependenciesRelations = relations(
+	channelDependencies,
+	({ one }) => ({
+		channel: one(packageReleaseChannels, {
+			fields: [channelDependencies.channelId],
+			references: [packageReleaseChannels.id],
+		}),
+		dependencyPackage: one(packages, {
+			fields: [channelDependencies.dependencyPackageId],
+			references: [packages.id],
+			relationName: "dependencyPackage",
+		}),
+	}),
+);
