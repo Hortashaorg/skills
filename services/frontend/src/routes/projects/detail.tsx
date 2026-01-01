@@ -159,16 +159,15 @@ export const ProjectDetail = () => {
 		}
 	};
 
-	const handleRemovePackage = async (packageId: string) => {
+	const confirmRemovePackage = async () => {
 		const p = project();
-		if (!p) return;
+		const packageId = removePackageId();
+		if (!p || !packageId) return;
 
 		const projectPackage = p.projectPackages.find(
 			(pp) => pp.packageId === packageId,
 		);
 		if (!projectPackage) return;
-
-		if (!confirm("Remove this package from the project?")) return;
 
 		try {
 			await zero().mutate(
@@ -179,22 +178,19 @@ export const ProjectDetail = () => {
 			).client;
 		} catch (err) {
 			console.error("Failed to remove package:", err);
-			alert("Failed to remove package. Please try again.");
 		}
+		setRemovePackageId(null);
 	};
 
-	const handleDelete = async () => {
+	const confirmDelete = async () => {
 		const p = project();
 		if (!p) return;
-
-		if (!confirm(`Delete project "${p.name}"? This cannot be undone.`)) return;
 
 		try {
 			await zero().mutate(mutators.projects.remove({ id: p.id })).client;
 			navigate("/projects");
 		} catch (err) {
 			console.error("Failed to delete project:", err);
-			alert("Failed to delete project. Please try again.");
 		}
 	};
 
@@ -374,7 +370,11 @@ export const ProjectDetail = () => {
 											</Text>
 										</Stack>
 										<Show when={isOwner()}>
-											<Button variant="danger" size="sm" onClick={handleDelete}>
+											<Button
+												variant="danger"
+												size="sm"
+												onClick={() => setDeleteDialogOpen(true)}
+											>
 												Delete
 											</Button>
 										</Show>
@@ -441,7 +441,7 @@ export const ProjectDetail = () => {
 																onUpvote={upvote.toggle}
 																onRemove={
 																	isOwner()
-																		? () => handleRemovePackage(pkg.id)
+																		? () => setRemovePackageId(pkg.id)
 																		: undefined
 																}
 															/>
@@ -457,6 +457,30 @@ export const ProjectDetail = () => {
 					</Show>
 				</Stack>
 			</Container>
+
+			{/* Delete Project Dialog */}
+			<AlertDialog
+				open={deleteDialogOpen()}
+				onOpenChange={setDeleteDialogOpen}
+				title="Delete Project"
+				description={`Delete "${project()?.name}"? This cannot be undone.`}
+				confirmText="Delete"
+				variant="danger"
+				onConfirm={confirmDelete}
+			/>
+
+			{/* Remove Package Dialog */}
+			<AlertDialog
+				open={removePackageId() !== null}
+				onOpenChange={(open) => {
+					if (!open) setRemovePackageId(null);
+				}}
+				title="Remove Package"
+				description="Remove this package from the project?"
+				confirmText="Remove"
+				variant="danger"
+				onConfirm={confirmRemovePackage}
+			/>
 		</Layout>
 	);
 };
