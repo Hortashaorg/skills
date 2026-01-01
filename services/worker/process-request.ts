@@ -1,19 +1,23 @@
 import { dbProvider, type Registry, type Row } from "@package/database/server";
 import {
-	bulkInsertDependencies,
 	bulkInsertPendingRequests,
-	bulkInsertVersions,
-	bulkLinkDependencies,
-	type DependencyInsert,
+	type ChannelDependencyInsert,
+	deleteChannelDependencies,
+	deleteReleaseChannels,
+	getExistingChannels,
+	getExistingDependencies,
+	insertChannelDependencies,
+	insertReleaseChannel,
 	loadActiveRequests,
 	loadPackageNames,
 	type RequestInsert,
-	type VersionInsert,
+	updateReleaseChannel,
 } from "./db/bulk.ts";
 import {
 	findPackage,
-	getExistingVersions,
+	getOrCreatePlaceholder,
 	incrementAttempt,
+	markPackageFailed,
 	updateRequestStatus,
 	upsertPackage,
 } from "./db/index.ts";
@@ -28,18 +32,17 @@ export interface ProcessResult {
 	success: boolean;
 	skippedCooldown?: boolean;
 	packageId?: string;
-	versionsTotal?: number;
-	versionsNew?: number;
-	versionsSkipped?: number;
-	dependenciesCreated?: number;
-	dependenciesLinked?: number;
-	dependenciesExisting?: number;
-	dependenciesQueued?: number;
+	channelsCreated?: number;
+	channelsUpdated?: number;
+	channelsDeleted?: number;
+	depsCreated?: number;
+	depsDeleted?: number;
+	placeholdersCreated?: number;
 	newRequestsScheduled?: number;
 	error?: string;
 }
 
-/** Process a single package request with bulk operations */
+/** Process a single package request */
 export async function processRequest(
 	request: Row["packageRequests"],
 ): Promise<ProcessResult> {
@@ -56,8 +59,11 @@ export async function processRequest(
 			return findPackage(tx, request.packageName, request.registry);
 		});
 
-		if (existingPkg && Date.now() - existingPkg.updatedAt < COOLDOWN_MS) {
-			// Package was fetched recently - mark as completed without refetching
+		if (
+			existingPkg &&
+			existingPkg.status === "active" &&
+			Date.now() - existingPkg.updatedAt < COOLDOWN_MS
+		) {
 			await dbProvider.transaction(async (tx) => {
 				await updateRequestStatus(tx, request.id, "completed", existingPkg.id);
 			});
@@ -73,7 +79,7 @@ export async function processRequest(
 			await incrementAttempt(tx, request.id, request.attemptCount);
 		});
 
-		// 3. Fetch from registry (outside transaction - network call)
+		// 3. Fetch from registry
 		const fetchResult = await npm.getPackages([request.packageName]);
 		const packageData = fetchResult.get(request.packageName);
 
@@ -85,7 +91,7 @@ export async function processRequest(
 			throw packageData;
 		}
 
-		// 4. Pre-load existing data for fast lookups
+		// 4. Pre-load caches
 		const [packageNames, activeRequests] = await Promise.all([
 			loadPackageNames(request.registry),
 			loadActiveRequests(request.registry),
@@ -96,70 +102,81 @@ export async function processRequest(
 			return upsertPackage(tx, packageData, request.registry);
 		});
 		result.packageId = packageId;
-
-		// Update cache with new package
 		packageNames.set(packageData.name, packageId);
 
-		// 6. Get existing versions and filter to only new ones
-		const existingVersions = await dbProvider.transaction(async (tx) => {
-			return getExistingVersions(tx, packageId);
-		});
+		// 6. Get existing channels for diff
+		const existingChannels = await getExistingChannels(packageId);
 
-		const newVersions = packageData.versions.filter(
-			(v) => !existingVersions.has(v.version),
-		);
-
-		result.versionsTotal = packageData.versions.length;
-		result.versionsNew = newVersions.length;
-		result.versionsSkipped = existingVersions.size;
-
-		// 7. Prepare bulk inserts
-		const now = new Date();
-		const versionInserts: VersionInsert[] = [];
-		const dependencyInserts: DependencyInsert[] = [];
+		// Track stats
+		let channelsCreated = 0;
+		let channelsUpdated = 0;
+		let depsCreated = 0;
+		let depsDeleted = 0;
+		const placeholderNames = new Set<string>();
 		const pendingRequestInserts: RequestInsert[] = [];
 		const newRequestNames = new Set<string>();
-		let depsExisting = 0;
-		let depsAlreadyQueued = 0;
+		const now = new Date();
 
-		for (const version of newVersions) {
-			const versionId = crypto.randomUUID();
+		// 7. Process each channel from new data
+		const processedChannelNames = new Set<string>();
 
-			versionInserts.push({
-				id: versionId,
-				packageId,
-				version: version.version,
-				publishedAt: version.publishedAt,
-				isPrerelease: version.isPrerelease,
-				isYanked: version.isYanked,
-				createdAt: now,
-			});
+		for (const channel of packageData.releaseChannels) {
+			processedChannelNames.add(channel.channel);
+			const existing = existingChannels.get(channel.channel);
 
-			// Process dependencies for this version
-			for (const dep of version.dependencies) {
-				const existingPackageId = packageNames.get(dep.name) ?? null;
+			let channelId: string;
 
-				dependencyInserts.push({
-					id: crypto.randomUUID(),
+			if (existing) {
+				// Channel exists - update if version changed
+				channelId = existing.id;
+				if (existing.version !== channel.version) {
+					await updateReleaseChannel(
+						channelId,
+						channel.version,
+						channel.publishedAt,
+						now,
+					);
+					channelsUpdated++;
+				}
+			} else {
+				// New channel - insert
+				channelId = crypto.randomUUID();
+				await insertReleaseChannel({
+					id: channelId,
 					packageId,
-					versionId,
-					dependencyName: dep.name,
-					dependencyPackageId: existingPackageId,
-					dependencyVersionRange: dep.versionRange,
-					dependencyType: dep.type,
+					channel: channel.channel,
+					version: channel.version,
+					publishedAt: channel.publishedAt,
 					createdAt: now,
 					updatedAt: now,
 				});
+				channelsCreated++;
+			}
 
-				if (existingPackageId) {
-					depsExisting++;
-				} else if (
-					activeRequests.has(dep.name) ||
-					newRequestNames.has(dep.name)
+			// 8. Resolve dependency package IDs (create placeholders if needed)
+			const newDeps: ChannelDependencyInsert[] = [];
+			for (const dep of channel.dependencies) {
+				const depPackageId = packageNames.get(dep.name);
+
+				if (!depPackageId) {
+					placeholderNames.add(dep.name);
+				}
+
+				newDeps.push({
+					id: crypto.randomUUID(),
+					channelId,
+					dependencyPackageId: depPackageId ?? dep.name, // Temp: name until resolved
+					dependencyVersionRange: dep.versionRange,
+					dependencyType: dep.type,
+					createdAt: now,
+				});
+
+				// Schedule request for missing packages
+				if (
+					!depPackageId &&
+					!activeRequests.has(dep.name) &&
+					!newRequestNames.has(dep.name)
 				) {
-					depsAlreadyQueued++;
-				} else {
-					// Schedule missing dependency for fetching
 					newRequestNames.add(dep.name);
 					pendingRequestInserts.push({
 						id: crypto.randomUUID(),
@@ -174,41 +191,120 @@ export async function processRequest(
 					});
 				}
 			}
+
+			// 9. Create placeholders now
+			for (const name of placeholderNames) {
+				if (!packageNames.has(name)) {
+					const id = await dbProvider.transaction(async (tx) => {
+						return getOrCreatePlaceholder(tx, name, request.registry);
+					});
+					packageNames.set(name, id);
+				}
+			}
+
+			// Resolve placeholder IDs in new deps
+			for (const dep of newDeps) {
+				if (!dep.dependencyPackageId.includes("-")) {
+					const resolvedId = packageNames.get(dep.dependencyPackageId);
+					if (resolvedId) {
+						dep.dependencyPackageId = resolvedId;
+					}
+				}
+			}
+
+			// 10. Diff dependencies for this channel
+			if (existing) {
+				const existingDeps = await getExistingDependencies(channelId);
+				const newDepKeys = new Set(
+					newDeps.map((d) => `${d.dependencyPackageId}:${d.dependencyType}`),
+				);
+
+				// Find deps to delete (in existing but not in new)
+				const depsToDelete: string[] = [];
+				for (const [key, id] of existingDeps) {
+					if (!newDepKeys.has(key)) {
+						depsToDelete.push(id);
+					}
+				}
+
+				// Find deps to insert (in new but not in existing)
+				const depsToInsert = newDeps.filter(
+					(d) =>
+						!existingDeps.has(`${d.dependencyPackageId}:${d.dependencyType}`),
+				);
+
+				if (depsToDelete.length > 0) {
+					await deleteChannelDependencies(depsToDelete);
+					depsDeleted += depsToDelete.length;
+				}
+
+				if (depsToInsert.length > 0) {
+					await insertChannelDependencies(depsToInsert);
+					depsCreated += depsToInsert.length;
+				}
+			} else {
+				// New channel - insert all deps
+				if (newDeps.length > 0) {
+					await insertChannelDependencies(newDeps);
+					depsCreated += newDeps.length;
+				}
+			}
 		}
 
-		// 8. Execute bulk inserts
-		await bulkInsertVersions(versionInserts);
-		await bulkInsertDependencies(dependencyInserts);
+		// 11. Delete channels that no longer exist
+		const channelsToDelete: string[] = [];
+		for (const [channelName, { id }] of existingChannels) {
+			if (!processedChannelNames.has(channelName)) {
+				// First delete dependencies for this channel
+				const deps = await getExistingDependencies(id);
+				if (deps.size > 0) {
+					await deleteChannelDependencies([...deps.values()]);
+					depsDeleted += deps.size;
+				}
+				channelsToDelete.push(id);
+			}
+		}
+
+		if (channelsToDelete.length > 0) {
+			await deleteReleaseChannels(channelsToDelete);
+		}
+
+		// 12. Schedule new requests
 		await bulkInsertPendingRequests(pendingRequestInserts);
 
-		result.dependenciesCreated = dependencyInserts.length;
-		result.dependenciesExisting = depsExisting;
-		result.dependenciesQueued = depsAlreadyQueued;
+		// 13. Update result stats
+		result.channelsCreated = channelsCreated;
+		result.channelsUpdated = channelsUpdated;
+		result.channelsDeleted = channelsToDelete.length;
+		result.depsCreated = depsCreated;
+		result.depsDeleted = depsDeleted;
+		result.placeholdersCreated = placeholderNames.size;
 		result.newRequestsScheduled = pendingRequestInserts.length;
 
-		// 9. Link any previously unlinked deps that reference this package
-		const linkedCount = await bulkLinkDependencies(
-			packageId,
-			request.packageName,
-		);
-		result.dependenciesLinked = linkedCount;
-
-		// 10. Mark completed
+		// 14. Mark completed
 		await dbProvider.transaction(async (tx) => {
 			await updateRequestStatus(tx, request.id, "completed", packageId);
 		});
 		result.success = true;
 	} catch (error) {
-		// Handle failure
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		result.error = errorMessage;
+
+		// Mark package as failed
+		await dbProvider.transaction(async (tx) => {
+			await markPackageFailed(
+				tx,
+				request.packageName,
+				request.registry,
+				errorMessage,
+			);
+		});
 
 		const newAttemptCount = request.attemptCount + 1;
 		const status = newAttemptCount >= 3 ? "discarded" : "failed";
 
 		await dbProvider.transaction(async (tx) => {
 			await updateRequestStatus(tx, request.id, status, null, errorMessage);
-			await incrementAttempt(tx, request.id, request.attemptCount);
 		});
 	}
 

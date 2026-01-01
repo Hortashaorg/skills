@@ -1,29 +1,13 @@
-import type { DependencyData, PackageData, VersionData } from "../types.ts";
+import type {
+	DependencyData,
+	PackageData,
+	ReleaseChannelData,
+} from "../types.ts";
 import type { NpmPackageResponse, NpmVersionResponse } from "./schema.ts";
-
-// Pre-release identifiers in version strings
-const PRERELEASE_PATTERNS = [
-	"-alpha",
-	"-beta",
-	"-rc",
-	"-canary",
-	"-experimental",
-	"-next",
-	"-nightly",
-	"-dev",
-	"-snapshot",
-	"-preview",
-	"-insiders",
-];
-
-/** Check if a version string is a pre-release */
-function isPrerelease(version: string): boolean {
-	const lower = version.toLowerCase();
-	return PRERELEASE_PATTERNS.some((pattern) => lower.includes(pattern));
-}
 
 /**
  * Transform npm API response to common PackageData format.
+ * Only extracts release channels from dist-tags (not all versions).
  */
 export function mapNpmPackage(response: NpmPackageResponse): PackageData {
 	const distTags = response["dist-tags"];
@@ -36,7 +20,7 @@ export function mapNpmPackage(response: NpmPackageResponse): PackageData {
 		repository: extractRepository(response.repository),
 		latestVersion: distTags.latest,
 		distTags: distTags as Record<string, string>,
-		versions: mapVersions(response),
+		releaseChannels: mapReleaseChannels(response),
 	};
 }
 
@@ -58,19 +42,35 @@ function extractRepository(repo: unknown): string | undefined {
 	return undefined;
 }
 
-function mapVersions(response: NpmPackageResponse): VersionData[] {
-	return Object.entries(response.versions).map(([version, info]) => ({
-		version,
-		publishedAt: parsePublishedAt(response.time[version]),
-		isPrerelease: isPrerelease(version),
-		isYanked: false, // npm doesn't have yanked versions in the same way
-		dependencies: mapDependencies(info),
-	}));
+/**
+ * Map dist-tags to release channels.
+ * Each dist-tag (latest, next, beta, etc.) becomes a release channel.
+ */
+function mapReleaseChannels(
+	response: NpmPackageResponse,
+): ReleaseChannelData[] {
+	const distTags = response["dist-tags"];
+	const channels: ReleaseChannelData[] = [];
+
+	for (const [channel, version] of Object.entries(distTags)) {
+		if (typeof version !== "string") continue;
+		const versionInfo = response.versions[version];
+		if (!versionInfo) continue;
+
+		channels.push({
+			channel,
+			version,
+			publishedAt: parsePublishedAt(response.time[version]),
+			dependencies: mapDependencies(versionInfo),
+		});
+	}
+
+	return channels;
 }
 
 function parsePublishedAt(timeString: string | undefined): Date {
 	if (!timeString) {
-		return new Date(0); // Fallback for missing timestamps
+		return new Date(0);
 	}
 	return new Date(timeString);
 }
@@ -78,7 +78,6 @@ function parsePublishedAt(timeString: string | undefined): Date {
 function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 	const deps: DependencyData[] = [];
 
-	// Skip if deps is a string (malformed package data)
 	if (version.dependencies && typeof version.dependencies === "object") {
 		for (const [name, range] of Object.entries(version.dependencies)) {
 			deps.push({ name, versionRange: range, type: "runtime" });

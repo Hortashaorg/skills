@@ -27,7 +27,7 @@ async function main() {
 				.orderBy("createdAt", "asc")
 				.limit(50),
 		);
-		// Combine and sort by createdAt, take first 10
+		// Combine and sort by createdAt, take first 50
 		return [...pending, ...failed]
 			.sort((a, b) => a.createdAt - b.createdAt)
 			.slice(0, 50);
@@ -55,13 +55,11 @@ async function main() {
 			} else {
 				console.log(`  ✓ Success`);
 				console.log(
-					`    Versions: ${result.versionsNew} new, ${result.versionsSkipped} skipped (${result.versionsTotal} total)`,
+					`    Channels: +${result.channelsCreated} ~${result.channelsUpdated} -${result.channelsDeleted}`,
 				);
+				console.log(`    Deps: +${result.depsCreated} -${result.depsDeleted}`);
 				console.log(
-					`    Dependencies: ${result.dependenciesCreated} created (${result.dependenciesExisting} existing, ${result.dependenciesQueued} already queued)`,
-				);
-				console.log(
-					`    Linked: ${result.dependenciesLinked} | New requests: ${result.newRequestsScheduled}`,
+					`    Placeholders: ${result.placeholdersCreated} | Requests: ${result.newRequestsScheduled}`,
 				);
 			}
 		} else {
@@ -76,24 +74,28 @@ async function main() {
 	).length;
 	const skipped = results.filter((r) => r.skippedCooldown).length;
 	const failed = results.filter((r) => !r.success).length;
-	const totalVersionsNew = results.reduce(
-		(sum, r) => sum + (r.versionsNew ?? 0),
+	const totalChannelsCreated = results.reduce(
+		(sum, r) => sum + (r.channelsCreated ?? 0),
 		0,
 	);
-	const totalVersionsSkipped = results.reduce(
-		(sum, r) => sum + (r.versionsSkipped ?? 0),
+	const totalChannelsUpdated = results.reduce(
+		(sum, r) => sum + (r.channelsUpdated ?? 0),
 		0,
 	);
-	const totalDeps = results.reduce(
-		(sum, r) => sum + (r.dependenciesCreated ?? 0),
+	const totalChannelsDeleted = results.reduce(
+		(sum, r) => sum + (r.channelsDeleted ?? 0),
 		0,
 	);
-	const totalExisting = results.reduce(
-		(sum, r) => sum + (r.dependenciesExisting ?? 0),
+	const totalDepsCreated = results.reduce(
+		(sum, r) => sum + (r.depsCreated ?? 0),
 		0,
 	);
-	const totalQueued = results.reduce(
-		(sum, r) => sum + (r.dependenciesQueued ?? 0),
+	const totalDepsDeleted = results.reduce(
+		(sum, r) => sum + (r.depsDeleted ?? 0),
+		0,
+	);
+	const totalPlaceholders = results.reduce(
+		(sum, r) => sum + (r.placeholdersCreated ?? 0),
 		0,
 	);
 	const totalScheduled = results.reduce(
@@ -107,12 +109,11 @@ async function main() {
 	console.log(`  Skipped (cooldown): ${skipped}`);
 	console.log(`  Failed: ${failed}`);
 	console.log(
-		`  Versions: ${totalVersionsNew} new, ${totalVersionsSkipped} skipped`,
+		`  Channels: +${totalChannelsCreated} ~${totalChannelsUpdated} -${totalChannelsDeleted}`,
 	);
-	console.log(
-		`  Dependencies: ${totalDeps} created (${totalExisting} existing, ${totalQueued} already queued)`,
-	);
-	console.log(`  New requests scheduled: ${totalScheduled}`);
+	console.log(`  Deps: +${totalDepsCreated} -${totalDepsDeleted}`);
+	console.log(`  Placeholders: ${totalPlaceholders}`);
+	console.log(`  Requests scheduled: ${totalScheduled}`);
 }
 
 main()

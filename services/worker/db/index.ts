@@ -1,6 +1,8 @@
 export {
+	getOrCreatePlaceholder,
 	incrementAttempt,
+	markPackageFailed,
 	updateRequestStatus,
 	upsertPackage,
 } from "./mutations.ts";
-export { findPackage, getExistingVersions } from "./queries.ts";
+export { findPackage } from "./queries.ts";

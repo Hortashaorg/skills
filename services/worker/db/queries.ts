@@ -12,14 +12,3 @@ export async function findPackage(
 		zql.packages.where("name", name).where("registry", registry).one(),
 	);
 }
-
-/** Get all existing version strings for a package */
-export async function getExistingVersions(
-	tx: Transaction,
-	packageId: string,
-): Promise<Set<string>> {
-	const versions = await tx.run(
-		zql.packageVersions.where("packageId", packageId),
-	);
-	return new Set(versions.map((v) => v.version));
-}

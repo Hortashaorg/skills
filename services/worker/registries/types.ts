@@ -15,11 +15,10 @@ export interface DependencyData {
 	type: DependencyType;
 }
 
-export interface VersionData {
+export interface ReleaseChannelData {
+	channel: string; // e.g., "latest", "next", "beta", "canary"
 	version: string;
 	publishedAt: Date;
-	isPrerelease: boolean;
-	isYanked: boolean;
 	dependencies: DependencyData[];
 }
 
@@ -28,9 +27,9 @@ export interface PackageData {
 	description?: string;
 	homepage?: string;
 	repository?: string;
-	latestVersion?: string; // The "latest" stable version from dist-tags
-	distTags?: Record<string, string>; // All dist-tags: {"latest": "1.0.0", "next": "2.0.0-beta"}
-	versions: VersionData[];
+	latestVersion?: string;
+	distTags?: Record<string, string>;
+	releaseChannels: ReleaseChannelData[];
 }
 
 /**
