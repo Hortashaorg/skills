@@ -8,6 +8,8 @@ export const byChannelId = defineQuery(
 	({ args }) => {
 		return zql.channelDependencies
 			.where("channelId", args.channelId)
-			.related("dependencyPackage");
+			.related("dependencyPackage", (p) =>
+				p.related("upvotes").related("packageTags", (pt) => pt.related("tag")),
+			);
 	},
 );
