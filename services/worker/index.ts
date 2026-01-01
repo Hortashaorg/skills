@@ -9,9 +9,16 @@
 
 import { dbProvider, zql } from "@package/database/server";
 import { type ProcessResult, processRequest } from "./process-request.ts";
+import { scheduleRequestsForPlaceholders } from "./schedule-placeholders.ts";
 
 async function main() {
 	console.log("Worker starting...\n");
+
+	// Schedule requests for any placeholder packages without active requests
+	const scheduled = await scheduleRequestsForPlaceholders();
+	if (scheduled > 0) {
+		console.log(`Scheduled ${scheduled} requests for placeholder packages.\n`);
+	}
 
 	// Query pending and failed package requests (failed = retry eligible)
 	const requests = await dbProvider.transaction(async (tx) => {
