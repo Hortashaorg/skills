@@ -6,19 +6,21 @@
 
 ## Goals
 
-1. **Projects Feature** - Users can create projects and associate packages with them
-2. **GDPR Strategy** - Establish patterns for handling user-generated data
-3. **Component Library** - Extract reusable components and clean up variant patterns
+1. ✅ **Schema Simplification** - Reduce sync payload by replacing versions with release channels
+2. **Projects Feature** - Users can create projects and associate packages with them
+3. **GDPR Strategy** - Establish patterns for handling user-generated data
+4. **Component Library** - Extract reusable components and clean up variant patterns
 
 ---
 
 ## Milestones
 
-| # | Milestone | Goal |
-|---|-----------|------|
-| 7 | Projects Feature | Users can create projects and associate packages |
-| 8 | GDPR & Data Strategy | Patterns for user data handling |
-| 9 | Component Library | Extract Table, Pagination; audit variants |
+| # | Milestone | Status |
+|---|-----------|--------|
+| 7 | Schema Simplification | ✅ Complete |
+| 8 | Projects Feature | Pending |
+| 9 | GDPR & Data Strategy | Pending |
+| 10 | Component Library | Pending |
 
 ---
 
@@ -35,4 +37,11 @@
 
 ## Notes
 
-_Implementation notes and decisions go here as we work._
+### Schema Simplification (Milestone 7)
+Completed. Reduced sync payload ~95% by storing release channels instead of all versions. Also simplified admin dashboard - removed complex paginated tables in favor of simple top-25 lists with stats endpoint for counts.
+
+### Component Library (Milestone 10) - Scope Revision
+Original plan was to extract Table and Pagination components from admin pages. After simplification:
+- **Table component**: Still useful for simple tables (pending fetches, etc.)
+- **Pagination**: Less urgent - admin uses simple slicing now, search results could benefit but not critical
+- **Focus instead on**: CVA variant audit, ensuring consistent patterns across existing components

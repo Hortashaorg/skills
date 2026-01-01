@@ -67,15 +67,16 @@
 
 ## Milestone 10: Component Library
 
-**Goal:** Extract reusable components, clean up variant patterns
+**Goal:** Clean up variant patterns, extract simple reusable components
 
-### 10.1 New Components
-- [ ] Table component - extract from admin pages
-- [ ] Pagination component - extract from ResultsGrid + RequestsTable
-
-### 10.2 Variant Audit
+### 10.1 CVA Variant Audit
 - [ ] Audit components with Tailwind class overrides
 - [ ] Convert overrides to proper CVA variants where appropriate
+- [ ] Document variant patterns in component stories
+
+### 10.2 New Components (if needed)
+- [ ] Simple Table component - for admin tables (optional, current inline approach works)
+- [ ] ~~Pagination component~~ - deprioritized after admin simplification
 
 ---
 
