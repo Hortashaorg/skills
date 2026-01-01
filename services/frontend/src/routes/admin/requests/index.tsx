@@ -6,7 +6,7 @@ import {
 	useZero,
 } from "@package/database/client";
 import { A } from "@solidjs/router";
-import { For, Show } from "solid-js";
+import { createResource, For, Show } from "solid-js";
 import { AuthGuard } from "@/components/composite/auth-guard";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
@@ -18,7 +18,13 @@ import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
+import { getConfig } from "@/lib/config";
 import { buildPackageUrl } from "@/lib/url";
+
+const fetchStats = async () => {
+	const res = await fetch(`${getConfig().backendUrl}/api/stats`);
+	return res.json() as Promise<{ pendingFetches: number }>;
+};
 
 type FetchWithPackage = Row["packageFetches"] & {
 	package?: Row["packages"] | null;
@@ -35,6 +41,7 @@ export const AdminRequests = () => {
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
 
+	const [stats] = createResource(fetchStats);
 	const [pendingFetches] = useQuery(() =>
 		queries.packageFetches.byStatus({ status: "pending" }),
 	);
@@ -48,6 +55,7 @@ export const AdminRequests = () => {
 
 	// Top 25 pending fetches
 	const topPending = () => (pendingFetches() ?? []).slice(0, 25);
+	const pendingCount = () => stats()?.pendingFetches ?? 0;
 
 	return (
 		<Layout>
@@ -67,7 +75,12 @@ export const AdminRequests = () => {
 							{/* Pending Fetches Section */}
 							<Card padding="lg">
 								<Stack spacing="md">
-									<Heading level="h2">Pending Fetches</Heading>
+									<Flex justify="between" align="center">
+										<Heading level="h2">Pending Fetches</Heading>
+										<Badge variant="info" size="md">
+											{pendingCount().toLocaleString()} in queue
+										</Badge>
+									</Flex>
 									<Show
 										when={topPending().length > 0}
 										fallback={

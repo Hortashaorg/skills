@@ -11,6 +11,7 @@ export { handleMutateRequest, handleQueryRequest } from "@rocicorp/zero/server";
 // Re-export drizzle-orm utilities for workers
 export {
 	and,
+	count,
 	eq,
 	inArray,
 	isNotNull,
