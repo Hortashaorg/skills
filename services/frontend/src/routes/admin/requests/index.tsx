@@ -22,7 +22,9 @@ import { getConfig } from "@/lib/config";
 import { buildPackageUrl } from "@/lib/url";
 
 const fetchStats = async () => {
-	const res = await fetch(`${getConfig().backendUrl}/api/stats`);
+	const res = await fetch(`${getConfig().backendUrl}/api/stats`, {
+		credentials: "include",
+	});
 	return res.json() as Promise<{ pendingFetches: number }>;
 };
 
