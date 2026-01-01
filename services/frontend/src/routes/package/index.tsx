@@ -15,6 +15,7 @@ import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
 import { ChannelSelector } from "./sections/ChannelSelector";
 import { Dependencies } from "./sections/Dependencies";
+import { FetchHistory } from "./sections/FetchHistory";
 import { Header } from "./sections/Header";
 import { PackageTags } from "./sections/PackageTags";
 
@@ -132,6 +133,9 @@ export const Package = () => {
 										/>
 									)}
 								</Show>
+
+								{/* Fetch History */}
+								<FetchHistory packageId={p.id} />
 							</>
 						)}
 					</QueryBoundary>
