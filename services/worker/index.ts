@@ -1,59 +1,61 @@
 /**
  * TechGarden Worker
  *
- * Processes pending package requests by fetching package metadata
+ * Processes pending package fetches by fetching package metadata
  * from registries and storing results in the database.
  *
- * Runs as a Kubernetes CronJob - processes all pending requests then exits.
+ * Runs as a Kubernetes CronJob - processes all pending fetches then exits.
+ *
+ * Two-step flow:
+ * 1. Schedule fetches for placeholder packages without pending fetches
+ * 2. Process pending fetches
  */
 
-import { dbProvider, zql } from "@package/database/server";
-import { type ProcessResult, processRequest } from "./process-request.ts";
-import { scheduleRequestsForPlaceholders } from "./schedule-placeholders.ts";
+import { db, dbSchema, eq } from "@package/database/server";
+import { type ProcessResult, processFetch } from "./process-fetch.ts";
+import { scheduleFetchesForPlaceholders } from "./schedule-placeholders.ts";
 
 async function main() {
 	console.log("Worker starting...\n");
 
-	// Schedule requests for any placeholder packages without active requests
-	const scheduled = await scheduleRequestsForPlaceholders();
+	// Step 1: Schedule fetches for any placeholder packages without pending fetches
+	const scheduled = await scheduleFetchesForPlaceholders();
 	if (scheduled > 0) {
-		console.log(`Scheduled ${scheduled} requests for placeholder packages.\n`);
+		console.log(`Scheduled ${scheduled} fetches for placeholder packages.\n`);
 	}
 
-	// Query pending and failed package requests (failed = retry eligible)
-	const requests = await dbProvider.transaction(async (tx) => {
-		const pending = await tx.run(
-			zql.packageRequests
-				.where("status", "pending")
-				.orderBy("createdAt", "asc")
-				.limit(50),
-		);
-		const failed = await tx.run(
-			zql.packageRequests
-				.where("status", "failed")
-				.orderBy("createdAt", "asc")
-				.limit(50),
-		);
-		// Combine and sort by createdAt, take first 50
-		return [...pending, ...failed]
-			.sort((a, b) => a.createdAt - b.createdAt)
-			.slice(0, 50);
-	});
+	// Step 2: Query pending fetches
+	const pendingFetches = await db
+		.select({
+			id: dbSchema.packageFetches.id,
+			packageId: dbSchema.packageFetches.packageId,
+			status: dbSchema.packageFetches.status,
+			createdAt: dbSchema.packageFetches.createdAt,
+		})
+		.from(dbSchema.packageFetches)
+		.where(eq(dbSchema.packageFetches.status, "pending"))
+		.orderBy(dbSchema.packageFetches.createdAt)
+		.limit(50);
 
-	if (requests.length === 0) {
-		console.log("No pending or failed requests to process.");
+	if (pendingFetches.length === 0) {
+		console.log("No pending fetches to process.");
 		return;
 	}
 
-	console.log(`Processing ${requests.length} package requests...\n`);
+	console.log(`Processing ${pendingFetches.length} package fetches...\n`);
 
 	const results: ProcessResult[] = [];
 
-	// Process requests sequentially to avoid race conditions
-	for (const request of requests) {
-		console.log(`Processing: ${request.packageName} (${request.registry})...`);
+	// Process fetches sequentially to avoid race conditions
+	for (const fetch of pendingFetches) {
+		const result = await processFetch({
+			id: fetch.id,
+			packageId: fetch.packageId,
+			status: fetch.status,
+			createdAt: fetch.createdAt.getTime(),
+		});
 
-		const result = await processRequest(request);
+		console.log(`Processing: ${result.packageName} (${result.registry})...`);
 		results.push(result);
 
 		if (result.success) {
@@ -66,7 +68,7 @@ async function main() {
 				);
 				console.log(`    Deps: +${result.depsCreated} -${result.depsDeleted}`);
 				console.log(
-					`    Placeholders: ${result.placeholdersCreated} | Requests: ${result.newRequestsScheduled}`,
+					`    Placeholders: ${result.placeholdersCreated} | Fetches: ${result.newFetchesScheduled}`,
 				);
 			}
 		} else {
@@ -106,12 +108,12 @@ async function main() {
 		0,
 	);
 	const totalScheduled = results.reduce(
-		(sum, r) => sum + (r.newRequestsScheduled ?? 0),
+		(sum, r) => sum + (r.newFetchesScheduled ?? 0),
 		0,
 	);
 
 	console.log("=== Summary ===");
-	console.log(`Processed: ${results.length} requests`);
+	console.log(`Processed: ${results.length} fetches`);
 	console.log(`  Succeeded: ${succeeded}`);
 	console.log(`  Skipped (cooldown): ${skipped}`);
 	console.log(`  Failed: ${failed}`);
@@ -120,7 +122,7 @@ async function main() {
 	);
 	console.log(`  Deps: +${totalDepsCreated} -${totalDepsDeleted}`);
 	console.log(`  Placeholders: ${totalPlaceholders}`);
-	console.log(`  Requests scheduled: ${totalScheduled}`);
+	console.log(`  Fetches scheduled: ${totalScheduled}`);
 }
 
 main()

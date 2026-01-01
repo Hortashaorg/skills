@@ -1,91 +1,116 @@
-import { dbProvider, type Registry, type Row } from "@package/database/server";
+/**
+ * Process a single package fetch.
+ */
+
 import {
-	bulkInsertPendingRequests,
+	db,
+	dbProvider,
+	dbSchema,
+	eq,
+	type Registry,
+} from "@package/database/server";
+import {
+	bulkInsertPendingFetches,
 	type ChannelDependencyInsert,
 	deleteChannelDependencies,
 	deleteReleaseChannels,
 	getExistingChannels,
 	getExistingDependencies,
+	getOrCreatePlaceholder,
 	insertChannelDependencies,
 	insertReleaseChannel,
-	loadActiveRequests,
 	loadPackageNames,
-	loadPlaceholderNames,
-	type RequestInsert,
-	updateReleaseChannel,
-} from "./db/bulk.ts";
-import {
-	findPackage,
-	getOrCreatePlaceholder,
-	incrementAttempt,
+	loadPendingFetchPackageIds,
+	loadPlaceholderPackages,
+	markFetchCompleted,
+	markFetchFailed,
 	markPackageFailed,
-	updateRequestStatus,
+	updateReleaseChannel,
 	upsertPackage,
-} from "./db/index.ts";
+} from "./db.ts";
 import { npm } from "./registries/index.ts";
 
 const COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
 
 export interface ProcessResult {
-	requestId: string;
+	fetchId: string;
+	packageId: string;
 	packageName: string;
 	registry: Registry;
 	success: boolean;
 	skippedCooldown?: boolean;
-	packageId?: string;
 	channelsCreated?: number;
 	channelsUpdated?: number;
 	channelsDeleted?: number;
 	depsCreated?: number;
 	depsDeleted?: number;
 	placeholdersCreated?: number;
-	newRequestsScheduled?: number;
+	newFetchesScheduled?: number;
 	error?: string;
 }
 
-/** Process a single package request */
-export async function processRequest(
-	request: Row["packageRequests"],
-): Promise<ProcessResult> {
+interface FetchRecord {
+	id: string;
+	packageId: string;
+	status: string;
+	createdAt: number;
+}
+
+/** Process a single pending fetch */
+export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
+	// Get package info
+	const pkg = await db
+		.select({
+			id: dbSchema.packages.id,
+			name: dbSchema.packages.name,
+			registry: dbSchema.packages.registry,
+			status: dbSchema.packages.status,
+			updatedAt: dbSchema.packages.updatedAt,
+		})
+		.from(dbSchema.packages)
+		.where(eq(dbSchema.packages.id, fetch.packageId))
+		.limit(1)
+		.then((rows) => rows[0]);
+
+	if (!pkg) {
+		return {
+			fetchId: fetch.id,
+			packageId: fetch.packageId,
+			packageName: "unknown",
+			registry: "npm",
+			success: false,
+			error: "Package not found",
+		};
+	}
+
 	const result: ProcessResult = {
-		requestId: request.id,
-		packageName: request.packageName,
-		registry: request.registry,
+		fetchId: fetch.id,
+		packageId: pkg.id,
+		packageName: pkg.name,
+		registry: pkg.registry,
 		success: false,
 	};
 
 	try {
 		// 1. Check cooldown - skip if package was recently updated
-		const existingPkg = await dbProvider.transaction(async (tx) => {
-			return findPackage(tx, request.packageName, request.registry);
-		});
-
 		if (
-			existingPkg &&
-			existingPkg.status === "active" &&
-			Date.now() - existingPkg.updatedAt < COOLDOWN_MS
+			pkg.status === "active" &&
+			Date.now() - pkg.updatedAt.getTime() < COOLDOWN_MS
 		) {
 			await dbProvider.transaction(async (tx) => {
-				await updateRequestStatus(tx, request.id, "completed", existingPkg.id);
+				await markFetchCompleted(tx, fetch.id);
 			});
 			result.success = true;
 			result.skippedCooldown = true;
-			result.packageId = existingPkg.id;
 			return result;
 		}
 
-		// 2. Mark as fetching and increment attempt
-		await dbProvider.transaction(async (tx) => {
-			await updateRequestStatus(tx, request.id, "fetching");
-			await incrementAttempt(tx, request.id, request.attemptCount);
-		});
-
-		// 3. Fetch from registry
-		const fetchResult = await npm.getPackages([request.packageName]);
-		const packageData = fetchResult.get(request.packageName);
+		// 2. Fetch from registry
+		const fetchResult = await npm.getPackages([pkg.name]);
+		const packageData = fetchResult.get(pkg.name);
 
 		if (!packageData) {
-			throw new Error(`No result for package "${request.packageName}"`);
+			throw new Error(`No result for package "${pkg.name}"`);
 		}
 
 		if (packageData instanceof Error) {
@@ -93,15 +118,16 @@ export async function processRequest(
 		}
 
 		// 4. Pre-load caches
-		const [packageNames, activeRequests, placeholderNames] = await Promise.all([
-			loadPackageNames(request.registry),
-			loadActiveRequests(request.registry),
-			loadPlaceholderNames(request.registry),
-		]);
+		const [packageNames, pendingFetchPackageIds, placeholderPackages] =
+			await Promise.all([
+				loadPackageNames(pkg.registry),
+				loadPendingFetchPackageIds(),
+				loadPlaceholderPackages(pkg.registry),
+			]);
 
 		// 5. Upsert package
 		const packageId = await dbProvider.transaction(async (tx) => {
-			return upsertPackage(tx, packageData, request.registry);
+			return upsertPackage(tx, packageData, pkg.registry);
 		});
 		result.packageId = packageId;
 		packageNames.set(packageData.name, packageId);
@@ -115,9 +141,12 @@ export async function processRequest(
 		let depsCreated = 0;
 		let depsDeleted = 0;
 		const createdPlaceholders = new Set<string>();
-		const pendingRequestInserts: RequestInsert[] = [];
-		const newRequestNames = new Set<string>();
-		const now = new Date();
+		const newFetches: Array<{
+			id: string;
+			packageId: string;
+			createdAt: number;
+		}> = [];
+		const now = Date.now();
 
 		// 7. Process each channel from new data
 		const processedChannelNames = new Set<string>();
@@ -129,19 +158,17 @@ export async function processRequest(
 			let channelId: string;
 
 			if (existing) {
-				// Channel exists - update if version changed
 				channelId = existing.id;
 				if (existing.version !== channel.version) {
 					await updateReleaseChannel(
 						channelId,
 						channel.version,
 						channel.publishedAt,
-						now,
+						new Date(now),
 					);
 					channelsUpdated++;
 				}
 			} else {
-				// New channel - insert
 				channelId = crypto.randomUUID();
 				await insertReleaseChannel({
 					id: channelId,
@@ -149,8 +176,8 @@ export async function processRequest(
 					channel: channel.channel,
 					version: channel.version,
 					publishedAt: channel.publishedAt,
-					createdAt: now,
-					updatedAt: now,
+					createdAt: new Date(now),
+					updatedAt: new Date(now),
 				});
 				channelsCreated++;
 			}
@@ -162,26 +189,24 @@ export async function processRequest(
 					missingDepNames.push(dep.name);
 				}
 
-				// Schedule request for missing packages OR existing placeholders
-				const needsRequest =
-					!packageNames.has(dep.name) || placeholderNames.has(dep.name);
-				if (
-					needsRequest &&
-					!activeRequests.has(dep.name) &&
-					!newRequestNames.has(dep.name)
-				) {
-					newRequestNames.add(dep.name);
-					pendingRequestInserts.push({
-						id: crypto.randomUUID(),
-						packageName: dep.name,
-						registry: request.registry,
-						status: "pending",
-						errorMessage: null,
-						packageId: null,
-						attemptCount: 0,
-						createdAt: now,
-						updatedAt: now,
-					});
+				// Schedule fetch for missing packages OR existing placeholders
+				const depPackageId = packageNames.get(dep.name);
+				const isPlaceholder = depPackageId && placeholderPackages.has(dep.name);
+				const needsFetch = !depPackageId || isPlaceholder;
+
+				if (needsFetch) {
+					const targetPackageId = depPackageId || "pending";
+					if (
+						targetPackageId !== "pending" &&
+						!pendingFetchPackageIds.has(targetPackageId) &&
+						!newFetches.some((f) => f.packageId === targetPackageId)
+					) {
+						newFetches.push({
+							id: crypto.randomUUID(),
+							packageId: targetPackageId,
+							createdAt: now,
+						});
+					}
 				}
 			}
 
@@ -189,10 +214,19 @@ export async function processRequest(
 			for (const name of missingDepNames) {
 				if (!packageNames.has(name)) {
 					const id = await dbProvider.transaction(async (tx) => {
-						return getOrCreatePlaceholder(tx, name, request.registry);
+						return getOrCreatePlaceholder(tx, name, pkg.registry);
 					});
 					packageNames.set(name, id);
 					createdPlaceholders.add(name);
+
+					// Schedule fetch for newly created placeholder
+					if (!pendingFetchPackageIds.has(id)) {
+						newFetches.push({
+							id: crypto.randomUUID(),
+							packageId: id,
+							createdAt: now,
+						});
+					}
 				}
 			}
 
@@ -212,7 +246,7 @@ export async function processRequest(
 					dependencyPackageId: depPackageId,
 					dependencyVersionRange: dep.versionRange,
 					dependencyType: dep.type,
-					createdAt: now,
+					createdAt: new Date(now),
 				});
 			}
 
@@ -223,7 +257,6 @@ export async function processRequest(
 					newDeps.map((d) => `${d.dependencyPackageId}:${d.dependencyType}`),
 				);
 
-				// Find deps to delete (in existing but not in new)
 				const depsToDelete: string[] = [];
 				for (const [key, id] of existingDeps) {
 					if (!newDepKeys.has(key)) {
@@ -231,7 +264,6 @@ export async function processRequest(
 					}
 				}
 
-				// Find deps to insert (in new but not in existing)
 				const depsToInsert = newDeps.filter(
 					(d) =>
 						!existingDeps.has(`${d.dependencyPackageId}:${d.dependencyType}`),
@@ -247,7 +279,6 @@ export async function processRequest(
 					depsCreated += depsToInsert.length;
 				}
 			} else {
-				// New channel - insert all deps
 				if (newDeps.length > 0) {
 					await insertChannelDependencies(newDeps);
 					depsCreated += newDeps.length;
@@ -259,7 +290,6 @@ export async function processRequest(
 		const channelsToDelete: string[] = [];
 		for (const [channelName, { id }] of existingChannels) {
 			if (!processedChannelNames.has(channelName)) {
-				// First delete dependencies for this channel
 				const deps = await getExistingDependencies(id);
 				if (deps.size > 0) {
 					await deleteChannelDependencies([...deps.values()]);
@@ -273,8 +303,8 @@ export async function processRequest(
 			await deleteReleaseChannels(channelsToDelete);
 		}
 
-		// 13. Schedule new requests
-		await bulkInsertPendingRequests(pendingRequestInserts);
+		// 13. Schedule new fetches
+		await bulkInsertPendingFetches(newFetches);
 
 		// 14. Update result stats
 		result.channelsCreated = channelsCreated;
@@ -283,11 +313,11 @@ export async function processRequest(
 		result.depsCreated = depsCreated;
 		result.depsDeleted = depsDeleted;
 		result.placeholdersCreated = createdPlaceholders.size;
-		result.newRequestsScheduled = pendingRequestInserts.length;
+		result.newFetchesScheduled = newFetches.length;
 
 		// 15. Mark completed
 		await dbProvider.transaction(async (tx) => {
-			await updateRequestStatus(tx, request.id, "completed", packageId);
+			await markFetchCompleted(tx, fetch.id);
 		});
 		result.success = true;
 	} catch (error) {
@@ -296,19 +326,12 @@ export async function processRequest(
 
 		// Mark package as failed
 		await dbProvider.transaction(async (tx) => {
-			await markPackageFailed(
-				tx,
-				request.packageName,
-				request.registry,
-				errorMessage,
-			);
+			await markPackageFailed(tx, pkg.name, pkg.registry, errorMessage);
 		});
 
-		const newAttemptCount = request.attemptCount + 1;
-		const status = newAttemptCount >= 3 ? "discarded" : "failed";
-
+		// Mark fetch as failed
 		await dbProvider.transaction(async (tx) => {
-			await updateRequestStatus(tx, request.id, status, null, errorMessage);
+			await markFetchFailed(tx, fetch.id, errorMessage);
 		});
 	}
 

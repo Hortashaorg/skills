@@ -2,7 +2,7 @@ import { defineQueries } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
-import * as packageRequestsQueries from "./package-requests.ts";
+import * as packageFetchesQueries from "./package-fetches.ts";
 import * as packageTagsQueries from "./package-tags.ts";
 import * as packageUpvotesQueries from "./package-upvotes.ts";
 import * as packagesQueries from "./packages.ts";
@@ -23,11 +23,12 @@ export const queries = defineQueries({
 		recent: packagesQueries.recent,
 		search: packagesQueries.search,
 	},
-	packageRequests: {
-		pending: packageRequestsQueries.pending,
-		existingPending: packageRequestsQueries.existingPending,
-		byId: packageRequestsQueries.byId,
-		byStatus: packageRequestsQueries.byStatus,
+	packageFetches: {
+		pending: packageFetchesQueries.pending,
+		hasPending: packageFetchesQueries.hasPending,
+		byId: packageFetchesQueries.byId,
+		byPackageId: packageFetchesQueries.byPackageId,
+		byStatus: packageFetchesQueries.byStatus,
 	},
 	channelDependencies: {
 		byChannelId: channelDependenciesQueries.byChannelId,

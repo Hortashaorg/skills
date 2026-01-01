@@ -24,7 +24,7 @@ export const Header = (props: HeaderProps) => {
 	const zero = useZero();
 	const upvote = createPackageUpvote(() => props.pkg);
 	const request = createPackageRequest(() => ({
-		packageName: props.pkg.name,
+		name: props.pkg.name,
 		registry: props.pkg.registry,
 	}));
 

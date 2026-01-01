@@ -41,7 +41,8 @@ export type {
 	ActorType,
 	AuditAction,
 	DependencyType,
-	PackageRequestStatus,
+	FetchStatus,
+	PackageStatus,
 	Registry,
 } from "./db/types.ts";
 export { enums } from "./db/types.ts";

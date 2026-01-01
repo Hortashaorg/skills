@@ -138,6 +138,47 @@ const channelDependenciesTable = {
   primaryKey: ["id"],
   serverName: "channel_dependencies",
 } as const;
+const packageFetchesTable = {
+  name: "packageFetches",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    packageId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "package_id",
+    },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as "failed" | "pending" | "completed",
+    },
+    errorMessage: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "error_message",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    completedAt: {
+      type: "number",
+      optional: true,
+      customType: null as unknown as number,
+      serverName: "completed_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "package_fetches",
+} as const;
 const packageReleaseChannelsTable = {
   name: "packageReleaseChannels",
   columns: {
@@ -183,69 +224,6 @@ const packageReleaseChannelsTable = {
   },
   primaryKey: ["id"],
   serverName: "package_release_channels",
-} as const;
-const packageRequestsTable = {
-  name: "packageRequests",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    packageName: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "package_name",
-    },
-    registry: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as "npm",
-    },
-    status: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as
-        | "failed"
-        | "pending"
-        | "fetching"
-        | "completed"
-        | "discarded",
-    },
-    errorMessage: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "error_message",
-    },
-    packageId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "package_id",
-    },
-    attemptCount: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "attempt_count",
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-    updatedAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "updated_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "package_requests",
 } as const;
 const packageTagsTable = {
   name: "packageTags",
@@ -466,6 +444,16 @@ const channelDependenciesRelationships = {
     },
   ],
 } as const;
+const packageFetchesRelationships = {
+  package: [
+    {
+      sourceField: ["packageId"],
+      destField: ["id"],
+      destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+} as const;
 const packageReleaseChannelsRelationships = {
   package: [
     {
@@ -481,16 +469,6 @@ const packageReleaseChannelsRelationships = {
       destField: ["channelId"],
       destSchema: "channelDependencies",
       cardinality: "many",
-    },
-  ],
-} as const;
-const packageRequestsRelationships = {
-  package: [
-    {
-      sourceField: ["packageId"],
-      destField: ["id"],
-      destSchema: "packages",
-      cardinality: "one",
     },
   ],
 } as const;
@@ -555,11 +533,11 @@ const packagesRelationships = {
       cardinality: "many",
     },
   ],
-  requests: [
+  fetches: [
     {
       sourceField: ["id"],
       destField: ["packageId"],
-      destSchema: "packageRequests",
+      destSchema: "packageFetches",
       cardinality: "many",
     },
   ],
@@ -591,8 +569,8 @@ export const schema = {
     account: accountTable,
     auditLog: auditLogTable,
     channelDependencies: channelDependenciesTable,
+    packageFetches: packageFetchesTable,
     packageReleaseChannels: packageReleaseChannelsTable,
-    packageRequests: packageRequestsTable,
     packageTags: packageTagsTable,
     packageUpvotes: packageUpvotesTable,
     packages: packagesTable,
@@ -601,8 +579,8 @@ export const schema = {
   relationships: {
     auditLog: auditLogRelationships,
     channelDependencies: channelDependenciesRelationships,
+    packageFetches: packageFetchesRelationships,
     packageReleaseChannels: packageReleaseChannelsRelationships,
-    packageRequests: packageRequestsRelationships,
     packageTags: packageTagsRelationships,
     packageUpvotes: packageUpvotesRelationships,
     packages: packagesRelationships,
@@ -639,19 +617,19 @@ export type AuditLog = Row["auditLog"];
  */
 export type ChannelDependency = Row["channelDependencies"];
 /**
+ * Represents a row from the "packageFetches" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["packageFetches"] instead from "@rocicorp/zero".
+ */
+export type PackageFetch = Row["packageFetches"];
+/**
  * Represents a row from the "packageReleaseChannels" table.
  * This type is auto-generated from your Drizzle schema definition.
  *
  * @deprecated Use Row["packageReleaseChannels"] instead from "@rocicorp/zero".
  */
 export type PackageReleaseChannel = Row["packageReleaseChannels"];
-/**
- * Represents a row from the "packageRequests" table.
- * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["packageRequests"] instead from "@rocicorp/zero".
- */
-export type PackageRequest = Row["packageRequests"];
 /**
  * Represents a row from the "packageTags" table.
  * This type is auto-generated from your Drizzle schema definition.

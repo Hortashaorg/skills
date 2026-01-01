@@ -1,5 +1,5 @@
 import {
-	type PackageRequestStatus,
+	type FetchStatus,
 	queries,
 	useConnectionState,
 	useQuery,
@@ -14,82 +14,65 @@ import { Spinner } from "@/components/ui/spinner";
 import { Tabs } from "@/components/ui/tabs";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
-import { RequestsTable } from "./sections/RequestsTable";
+import { FetchesTable } from "./sections/FetchesTable";
 
 const PAGE_SIZE = 25;
 
-const STATUSES: { value: PackageRequestStatus; label: string }[] = [
+const STATUSES: { value: FetchStatus; label: string }[] = [
 	{ value: "pending", label: "Pending" },
-	{ value: "fetching", label: "Fetching" },
 	{ value: "completed", label: "Completed" },
 	{ value: "failed", label: "Failed" },
-	{ value: "discarded", label: "Discarded" },
 ];
 
 export const AdminRequests = () => {
 	const zero = useZero();
-	const [activeTab, setActiveTab] =
-		createSignal<PackageRequestStatus>("pending");
+	const [activeTab, setActiveTab] = createSignal<FetchStatus>("pending");
 	const [page, setPage] = createSignal(0);
 
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const [pendingRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "pending" }),
+	const [pendingFetches] = useQuery(() =>
+		queries.packageFetches.byStatus({ status: "pending" }),
 	);
-	const [fetchingRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "fetching" }),
+	const [completedFetches] = useQuery(() =>
+		queries.packageFetches.byStatus({ status: "completed" }),
 	);
-	const [completedRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "completed" }),
-	);
-	const [failedRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "failed" }),
-	);
-	const [discardedRequests] = useQuery(() =>
-		queries.packageRequests.byStatus({ status: "discarded" }),
+	const [failedFetches] = useQuery(() =>
+		queries.packageFetches.byStatus({ status: "failed" }),
 	);
 	const connectionState = useConnectionState();
 
-	// Loading state - any query undefined or still connecting
 	const isLoading = () =>
 		connectionState().name === "connecting" ||
-		pendingRequests() === undefined ||
-		fetchingRequests() === undefined ||
-		completedRequests() === undefined ||
-		failedRequests() === undefined ||
-		discardedRequests() === undefined;
+		pendingFetches() === undefined ||
+		completedFetches() === undefined ||
+		failedFetches() === undefined;
 
-	const requestsByStatus = () => ({
-		pending: pendingRequests() ?? [],
-		fetching: fetchingRequests() ?? [],
-		completed: completedRequests() ?? [],
-		failed: failedRequests() ?? [],
-		discarded: discardedRequests() ?? [],
+	const fetchesByStatus = () => ({
+		pending: pendingFetches() ?? [],
+		completed: completedFetches() ?? [],
+		failed: failedFetches() ?? [],
 	});
 
 	const counts = () => {
-		const byStatus = requestsByStatus();
+		const byStatus = fetchesByStatus();
 		return {
 			pending: byStatus.pending.length,
-			fetching: byStatus.fetching.length,
 			completed: byStatus.completed.length,
 			failed: byStatus.failed.length,
-			discarded: byStatus.discarded.length,
 		};
 	};
 
-	// Requests are already sorted by the query (pending/fetching by createdAt, others by updatedAt)
-	const requestsForTab = () => requestsByStatus()[activeTab()];
+	const fetchesForTab = () => fetchesByStatus()[activeTab()];
 
-	const paginatedRequests = () => {
+	const paginatedFetches = () => {
 		const start = page() * PAGE_SIZE;
-		return requestsForTab().slice(start, start + PAGE_SIZE);
+		return fetchesForTab().slice(start, start + PAGE_SIZE);
 	};
 
 	const handleTabChange = (value: string) => {
-		setActiveTab(value as PackageRequestStatus);
+		setActiveTab(value as FetchStatus);
 		setPage(0);
 	};
 
@@ -103,13 +86,13 @@ export const AdminRequests = () => {
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
 					<AuthGuard hasAccess={isLoggedIn() && isAdmin()}>
-						<Heading level="h1">Package Requests</Heading>
+						<Heading level="h1">Package Fetches</Heading>
 
 						<Show
 							when={!isLoading()}
 							fallback={
 								<div class="flex justify-center py-12">
-									<Spinner label="Loading requests..." />
+									<Spinner label="Loading fetches..." />
 								</div>
 							}
 						>
@@ -128,8 +111,8 @@ export const AdminRequests = () => {
 
 								{STATUSES.map((status) => (
 									<Tabs.Content value={status.value}>
-										<RequestsTable
-											requests={paginatedRequests()}
+										<FetchesTable
+											fetches={paginatedFetches()}
 											totalCount={counts()[status.value] ?? 0}
 											page={page()}
 											pageSize={PAGE_SIZE}

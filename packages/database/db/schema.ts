@@ -25,12 +25,10 @@ export const dependencyTypeEnum = pgEnum("dependency_type", [
 	"optional",
 ]);
 
-export const packageRequestStatusEnum = pgEnum("package_request_status", [
+export const fetchStatusEnum = pgEnum("fetch_status", [
 	"pending",
-	"fetching",
 	"completed",
 	"failed",
-	"discarded",
 ]);
 
 export const auditActionEnum = pgEnum("audit_action", [
@@ -130,26 +128,23 @@ export const channelDependencies = pgTable(
 	],
 );
 
-export const packageRequests = pgTable(
-	"package_requests",
+export const packageFetches = pgTable(
+	"package_fetches",
 	{
 		id: uuid().primaryKey(),
-		packageName: text().notNull(),
-		registry: registryEnum().notNull(),
-		status: packageRequestStatusEnum().notNull(),
+		packageId: uuid()
+			.notNull()
+			.references(() => packages.id),
+		status: fetchStatusEnum().notNull(),
 		errorMessage: text(),
-		packageId: uuid().references(() => packages.id),
-		attemptCount: integer().notNull(),
 		createdAt: timestamp().notNull(),
-		updatedAt: timestamp().notNull(),
+		completedAt: timestamp(),
 	},
 	(table) => [
-		index("idx_package_requests_unique_pending")
-			.on(table.packageName, table.registry, table.status)
-			.where(sql`${table.status} IN ('pending', 'fetching')`),
-		index("idx_package_requests_status_created")
+		index("idx_package_fetches_package_id").on(table.packageId),
+		index("idx_package_fetches_pending")
 			.on(table.status, table.createdAt)
-			.where(sql`${table.status} IN ('pending', 'fetching')`),
+			.where(sql`${table.status} = 'pending'`),
 	],
 );
 
@@ -219,19 +214,16 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 		relationName: "dependencyPackage",
 	}),
 	packageTags: many(packageTags),
-	requests: many(packageRequests),
+	fetches: many(packageFetches),
 	upvotes: many(packageUpvotes),
 }));
 
-export const packageRequestsRelations = relations(
-	packageRequests,
-	({ one }) => ({
-		package: one(packages, {
-			fields: [packageRequests.packageId],
-			references: [packages.id],
-		}),
+export const packageFetchesRelations = relations(packageFetches, ({ one }) => ({
+	package: one(packages, {
+		fields: [packageFetches.packageId],
+		references: [packages.id],
 	}),
-);
+}));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
 	packageTags: many(packageTags),

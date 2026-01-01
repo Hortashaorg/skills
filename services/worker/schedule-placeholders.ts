@@ -1,53 +1,48 @@
 /**
- * Schedule requests for placeholder packages that don't have active requests.
+ * Schedule fetches for placeholder packages that don't have pending fetches.
  */
 
 import type { Registry } from "@package/database/server";
 import {
-	bulkInsertPendingRequests,
-	loadActiveRequests,
-	loadPlaceholderNames,
-	type RequestInsert,
-} from "./db/bulk.ts";
+	bulkInsertPendingFetches,
+	loadPendingFetchPackageIds,
+	loadPlaceholderPackages,
+} from "./db.ts";
 
 const registries: Registry[] = ["npm"];
 
-export async function scheduleRequestsForPlaceholders(): Promise<number> {
+export async function scheduleFetchesForPlaceholders(): Promise<number> {
 	let totalScheduled = 0;
 
 	for (const registry of registries) {
-		// Load placeholder names and active requests
-		const [placeholders, activeRequests] = await Promise.all([
-			loadPlaceholderNames(registry),
-			loadActiveRequests(registry),
+		// Load placeholder packages and packages with pending fetches
+		const [placeholders, pendingPackageIds] = await Promise.all([
+			loadPlaceholderPackages(registry),
+			loadPendingFetchPackageIds(),
 		]);
 
-		// Find placeholders without active requests
-		const needsRequest: string[] = [];
-		for (const name of placeholders) {
-			if (!activeRequests.has(name)) {
-				needsRequest.push(name);
+		// Find placeholders that don't have pending fetches
+		const needsFetch: Array<{
+			id: string;
+			packageId: string;
+			createdAt: number;
+		}> = [];
+		const now = Date.now();
+
+		for (const [_name, packageId] of placeholders) {
+			if (!pendingPackageIds.has(packageId)) {
+				needsFetch.push({
+					id: crypto.randomUUID(),
+					packageId,
+					createdAt: now,
+				});
 			}
 		}
 
-		if (needsRequest.length === 0) continue;
+		if (needsFetch.length === 0) continue;
 
-		// Create pending requests
-		const now = new Date();
-		const requests: RequestInsert[] = needsRequest.map((name) => ({
-			id: crypto.randomUUID(),
-			packageName: name,
-			registry,
-			status: "pending" as const,
-			errorMessage: null,
-			packageId: null,
-			attemptCount: 0,
-			createdAt: now,
-			updatedAt: now,
-		}));
-
-		await bulkInsertPendingRequests(requests);
-		totalScheduled += requests.length;
+		await bulkInsertPendingFetches(needsFetch);
+		totalScheduled += needsFetch.length;
 	}
 
 	return totalScheduled;
