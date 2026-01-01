@@ -10,15 +10,14 @@ import {
 	type Registry,
 } from "@package/database/server";
 import {
-	bulkCreatePlaceholders,
 	type ChannelDependencyInsert,
 	deleteChannelDependencies,
 	deleteReleaseChannels,
+	ensurePackagesExist,
 	getExistingChannels,
 	getExistingDependencies,
 	insertChannelDependencies,
 	insertReleaseChannel,
-	loadPackageNames,
 	markFetchCompleted,
 	markFetchFailed,
 	markPackageFailed,
@@ -103,14 +102,25 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 			throw packageData;
 		}
 
-		// Load existing package names for dependency resolution
-		const packageNames = await loadPackageNames(pkg.registry);
-
 		// Upsert package
 		const packageId = await dbProvider.transaction(async (tx) => {
 			return upsertPackage(tx, packageData, pkg.registry);
 		});
 		result.packageId = packageId;
+
+		// Collect all dependency names across all channels
+		const allDepNames = new Set<string>();
+		for (const channel of packageData.releaseChannels) {
+			for (const dep of channel.dependencies) {
+				allDepNames.add(dep.name);
+			}
+		}
+
+		// Ensure all dependency packages exist (creates placeholders for missing)
+		const { ids: packageNames, created: createdPlaceholders } =
+			await ensurePackagesExist([...allDepNames], pkg.registry);
+
+		// Add main package to the map
 		packageNames.set(packageData.name, packageId);
 
 		// Get existing channels for diff
@@ -121,30 +131,7 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		let channelsUpdated = 0;
 		let depsCreated = 0;
 		let depsDeleted = 0;
-		const createdPlaceholders = new Set<string>();
 		const now = Date.now();
-
-		// Collect all missing dependency names across all channels
-		const missingDepNames = new Set<string>();
-		for (const channel of packageData.releaseChannels) {
-			for (const dep of channel.dependencies) {
-				if (!packageNames.has(dep.name)) {
-					missingDepNames.add(dep.name);
-				}
-			}
-		}
-
-		// Batch create placeholders for all missing dependencies
-		if (missingDepNames.size > 0) {
-			const placeholderMap = await bulkCreatePlaceholders(
-				[...missingDepNames],
-				pkg.registry,
-			);
-			for (const [name, id] of placeholderMap) {
-				packageNames.set(name, id);
-				createdPlaceholders.add(name);
-			}
-		}
 
 		// Process each channel from new data
 		const processedChannelNames = new Set<string>();

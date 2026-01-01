@@ -34,22 +34,6 @@ export async function findPackage(
 	);
 }
 
-/** Load all package names for a registry into a Map<name, id> */
-export async function loadPackageNames(
-	registry: Registry,
-): Promise<Map<string, string>> {
-	const rows = await db
-		.select({ id: dbSchema.packages.id, name: dbSchema.packages.name })
-		.from(dbSchema.packages)
-		.where(eq(dbSchema.packages.registry, registry));
-
-	const map = new Map<string, string>();
-	for (const row of rows) {
-		map.set(row.name, row.id);
-	}
-	return map;
-}
-
 // ============================================================================
 // Package Mutations
 // ============================================================================
@@ -101,18 +85,50 @@ export async function upsertPackage(
 	return id;
 }
 
-/** Bulk create placeholder packages, returns map of name -> id */
-export async function bulkCreatePlaceholders(
+export interface EnsurePackagesResult {
+	/** Map of name -> id for all requested packages */
+	ids: Map<string, string>;
+	/** Names of packages that were newly created as placeholders */
+	created: Set<string>;
+}
+
+/** Ensure packages exist, creating placeholders for missing ones */
+export async function ensurePackagesExist(
 	names: string[],
 	registry: Registry,
-): Promise<Map<string, string>> {
-	if (names.length === 0) return new Map();
+): Promise<EnsurePackagesResult> {
+	if (names.length === 0) {
+		return { ids: new Map(), created: new Set() };
+	}
 
+	// Query which packages already exist
+	const existingRows = await db
+		.select({ id: dbSchema.packages.id, name: dbSchema.packages.name })
+		.from(dbSchema.packages)
+		.where(
+			and(
+				inArray(dbSchema.packages.name, names),
+				eq(dbSchema.packages.registry, registry),
+			),
+		);
+
+	const ids = new Map<string, string>();
+	for (const row of existingRows) {
+		ids.set(row.name, row.id);
+	}
+
+	// Find missing names
+	const missingNames = names.filter((name) => !ids.has(name));
+	const created = new Set<string>(missingNames);
+
+	if (missingNames.length === 0) {
+		return { ids, created };
+	}
+
+	// Create placeholders for missing packages
 	const now = new Date();
-
-	// Insert with ON CONFLICT DO NOTHING
-	for (let i = 0; i < names.length; i += BATCH_SIZE) {
-		const batch = names.slice(i, i + BATCH_SIZE);
+	for (let i = 0; i < missingNames.length; i += BATCH_SIZE) {
+		const batch = missingNames.slice(i, i + BATCH_SIZE);
 		await db
 			.insert(dbSchema.packages)
 			.values(
@@ -137,22 +153,22 @@ export async function bulkCreatePlaceholders(
 			.onConflictDoNothing();
 	}
 
-	// Fetch IDs for all requested names (including pre-existing)
-	const rows = await db
+	// Fetch IDs for newly created packages
+	const newRows = await db
 		.select({ id: dbSchema.packages.id, name: dbSchema.packages.name })
 		.from(dbSchema.packages)
 		.where(
 			and(
-				inArray(dbSchema.packages.name, names),
+				inArray(dbSchema.packages.name, missingNames),
 				eq(dbSchema.packages.registry, registry),
 			),
 		);
 
-	const map = new Map<string, string>();
-	for (const row of rows) {
-		map.set(row.name, row.id);
+	for (const row of newRows) {
+		ids.set(row.name, row.id);
 	}
-	return map;
+
+	return { ids, created };
 }
 
 /** Mark a package as failed */

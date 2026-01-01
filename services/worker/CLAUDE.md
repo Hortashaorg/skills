@@ -42,9 +42,8 @@ registries/
 | Function | Purpose |
 |----------|---------|
 | `findPackage()` | Get by name + registry |
-| `loadPackageNames()` | Load all package names for registry into Map |
 | `upsertPackage()` | Create or update package metadata |
-| `bulkCreatePlaceholders()` | Batch create placeholders, returns name → id map |
+| `ensurePackagesExist()` | Get/create packages, returns IDs + created set |
 | `markPackageFailed()` | Mark package as failed with reason |
 
 **Fetch Operations:**
@@ -72,7 +71,7 @@ registries/
 2. Compare with new data
 3. Only insert/update/delete what changed
 
-**Batch placeholder creation:** Missing dependencies are collected across all channels, then created in a single batch insert with `ON CONFLICT DO NOTHING`.
+**Efficient dependency resolution:** All dependency names are collected, then `ensurePackagesExist` queries only those specific names (not all packages in registry) and creates placeholders for missing ones.
 
 **Package status:**
 - `active` - Successfully fetched
