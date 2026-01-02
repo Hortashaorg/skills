@@ -1,117 +1,117 @@
-# TechGarden - Backlog
+# Sprint 3 Tasks
 
-> **Current Sprint:** [SPRINT-2.md](./SPRINT-2.md) - Projects & Data Foundation
-
----
-
-## Backlog
-
-### Design System Consistency
-
-- [x] **ProjectForm colors** - Uses gray-300/500/700 instead of design tokens (on-surface, surface, etc.)
-- [x] **Hardcoded button classes** - `/me/projects/index.tsx` uses inline classes instead of `<Button>` component
-- [x] **Select styling duplication** - SearchBar and home index now use Select component
-- [x] **Standardize size variants** - Button md aligned to px-3/py-1.5; compact elements (Badge, UpvoteButton) stay sm/md only
-
-### Dead Code Removal
-
-- [x] **Remove unused Label component** - Exported but never imported anywhere
-- [x] **Remove unused TextField sub-components** - TextFieldTextArea, TextFieldDescription, TextFieldErrorMessage never used
-
-### Component Consolidation
-
-- [x] **"Add to project" dropdown** - Now uses Kobalte Popover with animations, click-outside-to-close, and accessibility
-- [x] **Input primitive created** - SearchBar, profile, and ProjectForm now use Input component instead of raw inputs
-- [x] **CVA variant audit** - Fixed 4 instances using `color="danger"` variant; remaining overrides are valid layout classes
-- [x] **Reuse ProjectCard** - `/routes/projects/index.tsx` now imports ProjectCard with `showAuthor` prop
-- [x] **Admin tags confirm dialog** - Now uses AlertDialog component
-
-### Future Components
-
-- [x] **Icon library** - Icon primitives with CVA size variants (SearchIcon, CheckIcon, ChevronDownIcon, FolderIcon, etc.)
-- [x] **IconLinkCard** - Profile Quick Links now use IconLinkCard component
-- [x] **Table component** - Compound component with Table.Header, Table.Body, Table.Row, Table.Head, Table.Cell; admin tables updated
-
-### Form Patterns
-
-- [x] **Standardize form components** - ProjectForm now uses Input primitive (TagForm uses TextField for labeled inputs)
-- [x] **Form validation patterns** - Error display standardized via `color="danger"`; signal vs prop patterns both valid
-- [x] **Use Select component** - SearchBar and home now use Kobalte-based Select component
-
-### Code Quality
-
-- [x] **Extract `formatDate()` utility** - Now in `@package/common` with formatDate, formatShortDate, formatDateTime, formatCompactDateTime
-- [x] **Split large components** - Reviewed; package/index.tsx is 147 lines and well-structured with sections
-- [x] **Update README** - Docker images built automatically from infra repo
-
-### Documentation
-
-- [x] **Update CLAUDE.md files** - Reviewed all 4 files (root, frontend, database, worker); all accurate, no changes needed
+> **Current Sprint:** [SPRINT-3.md](./SPRINT-3.md) - UX Polish + Community Curation
 
 ---
 
-## Investigation: WebSocket Connection Issues
+## UX Polish
 
-**Problem:** Intermittent WebSocket timeouts. Zero client times out after 10s, connections eventually succeed on retry.
+### Toast Notification System
+- [ ] Create Toast component using Kobalte Toast primitive
+- [ ] Create ToastProvider in app context
+- [ ] Define toast variants: success, error, info, warning
+- [ ] Replace `console.error` catches with user-visible toasts
+  - [ ] `admin/tags/index.tsx` - tag delete/save failures
+  - [ ] `me/projects/detail.tsx` - project update failures
+  - [ ] Audit other mutation error handlers
 
-### Findings
-- Zero hardcodes `CONNECT_TIMEOUT_MS = 10_000` (not configurable)
-- Issue is NOT Cloudflare - reproduces via direct NodePort
-- Session affinity added to view-syncers (helps with CVR ownership)
-- Heavy graph may contribute to slow initial sync
+### Loading States
+- [ ] Create Skeleton component (animated placeholder)
+- [ ] Package detail page - replace loading text with skeleton
+- [ ] Project detail page - skeleton for project data
+- [ ] Admin tags page - skeleton for tags list
+- [ ] Consistent loading patterns across app
 
-### Related
-- Schema simplification (Milestone 7) completed - should reduce sync payload significantly
+### Form Consistency
+- [ ] Convert raw inputs in `detail.tsx` to Input/Textarea components
+- [ ] Audit for any remaining raw form elements
 
 ---
 
-## Completed
+## Community Curation
 
-### Milestone 9: GDPR & Data Strategy
+### Database Schema
+- [ ] Create `suggestions` table
+  - id, type, packageId, tagId, accountId, status, createdAt, resolvedAt
+- [ ] Create `suggestionVotes` table
+  - id, suggestionId, accountId, vote, createdAt
+- [ ] Create `contributionScores` table
+  - accountId (PK), score, updatedAt
+- [ ] Run migrations
+- [ ] Generate Zero schema
 
-- Privacy policy page (`/privacy`)
-- Account deletion with anonymization (projects reassigned to "Deleted User")
-- Personal data (email, username, upvotes) deleted on account removal
-- Zitadel account remains separate (user manages independently)
+### Suggestion System
+- [ ] Create suggestion mutators
+  - [ ] `suggestions.create` - create tag suggestion
+  - [ ] `suggestions.resolve` - admin approve/reject
+- [ ] Create suggestion queries
+  - [ ] `suggestions.pendingForPackage` - pending suggestions for a package
+  - [ ] `suggestions.randomPending` - random pending for review queue
+- [ ] Package detail UI
+  - [ ] "Suggest Tag" button (logged-in users only)
+  - [ ] Show pending tag suggestions with vote counts
 
-### Milestone 8 & 8b: Projects & Route Restructure
+### Voting System
+- [ ] Create vote mutators
+  - [ ] `suggestionVotes.vote` - cast approve/reject vote
+- [ ] Voting queries
+  - [ ] `suggestionVotes.bySuggestion` - votes for a suggestion
+  - [ ] `suggestionVotes.userVote` - user's vote on a suggestion
+- [ ] Auto-resolve logic
+  - [ ] Approve when `approveVotes >= 2`
+  - [ ] Reject when `rejectVotes >= 2`
+- [ ] Prevent self-voting (cannot vote on own suggestions)
 
-- Projects feature: create, edit, delete projects with package associations
-- Route restructure: `/packages`, `/projects` (public browse), `/me/*` (user content)
-- Landing page with WIP messaging
-- User profile page with username editing
-- "Add to project" button on package detail pages
-- AlertDialog, Breadcrumbs components
+### Review Queue
+- [ ] Create `/review` page
+- [ ] Random pending suggestion display (no cherry-picking)
+- [ ] Approve/Reject buttons
+- [ ] Skip button with limit tracking
+- [ ] Exclude user's own suggestions
+- [ ] Progress indicator (reviewed today count)
 
-### Milestone 7: Schema Simplification
+### Contribution Scoring
+- [ ] Create score mutators
+  - [ ] `contributionScores.adjust` - add/subtract points
+- [ ] Point triggers
+  - [ ] +5 when suggestion approved
+  - [ ] +2 when vote matches final outcome
+  - [ ] -1 when suggestion rejected
+  - [ ] -10 when suggestion marked as spam
+- [ ] Leaderboard query
+  - [ ] `contributionScores.leaderboard` - top contributors
 
-Reduced data graph by storing release channels instead of all versions.
+### Leaderboard UI
+- [ ] Create leaderboard section (landing page or `/leaderboard`)
+- [ ] Top contributors by score
+- [ ] Current user's rank display
 
-**Schema Changes:**
-- `packageReleaseChannels` table (1-3 per package vs 100+ versions)
-- `channelDependencies` linked to channels, not versions
-- `packageFetches` replaced `packageRequests` for simpler fetch tracking
-- Package status: `active`, `failed`, `placeholder`
+---
 
-**Worker Improvements:**
-- Single LEFT JOIN query for placeholder scheduling
-- Batch placeholder creation with `ensurePackagesExist`
-- Efficient dependency resolution: O(deps) not O(all packages)
-- Cooldown marks fetches as failed, not completed
+## Out of Scope (Future Sprints)
 
-**Frontend Updates:**
-- Fetch history section on package pages
-- Status/version badges integrated into PackageCard
-- Admin dashboard: top 25 pending fetches, failed packages grid
-- Backend stats endpoint for accurate pending count
+- Other suggestion types (descriptions, new packages)
+- Complex spam detection
+- Notifications for suggestion status changes
 
-### Milestone 1-6 (MVP)
+---
 
-| Milestone | Description |
-|-----------|-------------|
-| 1. Core Data Flow | Search → request → fetch → display pipeline |
-| 2. Data Population | Auto-queue dependencies, rate limiting |
-| 3. User Value | Browsing, details, upvoting, auth UX |
-| 4. Admin & Tags | Role system, admin dashboard, tag management |
-| 5. Observability | Zero telemetry, Grafana dashboards |
-| 6. Deployment | Kubernetes, CI/CD, runtime config |
+## Completed (Previous Sprints)
+
+### Sprint 2: Projects & Data Foundation
+
+- Projects feature with CRUD operations
+- Route restructure: `/packages`, `/projects`, `/me/*`
+- Landing page, user profile, "Add to project" button
+- AlertDialog, Breadcrumbs, IconLinkCard, Table components
+- Design system consistency and dead code removal
+- Privacy policy and GDPR account deletion
+
+### Sprint 1 (Milestones 1-7)
+
+- Core search → request → fetch → display pipeline
+- Auto-queue dependencies, rate limiting
+- Browsing, details, upvoting, auth UX
+- Admin dashboard, tag management, role system
+- Schema simplification (release channels vs all versions)
+- Kubernetes deployment, CI/CD
