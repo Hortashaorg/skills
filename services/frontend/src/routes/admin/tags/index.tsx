@@ -12,6 +12,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getAuthData } from "@/context/app-provider";
@@ -35,6 +36,10 @@ export const AdminTags = () => {
 	const [editingTag, setEditingTag] = createSignal<TagWithPackages | null>(
 		null,
 	);
+	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
+	const [tagToDelete, setTagToDelete] = createSignal<TagWithPackages | null>(
+		null,
+	);
 
 	const sortedTags = () => {
 		const tags = allTags() ?? [];
@@ -51,14 +56,14 @@ export const AdminTags = () => {
 		setShowForm(true);
 	};
 
-	const handleDelete = async (tag: TagWithPackages) => {
-		if (
-			!confirm(
-				`Delete tag "${tag.name}"? This will remove it from all packages.`,
-			)
-		) {
-			return;
-		}
+	const handleDeleteClick = (tag: TagWithPackages) => {
+		setTagToDelete(tag);
+		setDeleteDialogOpen(true);
+	};
+
+	const handleDeleteConfirm = async () => {
+		const tag = tagToDelete();
+		if (!tag) return;
 
 		try {
 			const result = await zero().mutate(mutators.tags.remove({ id: tag.id }))
@@ -68,7 +73,8 @@ export const AdminTags = () => {
 			}
 		} catch (err) {
 			console.error("Failed to delete tag:", err);
-			alert("Failed to delete tag. Please try again.");
+		} finally {
+			setTagToDelete(null);
 		}
 	};
 
@@ -101,7 +107,6 @@ export const AdminTags = () => {
 			setEditingTag(null);
 		} catch (err) {
 			console.error("Failed to save tag:", err);
-			alert("Failed to save tag. Please try again.");
 		}
 	};
 
@@ -137,7 +142,7 @@ export const AdminTags = () => {
 						<TagsList
 							tags={sortedTags()}
 							onEdit={handleEdit}
-							onDelete={handleDelete}
+							onDelete={handleDeleteClick}
 						/>
 
 						<Text size="sm" color="muted">
@@ -147,6 +152,16 @@ export const AdminTags = () => {
 					</AuthGuard>
 				</Stack>
 			</Container>
+
+			<AlertDialog
+				open={deleteDialogOpen()}
+				onOpenChange={setDeleteDialogOpen}
+				title="Delete Tag"
+				description={`Delete tag "${tagToDelete()?.name}"? This will remove it from all packages.`}
+				confirmText="Delete"
+				variant="danger"
+				onConfirm={handleDeleteConfirm}
+			/>
 		</Layout>
 	);
 };

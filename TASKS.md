@@ -10,7 +10,7 @@
 
 - [x] **ProjectForm colors** - Uses gray-300/500/700 instead of design tokens (on-surface, surface, etc.)
 - [x] **Hardcoded button classes** - `/me/projects/index.tsx` uses inline classes instead of `<Button>` component
-- [ ] **Select styling duplication** - Same inline styles in SearchBar, home index, TagFilter - extract to reusable component
+- [x] **Select styling duplication** - SearchBar and home index now use Select component
 - [ ] **Standardize size variants** - Button, UpvoteButton, Badge should have consistent `sm`/`md`/`lg` definitions
 
 ### Dead Code Removal
@@ -23,16 +23,20 @@
 - [ ] **"Add to project" dropdown** - Uses custom HTML while TagFilter uses Kobalte Popover - unify approach
 - [ ] **SearchInput underutilization** - Only used in project detail, not in main packages search (uses raw input)
 - [ ] **CVA variant audit** - Convert Tailwind class overrides to proper CVA variants where appropriate
+- [x] **Reuse ProjectCard** - `/routes/projects/index.tsx` now imports ProjectCard with `showAuthor` prop
+- [x] **Admin tags confirm dialog** - Now uses AlertDialog component
 
 ### Future Components
 
-- [ ] **Icon library** - Extract repeated inline SVGs (chevrons, menu, account icons) to reusable components
+- [ ] **Icon library** - Extract repeated inline SVGs (edit pencil 3x, plus, checkmark, chevrons)
+- [ ] **IconLinkCard** - Profile Quick Links pattern (icon + title + description link) repeated 3x
 - [ ] **Simple Table component** - For admin tables (optional, current inline approach works)
 
 ### Form Patterns
 
 - [ ] **Standardize form components** - ProjectForm uses raw inputs, TagForm uses TextField - pick one approach
 - [ ] **Form validation patterns** - Unify error state handling across forms
+- [x] **Use Select component** - SearchBar and home now use Kobalte-based Select component
 
 ### Code Quality
 

@@ -1,16 +1,19 @@
 import type { Row } from "@package/database/client";
 import { A } from "@solidjs/router";
+import { Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 
 type ProjectWithPackages = Row["projects"] & {
-	projectPackages: readonly Row["projectPackages"][];
+	projectPackages?: readonly Row["projectPackages"][];
+	account?: Row["account"] | null;
 };
 
 interface ProjectCardProps {
 	project: ProjectWithPackages;
+	showAuthor?: boolean;
 }
 
 export const ProjectCard = (props: ProjectCardProps) => {
@@ -26,18 +29,31 @@ export const ProjectCard = (props: ProjectCardProps) => {
 					<Text weight="semibold" class="truncate">
 						{props.project.name}
 					</Text>
-					{props.project.description && (
+					<Show when={props.project.description}>
 						<Text size="sm" color="muted" class="line-clamp-2">
 							{props.project.description}
 						</Text>
-					)}
-					<Flex justify="between" align="center" class="pt-2">
+					</Show>
+					<Flex
+						justify="between"
+						align="center"
+						class="pt-2 border-t border-outline/50 dark:border-outline-dark/50"
+					>
 						<Text size="xs" color="muted">
 							{packageCount()} package{packageCount() !== 1 ? "s" : ""}
 						</Text>
-						<Text size="xs" color="muted">
-							{new Date(props.project.updatedAt).toLocaleDateString()}
-						</Text>
+						<Show
+							when={props.showAuthor}
+							fallback={
+								<Text size="xs" color="muted">
+									{new Date(props.project.updatedAt).toLocaleDateString()}
+								</Text>
+							}
+						>
+							<Text size="xs" color="muted">
+								by {props.project.account?.name || "Anonymous"}
+							</Text>
+						</Show>
 					</Flex>
 				</Stack>
 			</Card>
