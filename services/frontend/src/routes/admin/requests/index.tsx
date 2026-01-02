@@ -1,3 +1,4 @@
+import { formatDateTime } from "@package/common";
 import {
 	queries,
 	type Row,
@@ -16,6 +17,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { Table } from "@/components/ui/table";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { getConfig } from "@/lib/config";
@@ -30,11 +32,6 @@ const fetchStats = async () => {
 
 type FetchWithPackage = Row["packageFetches"] & {
 	package?: Row["packages"] | null;
-};
-
-const formatDate = (timestamp: number | null) => {
-	if (!timestamp) return "-";
-	return new Date(timestamp).toLocaleString();
 };
 
 export const AdminRequests = () => {
@@ -89,67 +86,59 @@ export const AdminRequests = () => {
 											<Text color="muted">No pending fetches in queue.</Text>
 										}
 									>
-										<div class="overflow-x-auto">
-											<table class="w-full text-sm">
-												<thead>
-													<tr class="border-b border-outline dark:border-outline-dark">
-														<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-															Package
-														</th>
-														<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-															Registry
-														</th>
-														<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-															Created
-														</th>
-													</tr>
-												</thead>
-												<tbody>
-													<For each={topPending() as FetchWithPackage[]}>
-														{(fetch) => (
-															<tr class="border-b border-outline/50 dark:border-outline-dark/50">
-																<td class="py-3 px-2">
-																	<Show
-																		when={fetch.package}
-																		fallback={
-																			<Text size="sm" color="muted">
-																				Unknown
-																			</Text>
-																		}
-																	>
-																		{(pkg) => (
-																			<A
-																				href={buildPackageUrl(
-																					pkg().registry,
-																					pkg().name,
-																				)}
-																				class="text-primary dark:text-primary-dark hover:underline"
-																			>
-																				{pkg().name}
-																			</A>
-																		)}
-																	</Show>
-																</td>
-																<td class="py-3 px-2">
-																	<Show when={fetch.package}>
-																		{(pkg) => (
-																			<Badge variant="secondary" size="sm">
-																				{pkg().registry}
-																			</Badge>
-																		)}
-																	</Show>
-																</td>
-																<td class="py-3 px-2">
-																	<Text size="sm" color="muted">
-																		{formatDate(fetch.createdAt)}
-																	</Text>
-																</td>
-															</tr>
-														)}
-													</For>
-												</tbody>
-											</table>
-										</div>
+										<Table>
+											<Table.Header>
+												<Table.Row header>
+													<Table.Head>Package</Table.Head>
+													<Table.Head>Registry</Table.Head>
+													<Table.Head>Created</Table.Head>
+												</Table.Row>
+											</Table.Header>
+											<Table.Body>
+												<For each={topPending() as FetchWithPackage[]}>
+													{(fetch) => (
+														<Table.Row>
+															<Table.Cell>
+																<Show
+																	when={fetch.package}
+																	fallback={
+																		<Text size="sm" color="muted">
+																			Unknown
+																		</Text>
+																	}
+																>
+																	{(pkg) => (
+																		<A
+																			href={buildPackageUrl(
+																				pkg().registry,
+																				pkg().name,
+																			)}
+																			class="text-primary dark:text-primary-dark hover:underline"
+																		>
+																			{pkg().name}
+																		</A>
+																	)}
+																</Show>
+															</Table.Cell>
+															<Table.Cell>
+																<Show when={fetch.package}>
+																	{(pkg) => (
+																		<Badge variant="secondary" size="sm">
+																			{pkg().registry}
+																		</Badge>
+																	)}
+																</Show>
+															</Table.Cell>
+															<Table.Cell>
+																<Text size="sm" color="muted">
+																	{formatDateTime(fetch.createdAt)}
+																</Text>
+															</Table.Cell>
+														</Table.Row>
+													)}
+												</For>
+											</Table.Body>
+										</Table>
 									</Show>
 								</Stack>
 							</Card>
@@ -160,9 +149,7 @@ export const AdminRequests = () => {
 									<Heading level="h2">Failed Packages</Heading>
 									<Show
 										when={(failedPackages() ?? []).length > 0}
-										fallback={
-											<Text color="muted">No failed packages.</Text>
-										}
+										fallback={<Text color="muted">No failed packages.</Text>}
 									>
 										<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 											<For each={failedPackages()}>
@@ -180,7 +167,11 @@ export const AdminRequests = () => {
 																	<Text weight="semibold" class="break-all">
 																		{pkg.name}
 																	</Text>
-																	<Badge variant="secondary" size="sm" class="shrink-0">
+																	<Badge
+																		variant="secondary"
+																		size="sm"
+																		class="shrink-0"
+																	>
 																		{pkg.registry}
 																	</Badge>
 																</Flex>

@@ -27,12 +27,15 @@ export interface PackageCardProps {
 	failureReason?: string | null;
 	/** Version range to display */
 	versionRange?: string;
+	/** Called when remove button is clicked. Button only shown when provided. */
+	onRemove?: () => void;
 }
 
 const MAX_VISIBLE_TAGS = 3;
 
 export const PackageCard = (props: PackageCardProps) => {
-	const hasStatus = () => props.status === "failed" || props.status === "placeholder";
+	const hasStatus = () =>
+		props.status === "failed" || props.status === "placeholder";
 	const hasTags = () => props.tags && props.tags.length > 0;
 	const hasFooter = () => hasTags() || props.versionRange || hasStatus();
 
@@ -55,12 +58,41 @@ export const PackageCard = (props: PackageCardProps) => {
 							{props.registry}
 						</Badge>
 					</A>
-					<UpvoteButton
-						count={props.upvoteCount}
-						isUpvoted={props.isUpvoted}
-						disabled={props.upvoteDisabled}
-						onClick={props.onUpvote}
-					/>
+					<Flex gap="xs" align="center">
+						<UpvoteButton
+							count={props.upvoteCount}
+							isUpvoted={props.isUpvoted}
+							disabled={props.upvoteDisabled}
+							onClick={props.onUpvote}
+						/>
+						<Show when={props.onRemove}>
+							<button
+								type="button"
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									props.onRemove?.();
+								}}
+								class="p-1.5 rounded text-on-surface-muted dark:text-on-surface-dark-muted hover:text-danger dark:hover:text-danger-dark hover:bg-danger/10 dark:hover:bg-danger-dark/10 transition"
+								title="Remove"
+							>
+								<svg
+									class="w-4 h-4"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<title>Remove</title>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</svg>
+							</button>
+						</Show>
+					</Flex>
 				</Flex>
 
 				{/* Description - grows to fill space */}
@@ -74,7 +106,12 @@ export const PackageCard = (props: PackageCardProps) => {
 
 				{/* Footer: Tags, version range, and status */}
 				<Show when={hasFooter()}>
-					<Flex gap="xs" align="center" justify="between" class="flex-wrap mt-auto pt-2">
+					<Flex
+						gap="xs"
+						align="center"
+						justify="between"
+						class="flex-wrap mt-auto pt-2"
+					>
 						{/* Left side: Tags */}
 						<Flex gap="xs" align="center" class="flex-wrap">
 							<For each={props.tags?.slice(0, MAX_VISIBLE_TAGS)}>

@@ -10,6 +10,9 @@ import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
 import { handleMutate } from "./mutate.ts";
 import { handleQuery } from "./query.ts";
+import { getAuthContext } from "./util.ts";
+
+const DELETED_USER_ID = "00000000-0000-0000-0000-000000000000";
 
 const REFRESH_TOKEN_COOKIE = {
 	name: "refresh_token",
@@ -222,6 +225,53 @@ app.get("/api/stats", async (c) => {
 	return c.json({
 		pendingFetches: pending?.count ?? 0,
 	});
+});
+
+app.post("/api/account/delete", async (c) => {
+	const ctx = await getAuthContext(c);
+
+	if (ctx.userID === "anon") {
+		return c.json({ error: "Not authenticated" }, 401);
+	}
+
+	try {
+		// Ensure the "Deleted User" placeholder account exists
+		const now = new Date();
+		await db
+			.insert(dbSchema.account)
+			.values({
+				id: DELETED_USER_ID,
+				email: null,
+				name: "Deleted User",
+				createdAt: now,
+				updatedAt: now,
+			})
+			.onConflictDoNothing();
+
+		// Reassign all user's projects to the deleted user placeholder
+		await db
+			.update(dbSchema.projects)
+			.set({ accountId: DELETED_USER_ID, updatedAt: now })
+			.where(eq(dbSchema.projects.accountId, ctx.userID));
+
+		// Delete user's upvotes
+		await db
+			.delete(dbSchema.packageUpvotes)
+			.where(eq(dbSchema.packageUpvotes.accountId, ctx.userID));
+
+		// Delete the user's account
+		await db
+			.delete(dbSchema.account)
+			.where(eq(dbSchema.account.id, ctx.userID));
+
+		// Clear refresh token
+		clearRefreshToken(c);
+
+		return c.json({ success: true });
+	} catch (error) {
+		console.error("Failed to delete account:", error);
+		return c.json({ error: "Failed to delete account" }, 500);
+	}
 });
 
 serve({

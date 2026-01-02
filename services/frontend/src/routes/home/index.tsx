@@ -1,12 +1,5 @@
 import { queries, useQuery, useZero } from "@package/database/client";
-import {
-	createEffect,
-	createMemo,
-	createSignal,
-	For,
-	on,
-	Show,
-} from "solid-js";
+import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -14,6 +7,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import {
@@ -33,7 +27,7 @@ import { SearchBar } from "./sections/SearchBar";
 
 const PAGE_SIZE = 20;
 
-export const Home = () => {
+export const Packages = () => {
 	const zero = useZero();
 
 	// URL-synced state
@@ -151,13 +145,6 @@ export const Home = () => {
 		return "Try a different search term or adjust your filters.";
 	};
 
-	// Handle registry change for request
-	const handleRegistryChange = (
-		e: Event & { currentTarget: HTMLSelectElement },
-	) => {
-		setRequestRegistry(e.currentTarget.value as Registry);
-	};
-
 	// Build the empty state action (request button)
 	const emptyAction = () => {
 		if (!canRequest()) return undefined;
@@ -185,17 +172,14 @@ export const Home = () => {
 		return (
 			<Flex gap="sm" align="center">
 				<Show when={registryFilter() === "all"}>
-					<select
+					<Select
+						options={REGISTRY_OPTIONS}
 						value={requestRegistry()}
-						onChange={handleRegistryChange}
+						onChange={setRequestRegistry}
 						aria-label="Select registry for package request"
 						disabled={packageRequest.isSubmitting()}
-						class="h-10 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						<For each={REGISTRY_OPTIONS}>
-							{(option) => <option value={option.value}>{option.label}</option>}
-						</For>
-					</select>
+						class="w-auto"
+					/>
 				</Show>
 				<Button
 					variant="primary"
@@ -221,7 +205,7 @@ export const Home = () => {
 					{/* Header */}
 					<Stack spacing="sm" align="center">
 						<Heading level="h1" class="text-center">
-							TechGarden
+							Packages
 						</Heading>
 						<Text color="muted" class="text-center" as="p">
 							Search for packages or request new ones

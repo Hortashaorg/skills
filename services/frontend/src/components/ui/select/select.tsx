@@ -1,6 +1,7 @@
 import { Select as SelectPrimitive } from "@kobalte/core/select";
 import { cva, type VariantProps } from "class-variance-authority";
 import { splitProps } from "solid-js";
+import { CheckIcon, ChevronDownIcon } from "@/components/primitives/icon";
 import { cn } from "@/lib/utils";
 
 const selectTriggerVariants = cva(
@@ -164,20 +165,7 @@ export function Select<T extends string>(props: SelectProps<T>) {
 						{itemProps.item.rawValue.label}
 					</SelectPrimitive.ItemLabel>
 					<SelectPrimitive.ItemIndicator class="absolute left-2 inline-flex items-center">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<title>Selected</title>
-							<polyline points="20 6 9 17 4 12" />
-						</svg>
+						<CheckIcon size="sm" title="Selected" />
 					</SelectPrimitive.ItemIndicator>
 				</SelectPrimitive.Item>
 			)}
@@ -194,20 +182,7 @@ export function Select<T extends string>(props: SelectProps<T>) {
 					{(state) => state.selectedOption()?.label}
 				</SelectPrimitive.Value>
 				<SelectPrimitive.Icon class="text-on-surface-muted dark:text-on-surface-dark-muted">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<title>Expand</title>
-						<path d="m6 9 6 6 6-6" />
-					</svg>
+					<ChevronDownIcon size="sm" />
 				</SelectPrimitive.Icon>
 			</SelectPrimitive.Trigger>
 			<SelectPrimitive.Portal>

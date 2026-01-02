@@ -57,15 +57,34 @@ const configs: BreadcrumbConfig[] = [
 			{ label: "Tags" },
 		],
 	},
-	// Example with resolver (for future use):
-	// {
-	//   pattern: /^\/tag\/([^/]+)$/,
-	//   segments: [
-	//     { label: "Home", href: "/" },
-	//     { label: "Tags", href: "/admin/tags" },
-	//     { label: (p) => p.tagId ?? "", resolve: { type: "tag", param: "tagId" } },
-	//   ],
-	// },
+	{
+		pattern: /^\/projects\/([^/]+)$/,
+		segments: [
+			{ label: "Home", href: "/" },
+			{ label: "Projects", href: "/projects" },
+			{
+				label: (p) => p.id ?? "",
+				resolve: { type: "project", param: "id" },
+			},
+		],
+	},
+	{
+		pattern: /^\/me\/projects$/,
+		segments: [
+			{ label: "Home", href: "/" },
+			{ label: "Profile", href: "/me" },
+			{ label: "My Projects" },
+		],
+	},
+	{
+		pattern: /^\/me\/projects\/new$/,
+		segments: [
+			{ label: "Home", href: "/" },
+			{ label: "Profile", href: "/me" },
+			{ label: "My Projects", href: "/me/projects" },
+			{ label: "New" },
+		],
+	},
 ];
 
 export type BreadcrumbSegmentResult = {

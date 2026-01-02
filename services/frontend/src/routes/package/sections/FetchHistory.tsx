@@ -1,4 +1,9 @@
-import { queries, useConnectionState, useQuery } from "@package/database/client";
+import { formatCompactDateTime } from "@package/common";
+import {
+	queries,
+	useConnectionState,
+	useQuery,
+} from "@package/database/client";
 import { For } from "solid-js";
 import { QueryBoundary } from "@/components/composite/query-boundary";
 import { Flex } from "@/components/primitives/flex";
@@ -11,16 +16,6 @@ import { Card } from "@/components/ui/card";
 export interface FetchHistoryProps {
 	packageId: string;
 }
-
-const formatDate = (timestamp: number | null) => {
-	if (!timestamp) return "-";
-	return new Intl.DateTimeFormat("en-US", {
-		month: "short",
-		day: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-	}).format(new Date(timestamp));
-};
 
 const statusVariant = (status: string) => {
 	switch (status) {
@@ -72,12 +67,12 @@ export const FetchHistory = (props: FetchHistoryProps) => {
 													{fetch.status}
 												</Badge>
 												<Text size="sm" color="muted">
-													{formatDate(fetch.createdAt)}
+													{formatCompactDateTime(fetch.createdAt)}
 												</Text>
 											</Flex>
 											{fetch.completedAt && (
 												<Text size="sm" color="muted">
-													Completed: {formatDate(fetch.completedAt)}
+													Completed: {formatCompactDateTime(fetch.completedAt)}
 												</Text>
 											)}
 										</Flex>

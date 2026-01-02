@@ -1,3 +1,5 @@
+export * from "./date.ts";
+
 export const throwError = (message: string): never => {
 	throw new Error(message);
 };

@@ -119,9 +119,9 @@ const buttonVariants = cva(
 			},
 			size: {
 				sm: ["text-xs", "px-2", "py-1"],
-				md: ["text-sm", "px-4", "py-2"],
+				md: ["text-sm", "px-3", "py-1.5"],
 				lg: ["text-base", "px-4", "py-2"],
-				xl: ["text-lg", "px-4", "py-2"],
+				xl: ["text-lg", "px-5", "py-2.5"],
 			},
 		},
 		defaultVariants: {
@@ -130,6 +130,8 @@ const buttonVariants = cva(
 		},
 	},
 );
+
+export { buttonVariants };
 
 export type ButtonProps = JSX.IntrinsicElements["button"] &
 	ButtonRootProps<"button"> &
