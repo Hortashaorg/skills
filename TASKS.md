@@ -30,23 +30,23 @@
 
 - [x] **Icon library** - Icon primitives with CVA size variants (SearchIcon, CheckIcon, ChevronDownIcon, FolderIcon, etc.)
 - [x] **IconLinkCard** - Profile Quick Links now use IconLinkCard component
-- [ ] **Simple Table component** - For admin tables (optional, current inline approach works)
+- [x] **Table component** - Compound component with Table.Header, Table.Body, Table.Row, Table.Head, Table.Cell; admin tables updated
 
 ### Form Patterns
 
 - [x] **Standardize form components** - ProjectForm now uses Input primitive (TagForm uses TextField for labeled inputs)
-- [ ] **Form validation patterns** - Unify error state handling across forms
+- [x] **Form validation patterns** - Error display standardized via `color="danger"`; signal vs prop patterns both valid
 - [x] **Use Select component** - SearchBar and home now use Kobalte-based Select component
 
 ### Code Quality
 
 - [x] **Extract `formatDate()` utility** - Now in `@package/common` with formatDate, formatShortDate, formatDateTime, formatCompactDateTime
-- [ ] **Split large components** - package/index.tsx could be broken down further
-- [ ] **Update README** - Add deployment instructions
+- [x] **Split large components** - Reviewed; package/index.tsx is 147 lines and well-structured with sections
+- [x] **Update README** - Docker images built automatically from infra repo
 
 ### Documentation
 
-- [ ] **Update CLAUDE.md files** - Ensure all CLAUDE.md files reflect current patterns after backlog cleanup
+- [x] **Update CLAUDE.md files** - Reviewed all 4 files (root, frontend, database, worker); all accurate, no changes needed
 
 ---
 

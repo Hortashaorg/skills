@@ -4,6 +4,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Table } from "@/components/ui/table";
 
 type TagWithPackages = Row["tags"] & {
 	packageTags: readonly Row["packageTags"][];
@@ -26,75 +27,63 @@ export const TagsList = (props: Props) => {
 					</Text>
 				}
 			>
-				<div class="overflow-x-auto">
-					<table class="w-full text-sm">
-						<thead>
-							<tr class="border-b border-outline dark:border-outline-dark">
-								<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-									Name
-								</th>
-								<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-									Slug
-								</th>
-								<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-									Description
-								</th>
-								<th class="py-3 px-2 text-left font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-									Packages
-								</th>
-								<th class="py-3 px-2 text-right font-medium text-on-surface-muted dark:text-on-surface-dark-muted">
-									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<For each={props.tags}>
-								{(tag) => (
-									<tr class="border-b border-outline/50 dark:border-outline-dark/50 hover:bg-surface-alt/50 dark:hover:bg-surface-dark-alt/50">
-										<td class="py-3 px-2">
-											<Text size="sm" weight="medium">
-												{tag.name}
-											</Text>
-										</td>
-										<td class="py-3 px-2">
-											<Badge variant="secondary" size="sm">
-												{tag.slug}
-											</Badge>
-										</td>
-										<td class="py-3 px-2 max-w-xs">
-											<Text size="sm" color="muted" class="truncate">
-												{tag.description || "—"}
-											</Text>
-										</td>
-										<td class="py-3 px-2">
-											<Badge variant="info" size="sm">
-												{tag.packageTags.length}
-											</Badge>
-										</td>
-										<td class="py-3 px-2">
-											<Flex justify="end" gap="sm">
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => props.onEdit(tag)}
-												>
-													Edit
-												</Button>
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => props.onDelete(tag)}
-												>
-													Delete
-												</Button>
-											</Flex>
-										</td>
-									</tr>
-								)}
-							</For>
-						</tbody>
-					</table>
-				</div>
+				<Table>
+					<Table.Header>
+						<Table.Row header>
+							<Table.Head>Name</Table.Head>
+							<Table.Head>Slug</Table.Head>
+							<Table.Head>Description</Table.Head>
+							<Table.Head>Packages</Table.Head>
+							<Table.Head align="right">Actions</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						<For each={props.tags}>
+							{(tag) => (
+								<Table.Row hoverable>
+									<Table.Cell>
+										<Text size="sm" weight="medium">
+											{tag.name}
+										</Text>
+									</Table.Cell>
+									<Table.Cell>
+										<Badge variant="secondary" size="sm">
+											{tag.slug}
+										</Badge>
+									</Table.Cell>
+									<Table.Cell class="max-w-xs">
+										<Text size="sm" color="muted" class="truncate">
+											{tag.description || "—"}
+										</Text>
+									</Table.Cell>
+									<Table.Cell>
+										<Badge variant="info" size="sm">
+											{tag.packageTags.length}
+										</Badge>
+									</Table.Cell>
+									<Table.Cell align="right">
+										<Flex justify="end" gap="sm">
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => props.onEdit(tag)}
+											>
+												Edit
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => props.onDelete(tag)}
+											>
+												Delete
+											</Button>
+										</Flex>
+									</Table.Cell>
+								</Table.Row>
+							)}
+						</For>
+					</Table.Body>
+				</Table>
 			</Show>
 		</div>
 	);
