@@ -9,7 +9,7 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { logout } from "@/context/app-provider";
+import { getAuthData, logout } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { getConfig } from "@/lib/config";
 
@@ -115,9 +115,13 @@ export const Profile = () => {
 
 		try {
 			const config = getConfig();
+			const authData = getAuthData();
 			const response = await fetch(`${config.backendUrl}/api/account/delete`, {
 				method: "POST",
 				credentials: "include",
+				headers: authData?.accessToken
+					? { Authorization: `Bearer ${authData.accessToken}` }
+					: {},
 			});
 
 			if (!response.ok) {

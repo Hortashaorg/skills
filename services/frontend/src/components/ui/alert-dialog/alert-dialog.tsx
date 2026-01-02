@@ -63,6 +63,8 @@ export interface AlertDialogProps {
 }
 
 export const AlertDialog = (props: AlertDialogProps) => {
+	let cancelButtonRef: HTMLButtonElement | undefined;
+
 	const [local, others] = splitProps(props, [
 		"title",
 		"description",
@@ -76,14 +78,19 @@ export const AlertDialog = (props: AlertDialogProps) => {
 		"class",
 	]);
 
-	const handleConfirm = () => {
-		local.onConfirm?.();
+	const handleConfirm = async () => {
+		await local.onConfirm?.();
 		local.onOpenChange?.(false);
 	};
 
 	const handleCancel = () => {
 		local.onCancel?.();
 		local.onOpenChange?.(false);
+	};
+
+	const handleOpenAutoFocus = (e: Event) => {
+		e.preventDefault();
+		cancelButtonRef?.focus();
 	};
 
 	return (
@@ -94,7 +101,10 @@ export const AlertDialog = (props: AlertDialogProps) => {
 		>
 			<AlertDialogPrimitive.Portal>
 				<AlertDialogPrimitive.Overlay class={cn(overlayStyles)} />
-				<AlertDialogPrimitive.Content class={cn(contentStyles, local.class)}>
+				<AlertDialogPrimitive.Content
+					class={cn(contentStyles, local.class)}
+					onOpenAutoFocus={handleOpenAutoFocus}
+				>
 					<AlertDialogPrimitive.Title class="text-lg font-semibold text-on-surface-strong dark:text-on-surface-dark-strong">
 						{local.title}
 					</AlertDialogPrimitive.Title>
@@ -106,6 +116,7 @@ export const AlertDialog = (props: AlertDialogProps) => {
 					<div class="mt-6 flex justify-end gap-3">
 						<AlertDialogPrimitive.CloseButton
 							as={Button}
+							ref={cancelButtonRef}
 							variant="secondary"
 							size="sm"
 							onClick={handleCancel}
