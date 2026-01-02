@@ -12,14 +12,16 @@ const dirname =
 		? __dirname
 		: path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig(() => ({
+export default defineConfig(({ mode }) => ({
 	plugins: [
 		solidPlugin(),
 		tailwindcss(),
-		storybookTest({
-			configDir: path.join(dirname, ".storybook"),
-		}),
-	],
+		// Only load storybook plugin during testing
+		mode === "test" &&
+			storybookTest({
+				configDir: path.join(dirname, ".storybook"),
+			}),
+	].filter(Boolean),
 	server: {
 		port: 4321,
 	},
