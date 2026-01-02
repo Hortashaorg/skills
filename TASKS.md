@@ -33,13 +33,14 @@
 - [x] Split schema into domain files (`db/schema/` folder)
 
 ### 8.2 Project Pages
-- [x] `/projects` - List user's projects (requires auth)
-- [x] `/projects/new` - Create project form
-- [x] `/projects/:id` - Project detail with package list
+- [x] `/me/projects` - List user's projects (requires auth)
+- [x] `/me/projects/new` - Create project form
+- [x] `/projects/:id` - Project detail with package list (public URL)
 - [x] Inline editing for name/description (replaced separate edit page)
 - [x] Package search to add packages directly on project page
 - [x] Packages grouped by tags (packages with multiple tags appear in multiple sections)
 - [x] AlertDialog component for delete/remove confirmations
+- [x] Breadcrumbs for project pages
 
 ### 8.3 Package Integration
 - [ ] "Add to project" button on package detail page
@@ -54,18 +55,20 @@
 
 ### New Route Structure
 ```
-/                  → Landing page (intro to TechGarden)
+/                  → Landing page (WIP messaging)
 /packages          → Browse all packages (public)
 /projects          → Browse all projects (public)
-/me                → User profile
+/projects/:id      → View any project (public)
+/me                → User profile (username, account info)
 /me/projects       → User's own projects
+/me/projects/new   → Create new project
 ```
 
 ### 8b.1 Landing Page
-- [x] Create `/` landing page with intro to TechGarden
-- [x] Hero section with value proposition
-- [x] Feature highlights (projects, packages, collaboration)
-- [x] CTAs to browse packages/projects or sign up
+- [x] Create `/` landing page with honest WIP messaging
+- [x] "Work in Progress" badge, casual tone
+- [x] Feature cards with CTAs to packages/projects
+- [x] Sign in button for anonymous users
 
 ### 8b.2 Browse Pages
 - [x] `/packages` - Public package listing with search/filters
@@ -77,6 +80,8 @@
 - [x] Move `/projects` → `/me/projects` (user's own projects)
 - [x] Update `/projects/new` → `/me/projects/new`
 - [x] Update all internal links and redirects
+- [x] Username editing with validation
+- [x] Account dropdown in navbar (Profile, My Projects, Admin, Sign out)
 
 ---
 
