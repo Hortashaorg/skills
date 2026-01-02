@@ -131,6 +131,8 @@ const buttonVariants = cva(
 	},
 );
 
+export { buttonVariants };
+
 export type ButtonProps = JSX.IntrinsicElements["button"] &
 	ButtonRootProps<"button"> &
 	VariantProps<typeof buttonVariants>;

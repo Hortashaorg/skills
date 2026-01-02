@@ -7,12 +7,10 @@ import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
 import { ProjectCard } from "./sections/ProjectCard";
-
-const buttonPrimaryClasses =
-	"inline-block px-4 py-2 text-sm font-medium rounded-radius bg-primary border-primary text-on-primary hover:opacity-75 transition dark:bg-primary-dark dark:border-primary-dark dark:text-on-primary-dark";
 
 export const Projects = () => {
 	const zero = useZero();
@@ -43,7 +41,7 @@ export const Projects = () => {
 					>
 						<Flex justify="between" align="center">
 							<Heading level="h1">My Projects</Heading>
-							<A href="/me/projects/new" class={buttonPrimaryClasses}>
+							<A href="/me/projects/new" class={buttonVariants()}>
 								New Project
 							</A>
 						</Flex>
@@ -60,7 +58,7 @@ export const Projects = () => {
 											<Text color="muted">
 												You don't have any projects yet.
 											</Text>
-											<A href="/me/projects/new" class={buttonPrimaryClasses}>
+											<A href="/me/projects/new" class={buttonVariants()}>
 												Create your first project
 											</A>
 										</Stack>

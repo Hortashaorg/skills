@@ -18,14 +18,11 @@ import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
 import { buildPackageUrl } from "@/lib/url";
-
-const buttonSecondaryClasses =
-	"inline-block px-4 py-2 text-sm font-medium rounded-radius bg-secondary border-secondary text-on-secondary hover:opacity-75 transition dark:bg-secondary-dark dark:border-secondary-dark dark:text-on-secondary-dark";
 
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
@@ -242,7 +239,10 @@ export const ProjectDetail = () => {
 										<Text color="muted">
 											This project doesn't exist or has been deleted.
 										</Text>
-										<A href="/me/projects" class={buttonSecondaryClasses}>
+										<A
+											href="/me/projects"
+											class={buttonVariants({ variant: "secondary" })}
+										>
 											Back to Projects
 										</A>
 									</Stack>
@@ -338,7 +338,7 @@ export const ProjectDetail = () => {
 																<button
 																	type="button"
 																	onClick={startEditingDescription}
-																	class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1 flex-shrink-0"
+																	class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1 shrink-0"
 																	title="Edit description"
 																>
 																	<svg

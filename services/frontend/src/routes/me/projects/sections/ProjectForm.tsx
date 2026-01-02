@@ -13,6 +13,9 @@ interface ProjectFormProps {
 	error: string | null;
 }
 
+const inputStyles =
+	"w-full px-3 py-2 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-muted dark:placeholder:text-on-surface-dark-muted focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark";
+
 export const ProjectForm = (props: ProjectFormProps) => {
 	const [name, setName] = createSignal(props.project?.name ?? "");
 	const [description, setDescription] = createSignal(
@@ -36,7 +39,7 @@ export const ProjectForm = (props: ProjectFormProps) => {
 				<div>
 					<label
 						for="name"
-						class="block text-sm font-medium text-gray-300 mb-1"
+						class="block text-sm font-medium text-on-surface-strong dark:text-on-surface-dark-strong mb-1"
 					>
 						Name
 					</label>
@@ -48,17 +51,20 @@ export const ProjectForm = (props: ProjectFormProps) => {
 						placeholder="My Awesome Project"
 						maxLength={100}
 						required
-						class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						class={inputStyles}
 					/>
 				</div>
 
 				<div>
 					<label
 						for="description"
-						class="block text-sm font-medium text-gray-300 mb-1"
+						class="block text-sm font-medium text-on-surface-strong dark:text-on-surface-dark-strong mb-1"
 					>
 						Description
-						<span class="text-gray-500 font-normal"> (optional)</span>
+						<span class="text-on-surface-muted dark:text-on-surface-dark-muted font-normal">
+							{" "}
+							(optional)
+						</span>
 					</label>
 					<textarea
 						id="description"
@@ -67,12 +73,12 @@ export const ProjectForm = (props: ProjectFormProps) => {
 						placeholder="A brief description of your project..."
 						maxLength={500}
 						rows={3}
-						class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+						class={`${inputStyles} resize-none`}
 					/>
 				</div>
 
 				<Show when={props.error}>
-					<Text size="sm" class="text-red-400">
+					<Text size="sm" class="text-danger dark:text-danger-dark">
 						{props.error}
 					</Text>
 				</Show>

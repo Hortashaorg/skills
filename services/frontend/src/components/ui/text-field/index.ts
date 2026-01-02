@@ -1,8 +1,1 @@
-export {
-	TextField,
-	TextFieldDescription,
-	TextFieldErrorMessage,
-	TextFieldInput,
-	TextFieldLabel,
-	TextFieldTextArea,
-} from "./text-field";
+export { TextField, TextFieldInput, TextFieldLabel } from "./text-field";
