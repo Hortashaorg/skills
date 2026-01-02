@@ -106,6 +106,7 @@ export const Layout: ParentComponent = (props) => {
 	const isAnonymous = () => zero().userID === "anon";
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isActive = (path: string) => location.pathname.startsWith(path);
+	const isExactActive = (path: string) => location.pathname === path;
 	const displayUserId = () => {
 		const id = zero().userID;
 		if (id === "anon") return null;
@@ -131,6 +132,30 @@ export const Layout: ParentComponent = (props) => {
 
 						{/* Desktop navigation */}
 						<Flex gap="md" align="center" class="hidden sm:flex">
+							<A
+								href="/packages"
+								class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
+								classList={{
+									"text-primary dark:text-primary-dark font-medium":
+										isActive("/packages"),
+									"text-on-surface-muted dark:text-on-surface-dark-muted":
+										!isActive("/packages"),
+								}}
+							>
+								Packages
+							</A>
+							<A
+								href="/projects"
+								class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
+								classList={{
+									"text-primary dark:text-primary-dark font-medium":
+										isExactActive("/projects"),
+									"text-on-surface-muted dark:text-on-surface-dark-muted":
+										!isExactActive("/projects"),
+								}}
+							>
+								Projects
+							</A>
 							<Show when={!isAnonymous()}>
 								<A
 									href="/me/projects"
@@ -142,7 +167,7 @@ export const Layout: ParentComponent = (props) => {
 											!isActive("/me/projects"),
 									}}
 								>
-									Projects
+									My Projects
 								</A>
 							</Show>
 							<Show when={isAdmin()}>
@@ -297,7 +322,35 @@ export const Layout: ParentComponent = (props) => {
 								</Badge>
 							</Show>
 
-							{/* Projects link */}
+							{/* Browse links */}
+							<A
+								href="/packages"
+								class="block py-2 text-sm"
+								classList={{
+									"text-primary dark:text-primary-dark font-medium":
+										isActive("/packages"),
+									"text-on-surface dark:text-on-surface-dark":
+										!isActive("/packages"),
+								}}
+								onClick={closeMobileMenu}
+							>
+								Packages
+							</A>
+							<A
+								href="/projects"
+								class="block py-2 text-sm"
+								classList={{
+									"text-primary dark:text-primary-dark font-medium":
+										isExactActive("/projects"),
+									"text-on-surface dark:text-on-surface-dark":
+										!isExactActive("/projects"),
+								}}
+								onClick={closeMobileMenu}
+							>
+								Projects
+							</A>
+
+							{/* My Projects link */}
 							<Show when={!isAnonymous()}>
 								<A
 									href="/me/projects"
@@ -310,7 +363,7 @@ export const Layout: ParentComponent = (props) => {
 									}}
 									onClick={closeMobileMenu}
 								>
-									Projects
+									My Projects
 								</A>
 							</Show>
 

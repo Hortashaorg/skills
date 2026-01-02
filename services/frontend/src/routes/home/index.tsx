@@ -33,7 +33,7 @@ import { SearchBar } from "./sections/SearchBar";
 
 const PAGE_SIZE = 20;
 
-export const Home = () => {
+export const Packages = () => {
 	const zero = useZero();
 
 	// URL-synced state
@@ -221,7 +221,7 @@ export const Home = () => {
 					{/* Header */}
 					<Stack spacing="sm" align="center">
 						<Heading level="h1" class="text-center">
-							TechGarden
+							Packages
 						</Heading>
 						<Text color="muted" class="text-center" as="p">
 							Search for packages or request new ones

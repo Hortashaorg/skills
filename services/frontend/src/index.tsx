@@ -8,13 +8,15 @@ import { AppProvider } from "./context/app-provider";
 import { loadConfig } from "./lib/config";
 import { AdminRequests } from "./routes/admin/requests";
 import { AdminTags } from "./routes/admin/tags";
-import { Home } from "./routes/home";
+import { Packages } from "./routes/home";
+import { Landing } from "./routes/landing";
 import { Profile } from "./routes/me";
 import { Projects } from "./routes/me/projects";
 import { ProjectDetail } from "./routes/me/projects/detail";
 import { NewProject } from "./routes/me/projects/new";
 import { NotFound } from "./routes/not-found";
 import { Package } from "./routes/package";
+import { BrowseProjects } from "./routes/projects";
 import { VerifyEmail } from "./routes/verify-email";
 
 const root = document.getElementById("root");
@@ -29,11 +31,13 @@ loadConfig().then(() => {
 			>
 				<AppProvider>
 					<Router>
-						<Route path="/" component={Home} />
+						<Route path="/" component={Landing} />
+						<Route path="/packages" component={Packages} />
 						<Route path="/package/:registry/:name" component={Package} />
 						<Route path="/me" component={Profile} />
 						<Route path="/me/projects" component={Projects} />
 						<Route path="/me/projects/new" component={NewProject} />
+						<Route path="/projects" component={BrowseProjects} />
 						<Route path="/projects/:id" component={ProjectDetail} />
 						<Route path="/verify-email" component={VerifyEmail} />
 						<Route path="/admin/requests" component={AdminRequests} />

@@ -62,15 +62,15 @@
 ```
 
 ### 8b.1 Landing Page
-- [ ] Create `/` landing page with intro to TechGarden
-- [ ] Hero section with value proposition
-- [ ] Feature highlights (projects, packages, collaboration)
-- [ ] CTAs to browse packages/projects or sign up
+- [x] Create `/` landing page with intro to TechGarden
+- [x] Hero section with value proposition
+- [x] Feature highlights (projects, packages, collaboration)
+- [x] CTAs to browse packages/projects or sign up
 
 ### 8b.2 Browse Pages
-- [ ] `/packages` - Public package listing with search/filters
-- [ ] `/projects` - Public project listing (all users' projects)
-- [ ] Update navbar to link to browse pages
+- [x] `/packages` - Public package listing with search/filters
+- [x] `/projects` - Public project listing (all users' projects)
+- [x] Update navbar to link to browse pages
 
 ### 8b.3 User Profile & Namespace
 - [x] `/me` - User profile page (info, link to projects, settings)

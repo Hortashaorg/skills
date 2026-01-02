@@ -20,7 +20,7 @@
 |---|-----------|--------|
 | 7 | Schema Simplification | ✅ Complete |
 | 8 | Projects Feature | 🔄 In Progress |
-| 8b | Route Restructure | Pending |
+| 8b | Route Restructure | ✅ Complete |
 | 9 | GDPR & Data Strategy | Pending |
 | 10 | Component Library | Pending |
 
