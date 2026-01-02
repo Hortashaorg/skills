@@ -163,4 +163,28 @@ export const TrashIcon = (props: IconComponentProps) => {
 	);
 };
 
+export const PackageIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Package"} {...others}>
+			<path d="M16.5 9.4 7.55 4.24" />
+			<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+			<polyline points="3.29 7 12 12 20.71 7" />
+			<line x1="12" x2="12" y1="22" y2="12" />
+		</Icon>
+	);
+};
+
+export const UsersIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Users"} {...others}>
+			<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+			<circle cx="9" cy="7" r="4" />
+			<path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+			<path d="M16 3.13a4 4 0 0 1 0 7.75" />
+		</Icon>
+	);
+};
+
 export type { IconComponentProps };

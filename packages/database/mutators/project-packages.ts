@@ -1,5 +1,6 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
 export const add = defineMutator(
@@ -10,6 +11,13 @@ export const add = defineMutator(
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
 			throw new Error("Must be logged in to add package to project");
+		}
+
+		const project = await tx.run(
+			zql.projects.one().where("id", "=", args.projectId),
+		);
+		if (!project || project.accountId !== ctx.userID) {
+			throw new Error("Not authorized to modify this project");
 		}
 
 		const record = newRecord();
@@ -37,6 +45,13 @@ export const remove = defineMutator(
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
 			throw new Error("Must be logged in to remove package from project");
+		}
+
+		const project = await tx.run(
+			zql.projects.one().where("id", "=", args.projectId),
+		);
+		if (!project || project.accountId !== ctx.userID) {
+			throw new Error("Not authorized to modify this project");
 		}
 
 		await tx.mutate.projectPackages.delete({ id: args.id });

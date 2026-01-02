@@ -75,6 +75,7 @@ export const AdminTags = () => {
 			console.error("Failed to delete tag:", err);
 		} finally {
 			setTagToDelete(null);
+			setDeleteDialogOpen(false);
 		}
 	};
 

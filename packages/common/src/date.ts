@@ -37,7 +37,7 @@ export const formatCompactDateTime = (
 	timestamp: number | null | undefined,
 ): string => {
 	if (!timestamp) return "-";
-	return new Intl.DateTimeFormat("en-US", {
+	return new Intl.DateTimeFormat(undefined, {
 		month: "short",
 		day: "numeric",
 		hour: "2-digit",
