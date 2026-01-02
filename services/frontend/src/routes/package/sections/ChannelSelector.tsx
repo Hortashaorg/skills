@@ -53,8 +53,7 @@ export const ChannelSelector = (props: ChannelSelectorProps) => {
 				{/* Show published date for selected channel */}
 				{props.selectedChannel && (
 					<Text size="xs" color="muted">
-						Published:{" "}
-						{formatShortDate(props.selectedChannel.publishedAt)}
+						Published: {formatShortDate(props.selectedChannel.publishedAt)}
 					</Text>
 				)}
 			</Stack>

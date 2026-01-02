@@ -1,4 +1,5 @@
 import { Flex } from "@/components/primitives/flex";
+import { Input } from "@/components/primitives/input";
 import { Select } from "@/components/ui/select";
 import { REGISTRY_FILTER_OPTIONS, type RegistryFilter } from "@/lib/registries";
 import { TagFilter } from "./TagFilter";
@@ -26,16 +27,14 @@ export const SearchBar = (props: SearchBarProps) => {
 				selectedTagSlugs={props.selectedTagSlugs}
 				onTagsChange={props.onTagsChange}
 			/>
-			<div class="flex-1">
-				<input
-					type="text"
-					value={props.searchValue}
-					onInput={(e) => props.onSearchChange(e.currentTarget.value)}
-					placeholder="Search packages..."
-					aria-label="Search packages"
-					class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2"
-				/>
-			</div>
+			<Input
+				type="text"
+				value={props.searchValue}
+				onInput={(e) => props.onSearchChange(e.currentTarget.value)}
+				placeholder="Search packages..."
+				aria-label="Search packages"
+				class="flex-1"
+			/>
 		</Flex>
 	);
 };

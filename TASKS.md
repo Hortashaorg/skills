@@ -21,7 +21,7 @@
 ### Component Consolidation
 
 - [ ] **"Add to project" dropdown** - Uses custom HTML while TagFilter uses Kobalte Popover - unify approach
-- [ ] **SearchInput underutilization** - Only used in project detail, not in main packages search (uses raw input)
+- [x] **Input primitive created** - SearchBar, profile, and ProjectForm now use Input component instead of raw inputs
 - [ ] **CVA variant audit** - Convert Tailwind class overrides to proper CVA variants where appropriate
 - [x] **Reuse ProjectCard** - `/routes/projects/index.tsx` now imports ProjectCard with `showAuthor` prop
 - [x] **Admin tags confirm dialog** - Now uses AlertDialog component
@@ -34,7 +34,7 @@
 
 ### Form Patterns
 
-- [ ] **Standardize form components** - ProjectForm uses raw inputs, TagForm uses TextField - pick one approach
+- [x] **Standardize form components** - ProjectForm now uses Input primitive (TagForm uses TextField for labeled inputs)
 - [ ] **Form validation patterns** - Unify error state handling across forms
 - [x] **Use Select component** - SearchBar and home now use Kobalte-based Select component
 

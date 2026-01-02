@@ -45,9 +45,7 @@ export const BrowseProjects = () => {
 						>
 							<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 								<For each={projects()}>
-									{(project) => (
-										<ProjectCard project={project} showAuthor />
-									)}
+									{(project) => <ProjectCard project={project} showAuthor />}
 								</For>
 							</div>
 						</Show>

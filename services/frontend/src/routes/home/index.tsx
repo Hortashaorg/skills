@@ -1,11 +1,5 @@
 import { queries, useQuery, useZero } from "@package/database/client";
-import {
-	createEffect,
-	createMemo,
-	createSignal,
-	on,
-	Show,
-} from "solid-js";
+import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";

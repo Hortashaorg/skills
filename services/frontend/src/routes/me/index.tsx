@@ -6,6 +6,7 @@ import { IconLinkCard } from "@/components/composite/icon-link-card";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
+import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
@@ -178,8 +179,9 @@ export const Profile = () => {
 												>
 													<Stack spacing="sm">
 														<Flex gap="sm">
-															<input
+															<Input
 																type="text"
+																size="sm"
 																value={editUsername()}
 																onInput={(e) =>
 																	setEditUsername(e.currentTarget.value)
@@ -190,8 +192,8 @@ export const Profile = () => {
 																		cancelEditingUsername();
 																}}
 																disabled={isSaving()}
-																class="flex-1 px-3 py-1.5 text-sm rounded-radius border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark disabled:opacity-50"
 																placeholder="Enter username"
+																class="flex-1"
 															/>
 															<Button
 																variant="primary"

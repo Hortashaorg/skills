@@ -1,6 +1,7 @@
 import type { Row } from "@package/database/client";
 import { createSignal, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
+import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,8 @@ interface ProjectFormProps {
 	error: string | null;
 }
 
-const inputStyles =
-	"w-full px-3 py-2 rounded-md border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-muted dark:placeholder:text-on-surface-dark-muted focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark";
+const textareaStyles =
+	"w-full px-3 py-2 rounded-radius border border-outline dark:border-outline-dark bg-transparent text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-muted dark:placeholder:text-on-surface-dark-muted focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark focus:ring-offset-2 resize-none";
 
 export const ProjectForm = (props: ProjectFormProps) => {
 	const [name, setName] = createSignal(props.project?.name ?? "");
@@ -43,7 +44,7 @@ export const ProjectForm = (props: ProjectFormProps) => {
 					>
 						Name
 					</label>
-					<input
+					<Input
 						id="name"
 						type="text"
 						value={name()}
@@ -51,7 +52,6 @@ export const ProjectForm = (props: ProjectFormProps) => {
 						placeholder="My Awesome Project"
 						maxLength={100}
 						required
-						class={inputStyles}
 					/>
 				</div>
 
@@ -73,7 +73,7 @@ export const ProjectForm = (props: ProjectFormProps) => {
 						placeholder="A brief description of your project..."
 						maxLength={500}
 						rows={3}
-						class={`${inputStyles} resize-none`}
+						class={textareaStyles}
 					/>
 				</div>
 
