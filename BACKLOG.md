@@ -28,6 +28,8 @@
 - [ ] Full mobile audit - layout fixes across all pages
 - [ ] Edge cases: Long text tooltips for truncated names/descriptions
 - [ ] Empty state improvements - more helpful CTAs
+- [ ] Loading skeletons - replace "Loading..." text with proper skeleton/spinner states
+- [ ] Error feedback - toast notifications for failed mutations instead of silent failures
 - [ ] Zero preloading on link hover
 
 ### Performance
@@ -40,6 +42,8 @@
 - [ ] Health checks and readiness probes
 - [ ] Resource limits and autoscaling config
 - [ ] Database backup strategy
+- [ ] Test coverage - add unit tests and e2e tests (currently Storybook only)
+- [ ] Raw form inputs - `detail.tsx` uses raw `<input>`/`<textarea>` instead of Input component
 
 ---
 
