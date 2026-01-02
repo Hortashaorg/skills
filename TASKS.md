@@ -28,7 +28,7 @@
 
 ### Future Components
 
-- [ ] **Icon library** - Extract repeated inline SVGs (edit pencil 3x, plus, checkmark, chevrons)
+- [x] **Icon library** - Icon primitives with CVA size variants (SearchIcon, CheckIcon, ChevronDownIcon, FolderIcon, etc.)
 - [x] **IconLinkCard** - Profile Quick Links now use IconLinkCard component
 - [ ] **Simple Table component** - For admin tables (optional, current inline approach works)
 

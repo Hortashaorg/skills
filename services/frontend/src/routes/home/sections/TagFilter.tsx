@@ -1,6 +1,7 @@
 import { Popover } from "@kobalte/core/popover";
 import { queries, useQuery } from "@package/database/client";
 import { createMemo, For, Show } from "solid-js";
+import { CheckIcon, ChevronDownIcon } from "@/components/primitives/icon";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -67,21 +68,10 @@ export const TagFilter = (props: TagFilterProps) => {
 						{selectedLabels().length}
 					</Badge>
 				</Show>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
+				<ChevronDownIcon
+					size="sm"
 					class="text-on-surface-muted dark:text-on-surface-dark-muted"
-				>
-					<title>Expand</title>
-					<path d="m6 9 6 6 6-6" />
-				</svg>
+				/>
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Content
@@ -139,21 +129,12 @@ export const TagFilter = (props: TagFilterProps) => {
 											)}
 										>
 											<Show when={isSelected()}>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													width="12"
-													height="12"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
+												<CheckIcon
+													size="xs"
 													stroke-width="3"
-													stroke-linecap="round"
-													stroke-linejoin="round"
 													class="text-on-primary dark:text-on-primary-dark"
-												>
-													<title>Selected</title>
-													<polyline points="20 6 9 17 4 12" />
-												</svg>
+													title="Selected"
+												/>
 											</Show>
 										</span>
 										<span class="flex-1">{tag.label}</span>

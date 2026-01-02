@@ -1,5 +1,10 @@
 import { Combobox } from "@kobalte/core/combobox";
 import { createSignal, Show } from "solid-js";
+import {
+	SearchIcon,
+	SpinnerIcon,
+	XCircleIcon,
+} from "@/components/primitives/icon";
 
 /**
  * Generic search result item structure
@@ -116,21 +121,7 @@ export const SearchInput = (props: SearchInputProps) => {
 
 					<Combobox.Control class="relative">
 						<div class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-subtle dark:text-on-surface-dark-subtle z-10 pointer-events-none">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<title>Search</title>
-								<circle cx="11" cy="11" r="8" />
-								<path d="m21 21-4.35-4.35" />
-							</svg>
+							<SearchIcon size="sm" />
 						</div>
 
 						<Combobox.Input class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger ui-invalid:dark:text-danger-dark pl-9 pr-20" />
@@ -138,21 +129,7 @@ export const SearchInput = (props: SearchInputProps) => {
 						<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
 							<Show when={props.isLoading}>
 								<div class="text-on-surface-subtle dark:text-on-surface-dark-subtle">
-									<svg
-										class="animate-spin"
-										xmlns="http://www.w3.org/2000/svg"
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									>
-										<title>Loading</title>
-										<path d="M21 12a9 9 0 1 1-6.219-8.56" />
-									</svg>
+									<SpinnerIcon size="sm" />
 								</div>
 							</Show>
 
@@ -163,22 +140,7 @@ export const SearchInput = (props: SearchInputProps) => {
 									class="text-on-surface-subtle dark:text-on-surface-dark-subtle hover:text-on-surface dark:hover:text-on-surface-dark transition-colors"
 									aria-label="Clear search"
 								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									>
-										<title>Clear</title>
-										<circle cx="12" cy="12" r="10" />
-										<path d="m15 9-6 6" />
-										<path d="m9 9 6 6" />
-									</svg>
+									<XCircleIcon size="sm" />
 								</button>
 							</Show>
 						</div>

@@ -10,6 +10,7 @@ import { A } from "@solidjs/router";
 import { createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
+import { CheckIcon, PlusIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
@@ -100,20 +101,7 @@ export const Header = (props: HeaderProps) => {
 									onClick={() => setProjectDropdownOpen(!projectDropdownOpen())}
 									class="inline-flex items-center gap-1 text-sm px-3 py-1.5"
 								>
-									<svg
-										class="w-4 h-4 flex-shrink-0"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<title>Add to project</title>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-										/>
-									</svg>
+									<PlusIcon size="sm" title="Add to project" />
 									<span>Add to project</span>
 								</Button>
 								<Show when={projectDropdownOpen()}>
@@ -151,20 +139,11 @@ export const Header = (props: HeaderProps) => {
 															>
 																<span class="truncate">{project.name}</span>
 																<Show when={isInProject()}>
-																	<svg
-																		class="w-4 h-4 text-success dark:text-success-dark flex-shrink-0"
-																		fill="none"
-																		stroke="currentColor"
-																		viewBox="0 0 24 24"
-																	>
-																		<title>Already in project</title>
-																		<path
-																			stroke-linecap="round"
-																			stroke-linejoin="round"
-																			stroke-width="2"
-																			d="M5 13l4 4L19 7"
-																		/>
-																	</svg>
+																	<CheckIcon
+																		size="sm"
+																		class="text-success flex-shrink-0"
+																		title="Already in project"
+																	/>
 																</Show>
 																<Show when={isAdding()}>
 																	<span class="text-xs text-on-surface-muted dark:text-on-surface-dark-muted">
