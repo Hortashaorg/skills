@@ -219,7 +219,7 @@ export const ProjectDetail = () => {
 
 		try {
 			await zero().mutate(mutators.projects.remove({ id: p.id })).client;
-			navigate("/projects");
+			navigate("/me/projects");
 		} catch (err) {
 			console.error("Failed to delete project:", err);
 		}
@@ -242,7 +242,7 @@ export const ProjectDetail = () => {
 										<Text color="muted">
 											This project doesn't exist or has been deleted.
 										</Text>
-										<A href="/projects" class={buttonSecondaryClasses}>
+										<A href="/me/projects" class={buttonSecondaryClasses}>
 											Back to Projects
 										</A>
 									</Stack>

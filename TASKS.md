@@ -73,10 +73,10 @@
 - [ ] Update navbar to link to browse pages
 
 ### 8b.3 User Profile & Namespace
-- [ ] `/me` - User profile page (info, link to projects, settings)
-- [ ] Move `/projects` → `/me/projects` (user's own projects)
-- [ ] Update `/projects/new` → `/me/projects/new`
-- [ ] Update all internal links and redirects
+- [x] `/me` - User profile page (info, link to projects, settings)
+- [x] Move `/projects` → `/me/projects` (user's own projects)
+- [x] Update `/projects/new` → `/me/projects/new`
+- [x] Update all internal links and redirects
 
 ---
 

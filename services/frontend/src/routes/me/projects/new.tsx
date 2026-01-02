@@ -34,7 +34,7 @@ export const NewProject = () => {
 				throw result.error;
 			}
 
-			navigate("/projects");
+			navigate("/me/projects");
 		} catch (err) {
 			console.error("Failed to create project:", err);
 			setError("Failed to create project. Please try again.");
@@ -44,7 +44,7 @@ export const NewProject = () => {
 	};
 
 	const handleCancel = () => {
-		navigate("/projects");
+		navigate("/me/projects");
 	};
 
 	return (

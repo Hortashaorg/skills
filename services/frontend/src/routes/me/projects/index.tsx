@@ -43,7 +43,7 @@ export const Projects = () => {
 					>
 						<Flex justify="between" align="center">
 							<Heading level="h1">My Projects</Heading>
-							<A href="/projects/new" class={buttonPrimaryClasses}>
+							<A href="/me/projects/new" class={buttonPrimaryClasses}>
 								New Project
 							</A>
 						</Flex>
@@ -60,7 +60,7 @@ export const Projects = () => {
 											<Text color="muted">
 												You don't have any projects yet.
 											</Text>
-											<A href="/projects/new" class={buttonPrimaryClasses}>
+											<A href="/me/projects/new" class={buttonPrimaryClasses}>
 												Create your first project
 											</A>
 										</Stack>

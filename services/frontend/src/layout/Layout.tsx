@@ -133,13 +133,13 @@ export const Layout: ParentComponent = (props) => {
 						<Flex gap="md" align="center" class="hidden sm:flex">
 							<Show when={!isAnonymous()}>
 								<A
-									href="/projects"
+									href="/me/projects"
 									class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
 									classList={{
 										"text-primary dark:text-primary-dark font-medium":
-											isActive("/projects"),
+											isActive("/me/projects"),
 										"text-on-surface-muted dark:text-on-surface-dark-muted":
-											!isActive("/projects"),
+											!isActive("/me/projects"),
 									}}
 								>
 									Projects
@@ -300,13 +300,13 @@ export const Layout: ParentComponent = (props) => {
 							{/* Projects link */}
 							<Show when={!isAnonymous()}>
 								<A
-									href="/projects"
+									href="/me/projects"
 									class="block py-2 text-sm"
 									classList={{
 										"text-primary dark:text-primary-dark font-medium":
-											isActive("/projects"),
+											isActive("/me/projects"),
 										"text-on-surface dark:text-on-surface-dark":
-											!isActive("/projects"),
+											!isActive("/me/projects"),
 									}}
 									onClick={closeMobileMenu}
 								>

@@ -9,11 +9,12 @@ import { loadConfig } from "./lib/config";
 import { AdminRequests } from "./routes/admin/requests";
 import { AdminTags } from "./routes/admin/tags";
 import { Home } from "./routes/home";
+import { Profile } from "./routes/me";
+import { Projects } from "./routes/me/projects";
+import { ProjectDetail } from "./routes/me/projects/detail";
+import { NewProject } from "./routes/me/projects/new";
 import { NotFound } from "./routes/not-found";
 import { Package } from "./routes/package";
-import { Projects } from "./routes/projects";
-import { ProjectDetail } from "./routes/projects/detail";
-import { NewProject } from "./routes/projects/new";
 import { VerifyEmail } from "./routes/verify-email";
 
 const root = document.getElementById("root");
@@ -30,8 +31,9 @@ loadConfig().then(() => {
 					<Router>
 						<Route path="/" component={Home} />
 						<Route path="/package/:registry/:name" component={Package} />
-						<Route path="/projects" component={Projects} />
-						<Route path="/projects/new" component={NewProject} />
+						<Route path="/me" component={Profile} />
+						<Route path="/me/projects" component={Projects} />
+						<Route path="/me/projects/new" component={NewProject} />
 						<Route path="/projects/:id" component={ProjectDetail} />
 						<Route path="/verify-email" component={VerifyEmail} />
 						<Route path="/admin/requests" component={AdminRequests} />
