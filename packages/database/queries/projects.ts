@@ -14,7 +14,9 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		.where("id", args.id)
 		.related("projectPackages", (pp) =>
 			pp.related("package", (pkg) =>
-				pkg.related("packageTags", (pt) => pt.related("tag")),
+				pkg
+					.related("packageTags", (pt) => pt.related("tag"))
+					.related("upvotes"),
 			),
 		)
 		.related("account")

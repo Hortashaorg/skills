@@ -1,5 +1,12 @@
-import { type Row, useZero } from "@package/database/client";
-import { Show } from "solid-js";
+import {
+	mutators,
+	queries,
+	type Row,
+	useQuery,
+	useZero,
+} from "@package/database/client";
+import { A } from "@solidjs/router";
+import { createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -28,6 +35,39 @@ export const Header = (props: HeaderProps) => {
 		registry: props.pkg.registry,
 	}));
 
+	const isLoggedIn = () => zero().userID !== "anon";
+	const [projects] = useQuery(() => queries.projects.mine());
+	const [projectDropdownOpen, setProjectDropdownOpen] = createSignal(false);
+	const [addingToProject, setAddingToProject] = createSignal<string | null>(
+		null,
+	);
+
+	const isPackageInProject = (projectId: string) => {
+		const project = projects()?.find((p) => p.id === projectId);
+		return project?.projectPackages?.some(
+			(pp) => pp.packageId === props.pkg.id,
+		);
+	};
+
+	const handleAddToProject = async (projectId: string) => {
+		if (isPackageInProject(projectId)) return;
+
+		setAddingToProject(projectId);
+		try {
+			await zero().mutate(
+				mutators.projectPackages.add({
+					projectId,
+					packageId: props.pkg.id,
+				}),
+			);
+			setProjectDropdownOpen(false);
+		} catch (err) {
+			console.error("Failed to add package to project:", err);
+		} finally {
+			setAddingToProject(null);
+		}
+	};
+
 	return (
 		<Card padding="lg">
 			<Stack spacing="md">
@@ -43,13 +83,113 @@ export const Header = (props: HeaderProps) => {
 							<Text color="muted">{props.pkg.description}</Text>
 						</Show>
 					</Stack>
-					<UpvoteButton
-						count={upvote.upvoteCount()}
-						isUpvoted={upvote.isUpvoted()}
-						disabled={upvote.isDisabled()}
-						onClick={upvote.toggle}
-						size="md"
-					/>
+					<Flex gap="sm" align="center">
+						<UpvoteButton
+							count={upvote.upvoteCount()}
+							isUpvoted={upvote.isUpvoted()}
+							disabled={upvote.isDisabled()}
+							onClick={upvote.toggle}
+							size="md"
+						/>
+						<Show when={isLoggedIn()}>
+							<div class="relative">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setProjectDropdownOpen(!projectDropdownOpen())}
+									class="inline-flex items-center gap-1 text-sm px-3 py-1.5"
+								>
+									<svg
+										class="w-4 h-4 flex-shrink-0"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<title>Add to project</title>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+										/>
+									</svg>
+									<span>Add to project</span>
+								</Button>
+								<Show when={projectDropdownOpen()}>
+									<div class="absolute right-0 top-full mt-1 z-50 min-w-56 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-radius shadow-lg">
+										<Show
+											when={(projects()?.length ?? 0) > 0}
+											fallback={
+												<div class="p-4 text-center">
+													<Text size="sm" color="muted" class="mb-2">
+														No projects yet
+													</Text>
+													<A
+														href="/me/projects/new"
+														class="text-sm text-primary dark:text-primary-dark hover:underline"
+														onClick={() => setProjectDropdownOpen(false)}
+													>
+														Create a project
+													</A>
+												</div>
+											}
+										>
+											<div class="p-1 max-h-64 overflow-auto">
+												<For each={projects()}>
+													{(project) => {
+														const isInProject = () =>
+															isPackageInProject(project.id);
+														const isAdding = () =>
+															addingToProject() === project.id;
+														return (
+															<button
+																type="button"
+																class="w-full text-left px-3 py-2 text-sm rounded-sm flex items-center justify-between gap-2 transition-colors hover:bg-surface-alt dark:hover:bg-surface-dark-alt disabled:opacity-50"
+																disabled={isInProject() || isAdding()}
+																onClick={() => handleAddToProject(project.id)}
+															>
+																<span class="truncate">{project.name}</span>
+																<Show when={isInProject()}>
+																	<svg
+																		class="w-4 h-4 text-success dark:text-success-dark flex-shrink-0"
+																		fill="none"
+																		stroke="currentColor"
+																		viewBox="0 0 24 24"
+																	>
+																		<title>Already in project</title>
+																		<path
+																			stroke-linecap="round"
+																			stroke-linejoin="round"
+																			stroke-width="2"
+																			d="M5 13l4 4L19 7"
+																		/>
+																	</svg>
+																</Show>
+																<Show when={isAdding()}>
+																	<span class="text-xs text-on-surface-muted dark:text-on-surface-dark-muted">
+																		Adding...
+																	</span>
+																</Show>
+															</button>
+														);
+													}}
+												</For>
+											</div>
+											<div class="border-t border-outline dark:border-outline-dark p-2">
+												<A
+													href="/me/projects/new"
+													class="block w-full text-center text-xs text-primary dark:text-primary-dark hover:underline"
+													onClick={() => setProjectDropdownOpen(false)}
+												>
+													+ Create new project
+												</A>
+											</div>
+										</Show>
+									</div>
+								</Show>
+							</div>
+						</Show>
+					</Flex>
 				</Flex>
 
 				{/* Links */}
@@ -104,7 +244,7 @@ export const Header = (props: HeaderProps) => {
 							Request Update
 						</Button>
 					</Show>
-					<Show when={zero().userID === "anon"}>
+					<Show when={!isLoggedIn()}>
 						<button
 							type="button"
 							onClick={() => {

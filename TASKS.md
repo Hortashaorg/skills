@@ -43,8 +43,8 @@
 - [x] Breadcrumbs for project pages
 
 ### 8.3 Package Integration
-- [ ] "Add to project" button on package detail page
-- [ ] Project selector dropdown/modal
+- [x] "Add to project" button on package detail page
+- [x] Project selector dropdown/modal
 - [x] Remove package from project on project detail page
 
 ---
