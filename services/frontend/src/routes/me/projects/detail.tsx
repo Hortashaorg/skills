@@ -15,6 +15,7 @@ import { PackageCard } from "@/components/feature/package-card";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
+import { PencilIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
@@ -133,7 +134,6 @@ export const ProjectDetail = () => {
 			setPackageSearch("");
 		} catch (err) {
 			console.error("Failed to add package:", err);
-			alert("Failed to add package. Please try again.");
 		}
 	};
 
@@ -264,22 +264,8 @@ export const ProjectDetail = () => {
 																type="button"
 																onClick={startEditingName}
 																class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1"
-																title="Edit name"
 															>
-																<svg
-																	class="w-4 h-4"
-																	fill="none"
-																	stroke="currentColor"
-																	viewBox="0 0 24 24"
-																>
-																	<title>Edit name</title>
-																	<path
-																		stroke-linecap="round"
-																		stroke-linejoin="round"
-																		stroke-width="2"
-																		d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-																	/>
-																</svg>
+																<PencilIcon size="sm" title="Edit name" />
 															</button>
 														</Show>
 													</Flex>
@@ -339,22 +325,11 @@ export const ProjectDetail = () => {
 																	type="button"
 																	onClick={startEditingDescription}
 																	class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1 shrink-0"
-																	title="Edit description"
 																>
-																	<svg
-																		class="w-4 h-4"
-																		fill="none"
-																		stroke="currentColor"
-																		viewBox="0 0 24 24"
-																	>
-																		<title>Edit description</title>
-																		<path
-																			stroke-linecap="round"
-																			stroke-linejoin="round"
-																			stroke-width="2"
-																			d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-																		/>
-																	</svg>
+																	<PencilIcon
+																		size="sm"
+																		title="Edit description"
+																	/>
 																</button>
 															</Show>
 														</Show>
