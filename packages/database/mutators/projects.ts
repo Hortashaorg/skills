@@ -65,6 +65,14 @@ export const remove = defineMutator(
 			throw new Error("Not authorized to delete this project");
 		}
 
+		// Delete associated packages first (FK constraint)
+		const projectPackages = await tx.run(
+			zql.projectPackages.where("projectId", args.id),
+		);
+		for (const pp of projectPackages) {
+			await tx.mutate.projectPackages.delete({ id: pp.id });
+		}
+
 		await tx.mutate.projects.delete({ id: args.id });
 	},
 );
