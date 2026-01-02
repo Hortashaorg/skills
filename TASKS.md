@@ -20,7 +20,7 @@
 
 ### Component Consolidation
 
-- [ ] **"Add to project" dropdown** - Uses custom HTML while TagFilter uses Kobalte Popover - unify approach
+- [x] **"Add to project" dropdown** - Now uses Kobalte Popover with animations, click-outside-to-close, and accessibility
 - [x] **Input primitive created** - SearchBar, profile, and ProjectForm now use Input component instead of raw inputs
 - [ ] **CVA variant audit** - Convert Tailwind class overrides to proper CVA variants where appropriate
 - [x] **Reuse ProjectCard** - `/routes/projects/index.tsx` now imports ProjectCard with `showAuthor` prop

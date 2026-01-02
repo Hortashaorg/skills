@@ -1,3 +1,4 @@
+import { Popover } from "@kobalte/core/popover";
 import { formatShortDate } from "@package/common";
 import {
 	mutators,
@@ -10,7 +11,11 @@ import { A } from "@solidjs/router";
 import { createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
-import { CheckIcon, PlusIcon } from "@/components/primitives/icon";
+import {
+	CheckIcon,
+	ChevronDownIcon,
+	PlusIcon,
+} from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +25,7 @@ import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { cn } from "@/lib/utils";
 
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
@@ -39,7 +45,6 @@ export const Header = (props: HeaderProps) => {
 
 	const isLoggedIn = () => zero().userID !== "anon";
 	const [projects] = useQuery(() => queries.projects.mine());
-	const [projectDropdownOpen, setProjectDropdownOpen] = createSignal(false);
 	const [addingToProject, setAddingToProject] = createSignal<string | null>(
 		null,
 	);
@@ -62,7 +67,6 @@ export const Header = (props: HeaderProps) => {
 					packageId: props.pkg.id,
 				}),
 			);
-			setProjectDropdownOpen(false);
 		} catch (err) {
 			console.error("Failed to add package to project:", err);
 		} finally {
@@ -94,18 +98,36 @@ export const Header = (props: HeaderProps) => {
 							size="md"
 						/>
 						<Show when={isLoggedIn()}>
-							<div class="relative">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => setProjectDropdownOpen(!projectDropdownOpen())}
-									class="inline-flex items-center gap-1 text-sm px-3 py-1.5"
+							<Popover>
+								<Popover.Trigger
+									class={cn(
+										"inline-flex items-center gap-1.5 h-8 px-3 rounded-radius border",
+										"border-outline-strong dark:border-outline-dark-strong",
+										"bg-transparent text-on-surface dark:text-on-surface-dark",
+										"text-sm font-medium",
+										"hover:opacity-75 transition",
+										"focus-visible:outline-2 focus-visible:outline-offset-2",
+										"focus-visible:outline-primary dark:focus-visible:outline-primary-dark",
+										"cursor-pointer",
+									)}
 								>
 									<PlusIcon size="sm" title="Add to project" />
 									<span>Add to project</span>
-								</Button>
-								<Show when={projectDropdownOpen()}>
-									<div class="absolute right-0 top-full mt-1 z-50 min-w-56 bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-radius shadow-lg">
+									<ChevronDownIcon
+										size="xs"
+										class="text-on-surface-muted dark:text-on-surface-dark-muted"
+									/>
+								</Popover.Trigger>
+								<Popover.Portal>
+									<Popover.Content
+										class={cn(
+											"z-50 min-w-56 max-h-64 overflow-auto",
+											"rounded-radius border border-outline dark:border-outline-dark",
+											"bg-surface dark:bg-surface-dark shadow-lg",
+											"ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95",
+											"ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95",
+										)}
+									>
 										<Show
 											when={(projects()?.length ?? 0) > 0}
 											fallback={
@@ -116,14 +138,13 @@ export const Header = (props: HeaderProps) => {
 													<A
 														href="/me/projects/new"
 														class="text-sm text-primary dark:text-primary-dark hover:underline"
-														onClick={() => setProjectDropdownOpen(false)}
 													>
 														Create a project
 													</A>
 												</div>
 											}
 										>
-											<div class="p-1 max-h-64 overflow-auto">
+											<div class="p-1">
 												<For each={projects()}>
 													{(project) => {
 														const isInProject = () =>
@@ -133,7 +154,14 @@ export const Header = (props: HeaderProps) => {
 														return (
 															<button
 																type="button"
-																class="w-full text-left px-3 py-2 text-sm rounded-sm flex items-center justify-between gap-2 transition-colors hover:bg-surface-alt dark:hover:bg-surface-dark-alt disabled:opacity-50"
+																class={cn(
+																	"w-full text-left px-3 py-2 text-sm rounded-sm",
+																	"flex items-center justify-between gap-2",
+																	"text-on-surface dark:text-on-surface-dark",
+																	"hover:bg-surface-alt dark:hover:bg-surface-dark-alt",
+																	"transition-colors cursor-pointer",
+																	"disabled:opacity-50 disabled:cursor-not-allowed",
+																)}
 																disabled={isInProject() || isAdding()}
 																onClick={() => handleAddToProject(project.id)}
 															>
@@ -159,15 +187,14 @@ export const Header = (props: HeaderProps) => {
 												<A
 													href="/me/projects/new"
 													class="block w-full text-center text-xs text-primary dark:text-primary-dark hover:underline"
-													onClick={() => setProjectDropdownOpen(false)}
 												>
 													+ Create new project
 												</A>
 											</div>
 										</Show>
-									</div>
-								</Show>
-							</div>
+									</Popover.Content>
+								</Popover.Portal>
+							</Popover>
 						</Show>
 					</Flex>
 				</Flex>
