@@ -1,3 +1,4 @@
+import { formatDateTime } from "@package/common";
 import {
 	queries,
 	type Row,
@@ -30,11 +31,6 @@ const fetchStats = async () => {
 
 type FetchWithPackage = Row["packageFetches"] & {
 	package?: Row["packages"] | null;
-};
-
-const formatDate = (timestamp: number | null) => {
-	if (!timestamp) return "-";
-	return new Date(timestamp).toLocaleString();
 };
 
 export const AdminRequests = () => {
@@ -141,7 +137,7 @@ export const AdminRequests = () => {
 																</td>
 																<td class="py-3 px-2">
 																	<Text size="sm" color="muted">
-																		{formatDate(fetch.createdAt)}
+																		{formatDateTime(fetch.createdAt)}
 																	</Text>
 																</td>
 															</tr>

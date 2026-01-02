@@ -1,6 +1,8 @@
+import { formatDate } from "@package/common";
 import { mutators, queries, useQuery, useZero } from "@package/database/client";
-import { A, useNavigate } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import { createEffect, createSignal, Show } from "solid-js";
+import { IconLinkCard } from "@/components/composite/icon-link-card";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -99,14 +101,6 @@ export const Profile = () => {
 	const zitadelAccountUrl = () => {
 		const config = getConfig();
 		return `${config.zitadelIssuer}/ui/console/users/me`;
-	};
-
-	const formatDate = (timestamp: number) => {
-		return new Date(timestamp).toLocaleDateString(undefined, {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		});
 	};
 
 	const handleDeleteAccount = async () => {
@@ -259,74 +253,61 @@ export const Profile = () => {
 									<Stack spacing="md">
 										<Heading level="h2">Quick Links</Heading>
 										<div class="grid gap-4 sm:grid-cols-2">
-											<A
+											<IconLinkCard
 												href="/me/projects"
-												class="block p-4 rounded-radius border border-outline dark:border-outline-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-											>
-												<Flex align="center" gap="md">
-													<div class="p-2 rounded-radius bg-primary/10 dark:bg-primary-dark/10">
-														<svg
-															class="w-6 h-6 text-primary dark:text-primary-dark"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<title>Projects</title>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																stroke-width="2"
-																d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-															/>
-														</svg>
-													</div>
-													<div>
-														<Text weight="semibold">Your Projects</Text>
-														<Text size="sm" color="muted">
-															{projectCount()} project
-															{projectCount() !== 1 ? "s" : ""}
-														</Text>
-													</div>
-												</Flex>
-											</A>
+												title="Your Projects"
+												description={
+													<>
+														{projectCount()} project
+														{projectCount() !== 1 ? "s" : ""}
+													</>
+												}
+												color="primary"
+												icon={
+													<svg
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<title>Projects</title>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+														/>
+													</svg>
+												}
+											/>
 
-											<a
+											<IconLinkCard
 												href={zitadelAccountUrl()}
-												target="_blank"
-												rel="noopener noreferrer"
-												class="block p-4 rounded-radius border border-outline dark:border-outline-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-											>
-												<Flex align="center" gap="md">
-													<div class="p-2 rounded-radius bg-secondary/10 dark:bg-secondary-dark/10">
-														<svg
-															class="w-6 h-6 text-secondary dark:text-secondary-dark"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<title>Account Settings</title>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																stroke-width="2"
-																d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-															/>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																stroke-width="2"
-																d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-															/>
-														</svg>
-													</div>
-													<div>
-														<Text weight="semibold">Account Settings</Text>
-														<Text size="sm" color="muted">
-															Manage password & security
-														</Text>
-													</div>
-												</Flex>
-											</a>
+												title="Account Settings"
+												description="Manage password & security"
+												color="secondary"
+												external
+												icon={
+													<svg
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<title>Account Settings</title>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+														/>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+														/>
+													</svg>
+												}
+											/>
 										</div>
 									</Stack>
 								</Card>
@@ -335,35 +316,27 @@ export const Profile = () => {
 								<Card padding="lg">
 									<Stack spacing="md">
 										<Heading level="h2">Privacy & Data</Heading>
-										<A
+										<IconLinkCard
 											href="/privacy"
-											class="block p-4 rounded-radius border border-outline dark:border-outline-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-										>
-											<Flex align="center" gap="md">
-												<div class="p-2 rounded-radius bg-info/10">
-													<svg
-														class="w-6 h-6 text-info"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<title>Privacy Policy</title>
-														<path
-															stroke-linecap="round"
-															stroke-linejoin="round"
-															stroke-width="2"
-															d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-														/>
-													</svg>
-												</div>
-												<div>
-													<Text weight="semibold">Privacy Policy</Text>
-													<Text size="sm" color="muted">
-														How we handle your data
-													</Text>
-												</div>
-											</Flex>
-										</A>
+											title="Privacy Policy"
+											description="How we handle your data"
+											color="info"
+											icon={
+												<svg
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<title>Privacy Policy</title>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+													/>
+												</svg>
+											}
+										/>
 
 										<div class="pt-4 border-t border-outline dark:border-outline-dark">
 											<Stack spacing="sm">

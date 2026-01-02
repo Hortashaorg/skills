@@ -1,3 +1,4 @@
+import { formatShortDate } from "@package/common";
 import type { Row } from "@package/database/client";
 import { For } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
@@ -53,7 +54,7 @@ export const ChannelSelector = (props: ChannelSelectorProps) => {
 				{props.selectedChannel && (
 					<Text size="xs" color="muted">
 						Published:{" "}
-						{new Date(props.selectedChannel.publishedAt).toLocaleDateString()}
+						{formatShortDate(props.selectedChannel.publishedAt)}
 					</Text>
 				)}
 			</Stack>

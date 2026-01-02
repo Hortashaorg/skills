@@ -1,3 +1,4 @@
+import { formatShortDate } from "@package/common";
 import {
 	mutators,
 	queries,
@@ -224,7 +225,7 @@ export const Header = (props: HeaderProps) => {
 				<Flex gap="sm" align="center">
 					<Text size="xs" color="muted">
 						Last updated:{" "}
-						{new Date(props.pkg.lastFetchSuccess).toLocaleDateString()}
+						{formatShortDate(props.pkg.lastFetchSuccess)}
 					</Text>
 				</Flex>
 

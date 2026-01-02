@@ -29,7 +29,7 @@
 ### Future Components
 
 - [ ] **Icon library** - Extract repeated inline SVGs (edit pencil 3x, plus, checkmark, chevrons)
-- [ ] **IconLinkCard** - Profile Quick Links pattern (icon + title + description link) repeated 3x
+- [x] **IconLinkCard** - Profile Quick Links now use IconLinkCard component
 - [ ] **Simple Table component** - For admin tables (optional, current inline approach works)
 
 ### Form Patterns
@@ -40,7 +40,7 @@
 
 ### Code Quality
 
-- [ ] **Extract `formatDate()` utility** - Used inline in 3 files, move to `@package/common`
+- [x] **Extract `formatDate()` utility** - Now in `@package/common` with formatDate, formatShortDate, formatDateTime, formatCompactDateTime
 - [ ] **Split large components** - package/index.tsx could be broken down further
 - [ ] **Update README** - Add deployment instructions
 

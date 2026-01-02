@@ -1,3 +1,4 @@
+import { formatShortDate } from "@package/common";
 import type { Row } from "@package/database/client";
 import { A } from "@solidjs/router";
 import { Show } from "solid-js";
@@ -46,7 +47,7 @@ export const ProjectCard = (props: ProjectCardProps) => {
 							when={props.showAuthor}
 							fallback={
 								<Text size="xs" color="muted">
-									{new Date(props.project.updatedAt).toLocaleDateString()}
+									{formatShortDate(props.project.updatedAt)}
 								</Text>
 							}
 						>
