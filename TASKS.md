@@ -19,90 +19,26 @@
 
 ---
 
-## Milestone 8: Projects Feature
-
-**Goal:** Users can create projects and associate packages with them
-
-### 8.1 Database & Zero Layer
-- [x] Schema: `projects` table (id, name, description, accountId, createdAt, updatedAt)
-- [x] Schema: `projectPackages` table (id, projectId, packageId, createdAt) - unique on (projectId, packageId)
-- [x] Migration and `pnpm database zero`
-- [x] Queries: `projects.mine`, `projects.byId`, `projects.list`
-- [x] Mutators: `projects.create`, `projects.update`, `projects.remove`
-- [x] Mutators: `projectPackages.add`, `projectPackages.remove`
-- [x] Split schema into domain files (`db/schema/` folder)
-
-### 8.2 Project Pages
-- [x] `/me/projects` - List user's projects (requires auth)
-- [x] `/me/projects/new` - Create project form
-- [x] `/projects/:id` - Project detail with package list (public URL)
-- [x] Inline editing for name/description (replaced separate edit page)
-- [x] Package search to add packages directly on project page
-- [x] Packages grouped by tags (packages with multiple tags appear in multiple sections)
-- [x] AlertDialog component for delete/remove confirmations
-- [x] Breadcrumbs for project pages
-
-### 8.3 Package Integration
-- [x] "Add to project" button on package detail page
-- [x] Project selector dropdown/modal
-- [x] Remove package from project on project detail page
-
----
-
-## Milestone 8b: Route Restructure
-
-**Goal:** Reorganize routes for public browsing vs user content, add landing page
-
-### New Route Structure
-```
-/                  → Landing page (WIP messaging)
-/packages          → Browse all packages (public)
-/projects          → Browse all projects (public)
-/projects/:id      → View any project (public)
-/me                → User profile (username, account info)
-/me/projects       → User's own projects
-/me/projects/new   → Create new project
-```
-
-### 8b.1 Landing Page
-- [x] Create `/` landing page with honest WIP messaging
-- [x] "Work in Progress" badge, casual tone
-- [x] Feature cards with CTAs to packages/projects
-- [x] Sign in button for anonymous users
-
-### 8b.2 Browse Pages
-- [x] `/packages` - Public package listing with search/filters
-- [x] `/projects` - Public project listing (all users' projects)
-- [x] Update navbar to link to browse pages
-
-### 8b.3 User Profile & Namespace
-- [x] `/me` - User profile page (info, link to projects, settings)
-- [x] Move `/projects` → `/me/projects` (user's own projects)
-- [x] Update `/projects/new` → `/me/projects/new`
-- [x] Update all internal links and redirects
-- [x] Username editing with validation
-- [x] Account dropdown in navbar (Profile, My Projects, Admin, Sign out)
-
----
-
 ## Milestone 9: GDPR & Data Strategy
 
 **Goal:** Establish patterns for user data handling before we accumulate more user content
 
 ### 9.1 Documentation
-- [ ] Data inventory: what user data we store and why
-- [ ] Data retention policy document
-- [ ] Privacy policy page (`/privacy`)
+- [x] Privacy policy page (`/privacy`)
+- [ ] Data inventory: what user data we store and why (optional, covered in privacy policy)
+- [ ] Data retention policy document (optional)
 
 ### 9.2 User Rights
-- [ ] Add settings/GDPR controls to `/me` profile page (created in 8b)
-- [ ] Data export: download your data as JSON
-- [ ] Account deletion flow with clear cascade behavior
+- [x] Privacy & Data section on `/me` profile page
+- [x] Account deletion flow with confirmation dialog
+- [ ] Data export: download your data as JSON (optional, low priority)
 
 ### 9.3 Technical Patterns
-- [ ] Anonymization strategy: replace userId with "deleted-user" or similar
-- [ ] Keep contributions (tags, projects, metadata) but anonymize ownership
-- [ ] Hard delete personal data (email, profile info from Zitadel)
+- [x] Anonymization strategy: reassign to "Deleted User" placeholder account
+- [x] Keep projects but anonymize ownership on deletion
+- [x] Delete personal data (email, username) from account table
+- [x] Delete upvotes on account deletion
+- [x] Clear auth session on deletion
 
 ---
 
@@ -114,6 +50,7 @@
 - [ ] Audit components with Tailwind class overrides
 - [ ] Convert overrides to proper CVA variants where appropriate
 - [ ] Document variant patterns in component stories
+- [ ] Standardize size variants across components (Button, UpvoteButton, Badge, etc. should have consistent `sm`/`md`/`lg` definitions)
 
 ### 10.2 New Components (if needed)
 - [ ] Simple Table component - for admin tables (optional, current inline approach works)
@@ -122,6 +59,17 @@
 ---
 
 ## Completed
+
+### Milestone 8 & 8b: Projects & Route Restructure
+
+- Projects feature: create, edit, delete projects with package associations
+- Route restructure: `/packages`, `/projects` (public browse), `/me/*` (user content)
+- Landing page with WIP messaging
+- User profile page with username editing
+- "Add to project" button on package detail pages
+- AlertDialog, Breadcrumbs components
+
+---
 
 ### Milestone 7: Schema Simplification
 

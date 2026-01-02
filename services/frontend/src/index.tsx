@@ -16,6 +16,7 @@ import { ProjectDetail } from "./routes/me/projects/detail";
 import { NewProject } from "./routes/me/projects/new";
 import { NotFound } from "./routes/not-found";
 import { Package } from "./routes/package";
+import { Privacy } from "./routes/privacy";
 import { BrowseProjects } from "./routes/projects";
 import { VerifyEmail } from "./routes/verify-email";
 
@@ -40,6 +41,7 @@ loadConfig().then(() => {
 						<Route path="/projects" component={BrowseProjects} />
 						<Route path="/projects/:id" component={ProjectDetail} />
 						<Route path="/verify-email" component={VerifyEmail} />
+						<Route path="/privacy" component={Privacy} />
 						<Route path="/admin/requests" component={AdminRequests} />
 						<Route path="/admin/tags" component={AdminTags} />
 						<Route path="*" component={NotFound} />
