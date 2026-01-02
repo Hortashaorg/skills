@@ -6,6 +6,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
@@ -15,6 +16,8 @@ const FeatureCard = (props: {
 	title: string;
 	description: string;
 	icon: "packages" | "projects" | "collaborate";
+	href?: string;
+	linkText?: string;
 }) => {
 	const icons = {
 		packages: (
@@ -75,6 +78,14 @@ const FeatureCard = (props: {
 				</div>
 				<Heading level="h3">{props.title}</Heading>
 				<Text color="muted">{props.description}</Text>
+				<Show when={props.href}>
+					<A
+						href={props.href ?? ""}
+						class="text-sm text-primary dark:text-primary-dark hover:underline mt-auto"
+					>
+						{props.linkText} →
+					</A>
+				</Show>
 			</Stack>
 		</Card>
 	);
@@ -99,12 +110,13 @@ export const Landing = () => {
 						align="center"
 						class="text-center max-w-2xl mx-auto"
 					>
+						<Badge variant="info">Work in Progress</Badge>
 						<Heading level="h1" class="text-4xl sm:text-5xl">
-							Discover and organize your tech stack
+							TechGarden
 						</Heading>
 						<Text size="lg" color="muted" class="max-w-xl">
-							TechGarden helps you explore packages across registries, organize
-							them into projects, and share your discoveries with others.
+							An experiment in package discovery and curation. Browse packages,
+							organize them into projects, and see what grows.
 						</Text>
 						<Flex gap="md" wrap="wrap" justify="center">
 							<A href="/packages">
@@ -129,42 +141,33 @@ export const Landing = () => {
 						</Flex>
 					</Stack>
 
-					{/* Features Section */}
+					{/* What's Here Section */}
 					<Stack spacing="lg" class="pt-8">
 						<Heading level="h2" class="text-center">
-							What you can do
+							What's here so far
 						</Heading>
 						<div class="grid gap-6 md:grid-cols-3">
 							<FeatureCard
 								icon="packages"
-								title="Explore Packages"
-								description="Search packages from npm, JSR, and more. View details, dependencies, and community upvotes."
+								title="Package Browser"
+								description="Search npm packages, view their details and dependencies. Request packages to add them to the database."
+								href="/packages"
+								linkText="Browse packages"
 							/>
 							<FeatureCard
 								icon="projects"
-								title="Create Projects"
-								description="Organize packages into projects. Track your tech stack for different applications or learning paths."
+								title="Projects"
+								description="Create collections of packages. Useful for tracking tech stacks, learning paths, or just bookmarking."
+								href="/projects"
+								linkText="See projects"
 							/>
 							<FeatureCard
 								icon="collaborate"
-								title="Share & Discover"
-								description="All projects are public. Learn from others' tech stacks and share your own discoveries."
+								title="Public by Default"
+								description="All projects are public. Maybe that becomes useful for discovery later, we'll see."
 							/>
 						</div>
 					</Stack>
-
-					{/* CTA Section */}
-					<Card padding="lg" class="text-center mt-8">
-						<Stack spacing="md" align="center">
-							<Heading level="h2">Ready to get started?</Heading>
-							<Text color="muted">
-								Browse packages to find tools for your next project.
-							</Text>
-							<A href="/packages">
-								<Button variant="primary">Start Exploring</Button>
-							</A>
-						</Stack>
-					</Card>
 				</Stack>
 			</Container>
 		</Layout>

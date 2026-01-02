@@ -107,12 +107,6 @@ export const Layout: ParentComponent = (props) => {
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isActive = (path: string) => location.pathname.startsWith(path);
 	const isExactActive = (path: string) => location.pathname === path;
-	const displayUserId = () => {
-		const id = zero().userID;
-		if (id === "anon") return null;
-		return id.length > 8 ? `${id.slice(0, 8)}...` : id;
-	};
-
 	const closeMobileMenu = () => setMobileMenuOpen(false);
 
 	return (
@@ -120,114 +114,50 @@ export const Layout: ParentComponent = (props) => {
 			<header class="border-b border-outline dark:border-outline-dark">
 				<Container>
 					<Flex justify="between" align="center" class="h-14">
-						<A
-							href="/"
-							class="hover:opacity-75 transition"
-							onClick={closeMobileMenu}
-						>
-							<Text size="lg" weight="semibold" as="span">
-								TechGarden
-							</Text>
-						</A>
+						{/* Left side: Logo + Nav links */}
+						<Flex gap="md" align="center">
+							<A
+								href="/"
+								class="hover:opacity-75 transition"
+								onClick={closeMobileMenu}
+							>
+								<Text size="lg" weight="semibold" as="span">
+									TechGarden
+								</Text>
+							</A>
 
-						{/* Desktop navigation */}
-						<Flex gap="md" align="center" class="hidden sm:flex">
-							<A
-								href="/packages"
-								class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
-								classList={{
-									"text-primary dark:text-primary-dark font-medium":
-										isActive("/packages"),
-									"text-on-surface-muted dark:text-on-surface-dark-muted":
-										!isActive("/packages"),
-								}}
-							>
-								Packages
-							</A>
-							<A
-								href="/projects"
-								class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
-								classList={{
-									"text-primary dark:text-primary-dark font-medium":
-										isExactActive("/projects"),
-									"text-on-surface-muted dark:text-on-surface-dark-muted":
-										!isExactActive("/projects"),
-								}}
-							>
-								Projects
-							</A>
-							<Show when={!isAnonymous()}>
+							{/* Desktop nav links */}
+							<nav class="hidden sm:flex gap-4">
 								<A
-									href="/me/projects"
+									href="/packages"
 									class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
 									classList={{
 										"text-primary dark:text-primary-dark font-medium":
-											isActive("/me/projects"),
+											isActive("/packages"),
 										"text-on-surface-muted dark:text-on-surface-dark-muted":
-											!isActive("/me/projects"),
+											!isActive("/packages"),
 									}}
 								>
-									My Projects
+									Packages
 								</A>
-							</Show>
-							<Show when={isAdmin()}>
-								<div class="relative group">
-									<button
-										type="button"
-										class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition flex items-center gap-1"
-										classList={{
-											"text-primary dark:text-primary-dark font-medium":
-												isActive("/admin"),
-											"text-on-surface-muted dark:text-on-surface-dark-muted":
-												!isActive("/admin"),
-										}}
-									>
-										Admin
-										<svg
-											class="w-4 h-4"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<title>Expand</title>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg>
-									</button>
-									<div class="absolute right-0 top-full pt-1 hidden group-hover:block z-50">
-										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg min-w-40">
-											<A
-												href="/admin/requests"
-												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-												classList={{
-													"text-primary dark:text-primary-dark font-medium":
-														isActive("/admin/requests"),
-													"text-on-surface dark:text-on-surface-dark":
-														!isActive("/admin/requests"),
-												}}
-											>
-												Package Requests
-											</A>
-											<A
-												href="/admin/tags"
-												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-												classList={{
-													"text-primary dark:text-primary-dark font-medium":
-														isActive("/admin/tags"),
-													"text-on-surface dark:text-on-surface-dark":
-														!isActive("/admin/tags"),
-												}}
-											>
-												Tags
-											</A>
-										</div>
-									</div>
-								</div>
-							</Show>
+								<A
+									href="/projects"
+									class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
+									classList={{
+										"text-primary dark:text-primary-dark font-medium":
+											isExactActive("/projects"),
+										"text-on-surface-muted dark:text-on-surface-dark-muted":
+											!isExactActive("/projects"),
+									}}
+								>
+									Projects
+								</A>
+							</nav>
+						</Flex>
+
+						{/* Right side: Status + Account */}
+						<Flex gap="md" align="center" class="hidden sm:flex">
+							{/* Connection status badges */}
 							<Show when={connectionState().name === "connecting"}>
 								<Badge variant="info" size="sm">
 									Connecting...
@@ -249,7 +179,7 @@ export const Layout: ParentComponent = (props) => {
 								</Badge>
 							</Show>
 
-							{/* User info and auth actions */}
+							{/* Account dropdown or Sign in */}
 							<Show
 								when={!isAnonymous()}
 								fallback={
@@ -258,12 +188,104 @@ export const Layout: ParentComponent = (props) => {
 									</Button>
 								}
 							>
-								<Text size="sm" color="muted">
-									{displayUserId()}
-								</Text>
-								<Button variant="outline" size="sm" onClick={handleLogout}>
-									Logout
-								</Button>
+								<div class="relative group">
+									<button
+										type="button"
+										class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition flex items-center gap-1 text-on-surface-muted dark:text-on-surface-dark-muted"
+									>
+										<svg
+											class="w-5 h-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<title>Account</title>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+											/>
+										</svg>
+										<svg
+											class="w-4 h-4"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<title>Expand</title>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg>
+									</button>
+									<div class="absolute right-0 top-full pt-1 hidden group-hover:block z-50">
+										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg min-w-44">
+											<A
+												href="/me"
+												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												classList={{
+													"text-primary dark:text-primary-dark font-medium":
+														isExactActive("/me"),
+													"text-on-surface dark:text-on-surface-dark":
+														!isExactActive("/me"),
+												}}
+											>
+												Profile
+											</A>
+											<A
+												href="/me/projects"
+												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												classList={{
+													"text-primary dark:text-primary-dark font-medium":
+														isActive("/me/projects"),
+													"text-on-surface dark:text-on-surface-dark":
+														!isActive("/me/projects"),
+												}}
+											>
+												My Projects
+											</A>
+											<Show when={isAdmin()}>
+												<div class="border-t border-outline dark:border-outline-dark my-1" />
+												<A
+													href="/admin/requests"
+													class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+													classList={{
+														"text-primary dark:text-primary-dark font-medium":
+															isActive("/admin/requests"),
+														"text-on-surface dark:text-on-surface-dark":
+															!isActive("/admin/requests"),
+													}}
+												>
+													Admin: Requests
+												</A>
+												<A
+													href="/admin/tags"
+													class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+													classList={{
+														"text-primary dark:text-primary-dark font-medium":
+															isActive("/admin/tags"),
+														"text-on-surface dark:text-on-surface-dark":
+															!isActive("/admin/tags"),
+													}}
+												>
+													Admin: Tags
+												</A>
+											</Show>
+											<div class="border-t border-outline dark:border-outline-dark my-1" />
+											<button
+												type="button"
+												onClick={handleLogout}
+												class="block w-full text-left px-4 py-2 text-sm text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+											>
+												Sign out
+											</button>
+										</div>
+									</div>
+								</div>
 							</Show>
 						</Flex>
 
@@ -304,7 +326,7 @@ export const Layout: ParentComponent = (props) => {
 
 					{/* Mobile menu */}
 					<Show when={mobileMenuOpen()}>
-						<div class="sm:hidden border-t border-outline dark:border-outline-dark py-4 space-y-4">
+						<div class="sm:hidden border-t border-outline dark:border-outline-dark py-4 space-y-2">
 							{/* Connection status */}
 							<Show when={connectionState().name === "connecting"}>
 								<Badge variant="info" size="sm">
@@ -350,27 +372,45 @@ export const Layout: ParentComponent = (props) => {
 								Projects
 							</A>
 
-							{/* My Projects link */}
+							{/* Account section */}
 							<Show when={!isAnonymous()}>
-								<A
-									href="/me/projects"
-									class="block py-2 text-sm"
-									classList={{
-										"text-primary dark:text-primary-dark font-medium":
-											isActive("/me/projects"),
-										"text-on-surface dark:text-on-surface-dark":
-											!isActive("/me/projects"),
-									}}
-									onClick={closeMobileMenu}
-								>
-									My Projects
-								</A>
+								<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
+									<Text size="xs" color="muted" class="uppercase tracking-wide">
+										Account
+									</Text>
+									<A
+										href="/me"
+										class="block py-2 text-sm"
+										classList={{
+											"text-primary dark:text-primary-dark font-medium":
+												isExactActive("/me"),
+											"text-on-surface dark:text-on-surface-dark":
+												!isExactActive("/me"),
+										}}
+										onClick={closeMobileMenu}
+									>
+										Profile
+									</A>
+									<A
+										href="/me/projects"
+										class="block py-2 text-sm"
+										classList={{
+											"text-primary dark:text-primary-dark font-medium":
+												isActive("/me/projects"),
+											"text-on-surface dark:text-on-surface-dark":
+												!isActive("/me/projects"),
+										}}
+										onClick={closeMobileMenu}
+									>
+										My Projects
+									</A>
+								</div>
 							</Show>
 
 							{/* Admin links */}
 							<Show when={isAdmin()}>
-								<div class="space-y-2">
-									<Text size="sm" color="muted" class="font-medium">
+								<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
+									<Text size="xs" color="muted" class="uppercase tracking-wide">
 										Admin
 									</Text>
 									<A
@@ -417,14 +457,16 @@ export const Layout: ParentComponent = (props) => {
 										</Button>
 									}
 								>
-									<Flex justify="between" align="center">
-										<Text size="sm" color="muted">
-											{displayUserId()}
-										</Text>
-										<Button variant="outline" size="sm" onClick={handleLogout}>
-											Logout
-										</Button>
-									</Flex>
+									<button
+										type="button"
+										onClick={() => {
+											handleLogout();
+											closeMobileMenu();
+										}}
+										class="block w-full text-left py-2 text-sm text-on-surface dark:text-on-surface-dark"
+									>
+										Sign out
+									</button>
 								</Show>
 							</div>
 						</div>
