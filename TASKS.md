@@ -34,6 +34,12 @@
 - [ ] **Standardize form components** - ProjectForm uses raw inputs, TagForm uses TextField - pick one approach
 - [ ] **Form validation patterns** - Unify error state handling across forms
 
+### Code Quality
+
+- [ ] **Extract `formatDate()` utility** - Used inline in 3 files, move to `@package/common`
+- [ ] **Split large components** - package/index.tsx could be broken down further
+- [ ] **Update README** - Add deployment instructions
+
 ---
 
 ## Investigation: WebSocket Connection Issues

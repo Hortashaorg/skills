@@ -32,14 +32,6 @@
 
 ### Performance
 - [ ] Query optimization audit
-- [ ] Version list virtualization (1000+ versions)
-
-### Code Quality
-- [ ] `formatDate()` utility in `@package/common`
-- [ ] Split large components (VersionSelector, package/index.tsx)
-- [ ] Update README with deployment instructions
-
----
 
 ## Technical Debt / Ops
 
