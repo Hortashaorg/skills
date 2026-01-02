@@ -61,6 +61,22 @@ const PackageBreadcrumbItem = (props: {
 };
 
 /**
+ * Breadcrumb item that resolves project name from Zero query.
+ */
+const ProjectBreadcrumbItem = (props: {
+	crumb: BreadcrumbSegmentResult;
+	id: string;
+}) => {
+	const [project] = useQuery(() => queries.projects.byId({ id: props.id }));
+
+	return (
+		<Breadcrumbs.Link href={props.crumb.href} current={props.crumb.current}>
+			{project()?.name ?? props.crumb.label}
+		</Breadcrumbs.Link>
+	);
+};
+
+/**
  * Breadcrumb item - delegates to resolver-specific component if specified.
  */
 const BreadcrumbItem = (props: { crumb: BreadcrumbSegmentResult }) => {
@@ -77,6 +93,9 @@ const BreadcrumbItem = (props: { crumb: BreadcrumbSegmentResult }) => {
 			</Match>
 			<Match when={props.crumb.resolve?.type === "package"}>
 				<PackageBreadcrumbItem crumb={props.crumb} id={props.crumb.label} />
+			</Match>
+			<Match when={props.crumb.resolve?.type === "project"}>
+				<ProjectBreadcrumbItem crumb={props.crumb} id={props.crumb.label} />
 			</Match>
 		</Switch>
 	);
