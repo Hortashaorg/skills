@@ -8,15 +8,15 @@
 
 ### Design System Consistency
 
-- [ ] **ProjectForm colors** - Uses gray-300/500/700 instead of design tokens (on-surface, surface, etc.)
-- [ ] **Hardcoded button classes** - `/me/projects/index.tsx` uses inline classes instead of `<Button>` component
+- [x] **ProjectForm colors** - Uses gray-300/500/700 instead of design tokens (on-surface, surface, etc.)
+- [x] **Hardcoded button classes** - `/me/projects/index.tsx` uses inline classes instead of `<Button>` component
 - [ ] **Select styling duplication** - Same inline styles in SearchBar, home index, TagFilter - extract to reusable component
 - [ ] **Standardize size variants** - Button, UpvoteButton, Badge should have consistent `sm`/`md`/`lg` definitions
 
 ### Dead Code Removal
 
-- [ ] **Remove unused Label component** - Exported but never imported anywhere
-- [ ] **Remove unused TextField sub-components** - TextFieldTextArea, TextFieldDescription, TextFieldErrorMessage never used
+- [x] **Remove unused Label component** - Exported but never imported anywhere
+- [x] **Remove unused TextField sub-components** - TextFieldTextArea, TextFieldDescription, TextFieldErrorMessage never used
 
 ### Component Consolidation
 
