@@ -1,11 +1,12 @@
-import { queries, useQuery, useZero } from "@package/database/client";
+import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { A, useNavigate } from "@solidjs/router";
-import { createEffect, Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
 import { getConfig } from "@/lib/config";
@@ -28,6 +29,65 @@ export const Profile = () => {
 	const account = () => accounts()?.[0];
 	const isLoading = () => accountResult().type !== "complete";
 	const projectCount = () => projects()?.length ?? 0;
+
+	// Username editing state
+	const [isEditingUsername, setIsEditingUsername] = createSignal(false);
+	const [editUsername, setEditUsername] = createSignal("");
+	const [usernameError, setUsernameError] = createSignal<string | null>(null);
+	const [isSaving, setIsSaving] = createSignal(false);
+
+	const startEditingUsername = () => {
+		const acc = account();
+		if (acc) {
+			setEditUsername(acc.name ?? "");
+			setUsernameError(null);
+			setIsEditingUsername(true);
+		}
+	};
+
+	const cancelEditingUsername = () => {
+		setIsEditingUsername(false);
+		setUsernameError(null);
+	};
+
+	const saveUsername = async () => {
+		const username = editUsername().trim();
+
+		if (!username) {
+			setUsernameError("Username is required");
+			return;
+		}
+
+		if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+			setUsernameError(
+				"Username can only contain letters, numbers, underscores, and hyphens",
+			);
+			return;
+		}
+
+		if (username.length > 50) {
+			setUsernameError("Username must be 50 characters or less");
+			return;
+		}
+
+		setIsSaving(true);
+		setUsernameError(null);
+
+		try {
+			await zero().mutate(mutators.account.updateName({ name: username }))
+				.client;
+			setIsEditingUsername(false);
+		} catch (err) {
+			console.error("Failed to update username:", err);
+			if (err instanceof Error && err.message.includes("unique")) {
+				setUsernameError("This username is already taken");
+			} else {
+				setUsernameError("Failed to update username. Please try again.");
+			}
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
 	const zitadelAccountUrl = () => {
 		const config = getConfig();
@@ -59,11 +119,78 @@ export const Profile = () => {
 									<Stack spacing="md">
 										<Heading level="h2">Account</Heading>
 										<div class="grid gap-4 sm:grid-cols-2">
-											<div>
-												<Text size="sm" color="muted">
-													Name
+											<div class="sm:col-span-2">
+												<Text size="sm" color="muted" class="mb-1">
+													Username
 												</Text>
-												<Text weight="medium">{acc().name || "Not set"}</Text>
+												<Show
+													when={isEditingUsername()}
+													fallback={
+														<Flex align="center" gap="sm">
+															<Text weight="medium">
+																{acc().name || (
+																	<span class="text-on-surface-muted dark:text-on-surface-dark-muted italic">
+																		Not set
+																	</span>
+																)}
+															</Text>
+															<button
+																type="button"
+																onClick={startEditingUsername}
+																class="text-primary dark:text-primary-dark text-sm hover:underline"
+															>
+																Edit
+															</button>
+														</Flex>
+													}
+												>
+													<Stack spacing="sm">
+														<Flex gap="sm">
+															<input
+																type="text"
+																value={editUsername()}
+																onInput={(e) =>
+																	setEditUsername(e.currentTarget.value)
+																}
+																onKeyDown={(e) => {
+																	if (e.key === "Enter") saveUsername();
+																	if (e.key === "Escape")
+																		cancelEditingUsername();
+																}}
+																disabled={isSaving()}
+																class="flex-1 px-3 py-1.5 text-sm rounded-radius border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark disabled:opacity-50"
+																placeholder="Enter username"
+															/>
+															<Button
+																variant="primary"
+																size="sm"
+																onClick={saveUsername}
+																disabled={isSaving()}
+															>
+																{isSaving() ? "Saving..." : "Save"}
+															</Button>
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={cancelEditingUsername}
+																disabled={isSaving()}
+															>
+																Cancel
+															</Button>
+														</Flex>
+														<Show when={usernameError()}>
+															<Text
+																size="sm"
+																class="text-danger dark:text-danger-dark"
+															>
+																{usernameError()}
+															</Text>
+														</Show>
+														<Text size="xs" color="muted">
+															Letters, numbers, underscores, and hyphens only
+														</Text>
+													</Stack>
+												</Show>
 											</div>
 											<div>
 												<Text size="sm" color="muted">
