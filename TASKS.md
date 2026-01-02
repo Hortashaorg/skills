@@ -19,29 +19,6 @@
 
 ---
 
-## Milestone 9: GDPR & Data Strategy
-
-**Goal:** Establish patterns for user data handling before we accumulate more user content
-
-### 9.1 Documentation
-- [x] Privacy policy page (`/privacy`)
-- [ ] Data inventory: what user data we store and why (optional, covered in privacy policy)
-- [ ] Data retention policy document (optional)
-
-### 9.2 User Rights
-- [x] Privacy & Data section on `/me` profile page
-- [x] Account deletion flow with confirmation dialog
-- [ ] Data export: download your data as JSON (optional, low priority)
-
-### 9.3 Technical Patterns
-- [x] Anonymization strategy: reassign to "Deleted User" placeholder account
-- [x] Keep projects but anonymize ownership on deletion
-- [x] Delete personal data (email, username) from account table
-- [x] Delete upvotes on account deletion
-- [x] Clear auth session on deletion
-
----
-
 ## Milestone 10: Component Library
 
 **Goal:** Clean up variant patterns, extract simple reusable components
@@ -59,6 +36,15 @@
 ---
 
 ## Completed
+
+### Milestone 9: GDPR & Data Strategy
+
+- Privacy policy page (`/privacy`)
+- Account deletion with anonymization (projects reassigned to "Deleted User")
+- Personal data (email, username, upvotes) deleted on account removal
+- Zitadel account remains separate (user manages independently)
+
+---
 
 ### Milestone 8 & 8b: Projects & Route Restructure
 
