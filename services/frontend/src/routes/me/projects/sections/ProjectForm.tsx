@@ -78,7 +78,7 @@ export const ProjectForm = (props: ProjectFormProps) => {
 				</div>
 
 				<Show when={props.error}>
-					<Text size="sm" class="text-danger dark:text-danger-dark">
+					<Text size="sm" color="danger">
 						{props.error}
 					</Text>
 				</Show>

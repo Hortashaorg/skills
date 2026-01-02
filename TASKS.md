@@ -22,7 +22,7 @@
 
 - [x] **"Add to project" dropdown** - Now uses Kobalte Popover with animations, click-outside-to-close, and accessibility
 - [x] **Input primitive created** - SearchBar, profile, and ProjectForm now use Input component instead of raw inputs
-- [ ] **CVA variant audit** - Convert Tailwind class overrides to proper CVA variants where appropriate
+- [x] **CVA variant audit** - Fixed 4 instances using `color="danger"` variant; remaining overrides are valid layout classes
 - [x] **Reuse ProjectCard** - `/routes/projects/index.tsx` now imports ProjectCard with `showAuthor` prop
 - [x] **Admin tags confirm dialog** - Now uses AlertDialog component
 

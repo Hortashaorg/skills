@@ -79,7 +79,7 @@ export const TagForm = (props: Props) => {
 				</TextField>
 
 				<Show when={error()}>
-					<Text size="sm" class="text-danger dark:text-danger-dark">
+					<Text size="sm" color="danger">
 						{error()}
 					</Text>
 				</Show>

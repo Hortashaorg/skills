@@ -218,10 +218,7 @@ export const Profile = () => {
 															</Button>
 														</Flex>
 														<Show when={usernameError()}>
-															<Text
-																size="sm"
-																class="text-danger dark:text-danger-dark"
-															>
+															<Text size="sm" color="danger">
 																{usernameError()}
 															</Text>
 														</Show>
@@ -306,10 +303,7 @@ export const Profile = () => {
 													attributed to "Deleted User".
 												</Text>
 												<Show when={deleteError()}>
-													<Text
-														size="sm"
-														class="text-danger dark:text-danger-dark"
-													>
+													<Text size="sm" color="danger">
 														{deleteError()}
 													</Text>
 												</Show>
