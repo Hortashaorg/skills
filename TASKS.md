@@ -1,6 +1,38 @@
-# TechGarden - Task Tracker
+# TechGarden - Backlog
 
 > **Current Sprint:** [SPRINT-2.md](./SPRINT-2.md) - Projects & Data Foundation
+
+---
+
+## Backlog
+
+### Design System Consistency
+
+- [ ] **ProjectForm colors** - Uses gray-300/500/700 instead of design tokens (on-surface, surface, etc.)
+- [ ] **Hardcoded button classes** - `/me/projects/index.tsx` uses inline classes instead of `<Button>` component
+- [ ] **Select styling duplication** - Same inline styles in SearchBar, home index, TagFilter - extract to reusable component
+- [ ] **Standardize size variants** - Button, UpvoteButton, Badge should have consistent `sm`/`md`/`lg` definitions
+
+### Dead Code Removal
+
+- [ ] **Remove unused Label component** - Exported but never imported anywhere
+- [ ] **Remove unused TextField sub-components** - TextFieldTextArea, TextFieldDescription, TextFieldErrorMessage never used
+
+### Component Consolidation
+
+- [ ] **"Add to project" dropdown** - Uses custom HTML while TagFilter uses Kobalte Popover - unify approach
+- [ ] **SearchInput underutilization** - Only used in project detail, not in main packages search (uses raw input)
+- [ ] **CVA variant audit** - Convert Tailwind class overrides to proper CVA variants where appropriate
+
+### Future Components
+
+- [ ] **Icon library** - Extract repeated inline SVGs (chevrons, menu, account icons) to reusable components
+- [ ] **Simple Table component** - For admin tables (optional, current inline approach works)
+
+### Form Patterns
+
+- [ ] **Standardize form components** - ProjectForm uses raw inputs, TagForm uses TextField - pick one approach
+- [ ] **Form validation patterns** - Unify error state handling across forms
 
 ---
 
@@ -15,23 +47,7 @@
 - Heavy graph may contribute to slow initial sync
 
 ### Related
-- ✅ Schema simplification (Milestone 7) completed - should reduce sync payload significantly
-
----
-
-## Milestone 10: Component Library
-
-**Goal:** Clean up variant patterns, extract simple reusable components
-
-### 10.1 CVA Variant Audit
-- [ ] Audit components with Tailwind class overrides
-- [ ] Convert overrides to proper CVA variants where appropriate
-- [ ] Document variant patterns in component stories
-- [ ] Standardize size variants across components (Button, UpvoteButton, Badge, etc. should have consistent `sm`/`md`/`lg` definitions)
-
-### 10.2 New Components (if needed)
-- [ ] Simple Table component - for admin tables (optional, current inline approach works)
-- [ ] ~~Pagination component~~ - deprioritized after admin simplification
+- Schema simplification (Milestone 7) completed - should reduce sync payload significantly
 
 ---
 
@@ -44,8 +60,6 @@
 - Personal data (email, username, upvotes) deleted on account removal
 - Zitadel account remains separate (user manages independently)
 
----
-
 ### Milestone 8 & 8b: Projects & Route Restructure
 
 - Projects feature: create, edit, delete projects with package associations
@@ -54,8 +68,6 @@
 - User profile page with username editing
 - "Add to project" button on package detail pages
 - AlertDialog, Breadcrumbs components
-
----
 
 ### Milestone 7: Schema Simplification
 
@@ -78,8 +90,6 @@ Reduced data graph by storing release channels instead of all versions.
 - Status/version badges integrated into PackageCard
 - Admin dashboard: top 25 pending fetches, failed packages grid
 - Backend stats endpoint for accurate pending count
-
----
 
 ### Milestone 1-6 (MVP)
 
