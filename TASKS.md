@@ -11,7 +11,7 @@
 - [x] **ProjectForm colors** - Uses gray-300/500/700 instead of design tokens (on-surface, surface, etc.)
 - [x] **Hardcoded button classes** - `/me/projects/index.tsx` uses inline classes instead of `<Button>` component
 - [x] **Select styling duplication** - SearchBar and home index now use Select component
-- [ ] **Standardize size variants** - Button, UpvoteButton, Badge should have consistent `sm`/`md`/`lg` definitions
+- [x] **Standardize size variants** - Button md aligned to px-3/py-1.5; compact elements (Badge, UpvoteButton) stay sm/md only
 
 ### Dead Code Removal
 
@@ -43,6 +43,10 @@
 - [x] **Extract `formatDate()` utility** - Now in `@package/common` with formatDate, formatShortDate, formatDateTime, formatCompactDateTime
 - [ ] **Split large components** - package/index.tsx could be broken down further
 - [ ] **Update README** - Add deployment instructions
+
+### Documentation
+
+- [ ] **Update CLAUDE.md files** - Ensure all CLAUDE.md files reflect current patterns after backlog cleanup
 
 ---
 
