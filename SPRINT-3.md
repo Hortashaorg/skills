@@ -1,5 +1,6 @@
 # Sprint 3: UX Polish + Community Curation
 
+> **Status:** Complete
 > **Theme:** Fix UX gaps while building foundation for community-driven curation
 
 ---
@@ -7,103 +8,109 @@
 ## Goals
 
 1. **UX Polish** - Toast notifications, loading states, form consistency
-2. **Community Curation** - Suggestion/voting system for package tags with anti-gaming mechanics
+2. **Community Curation** - Suggestion/voting system for package tags with contribution tracking
 
 ---
 
-## Tech Debt: UX Gaps
+## Completed: UX Polish
 
 ### Toast Notification System
-- [ ] Create Toast component (Kobalte Toast primitive)
-- [ ] Toast provider in app context
-- [ ] Replace silent `console.error` catches with user-visible toasts
-- [ ] Success/error/info variants
+- [x] Toast component using Kobalte Toast primitive
+- [x] ToastProvider in app context (ToastRegion in Layout)
+- [x] Variants: success, error, info, warning
+- [x] Replaced all `console.error` catches with user-visible toasts
 
 ### Loading States
-- [ ] Create Skeleton component
-- [ ] Replace "Loading..." text on key pages (package detail, project detail, admin)
-- [ ] Consistent loading patterns across app
+- [x] Skeleton component (animated placeholder)
+- [x] Applied to: project list, project detail, profile, package detail, admin tags
 
 ### Form Consistency
-- [ ] Convert raw inputs in `detail.tsx` to Input/Textarea components
-- [ ] Audit for any remaining raw form elements
+- [x] Textarea component (primitives tier)
+- [x] All raw inputs/textareas converted to components
+- [x] Audit complete - no remaining raw form elements
 
 ---
 
-## Vision: Community Curation
+## Completed: Community Curation
 
 ### Data Model
 
-**New tables:**
+**Tables created:**
 ```
 suggestions
-├── id
-├── type: "add_package_tag" | "remove_package_tag"
-├── packageId
-├── tagId
-├── accountId (who suggested)
+├── id, packageId, accountId
+├── type: "add_tag" (extensible via payload)
+├── version: 1 (for schema evolution)
+├── payload: JSON (e.g., { tagId: "..." })
 ├── status: "pending" | "approved" | "rejected"
-├── createdAt
-├── resolvedAt
+├── createdAt, updatedAt, resolvedAt
 
 suggestionVotes
-├── id
-├── suggestionId
-├── accountId
+├── id, suggestionId, accountId
 ├── vote: "approve" | "reject"
 ├── createdAt
 
-contributionScores
-├── accountId (primary key)
-├── score
-├── updatedAt
+contributionEvents (source of truth)
+├── id, accountId, suggestionId
+├── type: "suggestion_approved" | "suggestion_rejected" | "vote_matched"
+├── points, createdAt
+
+contributionScores (computed cache)
+├── id, accountId
+├── monthlyScore, allTimeScore
+├── lastCalculatedAt
 ```
 
 ### Approval Logic
-- Suggestion approved when: `approveVotes >= 2` OR `adminApproved`
-- Suggestion rejected when: `rejectVotes >= 2` OR `adminRejected`
-- Users cannot vote on their own suggestions
-
-### Anti-Gaming Mechanics
-- **Random queue**: Users get random pending suggestions to review
-- **No cherry-picking**: Cannot browse/select specific suggestions
-- **No self-review**: Own suggestions excluded from queue
-- **Limited skips**: Prevent gaming by skipping to find friends' suggestions
+- Approved when: 3 approve votes OR admin approves
+- Rejected when: 2 reject votes OR admin rejects
+- Users cannot vote on their own suggestions (admins can)
 
 ### Contribution Points
 | Action | Points |
 |--------|--------|
 | Suggestion approved | +5 |
-| Vote matches final outcome | +2 |
 | Suggestion rejected | -1 |
-| Suggestion marked as spam | -10 |
+| Vote matches outcome | +1 |
 
-### UI Components
+### Package Page Structure
+- `/packages/:reg/:name` → Overview (tags, channels, dependencies)
+- `/packages/:reg/:name/details` → Full details + fetch history
+- `/packages/:reg/:name/curate` → Suggest tags, vote on pending suggestions
 
-**Package Detail Page:**
-- [ ] "Suggest Tag" button for logged-in users
-- [ ] Show pending tag suggestions (with vote counts)
+### Curation Review Page (`/curation`)
+- Review queue showing pending suggestions (excludes own)
+- Package context with name, registry, description
+- Approve/Reject buttons with current vote counts
+- Auto-advances to next suggestion after voting
+- Leaderboard sidebar (monthly/all-time toggle, top 50 + user rank)
 
-**Review Queue (`/review`):**
-- [ ] Random pending suggestion display
-- [ ] Approve/Reject buttons
-- [ ] Skip button (limited)
-- [ ] Progress indicator (reviewed today)
+### Extensible Architecture
+- Suggestion type registry in `packages/database/suggestions/`
+- Versioned Zod payload schemas
+- Centralized resolution handlers
+- Adding new suggestion types requires changes in one place
 
-**Leaderboard (`/leaderboard` or section on landing):**
-- [ ] Top contributors by score
-- [ ] Current user's rank
+### Worker Integration
+- Score calculation job runs after package processing
+- Incremental all-time scores
+- Monthly scores recalculate on UTC month boundary
+- Uses `max(event.createdAt)` as cursor to avoid double-counting
 
 ---
 
-## Tasks Summary
+## Out of Scope (Future Sprints)
 
-See [TASKS.md](./TASKS.md) for detailed task breakdown.
+- Additional suggestion types (remove_tag, link_package, set_attribute)
+- New tag proposals (currently: select from existing tags only)
+- Complex spam detection
+- Notifications for suggestion status changes
+- Skip functionality in review queue
 
 ---
 
-## Out of Scope
+## Technical Notes
 
-- Other suggestion types (descriptions, new packages) - future sprints
-- Complex spam detection - start simple with point penalties
-- Notifications for suggestion status changes - future sprint
+- Removed unused `audit_log` table and related enums
+- Added ownership check to `packageUpvotes.remove` (security fix)
+- Package page uses tabbed layout with shared state
