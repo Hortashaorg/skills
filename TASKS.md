@@ -50,12 +50,12 @@
 - [x] Run migrations and generate Zero schema
 
 ### Package Page Restructure
-- [ ] Create tabbed layout for package pages
-  - [ ] `/packages/:reg/:name` → Overview (header, description, quick stats)
-  - [ ] `/packages/:reg/:name/details` → Full details (channels, deps, fetch history)
-  - [ ] `/packages/:reg/:name/curate` → Community curation tab
-- [ ] Move existing sections appropriately
-- [ ] Add tab navigation component
+- [x] Create tabbed layout for package pages
+  - [x] `/packages/:reg/:name` → Overview (tags, channels, dependencies)
+  - [x] `/packages/:reg/:name/details` → Full details (all info + fetch history)
+  - [x] `/packages/:reg/:name/curate` → Community curation tab
+- [x] Move existing sections appropriately
+- [x] Add tab navigation component
 
 ### Suggestion System
 - [x] Define Zod payload schemas (versioned)

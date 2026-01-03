@@ -4,8 +4,8 @@ import {
 	useConnectionState,
 	useQuery,
 } from "@package/database/client";
-import { A, useParams } from "@solidjs/router";
-import { createMemo, createSignal, Show } from "solid-js";
+import { A, useNavigate, useParams } from "@solidjs/router";
+import { createMemo, createSignal, Match, Show, Switch } from "solid-js";
 import { QueryBoundary } from "@/components/composite/query-boundary";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
@@ -13,11 +13,14 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs } from "@/components/ui/tabs";
 import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
+import { buildPackageUrl } from "@/lib/url";
 import { ChannelSelector } from "./sections/ChannelSelector";
+import { CurateTab } from "./sections/CurateTab";
 import { Dependencies } from "./sections/Dependencies";
-import { FetchHistory } from "./sections/FetchHistory";
+import { DetailsTab } from "./sections/DetailsTab";
 import { Header } from "./sections/Header";
 import { PackageTags } from "./sections/PackageTags";
 
@@ -70,11 +73,14 @@ const PackageDetailSkeleton = () => (
 );
 
 export const Package = () => {
-	const params = useParams<{ registry: string; name: string }>();
+	const params = useParams<{ registry: string; name: string; tab?: string }>();
+	const navigate = useNavigate();
 
 	// Decode URL params
 	const registry = () => decodeURIComponent(params.registry) as Registry;
 	const packageName = () => decodeURIComponent(params.name);
+	const tab = () => params.tab || "overview";
+	const baseUrl = () => buildPackageUrl(registry(), packageName());
 
 	// Query package with channels
 	const [packageData] = useQuery(() =>
@@ -158,33 +164,62 @@ export const Package = () => {
 					>
 						{(p) => (
 							<>
-								{/* Package header */}
+								{/* Package header - always visible */}
 								<Header pkg={p} />
 
-								{/* Tags */}
-								<PackageTags packageId={p.id} />
+								{/* Tab navigation */}
+								<Tabs.Root
+									value={tab()}
+									onChange={(value) => {
+										navigate(
+											value === "overview"
+												? baseUrl()
+												: `${baseUrl()}/${value}`,
+										);
+									}}
+								>
+									<Tabs.List>
+										<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
+										<Tabs.Trigger value="details">Details</Tabs.Trigger>
+										<Tabs.Trigger value="curate">Curate</Tabs.Trigger>
+									</Tabs.List>
+								</Tabs.Root>
 
-								{/* Channel selector */}
-								<Show when={sortedChannels().length > 0}>
-									<ChannelSelector
-										channels={sortedChannels()}
-										selectedChannel={selectedChannel()}
-										onChannelChange={setSelectedChannelId}
-									/>
-								</Show>
+								{/* Tab content */}
+								<Switch>
+									<Match when={tab() === "overview"}>
+										<PackageTags packageId={p.id} />
+										<Show when={sortedChannels().length > 0}>
+											<ChannelSelector
+												channels={sortedChannels()}
+												selectedChannel={selectedChannel()}
+												onChannelChange={setSelectedChannelId}
+											/>
+										</Show>
+										<Show when={selectedChannel()}>
+											{(channel) => (
+												<Dependencies
+													channelId={channel().id}
+													registry={p.registry}
+												/>
+											)}
+										</Show>
+									</Match>
 
-								{/* Dependencies */}
-								<Show when={selectedChannel()}>
-									{(channel) => (
-										<Dependencies
-											channelId={channel().id}
+									<Match when={tab() === "details"}>
+										<DetailsTab
+											packageId={p.id}
 											registry={p.registry}
+											channels={sortedChannels()}
+											selectedChannel={selectedChannel()}
+											onChannelChange={setSelectedChannelId}
 										/>
-									)}
-								</Show>
+									</Match>
 
-								{/* Fetch History */}
-								<FetchHistory packageId={p.id} />
+									<Match when={tab() === "curate"}>
+										<CurateTab packageId={p.id} />
+									</Match>
+								</Switch>
 							</>
 						)}
 					</QueryBoundary>

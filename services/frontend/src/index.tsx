@@ -34,7 +34,7 @@ loadConfig().then(() => {
 					<Router>
 						<Route path="/" component={Landing} />
 						<Route path="/packages" component={Packages} />
-						<Route path="/package/:registry/:name" component={Package} />
+						<Route path="/package/:registry/:name/*tab" component={Package} />
 						<Route path="/me" component={Profile} />
 						<Route path="/me/projects" component={Projects} />
 						<Route path="/me/projects/new" component={NewProject} />
