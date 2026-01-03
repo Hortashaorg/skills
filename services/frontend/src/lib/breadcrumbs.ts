@@ -37,7 +37,7 @@ const configs: BreadcrumbConfig[] = [
 		pattern: /^\/package\/([^/]+)\/([^/]+)(\/.*)?$/,
 		segments: [
 			{ label: "Home", href: "/" },
-			{ label: (p) => decodeURIComponent(p.registry ?? "") },
+			{ label: "Packages", href: "/packages" },
 			{ label: (p) => decodeURIComponent(p.name ?? "") },
 		],
 	},
