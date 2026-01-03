@@ -42,7 +42,6 @@ export const mutators = defineMutators({
 	},
 	suggestions: {
 		createAddTag: suggestionsMutators.createAddTag,
-		adminResolve: suggestionsMutators.adminResolve,
 	},
 	suggestionVotes: {
 		vote: suggestionVotesMutators.vote,

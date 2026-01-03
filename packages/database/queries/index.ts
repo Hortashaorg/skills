@@ -19,7 +19,6 @@ export const queries = defineQueries({
 	packages: {
 		list: packagesQueries.list,
 		byId: packagesQueries.byId,
-		byName: packagesQueries.byName,
 		byNameWithChannels: packagesQueries.byNameWithChannels,
 		byIdWithChannels: packagesQueries.byIdWithChannels,
 		byIdWithTags: packagesQueries.byIdWithTags,
@@ -29,7 +28,6 @@ export const queries = defineQueries({
 	},
 	packageFetches: {
 		pending: packageFetchesQueries.pending,
-		hasPending: packageFetchesQueries.hasPending,
 		byId: packageFetchesQueries.byId,
 		byPackageId: packageFetchesQueries.byPackageId,
 		byStatus: packageFetchesQueries.byStatus,
@@ -40,8 +38,6 @@ export const queries = defineQueries({
 	tags: {
 		list: tagsQueries.list,
 		byId: tagsQueries.byId,
-		bySlug: tagsQueries.bySlug,
-		withPackages: tagsQueries.withPackages,
 		all: tagsQueries.all,
 		listWithCounts: tagsQueries.listWithCounts,
 	},
@@ -59,7 +55,6 @@ export const queries = defineQueries({
 		list: projectsQueries.list,
 	},
 	suggestions: {
-		forPackage: suggestionsQueries.forPackage,
 		pendingForPackage: suggestionsQueries.pendingForPackage,
 		pending: suggestionsQueries.pending,
 		pendingExcludingUser: suggestionsQueries.pendingExcludingUser,

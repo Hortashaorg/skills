@@ -53,7 +53,7 @@ Zero's `useQuery` returns a tuple: `[data, result]`. Use `result().type` for loa
 
 **Recommended pattern - use result.type:**
 ```tsx
-const [pkg, pkgResult] = useQuery(() => queries.packages.byName({ name }));
+const [pkg, pkgResult] = useQuery(() => queries.packages.byNameWithChannels({ name, registry }));
 
 // Loading: not yet complete
 const isLoading = () => pkgResult().type !== "complete";
@@ -66,7 +66,7 @@ const isEmpty = () => !pkg() && pkgResult().type === "complete";
 ```tsx
 import { QueryBoundary } from "@/components/composite/query-boundary";
 
-const [pkg, pkgResult] = useQuery(() => queries.packages.byName({ name }));
+const [pkg, pkgResult] = useQuery(() => queries.packages.byNameWithChannels({ name, registry }));
 
 <QueryBoundary
   data={pkg()}

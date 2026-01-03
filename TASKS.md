@@ -117,16 +117,7 @@
 
 ---
 
-## Backlog (Audit Findings)
-
-### Code Cleanup (Low Priority)
-- [ ] Remove unused queries or document their purpose:
-  - `queries.suggestions.forPackage` - we use `pendingForPackage` instead
-  - `queries.tags.bySlug` - never used
-  - `queries.tags.withPackages` - never used
-  - `queries.packageFetches.hasPending` - never used
-  - `queries.packages.byName` - only in docs, we use `byNameWithChannels`
-- [ ] Consider admin UI for manual suggestion resolution (`adminResolve` mutator exists but no UI)
+## Backlog
 
 ### Future Features
 - Additional suggestion types (remove_tag, link_package, set_attribute)
