@@ -31,11 +31,9 @@ export const vote = defineMutator(
 			throw new Error("Cannot vote on resolved suggestions");
 		}
 
-		// Check not self-voting (admins can approve their own)
-		if (suggestion.accountId === ctx.userID) {
-			if (!isAdmin || args.vote !== "approve") {
-				throw new Error("Cannot vote on your own suggestion");
-			}
+		// Check not self-voting (admins can vote on their own)
+		if (suggestion.accountId === ctx.userID && !isAdmin) {
+			throw new Error("Cannot vote on your own suggestion");
 		}
 
 		// Check not duplicate vote

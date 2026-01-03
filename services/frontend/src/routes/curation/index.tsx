@@ -177,61 +177,59 @@ export const Curation = () => {
 									>
 										{(suggestion) => (
 											<Stack spacing="md">
-												{/* Package info */}
+												{/* Unified suggestion display */}
 												<div class="p-4 bg-surface-alt dark:bg-surface-dark-alt rounded-radius">
-													<Stack spacing="xs">
-														<Text size="sm" color="muted">
-															Package
+													<Stack spacing="sm">
+														<Show when={isOwnSuggestion() && isAdmin()}>
+															<Badge variant="warning" size="sm">
+																Your suggestion
+															</Badge>
+														</Show>
+														<Text size="lg" weight="semibold">
+															Add tag "
+															{getTagNameFromPayload(suggestion().payload)}"
 														</Text>
-														<A
-															href={buildPackageUrl(
-																suggestion().package?.registry ?? "npm",
-																suggestion().package?.name ?? "",
-															)}
-															class="text-lg font-semibold hover:text-primary dark:hover:text-primary-dark"
-														>
-															{suggestion().package?.name ?? "Unknown"}
-														</A>
+														<Flex gap="xs" align="center">
+															<Text size="sm" color="muted">
+																to
+															</Text>
+															<A
+																href={buildPackageUrl(
+																	suggestion().package?.registry ?? "npm",
+																	suggestion().package?.name ?? "",
+																)}
+																class="text-sm font-medium hover:text-primary dark:hover:text-primary-dark"
+															>
+																{suggestion().package?.name ?? "Unknown"}
+															</A>
+															<Text size="sm" color="muted">
+																({suggestion().package?.registry})
+															</Text>
+														</Flex>
 														<Show when={suggestion().package?.description}>
 															<Text
-																size="sm"
+																size="xs"
 																color="muted"
 																class="line-clamp-2"
 															>
 																{suggestion().package?.description}
 															</Text>
 														</Show>
-													</Stack>
-												</div>
-
-												{/* Suggestion details */}
-												<div class="p-4 border border-outline dark:border-outline-dark rounded-radius">
-													<Stack spacing="sm">
-														<Flex gap="sm" align="center">
-															<Badge variant="info">
-																{suggestion().type === "add_tag"
-																	? "Add Tag"
-																	: suggestion().type}
-															</Badge>
-															<Text weight="semibold">
-																{getTagNameFromPayload(suggestion().payload)}
-															</Text>
-														</Flex>
-														<Text size="sm" color="muted">
-															Suggested by{" "}
-															{suggestion().account?.name ?? "Unknown"}
-														</Text>
-														<Flex gap="sm">
-															<Badge variant="success" size="sm">
-																+{currentVoteCounts().approve} approve
-															</Badge>
-															<Badge variant="danger" size="sm">
-																-{currentVoteCounts().reject} reject
-															</Badge>
-															<Text size="xs" color="muted">
-																(3 votes needed to resolve)
-															</Text>
-														</Flex>
+														<div class="pt-2 border-t border-outline/50 dark:border-outline-dark/50">
+															<Flex gap="md" align="center">
+																<Text size="xs" color="muted">
+																	by {suggestion().account?.name ?? "Unknown"}
+																</Text>
+																<Flex gap="xs">
+																	<Badge variant="success" size="sm">
+																		+{currentVoteCounts().approve}
+																	</Badge>
+																	<Badge variant="danger" size="sm">
+																		-{currentVoteCounts().reject}
+																	</Badge>
+																</Flex>
+															</Flex>
+														</div>
 													</Stack>
 												</div>
 
@@ -240,55 +238,120 @@ export const Curation = () => {
 													when={!hasVotedOnCurrent()}
 													fallback={
 														<Text size="sm" color="muted" class="text-center">
-															You've already voted on this suggestion. Waiting
-															for more votes...
+															You've already voted on this suggestion.
 														</Text>
 													}
 												>
-													<Show
-														when={isOwnSuggestion() && isAdmin()}
-														fallback={
-															<Flex gap="md" justify="center">
-																<Button
-																	size="lg"
-																	variant="primary"
-																	onClick={() => handleVote("approve")}
-																>
-																	Approve
-																</Button>
-																<Button
-																	size="lg"
-																	variant="outline"
-																	onClick={() => handleVote("reject")}
-																>
-																	Reject
-																</Button>
-															</Flex>
-														}
-													>
-														<Stack spacing="sm" align="center">
-															<Badge variant="info">Your suggestion</Badge>
-															<Button
-																size="lg"
-																variant="primary"
-																onClick={() => handleVote("approve")}
-															>
-																Approve (Admin)
-															</Button>
-														</Stack>
-													</Show>
+													<Flex gap="md" justify="center">
+														<Button
+															size="lg"
+															variant="primary"
+															onClick={() => handleVote("approve")}
+														>
+															Approve
+														</Button>
+														<Button
+															size="lg"
+															variant="outline"
+															onClick={() => handleVote("reject")}
+														>
+															Reject
+														</Button>
+													</Flex>
 												</Show>
-
-												{/* Queue info */}
-												<Text size="xs" color="muted" class="text-center">
-													{(pendingSuggestions()?.length ?? 1) - 1} more
-													suggestions in queue
-												</Text>
 											</Stack>
 										)}
 									</Show>
 								</Stack>
 							</Card>
+
+							{/* Admin backlog - full list */}
+							<Show when={isAdmin() && pendingSuggestions()?.length}>
+								<Card padding="md" class="mt-4">
+									<Stack spacing="sm">
+										<Flex justify="between" align="center">
+											<Heading level="h4">
+												All Pending ({pendingSuggestions()?.length ?? 0})
+											</Heading>
+										</Flex>
+										<div class="max-h-64 overflow-y-auto space-y-2">
+											<For each={pendingSuggestions()}>
+												{(suggestion) => {
+													const isOwn = () =>
+														suggestion.accountId === currentUserId();
+													const isCurrent = () =>
+														suggestion.id === currentSuggestion()?.id;
+													return (
+														<div
+															class="p-2 rounded text-sm border border-outline dark:border-outline-dark"
+															classList={{
+																"bg-primary/10 dark:bg-primary-dark/10 border-primary dark:border-primary-dark":
+																	isCurrent(),
+															}}
+														>
+															<Flex justify="between" align="start" gap="sm">
+																<Stack spacing="xs" class="flex-1 min-w-0">
+																	<Flex gap="xs" align="center" wrap="wrap">
+																		<Text
+																			size="sm"
+																			weight={
+																				isCurrent() ? "semibold" : "normal"
+																			}
+																			class="truncate"
+																		>
+																			{getTagNameFromPayload(
+																				suggestion.payload,
+																			)}
+																		</Text>
+																		<Text size="xs" color="muted">
+																			→
+																		</Text>
+																		<Text
+																			size="xs"
+																			color="muted"
+																			class="truncate"
+																		>
+																			{suggestion.package?.name}
+																		</Text>
+																	</Flex>
+																	<Flex gap="xs" align="center">
+																		<Text size="xs" color="muted">
+																			by {suggestion.account?.name}
+																		</Text>
+																		<Show when={isOwn()}>
+																			<Badge variant="warning" size="sm">
+																				you
+																			</Badge>
+																		</Show>
+																	</Flex>
+																</Stack>
+																<Flex gap="xs" class="shrink-0">
+																	<Badge variant="success" size="sm">
+																		+
+																		{
+																			(suggestion.votes ?? []).filter(
+																				(v) => v.vote === "approve",
+																			).length
+																		}
+																	</Badge>
+																	<Badge variant="danger" size="sm">
+																		-
+																		{
+																			(suggestion.votes ?? []).filter(
+																				(v) => v.vote === "reject",
+																			).length
+																		}
+																	</Badge>
+																</Flex>
+															</Flex>
+														</div>
+													);
+												}}
+											</For>
+										</div>
+									</Stack>
+								</Card>
+							</Show>
 						</div>
 
 						{/* Leaderboard - Sidebar */}
