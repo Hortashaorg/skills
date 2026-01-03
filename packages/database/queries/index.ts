@@ -2,11 +2,13 @@ import { defineQueries } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
+import * as contributionScoresQueries from "./contribution-scores.ts";
 import * as packageFetchesQueries from "./package-fetches.ts";
 import * as packageTagsQueries from "./package-tags.ts";
 import * as packageUpvotesQueries from "./package-upvotes.ts";
 import * as packagesQueries from "./packages.ts";
 import * as projectsQueries from "./projects.ts";
+import * as suggestionsQueries from "./suggestions.ts";
 import * as tagsQueries from "./tags.ts";
 
 export const queries = defineQueries({
@@ -17,7 +19,6 @@ export const queries = defineQueries({
 	packages: {
 		list: packagesQueries.list,
 		byId: packagesQueries.byId,
-		byName: packagesQueries.byName,
 		byNameWithChannels: packagesQueries.byNameWithChannels,
 		byIdWithChannels: packagesQueries.byIdWithChannels,
 		byIdWithTags: packagesQueries.byIdWithTags,
@@ -27,7 +28,6 @@ export const queries = defineQueries({
 	},
 	packageFetches: {
 		pending: packageFetchesQueries.pending,
-		hasPending: packageFetchesQueries.hasPending,
 		byId: packageFetchesQueries.byId,
 		byPackageId: packageFetchesQueries.byPackageId,
 		byStatus: packageFetchesQueries.byStatus,
@@ -38,8 +38,6 @@ export const queries = defineQueries({
 	tags: {
 		list: tagsQueries.list,
 		byId: tagsQueries.byId,
-		bySlug: tagsQueries.bySlug,
-		withPackages: tagsQueries.withPackages,
 		all: tagsQueries.all,
 		listWithCounts: tagsQueries.listWithCounts,
 	},
@@ -55,5 +53,16 @@ export const queries = defineQueries({
 		mine: projectsQueries.mine,
 		byId: projectsQueries.byId,
 		list: projectsQueries.list,
+	},
+	suggestions: {
+		pendingForPackage: suggestionsQueries.pendingForPackage,
+		pending: suggestionsQueries.pending,
+		pendingExcludingUser: suggestionsQueries.pendingExcludingUser,
+		byId: suggestionsQueries.byId,
+	},
+	contributionScores: {
+		leaderboardMonthly: contributionScoresQueries.leaderboardMonthly,
+		leaderboardAllTime: contributionScoresQueries.leaderboardAllTime,
+		forUser: contributionScoresQueries.forUser,
 	},
 });

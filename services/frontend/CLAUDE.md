@@ -53,7 +53,7 @@ Zero's `useQuery` returns a tuple: `[data, result]`. Use `result().type` for loa
 
 **Recommended pattern - use result.type:**
 ```tsx
-const [pkg, pkgResult] = useQuery(() => queries.packages.byName({ name }));
+const [pkg, pkgResult] = useQuery(() => queries.packages.byNameWithChannels({ name, registry }));
 
 // Loading: not yet complete
 const isLoading = () => pkgResult().type !== "complete";
@@ -66,7 +66,7 @@ const isEmpty = () => !pkg() && pkgResult().type === "complete";
 ```tsx
 import { QueryBoundary } from "@/components/composite/query-boundary";
 
-const [pkg, pkgResult] = useQuery(() => queries.packages.byName({ name }));
+const [pkg, pkgResult] = useQuery(() => queries.packages.byNameWithChannels({ name, registry }));
 
 <QueryBoundary
   data={pkg()}
@@ -102,6 +102,39 @@ components/
 ```
 
 Import pattern: `import { Button } from "@/components/ui/button"`
+
+## Icons
+
+Use named icon components from `@/components/primitives/icon`:
+
+```tsx
+import { ChevronDownIcon, SearchIcon, PlusIcon } from "@/components/primitives/icon";
+
+<ChevronDownIcon size="sm" />
+<SearchIcon size="md" title="Search" />
+```
+
+Available icons: `SearchIcon`, `SpinnerIcon`, `XCircleIcon`, `XIcon`, `CheckIcon`, `ChevronDownIcon`, `ChevronUpIcon`, `ChevronRightIcon`, `PencilIcon`, `PlusIcon`, `FolderIcon`, `SettingsIcon`, `DocumentIcon`, `ExternalLinkIcon`, `TrashIcon`, `PackageIcon`, `UsersIcon`
+
+**Adding new icons:**
+1. Add to `components/primitives/icon/icons.tsx`
+2. Follow the pattern: wrap `<Icon>` with SVG path children
+3. Export from the index file
+
+## Breadcrumbs
+
+Breadcrumbs are defined in `lib/breadcrumbs.ts`. **Update when adding new routes.**
+
+```tsx
+// Pattern with optional suffix (for tabbed pages)
+{ pattern: /^\/package\/([^/]+)\/([^/]+)(\/.*)?$/, segments: [...] }
+
+// Dynamic labels from params
+{ label: (p) => decodeURIComponent(p.name ?? "") }
+
+// With resolver for Zero queries (tag/package/project names)
+{ label: (p) => p.id ?? "", resolve: { type: "project", param: "id" } }
+```
 
 ## File Naming
 

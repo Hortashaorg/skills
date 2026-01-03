@@ -13,11 +13,15 @@ export {
 	and,
 	count,
 	eq,
+	gt,
+	gte,
 	inArray,
 	isNotNull,
 	isNull,
+	max,
 	or,
 	sql as sqlExpr,
+	sum,
 } from "drizzle-orm";
 export { mutators } from "./mutators/index.ts";
 export { queries } from "./queries/index.ts";
@@ -39,11 +43,13 @@ export const dbProvider = zeroPostgresJS(schema, sqlClient);
 
 // Re-export inferred types from schema
 export type {
-	ActorType,
-	AuditAction,
+	ContributionEventType,
 	DependencyType,
 	FetchStatus,
 	PackageStatus,
 	Registry,
+	SuggestionStatus,
+	SuggestionType,
+	Vote,
 } from "./db/types.ts";
 export { enums } from "./db/types.ts";

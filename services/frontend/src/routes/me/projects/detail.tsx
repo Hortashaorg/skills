@@ -16,11 +16,15 @@ import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { PencilIcon } from "@/components/primitives/icon";
+import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Textarea } from "@/components/primitives/textarea";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
 import { buildPackageUrl } from "@/lib/url";
@@ -28,6 +32,26 @@ import { buildPackageUrl } from "@/lib/url";
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
 };
+
+const ProjectDetailSkeleton = () => (
+	<Stack spacing="lg">
+		<Flex justify="between" align="center">
+			<Skeleton variant="text" width="200px" height="32px" />
+			<Skeleton variant="rectangular" width="80px" height="36px" />
+		</Flex>
+		<Skeleton variant="text" width="60%" />
+		<Card padding="lg">
+			<Stack spacing="md">
+				<Skeleton variant="text" width="120px" height="24px" />
+				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					<Skeleton variant="rectangular" height="100px" />
+					<Skeleton variant="rectangular" height="100px" />
+					<Skeleton variant="rectangular" height="100px" />
+				</div>
+			</Stack>
+		</Card>
+	</Stack>
+);
 
 export const ProjectDetail = () => {
 	const params = useParams<{ id: string }>();
@@ -38,10 +62,10 @@ export const ProjectDetail = () => {
 		queries.projects.byId({ id: params.id }),
 	);
 
-	const [isEditingName, setIsEditingName] = createSignal(false);
-	const [isEditingDescription, setIsEditingDescription] = createSignal(false);
+	const [isEditing, setIsEditing] = createSignal(false);
 	const [editName, setEditName] = createSignal("");
 	const [editDescription, setEditDescription] = createSignal("");
+	const [isSaving, setIsSaving] = createSignal(false);
 	const [packageSearch, setPackageSearch] = createSignal("");
 	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
 	const [removePackageId, setRemovePackageId] = createSignal<string | null>(
@@ -134,56 +158,44 @@ export const ProjectDetail = () => {
 			setPackageSearch("");
 		} catch (err) {
 			console.error("Failed to add package:", err);
+			toast.error("Failed to add package. Please try again.");
 		}
 	};
 
-	const startEditingName = () => {
+	const startEditing = () => {
 		const p = project();
 		if (p) {
 			setEditName(p.name);
-			setIsEditingName(true);
-		}
-	};
-
-	const startEditingDescription = () => {
-		const p = project();
-		if (p) {
 			setEditDescription(p.description ?? "");
-			setIsEditingDescription(true);
+			setIsEditing(true);
 		}
 	};
 
-	const saveName = async () => {
+	const cancelEditing = () => {
+		setIsEditing(false);
+		setEditName("");
+		setEditDescription("");
+	};
+
+	const saveProject = async () => {
 		const p = project();
 		if (!p || !editName().trim()) return;
 
+		setIsSaving(true);
 		try {
 			await zero().mutate(
 				mutators.projects.update({
 					id: p.id,
 					name: editName().trim(),
-				}),
-			).client;
-			setIsEditingName(false);
-		} catch (err) {
-			console.error("Failed to update name:", err);
-		}
-	};
-
-	const saveDescription = async () => {
-		const p = project();
-		if (!p) return;
-
-		try {
-			await zero().mutate(
-				mutators.projects.update({
-					id: p.id,
 					description: editDescription().trim() || undefined,
 				}),
 			).client;
-			setIsEditingDescription(false);
+			setIsEditing(false);
 		} catch (err) {
-			console.error("Failed to update description:", err);
+			console.error("Failed to update project:", err);
+			toast.error("Failed to update project. Please try again.");
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
@@ -206,6 +218,7 @@ export const ProjectDetail = () => {
 			).client;
 		} catch (err) {
 			console.error("Failed to remove package:", err);
+			toast.error("Failed to remove package. Please try again.");
 		}
 		setRemovePackageId(null);
 	};
@@ -219,6 +232,7 @@ export const ProjectDetail = () => {
 			navigate("/me/projects");
 		} catch (err) {
 			console.error("Failed to delete project:", err);
+			toast.error("Failed to delete project. Please try again.");
 		}
 	};
 
@@ -226,10 +240,7 @@ export const ProjectDetail = () => {
 		<Layout>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
-					<Show
-						when={!isLoading()}
-						fallback={<Text color="muted">Loading...</Text>}
-					>
+					<Show when={!isLoading()} fallback={<ProjectDetailSkeleton />}>
 						<Show
 							when={project()}
 							fallback={
@@ -251,140 +262,126 @@ export const ProjectDetail = () => {
 						>
 							{(p) => (
 								<>
-									<Flex justify="between" align="start" gap="md">
-										<Stack spacing="xs" class="flex-1">
-											{/* Editable Name */}
-											<Show
-												when={isEditingName()}
-												fallback={
+									<Show
+										when={isEditing()}
+										fallback={
+											<Flex justify="between" align="start" gap="md">
+												<Stack spacing="xs" class="flex-1">
 													<Flex align="center" gap="sm">
 														<Heading level="h1">{p().name}</Heading>
 														<Show when={isOwner()}>
 															<button
 																type="button"
-																onClick={startEditingName}
+																onClick={startEditing}
 																class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1"
 															>
-																<PencilIcon size="sm" title="Edit name" />
+																<PencilIcon size="sm" title="Edit project" />
 															</button>
 														</Show>
 													</Flex>
-												}
-											>
-												<Flex gap="sm" align="center">
-													<input
+													<Show
+														when={p().description}
+														fallback={
+															<Show when={isOwner()}>
+																<button
+																	type="button"
+																	onClick={startEditing}
+																	class="text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition text-sm"
+																>
+																	+ Add description
+																</button>
+															</Show>
+														}
+													>
+														<Text color="muted">{p().description}</Text>
+													</Show>
+													<Text size="sm" color="muted">
+														Created by{" "}
+														{p().account?.name ??
+															p().account?.email ??
+															"Unknown"}
+													</Text>
+												</Stack>
+												<Show when={isOwner()}>
+													<Button
+														variant="danger"
+														size="sm"
+														onClick={() => setDeleteDialogOpen(true)}
+													>
+														Delete
+													</Button>
+												</Show>
+											</Flex>
+										}
+									>
+										<Card padding="lg">
+											<Stack spacing="md">
+												<Heading level="h2">Edit Project</Heading>
+												<div>
+													<Text
+														size="sm"
+														weight="medium"
+														class="mb-1 text-on-surface-strong dark:text-on-surface-dark-strong"
+													>
+														Name
+													</Text>
+													<Input
 														type="text"
 														value={editName()}
 														onInput={(e) => setEditName(e.currentTarget.value)}
 														onKeyDown={(e) => {
-															if (e.key === "Enter") saveName();
-															if (e.key === "Escape") setIsEditingName(false);
+															if (e.key === "Escape") cancelEditing();
 														}}
-														class="flex-1 px-2 py-1 text-2xl font-bold bg-surface-alt dark:bg-surface-dark-alt border border-outline dark:border-outline-dark rounded"
+														placeholder="Project name"
+														disabled={isSaving()}
 														autofocus
 													/>
-													<Button
+												</div>
+												<div>
+													<Text
 														size="sm"
-														variant="primary"
-														onClick={saveName}
+														weight="medium"
+														class="mb-1 text-on-surface-strong dark:text-on-surface-dark-strong"
 													>
-														Save
-													</Button>
-													<Button
-														size="sm"
-														variant="secondary"
-														onClick={() => setIsEditingName(false)}
-													>
-														Cancel
-													</Button>
-												</Flex>
-											</Show>
-
-											{/* Editable Description */}
-											<Show
-												when={isEditingDescription()}
-												fallback={
-													<Flex align="start" gap="sm">
-														<Show
-															when={p().description}
-															fallback={
-																<Show when={isOwner()}>
-																	<button
-																		type="button"
-																		onClick={startEditingDescription}
-																		class="text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition text-sm"
-																	>
-																		+ Add description
-																	</button>
-																</Show>
-															}
-														>
-															<Text color="muted">{p().description}</Text>
-															<Show when={isOwner()}>
-																<button
-																	type="button"
-																	onClick={startEditingDescription}
-																	class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1 shrink-0"
-																>
-																	<PencilIcon
-																		size="sm"
-																		title="Edit description"
-																	/>
-																</button>
-															</Show>
-														</Show>
-													</Flex>
-												}
-											>
-												<Stack spacing="sm">
-													<textarea
+														Description{" "}
+														<span class="font-normal text-on-surface-muted dark:text-on-surface-dark-muted">
+															(optional)
+														</span>
+													</Text>
+													<Textarea
 														value={editDescription()}
 														onInput={(e) =>
 															setEditDescription(e.currentTarget.value)
 														}
 														onKeyDown={(e) => {
-															if (e.key === "Escape")
-																setIsEditingDescription(false);
+															if (e.key === "Escape") cancelEditing();
 														}}
 														rows={3}
-														class="w-full px-2 py-1 text-sm bg-surface-alt dark:bg-surface-dark-alt border border-outline dark:border-outline-dark rounded resize-none"
 														placeholder="Add a description..."
-														autofocus
+														disabled={isSaving()}
 													/>
-													<Flex gap="sm">
-														<Button
-															size="sm"
-															variant="primary"
-															onClick={saveDescription}
-														>
-															Save
-														</Button>
-														<Button
-															size="sm"
-															variant="secondary"
-															onClick={() => setIsEditingDescription(false)}
-														>
-															Cancel
-														</Button>
-													</Flex>
-												</Stack>
-											</Show>
-
-											<Text size="sm" color="muted">
-												Created by{" "}
-												{p().account?.name ?? p().account?.email ?? "Unknown"}
-											</Text>
-										</Stack>
-										<Show when={isOwner()}>
-											<Button
-												variant="danger"
-												size="sm"
-												onClick={() => setDeleteDialogOpen(true)}
-											>
-												Delete
-											</Button>
-										</Show>
-									</Flex>
+												</div>
+												<Flex justify="end" gap="sm">
+													<Button
+														size="sm"
+														variant="secondary"
+														onClick={cancelEditing}
+														disabled={isSaving()}
+													>
+														Cancel
+													</Button>
+													<Button
+														size="sm"
+														variant="primary"
+														onClick={saveProject}
+														disabled={isSaving() || !editName().trim()}
+													>
+														{isSaving() ? "Saving..." : "Save Changes"}
+													</Button>
+												</Flex>
+											</Stack>
+										</Card>
+									</Show>
 
 									<Stack spacing="md">
 										<Flex justify="between" align="center">

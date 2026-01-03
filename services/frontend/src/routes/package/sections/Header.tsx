@@ -21,6 +21,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
@@ -69,6 +70,7 @@ export const Header = (props: HeaderProps) => {
 			);
 		} catch (err) {
 			console.error("Failed to add package to project:", err);
+			toast.error("Failed to add package to project. Please try again.");
 		} finally {
 			setAddingToProject(null);
 		}

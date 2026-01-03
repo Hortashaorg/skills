@@ -6,6 +6,8 @@ import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packagesMutators from "./packages.ts";
 import * as projectPackagesMutators from "./project-packages.ts";
 import * as projectsMutators from "./projects.ts";
+import * as suggestionVotesMutators from "./suggestion-votes.ts";
+import * as suggestionsMutators from "./suggestions.ts";
 import * as tagsMutators from "./tags.ts";
 
 export const mutators = defineMutators({
@@ -38,4 +40,12 @@ export const mutators = defineMutators({
 		add: projectPackagesMutators.add,
 		remove: projectPackagesMutators.remove,
 	},
+	suggestions: {
+		createAddTag: suggestionsMutators.createAddTag,
+	},
+	suggestionVotes: {
+		vote: suggestionVotesMutators.vote,
+	},
+	contributionEvents: {},
+	contributionScores: {},
 });

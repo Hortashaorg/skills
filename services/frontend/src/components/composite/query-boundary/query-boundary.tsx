@@ -23,7 +23,7 @@ import { Spinner } from "@/components/ui/spinner";
  *
  * @example
  * // Single object (use hasData for custom empty check)
- * const [pkg, result] = useQuery(() => queries.packages.byName({ name }));
+ * const [pkg, result] = useQuery(() => queries.packages.byNameWithChannels({ name, registry }));
  *
  * <QueryBoundary
  *   data={pkg()}

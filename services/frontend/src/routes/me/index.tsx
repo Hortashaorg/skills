@@ -17,9 +17,45 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 import { getAuthData, logout } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { getConfig } from "@/lib/config";
+
+const ProfileSkeleton = () => (
+	<Stack spacing="lg">
+		<Card padding="lg">
+			<Stack spacing="md">
+				<Skeleton variant="text" width="100px" height="24px" />
+				<div class="grid gap-4 sm:grid-cols-2">
+					<div class="sm:col-span-2">
+						<Skeleton variant="text" width="80px" height="16px" class="mb-2" />
+						<Skeleton variant="text" width="150px" />
+					</div>
+					<div>
+						<Skeleton variant="text" width="60px" height="16px" class="mb-2" />
+						<Skeleton variant="text" width="180px" />
+					</div>
+					<div>
+						<Skeleton variant="text" width="100px" height="16px" class="mb-2" />
+						<Skeleton variant="text" width="120px" />
+					</div>
+				</div>
+			</Stack>
+		</Card>
+		<Card padding="lg">
+			<Stack spacing="md">
+				<Skeleton variant="text" width="120px" height="24px" />
+				<div class="grid gap-4 sm:grid-cols-3">
+					<Skeleton variant="rectangular" height="80px" />
+					<Skeleton variant="rectangular" height="80px" />
+					<Skeleton variant="rectangular" height="80px" />
+				</div>
+			</Stack>
+		</Card>
+	</Stack>
+);
 
 export const Profile = () => {
 	const zero = useZero();
@@ -94,11 +130,12 @@ export const Profile = () => {
 			setIsEditingUsername(false);
 		} catch (err) {
 			console.error("Failed to update username:", err);
-			if (err instanceof Error && err.message.includes("unique")) {
-				setUsernameError("This username is already taken");
-			} else {
-				setUsernameError("Failed to update username. Please try again.");
-			}
+			const message =
+				err instanceof Error && err.message.includes("unique")
+					? "This username is already taken"
+					: "Failed to update username. Please try again.";
+			setUsernameError(message);
+			toast.error(message);
 		} finally {
 			setIsSaving(false);
 		}
@@ -133,9 +170,10 @@ export const Profile = () => {
 			navigate("/", { replace: true });
 		} catch (err) {
 			console.error("Failed to delete account:", err);
-			setDeleteError(
-				err instanceof Error ? err.message : "Failed to delete account",
-			);
+			const message =
+				err instanceof Error ? err.message : "Failed to delete account";
+			setDeleteError(message);
+			toast.error(message);
 			setIsDeleting(false);
 		}
 	};
@@ -146,10 +184,7 @@ export const Profile = () => {
 				<Stack spacing="lg" class="py-8">
 					<Heading level="h1">Your Profile</Heading>
 
-					<Show
-						when={!isLoading() && account()}
-						fallback={<Text color="muted">Loading...</Text>}
-					>
+					<Show when={!isLoading() && account()} fallback={<ProfileSkeleton />}>
 						{(acc) => (
 							<Stack spacing="lg">
 								{/* Account Info */}

@@ -7,90 +7,128 @@
 ## UX Polish
 
 ### Toast Notification System
-- [ ] Create Toast component using Kobalte Toast primitive
-- [ ] Create ToastProvider in app context
-- [ ] Define toast variants: success, error, info, warning
-- [ ] Replace `console.error` catches with user-visible toasts
-  - [ ] `admin/tags/index.tsx` - tag delete/save failures
-  - [ ] `me/projects/detail.tsx` - project update failures
-  - [ ] Audit other mutation error handlers
+- [x] Create Toast component using Kobalte Toast primitive
+- [x] Create ToastProvider in app context (ToastRegion in Layout)
+- [x] Define toast variants: success, error, info, warning
+- [x] Replace `console.error` catches with user-visible toasts
+  - [x] `admin/tags/index.tsx` - tag delete/save failures
+  - [x] `me/projects/detail.tsx` - project update failures
+  - [x] `me/projects/new.tsx` - project create failure
+  - [x] `me/index.tsx` - username update, account delete
+  - [x] `package/sections/Header.tsx` - add to project failure
+  - [x] `package/sections/PackageTags.tsx` - add/remove tag failures
 
 ### Loading States
-- [ ] Create Skeleton component (animated placeholder)
-- [ ] Package detail page - replace loading text with skeleton
-- [ ] Project detail page - skeleton for project data
-- [ ] Admin tags page - skeleton for tags list
-- [ ] Consistent loading patterns across app
+- [x] Create Skeleton component (animated placeholder)
+- [x] Project list page - skeleton grid
+- [x] Project detail page - skeleton for project data
+- [x] Profile page - skeleton for account info
+- [x] Package detail page - skeleton for header, tags, channels, dependencies
+- [x] Admin tags page - skeleton for tags list
 
 ### Form Consistency
-- [ ] Convert raw inputs in `detail.tsx` to Input/Textarea components
-- [ ] Audit for any remaining raw form elements
+- [x] Create Textarea component (primitives tier)
+- [x] Convert raw inputs in `detail.tsx` to Input/Textarea components
+- [x] Convert raw textarea in `ProjectForm.tsx` to Textarea component
+- [x] Audit complete - no remaining raw form elements in routes
 
 ---
 
 ## Community Curation
 
 ### Database Schema
-- [ ] Create `suggestions` table
-  - id, type, packageId, tagId, accountId, status, createdAt, resolvedAt
-- [ ] Create `suggestionVotes` table
-  - id, suggestionId, accountId, vote, createdAt
-- [ ] Create `contributionScores` table
-  - accountId (PK), score, updatedAt
-- [ ] Run migrations
-- [ ] Generate Zero schema
+- [x] Create `suggestions` table
+  - id, packageId, accountId, type, version, payload (JSON), status, createdAt, updatedAt, resolvedAt
+- [x] Create `suggestionVotes` table
+  - id, suggestionId, accountId, vote (approve/reject), createdAt
+- [x] Create `contributionEvents` table (event log - source of truth)
+  - id, accountId, type, points, suggestionId, createdAt
+- [x] Create `contributionScores` table (cache - computed by worker)
+  - id, accountId, monthlyScore, allTimeScore, lastCalculatedAt
+- [x] Remove unused `audit_log` table and related enums
+- [x] Security fix: Add ownership check to `packageUpvotes.remove`
+- [x] Run migrations and generate Zero schema
+
+### Package Page Restructure
+- [x] Create tabbed layout for package pages
+  - [x] `/packages/:reg/:name` → Overview (tags, channels, dependencies)
+  - [x] `/packages/:reg/:name/details` → Full details (all info + fetch history)
+  - [x] `/packages/:reg/:name/curate` → Community curation tab
+- [x] Move existing sections appropriately
+- [x] Add tab navigation component
 
 ### Suggestion System
-- [ ] Create suggestion mutators
-  - [ ] `suggestions.create` - create tag suggestion
-  - [ ] `suggestions.resolve` - admin approve/reject
-- [ ] Create suggestion queries
-  - [ ] `suggestions.pendingForPackage` - pending suggestions for a package
-  - [ ] `suggestions.randomPending` - random pending for review queue
-- [ ] Package detail UI
-  - [ ] "Suggest Tag" button (logged-in users only)
-  - [ ] Show pending tag suggestions with vote counts
+- [x] Define Zod payload schemas (versioned)
+  - [x] `add_tag_v1`: `{ tagId: string }`
+  - [ ] Future: `remove_tag_v1`, `link_package_v1`, etc.
+- [x] Create suggestion mutators
+  - [x] `suggestions.createAddTag` - suggest adding a tag to a package
+  - [x] `suggestions.adminResolve` - manual admin resolution with points
+- [x] Create suggestion queries
+  - [x] `suggestions.forPackage` - all suggestions for a package
+  - [x] `suggestions.pendingForPackage` - pending for specific package
+  - [x] `suggestions.pending` - all pending (for review queue)
+  - [x] `suggestions.pendingExcludingUser` - exclude own suggestions
+  - [x] `suggestions.byId` - single suggestion with relations
+- [x] Curate tab UI (currently tag-focused, extensible architecture)
+  - [x] Display current tags
+  - [x] "Suggest Tag" form (logged-in users, select from available tags)
+  - [x] Show pending suggestions with approve/reject vote counts
+  - [x] Vote buttons for logged-in users (hidden for own suggestions)
+  - [ ] Future: Generalize UI to render different suggestion types
 
 ### Voting System
-- [ ] Create vote mutators
-  - [ ] `suggestionVotes.vote` - cast approve/reject vote
-- [ ] Voting queries
-  - [ ] `suggestionVotes.bySuggestion` - votes for a suggestion
-  - [ ] `suggestionVotes.userVote` - user's vote on a suggestion
-- [ ] Auto-resolve logic
-  - [ ] Approve when `approveVotes >= 2`
-  - [ ] Reject when `rejectVotes >= 2`
-- [ ] Prevent self-voting (cannot vote on own suggestions)
+- [x] Create vote mutators
+  - [x] `suggestionVotes.vote` - cast approve/reject vote
+- [x] Auto-resolve logic (threshold: 3 votes same direction)
+  - [x] Apply tag when approved
+  - [x] Dismiss suggestion when rejected
+  - [x] Award/deduct points on resolution
+- [x] Validation rules
+  - [x] Block self-voting
+  - [x] Block duplicate votes
+  - [x] Block voting on resolved suggestions
 
-### Review Queue
-- [ ] Create `/review` page
-- [ ] Random pending suggestion display (no cherry-picking)
-- [ ] Approve/Reject buttons
-- [ ] Skip button with limit tracking
-- [ ] Exclude user's own suggestions
-- [ ] Progress indicator (reviewed today count)
+### Curation Review Page (`/curation`)
+- [x] Create page layout with queue + leaderboard sidebar
+- [x] Review queue section
+  - [x] Pending suggestion (exclude own)
+  - [x] Package context (name, registry, description)
+  - [x] Approve / Reject buttons with vote counts
+  - [x] Auto-advance on vote (realtime query updates)
+- [x] Leaderboard sidebar
+  - [x] Toggle: Monthly / All-time
+  - [x] Top 50 contributors
+  - [x] Current user's rank + points (if not in top 50)
 
 ### Contribution Scoring
-- [ ] Create score mutators
-  - [ ] `contributionScores.adjust` - add/subtract points
-- [ ] Point triggers
-  - [ ] +5 when suggestion approved
-  - [ ] +2 when vote matches final outcome
-  - [ ] -1 when suggestion rejected
-  - [ ] -10 when suggestion marked as spam
-- [ ] Leaderboard query
-  - [ ] `contributionScores.leaderboard` - top contributors
-
-### Leaderboard UI
-- [ ] Create leaderboard section (landing page or `/leaderboard`)
-- [ ] Top contributors by score
-- [ ] Current user's rank display
+- [x] Point awards (applied on suggestion resolution)
+  - [x] +5 to suggester when approved
+  - [x] -1 to suggester when rejected
+  - [x] +1 to voters who matched outcome
+- [x] Create contribution queries
+  - [x] `contributionScores.leaderboardMonthly` - top 50 monthly
+  - [x] `contributionScores.leaderboardAllTime` - top 50 all-time
+  - [x] `contributionScores.forUser` - specific user's scores
+- [x] Worker job to aggregate contributionEvents → contributionScores
+  - [x] Incremental all-time score calculation
+  - [x] Monthly score: incremental within month, recalculates on UTC month change
+  - [x] Uses max(event.createdAt) as lastCalculatedAt marker
 
 ---
 
-## Out of Scope (Future Sprints)
+## Backlog
 
-- Other suggestion types (descriptions, new packages)
+### Bugs (PR Review Findings)
+- [x] Fix double-counting in vote points - `suggestion-votes.ts:120-123` appends current vote to `allVotes` which already includes it
+- [x] Throw error if resolution handler missing - `suggestion-votes.ts:100-103` silently continues if no handler
+- [x] Use `replaceAll` instead of `replace` - `display.ts:23` only replaces first underscore
+- [x] Await mutation in curation vote handler - `curation/index.tsx:137` doesn't await, can't catch server errors
+
+### Future Features
+- Additional suggestion types (remove_tag, link_package, set_attribute)
+- Generalize curation UI to handle multiple suggestion types
+- New tag proposals (currently: existing tags only)
 - Complex spam detection
 - Notifications for suggestion status changes
 

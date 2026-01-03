@@ -8,6 +8,7 @@ import { AppProvider } from "./context/app-provider";
 import { loadConfig } from "./lib/config";
 import { AdminRequests } from "./routes/admin/requests";
 import { AdminTags } from "./routes/admin/tags";
+import { Curation } from "./routes/curation";
 import { Packages } from "./routes/home";
 import { Landing } from "./routes/landing";
 import { Profile } from "./routes/me";
@@ -34,12 +35,13 @@ loadConfig().then(() => {
 					<Router>
 						<Route path="/" component={Landing} />
 						<Route path="/packages" component={Packages} />
-						<Route path="/package/:registry/:name" component={Package} />
+						<Route path="/package/:registry/:name/*tab" component={Package} />
 						<Route path="/me" component={Profile} />
 						<Route path="/me/projects" component={Projects} />
 						<Route path="/me/projects/new" component={NewProject} />
 						<Route path="/projects" component={BrowseProjects} />
 						<Route path="/projects/:id" component={ProjectDetail} />
+						<Route path="/curation" component={Curation} />
 						<Route path="/verify-email" component={VerifyEmail} />
 						<Route path="/privacy" component={Privacy} />
 						<Route path="/admin/requests" component={AdminRequests} />

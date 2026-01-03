@@ -11,12 +11,14 @@
  */
 
 import {
-	actorTypeEnum,
-	auditActionEnum,
+	contributionEventTypeEnum,
 	dependencyTypeEnum,
 	fetchStatusEnum,
 	packageStatusEnum,
 	registryEnum,
+	suggestionStatusEnum,
+	suggestionTypeEnum,
+	voteEnum,
 } from "./schema.ts";
 
 // Infer union types from Drizzle enums
@@ -24,8 +26,11 @@ export type Registry = (typeof registryEnum.enumValues)[number];
 export type DependencyType = (typeof dependencyTypeEnum.enumValues)[number];
 export type FetchStatus = (typeof fetchStatusEnum.enumValues)[number];
 export type PackageStatus = (typeof packageStatusEnum.enumValues)[number];
-export type AuditAction = (typeof auditActionEnum.enumValues)[number];
-export type ActorType = (typeof actorTypeEnum.enumValues)[number];
+export type SuggestionType = (typeof suggestionTypeEnum.enumValues)[number];
+export type SuggestionStatus = (typeof suggestionStatusEnum.enumValues)[number];
+export type Vote = (typeof voteEnum.enumValues)[number];
+export type ContributionEventType =
+	(typeof contributionEventTypeEnum.enumValues)[number];
 
 // Re-export enum values for Zod validators
 // Use: z.enum(enums.registry)
@@ -34,6 +39,8 @@ export const enums = {
 	dependencyType: dependencyTypeEnum.enumValues,
 	fetchStatus: fetchStatusEnum.enumValues,
 	packageStatus: packageStatusEnum.enumValues,
-	auditAction: auditActionEnum.enumValues,
-	actorType: actorTypeEnum.enumValues,
+	suggestionType: suggestionTypeEnum.enumValues,
+	suggestionStatus: suggestionStatusEnum.enumValues,
+	vote: voteEnum.enumValues,
+	contributionEventType: contributionEventTypeEnum.enumValues,
 } as const;
