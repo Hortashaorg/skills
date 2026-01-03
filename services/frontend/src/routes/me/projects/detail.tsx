@@ -21,6 +21,7 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
 import { buildPackageUrl } from "@/lib/url";
@@ -134,6 +135,7 @@ export const ProjectDetail = () => {
 			setPackageSearch("");
 		} catch (err) {
 			console.error("Failed to add package:", err);
+			toast.error("Failed to add package. Please try again.");
 		}
 	};
 
@@ -167,6 +169,7 @@ export const ProjectDetail = () => {
 			setIsEditingName(false);
 		} catch (err) {
 			console.error("Failed to update name:", err);
+			toast.error("Failed to update name. Please try again.");
 		}
 	};
 
@@ -184,6 +187,7 @@ export const ProjectDetail = () => {
 			setIsEditingDescription(false);
 		} catch (err) {
 			console.error("Failed to update description:", err);
+			toast.error("Failed to update description. Please try again.");
 		}
 	};
 
@@ -206,6 +210,7 @@ export const ProjectDetail = () => {
 			).client;
 		} catch (err) {
 			console.error("Failed to remove package:", err);
+			toast.error("Failed to remove package. Please try again.");
 		}
 		setRemovePackageId(null);
 	};
@@ -219,6 +224,7 @@ export const ProjectDetail = () => {
 			navigate("/me/projects");
 		} catch (err) {
 			console.error("Failed to delete project:", err);
+			toast.error("Failed to delete project. Please try again.");
 		}
 	};
 

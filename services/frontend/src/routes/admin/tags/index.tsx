@@ -15,6 +15,7 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { TagForm } from "./sections/TagForm";
@@ -73,6 +74,7 @@ export const AdminTags = () => {
 			}
 		} catch (err) {
 			console.error("Failed to delete tag:", err);
+			toast.error("Failed to delete tag. Please try again.");
 		} finally {
 			setTagToDelete(null);
 			setDeleteDialogOpen(false);
@@ -108,6 +110,7 @@ export const AdminTags = () => {
 			setEditingTag(null);
 		} catch (err) {
 			console.error("Failed to save tag:", err);
+			toast.error("Failed to save tag. Please try again.");
 		}
 	};
 

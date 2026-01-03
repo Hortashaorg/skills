@@ -7,13 +7,16 @@
 ## UX Polish
 
 ### Toast Notification System
-- [ ] Create Toast component using Kobalte Toast primitive
-- [ ] Create ToastProvider in app context
-- [ ] Define toast variants: success, error, info, warning
-- [ ] Replace `console.error` catches with user-visible toasts
-  - [ ] `admin/tags/index.tsx` - tag delete/save failures
-  - [ ] `me/projects/detail.tsx` - project update failures
-  - [ ] Audit other mutation error handlers
+- [x] Create Toast component using Kobalte Toast primitive
+- [x] Create ToastProvider in app context (ToastRegion in Layout)
+- [x] Define toast variants: success, error, info, warning
+- [x] Replace `console.error` catches with user-visible toasts
+  - [x] `admin/tags/index.tsx` - tag delete/save failures
+  - [x] `me/projects/detail.tsx` - project update failures
+  - [x] `me/projects/new.tsx` - project create failure
+  - [x] `me/index.tsx` - username update, account delete
+  - [x] `package/sections/Header.tsx` - add to project failure
+  - [x] `package/sections/PackageTags.tsx` - add/remove tag failures
 
 ### Loading States
 - [ ] Create Skeleton component (animated placeholder)

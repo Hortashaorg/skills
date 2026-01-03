@@ -7,6 +7,7 @@ import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { Layout } from "@/layout/Layout";
 import { ProjectForm } from "./sections/ProjectForm";
 
@@ -37,7 +38,9 @@ export const NewProject = () => {
 			navigate("/me/projects");
 		} catch (err) {
 			console.error("Failed to create project:", err);
-			setError("Failed to create project. Please try again.");
+			const message = "Failed to create project. Please try again.";
+			setError(message);
+			toast.error(message);
 		} finally {
 			setIsSubmitting(false);
 		}

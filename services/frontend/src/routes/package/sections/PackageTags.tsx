@@ -4,6 +4,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, type SelectOption } from "@/components/ui/select";
+import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 
 type Props = {
@@ -60,6 +61,7 @@ export const PackageTags = (props: Props) => {
 			setSelectedTagId(undefined);
 		} catch (err) {
 			console.error("Failed to add tag:", err);
+			toast.error("Failed to add tag. Please try again.");
 		} finally {
 			setIsAdding(false);
 		}
@@ -75,6 +77,7 @@ export const PackageTags = (props: Props) => {
 			}
 		} catch (err) {
 			console.error("Failed to remove tag:", err);
+			toast.error("Failed to remove tag. Please try again.");
 		}
 	};
 

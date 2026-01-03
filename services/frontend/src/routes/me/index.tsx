@@ -17,6 +17,7 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/components/ui/toast";
 import { getAuthData, logout } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { getConfig } from "@/lib/config";
@@ -94,11 +95,12 @@ export const Profile = () => {
 			setIsEditingUsername(false);
 		} catch (err) {
 			console.error("Failed to update username:", err);
-			if (err instanceof Error && err.message.includes("unique")) {
-				setUsernameError("This username is already taken");
-			} else {
-				setUsernameError("Failed to update username. Please try again.");
-			}
+			const message =
+				err instanceof Error && err.message.includes("unique")
+					? "This username is already taken"
+					: "Failed to update username. Please try again.";
+			setUsernameError(message);
+			toast.error(message);
 		} finally {
 			setIsSaving(false);
 		}
@@ -133,9 +135,10 @@ export const Profile = () => {
 			navigate("/", { replace: true });
 		} catch (err) {
 			console.error("Failed to delete account:", err);
-			setDeleteError(
-				err instanceof Error ? err.message : "Failed to delete account",
-			);
+			const message =
+				err instanceof Error ? err.message : "Failed to delete account";
+			setDeleteError(message);
+			toast.error(message);
 			setIsDeleting(false);
 		}
 	};
