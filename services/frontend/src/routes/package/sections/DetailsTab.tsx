@@ -258,29 +258,36 @@ export const DetailsTab = (props: DetailsTabProps) => {
 								</Text>
 							}
 						>
-							<div class="space-y-1">
+							<div class="space-y-2">
 								<For each={fetchHistory()?.slice(0, 5)}>
 									{(fetch) => (
-										<Flex
-											justify="between"
-											align="center"
-											class="text-xs py-0.5"
-										>
-											<span>
-												{new Date(fetch.createdAt).toLocaleDateString()}
-											</span>
-											<Badge
-												variant={
-													fetch.status === "completed"
-														? "success"
-														: fetch.status === "failed"
-															? "danger"
-															: "warning"
-												}
-											>
-												{fetch.status}
-											</Badge>
-										</Flex>
+										<div class="py-1">
+											<Flex justify="between" align="center" class="text-xs">
+												<span>
+													{new Date(fetch.createdAt).toLocaleDateString()}
+												</span>
+												<Badge
+													variant={
+														fetch.status === "completed"
+															? "success"
+															: fetch.status === "failed"
+																? "danger"
+																: "warning"
+													}
+												>
+													{fetch.status}
+												</Badge>
+											</Flex>
+											<Show when={fetch.errorMessage}>
+												<Text
+													size="xs"
+													color="danger"
+													class="mt-1 line-clamp-2 break-all"
+												>
+													{fetch.errorMessage}
+												</Text>
+											</Show>
+										</div>
 									)}
 								</For>
 							</div>
