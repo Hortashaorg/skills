@@ -59,13 +59,16 @@ export const resolutionHandlers: Record<
 
 /**
  * Execute resolution handler for a suggestion type.
- * Returns true if handler was found and executed.
+ * Throws if no handler exists for the suggestion type.
  */
 export async function resolveApprovedSuggestion(
 	ctx: ResolutionContext,
-): Promise<boolean> {
+): Promise<void> {
 	const handler = resolutionHandlers[ctx.suggestion.type as SuggestionType];
-	if (!handler) return false;
+	if (!handler) {
+		throw new Error(
+			`No resolution handler for suggestion type: ${ctx.suggestion.type}`,
+		);
+	}
 	await handler(ctx);
-	return true;
 }

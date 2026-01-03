@@ -20,7 +20,8 @@ export const suggestionTypeMeta: Record<
 /** Get label for a suggestion type */
 export function getSuggestionTypeLabel(type: string): string {
 	return (
-		suggestionTypeMeta[type as SuggestionType]?.label ?? type.replace("_", " ")
+		suggestionTypeMeta[type as SuggestionType]?.label ??
+		type.replaceAll("_", " ")
 	);
 }
 

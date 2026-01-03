@@ -116,13 +116,9 @@ export const vote = defineMutator(
 				createdAt: eventRecord.now,
 			});
 
-			// Award points to voters who matched outcome (including current vote)
-			const finalVotes = [
-				...allVotes,
-				{ accountId: ctx.userID, vote: args.vote },
-			];
-
-			for (const v of finalVotes) {
+			// Award points to voters who matched outcome
+			// Note: allVotes already includes the current vote (queried after insert)
+			for (const v of allVotes) {
 				const matched =
 					(v.vote === "approve" && resolvedStatus === "approved") ||
 					(v.vote === "reject" && resolvedStatus === "rejected");

@@ -119,6 +119,12 @@
 
 ## Backlog
 
+### Bugs (PR Review Findings)
+- [x] Fix double-counting in vote points - `suggestion-votes.ts:120-123` appends current vote to `allVotes` which already includes it
+- [x] Throw error if resolution handler missing - `suggestion-votes.ts:100-103` silently continues if no handler
+- [x] Use `replaceAll` instead of `replace` - `display.ts:23` only replaces first underscore
+- [x] Await mutation in curation vote handler - `curation/index.tsx:137` doesn't await, can't catch server errors
+
 ### Future Features
 - Additional suggestion types (remove_tag, link_package, set_attribute)
 - Generalize curation UI to handle multiple suggestion types

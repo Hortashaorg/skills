@@ -133,25 +133,26 @@ export const Curation = () => {
 		const suggestion = currentSuggestion();
 		if (!suggestion) return;
 
-		try {
-			zero().mutate(
-				mutators.suggestionVotes.vote({
-					suggestionId: suggestion.id,
-					vote: voteType,
-				}),
-			);
-			// Clear selection so we auto-advance to next suggestion
-			setSelectedSuggestionId(null);
-			toast.success(
-				"Your vote has been recorded.",
-				voteType === "approve" ? "Approved" : "Rejected",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to vote",
-			);
+		const write = zero().mutate(
+			mutators.suggestionVotes.vote({
+				suggestionId: suggestion.id,
+				vote: voteType,
+			}),
+		);
+
+		const res = await write.client;
+
+		if (res.type === "error") {
+			toast.error(res.error.message, "Failed to vote");
+			return;
 		}
+
+		// Clear selection so we auto-advance to next suggestion
+		setSelectedSuggestionId(null);
+		toast.success(
+			"Your vote has been recorded.",
+			voteType === "approve" ? "Approved" : "Rejected",
+		);
 	};
 
 	return (
