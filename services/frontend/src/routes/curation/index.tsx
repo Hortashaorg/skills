@@ -1,6 +1,6 @@
 import { mutators, queries, useQuery, useZero } from "@package/database/client";
-import { A } from "@solidjs/router";
-import { createMemo, createSignal, For, Show } from "solid-js";
+import { A, useNavigate } from "@solidjs/router";
+import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -16,7 +16,16 @@ import { buildPackageUrl } from "@/lib/url";
 
 export const Curation = () => {
 	const zero = useZero();
+	const navigate = useNavigate();
+	const isLoggedIn = () => zero().userID !== "anon";
 	const currentUserId = () => zero().userID;
+
+	// Redirect to home if not logged in
+	createEffect(() => {
+		if (!isLoggedIn()) {
+			navigate("/", { replace: true });
+		}
+	});
 
 	const [leaderboardTab, setLeaderboardTab] = createSignal<
 		"monthly" | "allTime"
