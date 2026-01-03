@@ -19,15 +19,18 @@
   - [x] `package/sections/PackageTags.tsx` - add/remove tag failures
 
 ### Loading States
-- [ ] Create Skeleton component (animated placeholder)
-- [ ] Package detail page - replace loading text with skeleton
-- [ ] Project detail page - skeleton for project data
-- [ ] Admin tags page - skeleton for tags list
-- [ ] Consistent loading patterns across app
+- [x] Create Skeleton component (animated placeholder)
+- [x] Project list page - skeleton grid
+- [x] Project detail page - skeleton for project data
+- [x] Profile page - skeleton for account info
+- [x] Package detail page - skeleton for header, tags, channels, dependencies
+- [x] Admin tags page - skeleton for tags list
 
 ### Form Consistency
-- [ ] Convert raw inputs in `detail.tsx` to Input/Textarea components
-- [ ] Audit for any remaining raw form elements
+- [x] Create Textarea component (primitives tier)
+- [x] Convert raw inputs in `detail.tsx` to Input/Textarea components
+- [x] Convert raw textarea in `ProjectForm.tsx` to Textarea component
+- [x] Audit complete - no remaining raw form elements in routes
 
 ---
 

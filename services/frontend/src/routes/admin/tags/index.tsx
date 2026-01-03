@@ -15,6 +15,7 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
@@ -25,13 +26,37 @@ type TagWithPackages = Row["tags"] & {
 	packageTags: readonly Row["packageTags"][];
 };
 
+const TagsListSkeleton = () => (
+	<Card padding="lg">
+		<Stack spacing="md">
+			<Flex justify="between" align="center">
+				<Skeleton variant="text" width="100px" />
+				<Skeleton variant="rectangular" width="60px" height="28px" />
+			</Flex>
+			<Flex justify="between" align="center">
+				<Skeleton variant="text" width="120px" />
+				<Skeleton variant="rectangular" width="60px" height="28px" />
+			</Flex>
+			<Flex justify="between" align="center">
+				<Skeleton variant="text" width="80px" />
+				<Skeleton variant="rectangular" width="60px" height="28px" />
+			</Flex>
+			<Flex justify="between" align="center">
+				<Skeleton variant="text" width="140px" />
+				<Skeleton variant="rectangular" width="60px" height="28px" />
+			</Flex>
+		</Stack>
+	</Card>
+);
+
 export const AdminTags = () => {
 	const zero = useZero();
 
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const [allTags] = useQuery(() => queries.tags.all());
+	const [allTags, tagsResult] = useQuery(() => queries.tags.all());
+	const isLoading = () => tagsResult().type !== "complete";
 
 	const [showForm, setShowForm] = createSignal(false);
 	const [editingTag, setEditingTag] = createSignal<TagWithPackages | null>(
@@ -143,16 +168,18 @@ export const AdminTags = () => {
 							</Card>
 						</Show>
 
-						<TagsList
-							tags={sortedTags()}
-							onEdit={handleEdit}
-							onDelete={handleDeleteClick}
-						/>
+						<Show when={!isLoading()} fallback={<TagsListSkeleton />}>
+							<TagsList
+								tags={sortedTags()}
+								onEdit={handleEdit}
+								onDelete={handleDeleteClick}
+							/>
 
-						<Text size="sm" color="muted">
-							{sortedTags().length} tag{sortedTags().length !== 1 ? "s" : ""}{" "}
-							total
-						</Text>
+							<Text size="sm" color="muted">
+								{sortedTags().length} tag{sortedTags().length !== 1 ? "s" : ""}{" "}
+								total
+							</Text>
+						</Show>
 					</AuthGuard>
 				</Stack>
 			</Container>

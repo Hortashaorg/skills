@@ -16,11 +16,14 @@ import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { PencilIcon } from "@/components/primitives/icon";
+import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Textarea } from "@/components/primitives/textarea";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
@@ -29,6 +32,26 @@ import { buildPackageUrl } from "@/lib/url";
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
 };
+
+const ProjectDetailSkeleton = () => (
+	<Stack spacing="lg">
+		<Flex justify="between" align="center">
+			<Skeleton variant="text" width="200px" height="32px" />
+			<Skeleton variant="rectangular" width="80px" height="36px" />
+		</Flex>
+		<Skeleton variant="text" width="60%" />
+		<Card padding="lg">
+			<Stack spacing="md">
+				<Skeleton variant="text" width="120px" height="24px" />
+				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					<Skeleton variant="rectangular" height="100px" />
+					<Skeleton variant="rectangular" height="100px" />
+					<Skeleton variant="rectangular" height="100px" />
+				</div>
+			</Stack>
+		</Card>
+	</Stack>
+);
 
 export const ProjectDetail = () => {
 	const params = useParams<{ id: string }>();
@@ -232,10 +255,7 @@ export const ProjectDetail = () => {
 		<Layout>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
-					<Show
-						when={!isLoading()}
-						fallback={<Text color="muted">Loading...</Text>}
-					>
+					<Show when={!isLoading()} fallback={<ProjectDetailSkeleton />}>
 						<Show
 							when={project()}
 							fallback={
@@ -278,15 +298,16 @@ export const ProjectDetail = () => {
 												}
 											>
 												<Flex gap="sm" align="center">
-													<input
+													<Input
 														type="text"
+														size="lg"
 														value={editName()}
 														onInput={(e) => setEditName(e.currentTarget.value)}
 														onKeyDown={(e) => {
 															if (e.key === "Enter") saveName();
 															if (e.key === "Escape") setIsEditingName(false);
 														}}
-														class="flex-1 px-2 py-1 text-2xl font-bold bg-surface-alt dark:bg-surface-dark-alt border border-outline dark:border-outline-dark rounded"
+														class="flex-1 text-2xl font-bold"
 														autofocus
 													/>
 													<Button
@@ -343,7 +364,7 @@ export const ProjectDetail = () => {
 												}
 											>
 												<Stack spacing="sm">
-													<textarea
+													<Textarea
 														value={editDescription()}
 														onInput={(e) =>
 															setEditDescription(e.currentTarget.value)
@@ -353,7 +374,7 @@ export const ProjectDetail = () => {
 																setIsEditingDescription(false);
 														}}
 														rows={3}
-														class="w-full px-2 py-1 text-sm bg-surface-alt dark:bg-surface-dark-alt border border-outline dark:border-outline-dark rounded resize-none"
+														size="sm"
 														placeholder="Add a description..."
 														autofocus
 													/>

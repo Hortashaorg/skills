@@ -9,8 +9,27 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Layout } from "@/layout/Layout";
 import { ProjectCard } from "./sections/ProjectCard";
+
+const ProjectCardSkeleton = () => (
+	<Card padding="md">
+		<Stack spacing="sm">
+			<Skeleton variant="text" width="60%" />
+			<Skeleton variant="text" width="80%" />
+			<Skeleton variant="text" width="40%" />
+		</Stack>
+	</Card>
+);
+
+const ProjectsListSkeleton = () => (
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+		<ProjectCardSkeleton />
+		<ProjectCardSkeleton />
+		<ProjectCardSkeleton />
+	</div>
+);
 
 export const Projects = () => {
 	const zero = useZero();
@@ -46,10 +65,7 @@ export const Projects = () => {
 							</A>
 						</Flex>
 
-						<Show
-							when={!isLoading()}
-							fallback={<Text color="muted">Loading...</Text>}
-						>
+						<Show when={!isLoading()} fallback={<ProjectsListSkeleton />}>
 							<Show
 								when={sortedProjects().length > 0}
 								fallback={

@@ -8,9 +8,11 @@ import { A, useParams } from "@solidjs/router";
 import { createMemo, createSignal, Show } from "solid-js";
 import { QueryBoundary } from "@/components/composite/query-boundary";
 import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
 import { ChannelSelector } from "./sections/ChannelSelector";
@@ -20,6 +22,52 @@ import { Header } from "./sections/Header";
 import { PackageTags } from "./sections/PackageTags";
 
 type ReleaseChannel = Row["packageReleaseChannels"];
+
+const PackageDetailSkeleton = () => (
+	<Stack spacing="lg">
+		{/* Header skeleton */}
+		<Stack spacing="md">
+			<Flex justify="between" align="start">
+				<Stack spacing="xs" class="flex-1">
+					<Skeleton variant="text" width="200px" height="32px" />
+					<Skeleton variant="text" width="120px" height="20px" />
+				</Stack>
+				<Flex gap="sm">
+					<Skeleton variant="rectangular" width="100px" height="36px" />
+					<Skeleton variant="rectangular" width="80px" height="36px" />
+				</Flex>
+			</Flex>
+			<Skeleton variant="text" width="80%" />
+		</Stack>
+
+		{/* Tags skeleton */}
+		<Flex gap="sm">
+			<Skeleton variant="rectangular" width="60px" height="24px" />
+			<Skeleton variant="rectangular" width="80px" height="24px" />
+			<Skeleton variant="rectangular" width="70px" height="24px" />
+		</Flex>
+
+		{/* Channel selector skeleton */}
+		<Card padding="md">
+			<Flex gap="sm">
+				<Skeleton variant="rectangular" width="80px" height="32px" />
+				<Skeleton variant="rectangular" width="80px" height="32px" />
+			</Flex>
+		</Card>
+
+		{/* Dependencies skeleton */}
+		<Card padding="lg">
+			<Stack spacing="md">
+				<Skeleton variant="text" width="120px" height="24px" />
+				<div class="grid gap-2">
+					<Skeleton variant="text" width="60%" />
+					<Skeleton variant="text" width="45%" />
+					<Skeleton variant="text" width="55%" />
+				</div>
+			</Stack>
+		</Card>
+	</Stack>
+);
 
 export const Package = () => {
 	const params = useParams<{ registry: string; name: string }>();
@@ -89,6 +137,7 @@ export const Package = () => {
 						data={pkg()}
 						isLoading={isLoading()}
 						hasData={!!pkg()}
+						loadingFallback={<PackageDetailSkeleton />}
 						emptyFallback={
 							<Card padding="lg">
 								<Stack spacing="md" align="center">
