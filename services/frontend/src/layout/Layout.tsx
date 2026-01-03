@@ -267,6 +267,18 @@ export const Layout: ParentComponent = (props) => {
 											>
 												My Projects
 											</A>
+											<A
+												href="/curation"
+												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
+												classList={{
+													"text-primary dark:text-primary-dark font-medium":
+														isExactActive("/curation"),
+													"text-on-surface dark:text-on-surface-dark":
+														!isExactActive("/curation"),
+												}}
+											>
+												Curate
+											</A>
 											<Show when={isAdmin()}>
 												<div class="border-t border-outline dark:border-outline-dark my-1" />
 												<A
@@ -422,6 +434,19 @@ export const Layout: ParentComponent = (props) => {
 										onClick={closeMobileMenu}
 									>
 										My Projects
+									</A>
+									<A
+										href="/curation"
+										class="block py-2 text-sm"
+										classList={{
+											"text-primary dark:text-primary-dark font-medium":
+												isExactActive("/curation"),
+											"text-on-surface dark:text-on-surface-dark":
+												!isExactActive("/curation"),
+										}}
+										onClick={closeMobileMenu}
+									>
+										Curate
 									</A>
 								</div>
 							</Show>

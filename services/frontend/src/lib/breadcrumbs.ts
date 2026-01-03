@@ -85,6 +85,10 @@ const configs: BreadcrumbConfig[] = [
 			{ label: "New" },
 		],
 	},
+	{
+		pattern: /^\/curation$/,
+		segments: [{ label: "Home", href: "/" }, { label: "Community Curation" }],
+	},
 ];
 
 export type BreadcrumbSegmentResult = {

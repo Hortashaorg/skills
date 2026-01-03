@@ -70,10 +70,11 @@
   - [x] `suggestions.pending` - all pending (for review queue)
   - [x] `suggestions.pendingExcludingUser` - exclude own suggestions
   - [x] `suggestions.byId` - single suggestion with relations
-- [ ] Curate tab UI
-  - [ ] Display current tags
-  - [ ] "Suggest Tag" button (logged-in users)
-  - [ ] Show pending suggestions with vote counts
+- [x] Curate tab UI
+  - [x] Display current tags
+  - [x] "Suggest Tag" form (logged-in users, select from available tags)
+  - [x] Show pending suggestions with approve/reject vote counts
+  - [x] Vote buttons for logged-in users (hidden for own suggestions)
 
 ### Voting System
 - [x] Create vote mutators
@@ -88,16 +89,16 @@
   - [x] Block voting on resolved suggestions
 
 ### Curation Review Page (`/curation`)
-- [ ] Create page layout with queue + leaderboard sidebar
-- [ ] Review queue section
-  - [ ] Random pending suggestion (exclude own)
-  - [ ] Package context (name, registry, current tags)
-  - [ ] Approve / Reject / Skip buttons
-  - [ ] Load next on action
-- [ ] Leaderboard sidebar
-  - [ ] Toggle: Monthly / All-time
-  - [ ] Top 50 contributors
-  - [ ] Current user's rank + points (if not in top 50)
+- [x] Create page layout with queue + leaderboard sidebar
+- [x] Review queue section
+  - [x] Pending suggestion (exclude own)
+  - [x] Package context (name, registry, description)
+  - [x] Approve / Reject buttons with vote counts
+  - [x] Auto-advance on vote (realtime query updates)
+- [x] Leaderboard sidebar
+  - [x] Toggle: Monthly / All-time
+  - [x] Top 50 contributors
+  - [x] Current user's rank + points (if not in top 50)
 
 ### Contribution Scoring
 - [x] Point awards (applied on suggestion resolution)

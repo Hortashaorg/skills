@@ -1,0 +1,370 @@
+import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import { A } from "@solidjs/router";
+import { createMemo, createSignal, For, Show } from "solid-js";
+import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
+import { Heading } from "@/components/primitives/heading";
+import { Stack } from "@/components/primitives/stack";
+import { Text } from "@/components/primitives/text";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Tabs } from "@/components/ui/tabs";
+import { toast } from "@/components/ui/toast";
+import { Layout } from "@/layout/Layout";
+import { buildPackageUrl } from "@/lib/url";
+
+export const Curation = () => {
+	const zero = useZero();
+	const currentUserId = () => zero().userID;
+
+	const [leaderboardTab, setLeaderboardTab] = createSignal<
+		"monthly" | "allTime"
+	>("monthly");
+
+	// Get pending suggestions excluding own (for anon, excludes "anon" which has no suggestions anyway)
+	const [pendingSuggestions] = useQuery(() =>
+		queries.suggestions.pendingExcludingUser({
+			excludeAccountId: currentUserId(),
+		}),
+	);
+
+	// Get all tags for name lookup
+	const [allTags] = useQuery(() => queries.tags.list());
+
+	const tagsById = createMemo(() => {
+		const all = allTags() ?? [];
+		return new Map(all.map((t) => [t.id, t]));
+	});
+
+	// Leaderboard queries
+	const [monthlyLeaderboard] = useQuery(() =>
+		queries.contributionScores.leaderboardMonthly({ limit: 50 }),
+	);
+
+	const [allTimeLeaderboard] = useQuery(() =>
+		queries.contributionScores.leaderboardAllTime({ limit: 50 }),
+	);
+
+	// Current user's score (for anon, will return nothing which is expected)
+	const [myScore] = useQuery(() =>
+		queries.contributionScores.forUser({ accountId: currentUserId() }),
+	);
+
+	// Get current suggestion to review (first in queue)
+	const currentSuggestion = createMemo(() => {
+		const suggestions = pendingSuggestions();
+		if (!suggestions || suggestions.length === 0) return null;
+		return suggestions[0];
+	});
+
+	// Check if user already voted on current suggestion
+	const hasVotedOnCurrent = createMemo(() => {
+		const suggestion = currentSuggestion();
+		if (!suggestion) return false;
+		const userId = currentUserId();
+		return (suggestion.votes ?? []).some((v) => v.accountId === userId);
+	});
+
+	// Get vote counts for current suggestion
+	const currentVoteCounts = createMemo(() => {
+		const suggestion = currentSuggestion();
+		const votes = suggestion?.votes ?? [];
+		return {
+			approve: votes.filter((v) => v.vote === "approve").length,
+			reject: votes.filter((v) => v.vote === "reject").length,
+		};
+	});
+
+	// Helper to get tag name from suggestion payload
+	const getTagNameFromPayload = (payload: unknown): string => {
+		const p = payload as { tagId?: string };
+		if (p?.tagId) {
+			return tagsById().get(p.tagId)?.name ?? "Unknown tag";
+		}
+		return "Unknown";
+	};
+
+	// Cast vote
+	const handleVote = async (voteType: "approve" | "reject") => {
+		const suggestion = currentSuggestion();
+		if (!suggestion) return;
+
+		try {
+			await zero().mutate(
+				mutators.suggestionVotes.vote({
+					suggestionId: suggestion.id,
+					vote: voteType,
+				}),
+			);
+			toast.success(
+				"Your vote has been recorded.",
+				voteType === "approve" ? "Approved" : "Rejected",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to vote",
+			);
+		}
+	};
+
+	// Get active leaderboard
+	const activeLeaderboard = createMemo(() => {
+		return leaderboardTab() === "monthly"
+			? monthlyLeaderboard()
+			: allTimeLeaderboard();
+	});
+
+	// Check if user is in top 50
+	const userRank = createMemo(() => {
+		const leaderboard = activeLeaderboard();
+		if (!leaderboard) return null;
+		const userId = currentUserId();
+		const index = leaderboard.findIndex((s) => s.accountId === userId);
+		return index >= 0 ? index + 1 : null;
+	});
+
+	return (
+		<Layout>
+			<Container size="lg">
+				<Stack spacing="lg" class="py-8">
+					<div>
+						<Heading level="h1">Community Curation</Heading>
+						<Text color="muted">
+							Review tag suggestions and help improve package discoverability.
+						</Text>
+					</div>
+
+					<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						{/* Review Queue - Main content */}
+						<div class="lg:col-span-2">
+							<Card padding="lg">
+								<Stack spacing="md">
+									<Heading level="h3">Review Queue</Heading>
+
+									<Show
+										when={currentSuggestion()}
+										fallback={
+											<Stack spacing="sm" align="center" class="py-8">
+												<Text color="muted">No suggestions to review</Text>
+												<Text size="sm" color="muted">
+													Check back later or suggest tags on package pages.
+												</Text>
+											</Stack>
+										}
+									>
+										{(suggestion) => (
+											<Stack spacing="md">
+												{/* Package info */}
+												<div class="p-4 bg-surface-alt dark:bg-surface-dark-alt rounded-radius">
+													<Stack spacing="xs">
+														<Text size="sm" color="muted">
+															Package
+														</Text>
+														<A
+															href={buildPackageUrl(
+																suggestion().package?.registry ?? "npm",
+																suggestion().package?.name ?? "",
+															)}
+															class="text-lg font-semibold hover:text-primary dark:hover:text-primary-dark"
+														>
+															{suggestion().package?.name ?? "Unknown"}
+														</A>
+														<Show when={suggestion().package?.description}>
+															<Text
+																size="sm"
+																color="muted"
+																class="line-clamp-2"
+															>
+																{suggestion().package?.description}
+															</Text>
+														</Show>
+													</Stack>
+												</div>
+
+												{/* Suggestion details */}
+												<div class="p-4 border border-outline dark:border-outline-dark rounded-radius">
+													<Stack spacing="sm">
+														<Flex gap="sm" align="center">
+															<Badge variant="info">
+																{suggestion().type === "add_tag"
+																	? "Add Tag"
+																	: suggestion().type}
+															</Badge>
+															<Text weight="semibold">
+																{getTagNameFromPayload(suggestion().payload)}
+															</Text>
+														</Flex>
+														<Text size="sm" color="muted">
+															Suggested by{" "}
+															{suggestion().account?.name ?? "Unknown"}
+														</Text>
+														<Flex gap="sm">
+															<Badge variant="success" size="sm">
+																+{currentVoteCounts().approve} approve
+															</Badge>
+															<Badge variant="danger" size="sm">
+																-{currentVoteCounts().reject} reject
+															</Badge>
+															<Text size="xs" color="muted">
+																(3 votes needed to resolve)
+															</Text>
+														</Flex>
+													</Stack>
+												</div>
+
+												{/* Vote buttons */}
+												<Show
+													when={!hasVotedOnCurrent()}
+													fallback={
+														<Text size="sm" color="muted" class="text-center">
+															You've already voted on this suggestion. Waiting
+															for more votes...
+														</Text>
+													}
+												>
+													<Flex gap="md" justify="center">
+														<Button
+															size="lg"
+															variant="primary"
+															onClick={() => handleVote("approve")}
+														>
+															Approve
+														</Button>
+														<Button
+															size="lg"
+															variant="outline"
+															onClick={() => handleVote("reject")}
+														>
+															Reject
+														</Button>
+													</Flex>
+												</Show>
+
+												{/* Queue info */}
+												<Text size="xs" color="muted" class="text-center">
+													{(pendingSuggestions()?.length ?? 1) - 1} more
+													suggestions in queue
+												</Text>
+											</Stack>
+										)}
+									</Show>
+								</Stack>
+							</Card>
+						</div>
+
+						{/* Leaderboard - Sidebar */}
+						<div>
+							<Card padding="md">
+								<Stack spacing="sm">
+									<Heading level="h3">Leaderboard</Heading>
+
+									<Tabs.Root
+										value={leaderboardTab()}
+										onChange={(v) =>
+											setLeaderboardTab(v as "monthly" | "allTime")
+										}
+									>
+										<Tabs.List>
+											<Tabs.Trigger value="monthly">Monthly</Tabs.Trigger>
+											<Tabs.Trigger value="allTime">All Time</Tabs.Trigger>
+										</Tabs.List>
+									</Tabs.Root>
+
+									<Show
+										when={activeLeaderboard()?.length}
+										fallback={
+											<Text size="sm" color="muted" class="py-4 text-center">
+												No contributions yet
+											</Text>
+										}
+									>
+										<div class="space-y-1 max-h-96 overflow-y-auto">
+											<For each={activeLeaderboard()}>
+												{(score, index) => (
+													<Flex
+														justify="between"
+														align="center"
+														class="px-2 py-1.5 rounded hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+														classList={{
+															"bg-primary/10 dark:bg-primary-dark/10":
+																score.accountId === currentUserId(),
+														}}
+													>
+														<Flex gap="sm" align="center">
+															<Text
+																size="sm"
+																weight={index() < 3 ? "semibold" : "normal"}
+																class="w-6"
+															>
+																{index() + 1}.
+															</Text>
+															<Text
+																size="sm"
+																weight={
+																	score.accountId === currentUserId()
+																		? "semibold"
+																		: "normal"
+																}
+															>
+																{score.account?.name ?? "Unknown"}
+																{score.accountId === currentUserId() &&
+																	" (you)"}
+															</Text>
+														</Flex>
+														<Text size="sm" weight="medium">
+															{leaderboardTab() === "monthly"
+																? score.monthlyScore
+																: score.allTimeScore}
+														</Text>
+													</Flex>
+												)}
+											</For>
+										</div>
+									</Show>
+
+									{/* Show user's rank if not in top 50 */}
+									<Show when={myScore() && !userRank()}>
+										<div class="pt-2 border-t border-outline dark:border-outline-dark">
+											<Flex
+												justify="between"
+												align="center"
+												class="px-2 py-1.5"
+											>
+												<Text size="sm">Your score</Text>
+												<Text size="sm" weight="medium">
+													{leaderboardTab() === "monthly"
+														? (myScore()?.monthlyScore ?? 0)
+														: (myScore()?.allTimeScore ?? 0)}
+												</Text>
+											</Flex>
+										</div>
+									</Show>
+								</Stack>
+							</Card>
+
+							{/* Points info */}
+							<Card padding="md" class="mt-4">
+								<Stack spacing="xs">
+									<Text size="sm" weight="semibold">
+										How points work
+									</Text>
+									<Text size="xs" color="muted">
+										+5 when your suggestion is approved
+									</Text>
+									<Text size="xs" color="muted">
+										-1 when your suggestion is rejected
+									</Text>
+									<Text size="xs" color="muted">
+										+1 when your vote matches the outcome
+									</Text>
+								</Stack>
+							</Card>
+						</div>
+					</div>
+				</Stack>
+			</Container>
+		</Layout>
+	);
+};
