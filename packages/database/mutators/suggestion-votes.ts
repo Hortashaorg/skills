@@ -60,17 +60,13 @@ export const vote = defineMutator(
 		});
 
 		// Count votes to check threshold
+		// Query runs after insert, so allVotes includes the vote we just added
 		const allVotes = await tx.run(
 			zql.suggestionVotes.where("suggestionId", args.suggestionId),
 		);
 
-		// Include the vote we just added
-		const approveCount =
-			allVotes.filter((v) => v.vote === "approve").length +
-			(args.vote === "approve" ? 1 : 0);
-		const rejectCount =
-			allVotes.filter((v) => v.vote === "reject").length +
-			(args.vote === "reject" ? 1 : 0);
+		const approveCount = allVotes.filter((v) => v.vote === "approve").length;
+		const rejectCount = allVotes.filter((v) => v.vote === "reject").length;
 
 		// Check if threshold reached
 		// - Admin vote = instant resolution

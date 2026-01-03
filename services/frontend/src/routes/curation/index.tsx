@@ -44,12 +44,22 @@ export const Curation = () => {
 	>(null);
 
 	// Get pending suggestions - admins see all, regular users exclude own
-	const [allPending] = useQuery(() => queries.suggestions.pending());
-	const [pendingExcludingOwn] = useQuery(() =>
+	const [allPending, allPendingResult] = useQuery(() =>
+		queries.suggestions.pending(),
+	);
+	const [pendingExcludingOwn, pendingExcludingOwnResult] = useQuery(() =>
 		queries.suggestions.pendingExcludingUser({
 			excludeAccountId: currentUserId(),
 		}),
 	);
+
+	// Loading state - check the relevant result based on user role
+	const isLoading = () => {
+		const relevantResult = isAdmin()
+			? allPendingResult()
+			: pendingExcludingOwnResult();
+		return relevantResult.type !== "complete";
+	};
 
 	// All pending (for admin backlog display)
 	const allPendingSuggestions: Accessor<
@@ -70,7 +80,12 @@ export const Curation = () => {
 	});
 
 	// Get all tags for name lookup
-	const [allTags] = useQuery(() => queries.tags.list());
+	const [allTags, allTagsResult] = useQuery(() => queries.tags.list());
+
+	// Combined loading state for all required data
+	const isDataLoading = () => {
+		return isLoading() || allTagsResult().type !== "complete";
+	};
 
 	const tagsById = createMemo(() => {
 		const all = allTags() ?? [];
@@ -171,6 +186,7 @@ export const Curation = () => {
 						<div class="lg:col-span-2">
 							<ReviewQueue
 								suggestion={currentSuggestion}
+								isLoading={isDataLoading}
 								isOwnSuggestion={isOwnSuggestion}
 								isAdmin={isAdmin}
 								hasVoted={hasVotedOnCurrent}

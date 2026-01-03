@@ -8,6 +8,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { buildPackageUrl } from "@/lib/url";
 
 export interface ReviewQueueSuggestion {
@@ -26,6 +27,7 @@ export interface ReviewQueueSuggestion {
 
 interface ReviewQueueProps {
 	suggestion: Accessor<ReviewQueueSuggestion | null>;
+	isLoading: Accessor<boolean>;
 	isOwnSuggestion: Accessor<boolean>;
 	isAdmin: Accessor<boolean>;
 	hasVoted: Accessor<boolean>;
@@ -34,23 +36,49 @@ interface ReviewQueueProps {
 	onVote: (vote: "approve" | "reject") => void;
 }
 
+const ReviewQueueSkeleton = () => (
+	<div class="p-4 bg-surface-alt dark:bg-surface-dark-alt rounded-radius">
+		<Stack spacing="sm">
+			<Skeleton width="60%" height="24px" />
+			<Flex gap="xs" align="center">
+				<Skeleton width="20px" height="16px" />
+				<Skeleton width="120px" height="16px" />
+				<Skeleton width="40px" height="16px" />
+			</Flex>
+			<Skeleton width="100%" height="32px" />
+			<div class="pt-2 border-t border-outline/50 dark:border-outline-dark/50">
+				<Flex gap="md" align="center">
+					<Skeleton width="80px" height="14px" />
+					<Flex gap="xs">
+						<Skeleton width="32px" height="20px" />
+						<Skeleton width="32px" height="20px" />
+					</Flex>
+				</Flex>
+			</div>
+		</Stack>
+	</div>
+);
+
 export const ReviewQueue = (props: ReviewQueueProps) => {
 	return (
 		<Card padding="lg">
 			<Stack spacing="md">
 				<Heading level="h3">Review Queue</Heading>
 
-				<Show
-					when={props.suggestion()}
-					fallback={
-						<Stack spacing="sm" align="center" class="py-8">
-							<Text color="muted">No suggestions to review</Text>
-							<Text size="sm" color="muted">
-								Check back later or suggest tags on package pages.
-							</Text>
-						</Stack>
-					}
-				>
+				<Show when={props.isLoading()}>
+					<ReviewQueueSkeleton />
+				</Show>
+
+				<Show when={!props.isLoading() && !props.suggestion()}>
+					<Stack spacing="sm" align="center" class="py-8">
+						<Text color="muted">No suggestions to review</Text>
+						<Text size="sm" color="muted">
+							Check back later or suggest tags on package pages.
+						</Text>
+					</Stack>
+				</Show>
+
+				<Show when={!props.isLoading() && props.suggestion()}>
 					{(suggestion) => (
 						<Stack spacing="md">
 							<div class="p-4 bg-surface-alt dark:bg-surface-dark-alt rounded-radius">
