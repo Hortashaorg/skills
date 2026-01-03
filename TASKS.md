@@ -38,67 +38,78 @@
 
 ### Database Schema
 - [ ] Create `suggestions` table
-  - id, type, packageId, tagId, accountId, status, createdAt, resolvedAt
+  - id, packageId, accountId, type, version, payload (JSON), status, createdAt, resolvedAt
+  - Payload validated with versioned Zod schemas per type
 - [ ] Create `suggestionVotes` table
-  - id, suggestionId, accountId, vote, createdAt
+  - id, suggestionId, accountId, vote (approve/reject), createdAt
 - [ ] Create `contributionScores` table
-  - accountId (PK), score, updatedAt
-- [ ] Run migrations
-- [ ] Generate Zero schema
+  - id visually, accountId, monthlyScore, allTimeScore, updatedAt
+- [ ] Run migrations and generate Zero schema
+
+### Package Page Restructure
+- [ ] Create tabbed layout for package pages
+  - [ ] `/packages/:reg/:name` → Overview (header, description, quick stats)
+  - [ ] `/packages/:reg/:name/details` → Full details (channels, deps, fetch history)
+  - [ ] `/packages/:reg/:name/curate` → Community curation tab
+- [ ] Move existing sections appropriately
+- [ ] Add tab navigation component
 
 ### Suggestion System
+- [ ] Define Zod payload schemas (versioned)
+  - [ ] `add_tag_v1`: `{ tagId: string }`
+  - [ ] Future: `remove_tag_v1`, `link_package_v1`, etc.
 - [ ] Create suggestion mutators
-  - [ ] `suggestions.create` - create tag suggestion
-  - [ ] `suggestions.resolve` - admin approve/reject
+  - [ ] `suggestions.create` - create suggestion with validated payload
+  - [ ] `suggestions.resolve` - auto-resolve when threshold reached
 - [ ] Create suggestion queries
-  - [ ] `suggestions.pendingForPackage` - pending suggestions for a package
-  - [ ] `suggestions.randomPending` - random pending for review queue
-- [ ] Package detail UI
-  - [ ] "Suggest Tag" button (logged-in users only)
-  - [ ] Show pending tag suggestions with vote counts
+  - [ ] `suggestions.forPackage` - all suggestions for a package
+  - [ ] `suggestions.pending` - pending suggestions (for review queue)
+- [ ] Curate tab UI
+  - [ ] Display current tags
+  - [ ] "Suggest Tag" button (logged-in users)
+  - [ ] Show pending suggestions with vote counts
 
 ### Voting System
 - [ ] Create vote mutators
   - [ ] `suggestionVotes.vote` - cast approve/reject vote
-- [ ] Voting queries
-  - [ ] `suggestionVotes.bySuggestion` - votes for a suggestion
-  - [ ] `suggestionVotes.userVote` - user's vote on a suggestion
-- [ ] Auto-resolve logic
-  - [ ] Approve when `approveVotes >= 2`
-  - [ ] Reject when `rejectVotes >= 2`
-- [ ] Prevent self-voting (cannot vote on own suggestions)
+- [ ] Auto-resolve logic (threshold: 3 votes same direction)
+  - [ ] Apply tag when approved
+  - [ ] Dismiss suggestion when rejected
+  - [ ] Award/deduct points on resolution
+- [ ] Validation rules
+  - [ ] Block self-voting
+  - [ ] Block duplicate votes
+  - [ ] Block voting on resolved suggestions
 
-### Review Queue
-- [ ] Create `/review` page
-- [ ] Random pending suggestion display (no cherry-picking)
-- [ ] Approve/Reject buttons
-- [ ] Skip button with limit tracking
-- [ ] Exclude user's own suggestions
-- [ ] Progress indicator (reviewed today count)
+### Curation Review Page (`/curation`)
+- [ ] Create page layout with queue + leaderboard sidebar
+- [ ] Review queue section
+  - [ ] Random pending suggestion (exclude own)
+  - [ ] Package context (name, registry, current tags)
+  - [ ] Approve / Reject / Skip buttons
+  - [ ] Load next on action
+- [ ] Leaderboard sidebar
+  - [ ] Toggle: Monthly / All-time
+  - [ ] Top 50 contributors
+  - [ ] Current user's rank + points (if not in top 50)
 
 ### Contribution Scoring
-- [ ] Create score mutators
-  - [ ] `contributionScores.adjust` - add/subtract points
-- [ ] Point triggers
-  - [ ] +5 when suggestion approved
-  - [ ] +2 when vote matches final outcome
-  - [ ] -1 when suggestion rejected
-  - [ ] -10 when suggestion marked as spam
-- [ ] Leaderboard query
-  - [ ] `contributionScores.leaderboard` - top contributors
-
-### Leaderboard UI
-- [ ] Create leaderboard section (landing page or `/leaderboard`)
-- [ ] Top contributors by score
-- [ ] Current user's rank display
+- [ ] Point awards (applied on suggestion resolution)
+  - [ ] +5 to suggester when approved
+  - [ ] -1 to suggester when rejected
+  - [ ] +1 to voters who matched outcome
+- [ ] Update both monthly and all-time scores
+- [ ] Monthly score reset (future: cron job or on-read reset)
 
 ---
 
 ## Out of Scope (Future Sprints)
 
-- Other suggestion types (descriptions, new packages)
+- Additional suggestion types (remove_tag, link_package, set_attribute)
+- New tag proposals (currently: existing tags only)
 - Complex spam detection
 - Notifications for suggestion status changes
+- Monthly score auto-reset cron
 
 ---
 
