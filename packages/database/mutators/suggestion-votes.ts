@@ -4,7 +4,7 @@ import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
-const VOTE_THRESHOLD = 3;
+const APPROVE_THRESHOLD = 3;
 
 export const vote = defineMutator(
 	z.object({
@@ -15,6 +15,8 @@ export const vote = defineMutator(
 		if (ctx.userID === "anon") {
 			throw new Error("Must be logged in to vote");
 		}
+
+		const isAdmin = ctx.roles.includes("admin");
 
 		// Get suggestion
 		const suggestion = await tx.run(
@@ -29,9 +31,11 @@ export const vote = defineMutator(
 			throw new Error("Cannot vote on resolved suggestions");
 		}
 
-		// Check not self-voting
+		// Check not self-voting (admins can approve their own)
 		if (suggestion.accountId === ctx.userID) {
-			throw new Error("Cannot vote on your own suggestion");
+			if (!isAdmin || args.vote !== "approve") {
+				throw new Error("Cannot vote on your own suggestion");
+			}
 		}
 
 		// Check not duplicate vote
@@ -69,11 +73,16 @@ export const vote = defineMutator(
 			(args.vote === "reject" ? 1 : 0);
 
 		// Check if threshold reached
+		// - Admin approve = instant approval
+		// - Any single rejection = instant rejection
+		// - Regular users need 3 approvals
 		let resolvedStatus: "approved" | "rejected" | null = null;
-		if (approveCount >= VOTE_THRESHOLD) {
+		if (isAdmin && args.vote === "approve") {
 			resolvedStatus = "approved";
-		} else if (rejectCount >= VOTE_THRESHOLD) {
+		} else if (rejectCount >= 1) {
 			resolvedStatus = "rejected";
+		} else if (approveCount >= APPROVE_THRESHOLD) {
+			resolvedStatus = "approved";
 		}
 
 		// Auto-resolve if threshold reached

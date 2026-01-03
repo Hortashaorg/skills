@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toast";
+import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { buildPackageUrl } from "@/lib/url";
 
@@ -18,6 +19,7 @@ export const Curation = () => {
 	const zero = useZero();
 	const navigate = useNavigate();
 	const isLoggedIn = () => zero().userID !== "anon";
+	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const currentUserId = () => zero().userID;
 
 	// Redirect to home if not logged in
@@ -31,12 +33,15 @@ export const Curation = () => {
 		"monthly" | "allTime"
 	>("monthly");
 
-	// Get pending suggestions excluding own (for anon, excludes "anon" which has no suggestions anyway)
-	const [pendingSuggestions] = useQuery(() =>
+	// Get pending suggestions - admins see all, regular users exclude own
+	const [allPending] = useQuery(() => queries.suggestions.pending());
+	const [pendingExcludingOwn] = useQuery(() =>
 		queries.suggestions.pendingExcludingUser({
 			excludeAccountId: currentUserId(),
 		}),
 	);
+	const pendingSuggestions = () =>
+		isAdmin() ? allPending() : pendingExcludingOwn();
 
 	// Get all tags for name lookup
 	const [allTags] = useQuery(() => queries.tags.list());
@@ -65,6 +70,13 @@ export const Curation = () => {
 		const suggestions = pendingSuggestions();
 		if (!suggestions || suggestions.length === 0) return null;
 		return suggestions[0];
+	});
+
+	// Check if current suggestion is user's own
+	const isOwnSuggestion = createMemo(() => {
+		const suggestion = currentSuggestion();
+		if (!suggestion) return false;
+		return suggestion.accountId === currentUserId();
 	});
 
 	// Check if user already voted on current suggestion
@@ -233,22 +245,38 @@ export const Curation = () => {
 														</Text>
 													}
 												>
-													<Flex gap="md" justify="center">
-														<Button
-															size="lg"
-															variant="primary"
-															onClick={() => handleVote("approve")}
-														>
-															Approve
-														</Button>
-														<Button
-															size="lg"
-															variant="outline"
-															onClick={() => handleVote("reject")}
-														>
-															Reject
-														</Button>
-													</Flex>
+													<Show
+														when={isOwnSuggestion() && isAdmin()}
+														fallback={
+															<Flex gap="md" justify="center">
+																<Button
+																	size="lg"
+																	variant="primary"
+																	onClick={() => handleVote("approve")}
+																>
+																	Approve
+																</Button>
+																<Button
+																	size="lg"
+																	variant="outline"
+																	onClick={() => handleVote("reject")}
+																>
+																	Reject
+																</Button>
+															</Flex>
+														}
+													>
+														<Stack spacing="sm" align="center">
+															<Badge variant="info">Your suggestion</Badge>
+															<Button
+																size="lg"
+																variant="primary"
+																onClick={() => handleVote("approve")}
+															>
+																Approve (Admin)
+															</Button>
+														</Stack>
+													</Show>
 												</Show>
 
 												{/* Queue info */}
