@@ -1,140 +1,87 @@
-# Sprint 3 Tasks
+# Sprint 4 Tasks
 
-> **Current Sprint:** [SPRINT-3.md](./SPRINT-3.md) - UX Polish + Community Curation
-
----
-
-## UX Polish
-
-### Toast Notification System
-- [x] Create Toast component using Kobalte Toast primitive
-- [x] Create ToastProvider in app context (ToastRegion in Layout)
-- [x] Define toast variants: success, error, info, warning
-- [x] Replace `console.error` catches with user-visible toasts
-  - [x] `admin/tags/index.tsx` - tag delete/save failures
-  - [x] `me/projects/detail.tsx` - project update failures
-  - [x] `me/projects/new.tsx` - project create failure
-  - [x] `me/index.tsx` - username update, account delete
-  - [x] `package/sections/Header.tsx` - add to project failure
-  - [x] `package/sections/PackageTags.tsx` - add/remove tag failures
-
-### Loading States
-- [x] Create Skeleton component (animated placeholder)
-- [x] Project list page - skeleton grid
-- [x] Project detail page - skeleton for project data
-- [x] Profile page - skeleton for account info
-- [x] Package detail page - skeleton for header, tags, channels, dependencies
-- [x] Admin tags page - skeleton for tags list
-
-### Form Consistency
-- [x] Create Textarea component (primitives tier)
-- [x] Convert raw inputs in `detail.tsx` to Input/Textarea components
-- [x] Convert raw textarea in `ProjectForm.tsx` to Textarea component
-- [x] Audit complete - no remaining raw form elements in routes
+> **Current Sprint:** [SPRINT-4.md](./SPRINT-4.md) - CI/CD, Observability & Notifications
 
 ---
 
-## Community Curation
+## PR Workflow
+
+### GitHub Actions CI
+- [ ] Create `.github/workflows/ci.yml` for PR checks
+- [ ] Run `pnpm check` (Biome lint + format)
+- [ ] Run `pnpm all typecheck` (TypeScript all workspaces)
+- [ ] Run `pnpm frontend test` (Storybook tests)
+- [ ] Fail PR if any check fails
+
+---
+
+## Observability
+
+### Telemetry Instrumentation
+- [ ] Add OpenTelemetry SDK to backend service
+- [ ] Add OpenTelemetry SDK to worker service
+- [ ] Configure OTLP exporter to Grafana (via otel-lgtm container)
+- [ ] Instrument key operations:
+  - [ ] Backend: Auth flows, mutation/query handlers
+  - [ ] Worker: Package fetch duration, registry API calls, score calculations
+- [ ] Add trace context to structured logs
+- [ ] Replace console.log with structured logger
+
+### Metrics to Track
+- [ ] Request latency (backend)
+- [ ] Fetch success/failure rates (worker)
+- [ ] Registry API response times (worker)
+- [ ] Score calculation duration (worker)
+
+---
+
+## User Notifications
 
 ### Database Schema
-- [x] Create `suggestions` table
-  - id, packageId, accountId, type, version, payload (JSON), status, createdAt, updatedAt, resolvedAt
-- [x] Create `suggestionVotes` table
-  - id, suggestionId, accountId, vote (approve/reject), createdAt
-- [x] Create `contributionEvents` table (event log - source of truth)
-  - id, accountId, type, points, suggestionId, createdAt
-- [x] Create `contributionScores` table (cache - computed by worker)
-  - id, accountId, monthlyScore, allTimeScore, lastCalculatedAt
-- [x] Remove unused `audit_log` table and related enums
-- [x] Security fix: Add ownership check to `packageUpvotes.remove`
-- [x] Run migrations and generate Zero schema
+- [ ] Create `notifications` table
+  - id, accountId, type, title, message, read, relatedId, createdAt
+- [ ] Define notification types enum
+- [ ] Run migrations and generate Zero schema
 
-### Package Page Restructure
-- [x] Create tabbed layout for package pages
-  - [x] `/packages/:reg/:name` → Overview (tags, channels, dependencies)
-  - [x] `/packages/:reg/:name/details` → Full details (all info + fetch history)
-  - [x] `/packages/:reg/:name/curate` → Community curation tab
-- [x] Move existing sections appropriately
-- [x] Add tab navigation component
+### Notification Triggers
+- [ ] `suggestion_approved` - "Your tag suggestion was approved"
+- [ ] `suggestion_rejected` - "Your tag suggestion was rejected"
 
-### Suggestion System
-- [x] Define Zod payload schemas (versioned)
-  - [x] `add_tag_v1`: `{ tagId: string }`
-  - [ ] Future: `remove_tag_v1`, `link_package_v1`, etc.
-- [x] Create suggestion mutators
-  - [x] `suggestions.createAddTag` - suggest adding a tag to a package
-  - [x] `suggestions.adminResolve` - manual admin resolution with points
-- [x] Create suggestion queries
-  - [x] `suggestions.forPackage` - all suggestions for a package
-  - [x] `suggestions.pendingForPackage` - pending for specific package
-  - [x] `suggestions.pending` - all pending (for review queue)
-  - [x] `suggestions.pendingExcludingUser` - exclude own suggestions
-  - [x] `suggestions.byId` - single suggestion with relations
-- [x] Curate tab UI (currently tag-focused, extensible architecture)
-  - [x] Display current tags
-  - [x] "Suggest Tag" form (logged-in users, select from available tags)
-  - [x] Show pending suggestions with approve/reject vote counts
-  - [x] Vote buttons for logged-in users (hidden for own suggestions)
-  - [ ] Future: Generalize UI to render different suggestion types
-
-### Voting System
-- [x] Create vote mutators
-  - [x] `suggestionVotes.vote` - cast approve/reject vote
-- [x] Auto-resolve logic (threshold: 3 votes same direction)
-  - [x] Apply tag when approved
-  - [x] Dismiss suggestion when rejected
-  - [x] Award/deduct points on resolution
-- [x] Validation rules
-  - [x] Block self-voting
-  - [x] Block duplicate votes
-  - [x] Block voting on resolved suggestions
-
-### Curation Review Page (`/curation`)
-- [x] Create page layout with queue + leaderboard sidebar
-- [x] Review queue section
-  - [x] Pending suggestion (exclude own)
-  - [x] Package context (name, registry, description)
-  - [x] Approve / Reject buttons with vote counts
-  - [x] Auto-advance on vote (realtime query updates)
-- [x] Leaderboard sidebar
-  - [x] Toggle: Monthly / All-time
-  - [x] Top 50 contributors
-  - [x] Current user's rank + points (if not in top 50)
-
-### Contribution Scoring
-- [x] Point awards (applied on suggestion resolution)
-  - [x] +5 to suggester when approved
-  - [x] -1 to suggester when rejected
-  - [x] +1 to voters who matched outcome
-- [x] Create contribution queries
-  - [x] `contributionScores.leaderboardMonthly` - top 50 monthly
-  - [x] `contributionScores.leaderboardAllTime` - top 50 all-time
-  - [x] `contributionScores.forUser` - specific user's scores
-- [x] Worker job to aggregate contributionEvents → contributionScores
-  - [x] Incremental all-time score calculation
-  - [x] Monthly score: incremental within month, recalculates on UTC month change
-  - [x] Uses max(event.createdAt) as lastCalculatedAt marker
+### Frontend UI
+- [ ] Notification bell icon in header
+- [ ] Unread count badge
+- [ ] Dropdown/panel showing recent notifications
+- [ ] Mark as read functionality
+- [ ] Link to relevant package/suggestion
 
 ---
 
 ## Backlog
-
-### Bugs (PR Review Findings)
-- [x] Fix double-counting in vote points - `suggestion-votes.ts:120-123` appends current vote to `allVotes` which already includes it
-- [x] Throw error if resolution handler missing - `suggestion-votes.ts:100-103` silently continues if no handler
-- [x] Use `replaceAll` instead of `replace` - `display.ts:23` only replaces first underscore
-- [x] Await mutation in curation vote handler - `curation/index.tsx:137` doesn't await, can't catch server errors
 
 ### Future Features
 - Additional suggestion types (remove_tag, link_package, set_attribute)
 - Generalize curation UI to handle multiple suggestion types
 - New tag proposals (currently: existing tags only)
 - Complex spam detection
-- Notifications for suggestion status changes
+- Skip functionality in review queue
+- Email/push notifications
+- Notification preferences/settings
+- Additional registry adapters (JSR, Homebrew, apt)
 
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 3: UX Polish + Community Curation
+
+- Toast notification system (Kobalte Toast primitive)
+- Loading states with Skeleton component
+- Form consistency (Input, Textarea components)
+- Community curation system (suggestions, votes, contribution scoring)
+- Package page restructure with tabs (Overview, Details, Curate)
+- Curation review page with leaderboard
+- Worker job for contribution score aggregation
+- Extensible suggestion type registry
 
 ### Sprint 2: Projects & Data Foundation
 
