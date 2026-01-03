@@ -13,11 +13,15 @@ export {
 	and,
 	count,
 	eq,
+	gt,
+	gte,
 	inArray,
 	isNotNull,
 	isNull,
+	max,
 	or,
 	sql as sqlExpr,
+	sum,
 } from "drizzle-orm";
 export { mutators } from "./mutators/index.ts";
 export { queries } from "./queries/index.ts";
