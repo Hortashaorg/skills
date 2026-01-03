@@ -5,6 +5,7 @@ import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
 const APPROVE_THRESHOLD = 3;
+const REJECT_THRESHOLD = 2;
 
 export const vote = defineMutator(
 	z.object({
@@ -71,13 +72,14 @@ export const vote = defineMutator(
 			(args.vote === "reject" ? 1 : 0);
 
 		// Check if threshold reached
-		// - Admin approve = instant approval
-		// - Any single rejection = instant rejection
-		// - Regular users need 3 approvals
+		// - Admin vote = instant resolution
+		// - Regular users need 3 approvals or 2 rejections
 		let resolvedStatus: "approved" | "rejected" | null = null;
 		if (isAdmin && args.vote === "approve") {
 			resolvedStatus = "approved";
-		} else if (rejectCount >= 1) {
+		} else if (isAdmin && args.vote === "reject") {
+			resolvedStatus = "rejected";
+		} else if (rejectCount >= REJECT_THRESHOLD) {
 			resolvedStatus = "rejected";
 		} else if (approveCount >= APPROVE_THRESHOLD) {
 			resolvedStatus = "approved";
