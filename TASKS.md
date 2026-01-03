@@ -70,11 +70,12 @@
   - [x] `suggestions.pending` - all pending (for review queue)
   - [x] `suggestions.pendingExcludingUser` - exclude own suggestions
   - [x] `suggestions.byId` - single suggestion with relations
-- [x] Curate tab UI
+- [x] Curate tab UI (currently tag-focused, extensible architecture)
   - [x] Display current tags
   - [x] "Suggest Tag" form (logged-in users, select from available tags)
   - [x] Show pending suggestions with approve/reject vote counts
   - [x] Vote buttons for logged-in users (hidden for own suggestions)
+  - [ ] Future: Generalize UI to render different suggestion types
 
 ### Voting System
 - [x] Create vote mutators
@@ -109,18 +110,20 @@
   - [x] `contributionScores.leaderboardMonthly` - top 50 monthly
   - [x] `contributionScores.leaderboardAllTime` - top 50 all-time
   - [x] `contributionScores.forUser` - specific user's scores
-- [ ] Worker job to aggregate contributionEvents → contributionScores
-- [ ] Monthly score reset (future: cron job or on-read reset)
+- [x] Worker job to aggregate contributionEvents → contributionScores
+  - [x] Incremental all-time score calculation
+  - [x] Monthly score: incremental within month, recalculates on UTC month change
+  - [x] Uses max(event.createdAt) as lastCalculatedAt marker
 
 ---
 
 ## Out of Scope (Future Sprints)
 
 - Additional suggestion types (remove_tag, link_package, set_attribute)
+- Generalize curation UI to handle multiple suggestion types
 - New tag proposals (currently: existing tags only)
 - Complex spam detection
 - Notifications for suggestion status changes
-- Monthly score auto-reset cron
 
 ---
 
