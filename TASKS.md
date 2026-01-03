@@ -46,7 +46,8 @@
 - [x] Create `contributionScores` table (cache - computed by worker)
   - id, accountId, monthlyScore, allTimeScore, lastCalculatedAt
 - [x] Remove unused `audit_log` table and related enums
-- [ ] Run migrations and generate Zero schema
+- [x] Security fix: Add ownership check to `packageUpvotes.remove`
+- [x] Run migrations and generate Zero schema
 
 ### Package Page Restructure
 - [ ] Create tabbed layout for package pages
@@ -57,31 +58,34 @@
 - [ ] Add tab navigation component
 
 ### Suggestion System
-- [ ] Define Zod payload schemas (versioned)
-  - [ ] `add_tag_v1`: `{ tagId: string }`
+- [x] Define Zod payload schemas (versioned)
+  - [x] `add_tag_v1`: `{ tagId: string }`
   - [ ] Future: `remove_tag_v1`, `link_package_v1`, etc.
-- [ ] Create suggestion mutators
-  - [ ] `suggestions.create` - create suggestion with validated payload
-  - [ ] `suggestions.resolve` - auto-resolve when threshold reached
-- [ ] Create suggestion queries
-  - [ ] `suggestions.forPackage` - all suggestions for a package
-  - [ ] `suggestions.pending` - pending suggestions (for review queue)
+- [x] Create suggestion mutators
+  - [x] `suggestions.createAddTag` - suggest adding a tag to a package
+  - [x] `suggestions.adminResolve` - manual admin resolution with points
+- [x] Create suggestion queries
+  - [x] `suggestions.forPackage` - all suggestions for a package
+  - [x] `suggestions.pendingForPackage` - pending for specific package
+  - [x] `suggestions.pending` - all pending (for review queue)
+  - [x] `suggestions.pendingExcludingUser` - exclude own suggestions
+  - [x] `suggestions.byId` - single suggestion with relations
 - [ ] Curate tab UI
   - [ ] Display current tags
   - [ ] "Suggest Tag" button (logged-in users)
   - [ ] Show pending suggestions with vote counts
 
 ### Voting System
-- [ ] Create vote mutators
-  - [ ] `suggestionVotes.vote` - cast approve/reject vote
-- [ ] Auto-resolve logic (threshold: 3 votes same direction)
-  - [ ] Apply tag when approved
-  - [ ] Dismiss suggestion when rejected
-  - [ ] Award/deduct points on resolution
-- [ ] Validation rules
-  - [ ] Block self-voting
-  - [ ] Block duplicate votes
-  - [ ] Block voting on resolved suggestions
+- [x] Create vote mutators
+  - [x] `suggestionVotes.vote` - cast approve/reject vote
+- [x] Auto-resolve logic (threshold: 3 votes same direction)
+  - [x] Apply tag when approved
+  - [x] Dismiss suggestion when rejected
+  - [x] Award/deduct points on resolution
+- [x] Validation rules
+  - [x] Block self-voting
+  - [x] Block duplicate votes
+  - [x] Block voting on resolved suggestions
 
 ### Curation Review Page (`/curation`)
 - [ ] Create page layout with queue + leaderboard sidebar
@@ -96,11 +100,15 @@
   - [ ] Current user's rank + points (if not in top 50)
 
 ### Contribution Scoring
-- [ ] Point awards (applied on suggestion resolution)
-  - [ ] +5 to suggester when approved
-  - [ ] -1 to suggester when rejected
-  - [ ] +1 to voters who matched outcome
-- [ ] Update both monthly and all-time scores
+- [x] Point awards (applied on suggestion resolution)
+  - [x] +5 to suggester when approved
+  - [x] -1 to suggester when rejected
+  - [x] +1 to voters who matched outcome
+- [x] Create contribution queries
+  - [x] `contributionScores.leaderboardMonthly` - top 50 monthly
+  - [x] `contributionScores.leaderboardAllTime` - top 50 all-time
+  - [x] `contributionScores.forUser` - specific user's scores
+- [ ] Worker job to aggregate contributionEvents → contributionScores
 - [ ] Monthly score reset (future: cron job or on-read reset)
 
 ---

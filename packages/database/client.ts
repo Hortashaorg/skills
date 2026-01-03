@@ -7,12 +7,14 @@ export {
 } from "@rocicorp/zero/solid";
 // Re-export inferred types from schema
 export type {
-	ActorType,
-	AuditAction,
+	ContributionEventType,
 	DependencyType,
 	FetchStatus,
 	PackageStatus,
 	Registry,
+	SuggestionStatus,
+	SuggestionType,
+	Vote,
 } from "./db/types.ts";
 export { enums } from "./db/types.ts";
 export { mutators } from "./mutators/index.ts";

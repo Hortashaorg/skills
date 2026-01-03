@@ -45,6 +45,13 @@ export const remove = defineMutator(
 			throw new Error("Must be logged in to remove upvote");
 		}
 
+		const upvote = await tx.run(
+			zql.packageUpvotes.one().where("id", "=", args.id),
+		);
+		if (!upvote || upvote.accountId !== ctx.userID) {
+			throw new Error("Not authorized to remove this upvote");
+		}
+
 		await tx.mutate.packageUpvotes.delete({ id: args.id });
 
 		// Update denormalized upvote count (without changing updatedAt)

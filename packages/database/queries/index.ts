@@ -2,11 +2,13 @@ import { defineQueries } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
+import * as contributionScoresQueries from "./contribution-scores.ts";
 import * as packageFetchesQueries from "./package-fetches.ts";
 import * as packageTagsQueries from "./package-tags.ts";
 import * as packageUpvotesQueries from "./package-upvotes.ts";
 import * as packagesQueries from "./packages.ts";
 import * as projectsQueries from "./projects.ts";
+import * as suggestionsQueries from "./suggestions.ts";
 import * as tagsQueries from "./tags.ts";
 
 export const queries = defineQueries({
@@ -55,5 +57,17 @@ export const queries = defineQueries({
 		mine: projectsQueries.mine,
 		byId: projectsQueries.byId,
 		list: projectsQueries.list,
+	},
+	suggestions: {
+		forPackage: suggestionsQueries.forPackage,
+		pendingForPackage: suggestionsQueries.pendingForPackage,
+		pending: suggestionsQueries.pending,
+		pendingExcludingUser: suggestionsQueries.pendingExcludingUser,
+		byId: suggestionsQueries.byId,
+	},
+	contributionScores: {
+		leaderboardMonthly: contributionScoresQueries.leaderboardMonthly,
+		leaderboardAllTime: contributionScoresQueries.leaderboardAllTime,
+		forUser: contributionScoresQueries.forUser,
 	},
 });
