@@ -37,13 +37,15 @@
 ## Community Curation
 
 ### Database Schema
-- [ ] Create `suggestions` table
-  - id, packageId, accountId, type, version, payload (JSON), status, createdAt, resolvedAt
-  - Payload validated with versioned Zod schemas per type
-- [ ] Create `suggestionVotes` table
+- [x] Create `suggestions` table
+  - id, packageId, accountId, type, version, payload (JSON), status, createdAt, updatedAt, resolvedAt
+- [x] Create `suggestionVotes` table
   - id, suggestionId, accountId, vote (approve/reject), createdAt
-- [ ] Create `contributionScores` table
-  - id visually, accountId, monthlyScore, allTimeScore, updatedAt
+- [x] Create `contributionEvents` table (event log - source of truth)
+  - id, accountId, type, points, suggestionId, createdAt
+- [x] Create `contributionScores` table (cache - computed by worker)
+  - id, accountId, monthlyScore, allTimeScore, lastCalculatedAt
+- [x] Remove unused `audit_log` table and related enums
 - [ ] Run migrations and generate Zero schema
 
 ### Package Page Restructure

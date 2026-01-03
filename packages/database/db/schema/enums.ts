@@ -15,18 +15,24 @@ export const fetchStatusEnum = pgEnum("fetch_status", [
 	"failed",
 ]);
 
-export const auditActionEnum = pgEnum("audit_action", [
-	"create",
-	"insert",
-	"update",
-	"upsert",
-	"delete",
-]);
-
-export const actorTypeEnum = pgEnum("actor_type", ["user", "worker", "system"]);
-
 export const packageStatusEnum = pgEnum("package_status", [
 	"active",
 	"failed",
 	"placeholder",
+]);
+
+export const suggestionTypeEnum = pgEnum("suggestion_type", ["add_tag"]);
+
+export const suggestionStatusEnum = pgEnum("suggestion_status", [
+	"pending",
+	"approved",
+	"rejected",
+]);
+
+export const voteEnum = pgEnum("vote", ["approve", "reject"]);
+
+export const contributionEventTypeEnum = pgEnum("contribution_event_type", [
+	"suggestion_approved",
+	"suggestion_rejected",
+	"vote_matched",
 ]);

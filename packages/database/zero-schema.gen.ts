@@ -39,63 +39,6 @@ const accountTable = {
   },
   primaryKey: ["id"],
 } as const;
-const auditLogTable = {
-  name: "auditLog",
-  columns: {
-    id: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-    },
-    entityType: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as string,
-      serverName: "entity_type",
-    },
-    entityId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "entity_id",
-    },
-    action: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as
-        | "insert"
-        | "create"
-        | "update"
-        | "upsert"
-        | "delete",
-    },
-    actorType: {
-      type: "string",
-      optional: false,
-      customType: null as unknown as "user" | "worker" | "system",
-      serverName: "actor_type",
-    },
-    actorId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "actor_id",
-    },
-    metadata: {
-      type: "json",
-      optional: true,
-      customType: null as unknown as ReadonlyJSONValue,
-    },
-    createdAt: {
-      type: "number",
-      optional: false,
-      customType: null as unknown as number,
-      serverName: "created_at",
-    },
-  },
-  primaryKey: ["id"],
-  serverName: "audit_log",
-} as const;
 const channelDependenciesTable = {
   name: "channelDependencies",
   columns: {
@@ -137,6 +80,85 @@ const channelDependenciesTable = {
   },
   primaryKey: ["id"],
   serverName: "channel_dependencies",
+} as const;
+const contributionEventsTable = {
+  name: "contributionEvents",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    type: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "suggestion_approved"
+        | "suggestion_rejected"
+        | "vote_matched",
+    },
+    points: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+    },
+    suggestionId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "suggestion_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "contribution_events",
+} as const;
+const contributionScoresTable = {
+  name: "contributionScores",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    monthlyScore: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "monthly_score",
+    },
+    allTimeScore: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "all_time_score",
+    },
+    lastCalculatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "last_calculated_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "contribution_scores",
 } as const;
 const packageFetchesTable = {
   name: "packageFetches",
@@ -447,6 +469,102 @@ const projectsTable = {
   },
   primaryKey: ["id"],
 } as const;
+const suggestionVotesTable = {
+  name: "suggestionVotes",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    suggestionId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "suggestion_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    vote: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as "approve" | "reject",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "suggestion_votes",
+} as const;
+const suggestionsTable = {
+  name: "suggestions",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    packageId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "package_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    type: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as "add_tag",
+    },
+    version: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+    },
+    payload: {
+      type: "json",
+      optional: false,
+      customType: null as unknown as ReadonlyJSONValue,
+    },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as "pending" | "approved" | "rejected",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+    resolvedAt: {
+      type: "number",
+      optional: true,
+      customType: null as unknown as number,
+      serverName: "resolved_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const tagsTable = {
   name: "tags",
   columns: {
@@ -502,13 +620,35 @@ const accountRelationships = {
       cardinality: "many",
     },
   ],
-} as const;
-const auditLogRelationships = {
-  actor: [
+  suggestions: [
     {
-      sourceField: ["actorId"],
-      destField: ["id"],
-      destSchema: "account",
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "suggestions",
+      cardinality: "many",
+    },
+  ],
+  suggestionVotes: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "suggestionVotes",
+      cardinality: "many",
+    },
+  ],
+  contributionEvents: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "contributionEvents",
+      cardinality: "many",
+    },
+  ],
+  contributionScore: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "contributionScores",
       cardinality: "one",
     },
   ],
@@ -527,6 +667,34 @@ const channelDependenciesRelationships = {
       sourceField: ["dependencyPackageId"],
       destField: ["id"],
       destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const contributionEventsRelationships = {
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+  suggestion: [
+    {
+      sourceField: ["suggestionId"],
+      destField: ["id"],
+      destSchema: "suggestions",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const contributionScoresRelationships = {
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
       cardinality: "one",
     },
   ],
@@ -644,6 +812,14 @@ const packagesRelationships = {
       cardinality: "many",
     },
   ],
+  suggestions: [
+    {
+      sourceField: ["id"],
+      destField: ["packageId"],
+      destSchema: "suggestions",
+      cardinality: "many",
+    },
+  ],
 } as const;
 const projectPackagesRelationships = {
   project: [
@@ -681,6 +857,50 @@ const projectsRelationships = {
     },
   ],
 } as const;
+const suggestionVotesRelationships = {
+  suggestion: [
+    {
+      sourceField: ["suggestionId"],
+      destField: ["id"],
+      destSchema: "suggestions",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const suggestionsRelationships = {
+  package: [
+    {
+      sourceField: ["packageId"],
+      destField: ["id"],
+      destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+  votes: [
+    {
+      sourceField: ["id"],
+      destField: ["suggestionId"],
+      destSchema: "suggestionVotes",
+      cardinality: "many",
+    },
+  ],
+} as const;
 const tagsRelationships = {
   packageTags: [
     {
@@ -698,8 +918,9 @@ const tagsRelationships = {
 export const schema = {
   tables: {
     account: accountTable,
-    auditLog: auditLogTable,
     channelDependencies: channelDependenciesTable,
+    contributionEvents: contributionEventsTable,
+    contributionScores: contributionScoresTable,
     packageFetches: packageFetchesTable,
     packageReleaseChannels: packageReleaseChannelsTable,
     packageTags: packageTagsTable,
@@ -707,12 +928,15 @@ export const schema = {
     packages: packagesTable,
     projectPackages: projectPackagesTable,
     projects: projectsTable,
+    suggestionVotes: suggestionVotesTable,
+    suggestions: suggestionsTable,
     tags: tagsTable,
   },
   relationships: {
     account: accountRelationships,
-    auditLog: auditLogRelationships,
     channelDependencies: channelDependenciesRelationships,
+    contributionEvents: contributionEventsRelationships,
+    contributionScores: contributionScoresRelationships,
     packageFetches: packageFetchesRelationships,
     packageReleaseChannels: packageReleaseChannelsRelationships,
     packageTags: packageTagsRelationships,
@@ -720,6 +944,8 @@ export const schema = {
     packages: packagesRelationships,
     projectPackages: projectPackagesRelationships,
     projects: projectsRelationships,
+    suggestionVotes: suggestionVotesRelationships,
+    suggestions: suggestionsRelationships,
     tags: tagsRelationships,
   },
   enableLegacyQueries: false,
@@ -739,19 +965,26 @@ export type Schema = typeof schema;
  */
 export type Account = Row["account"];
 /**
- * Represents a row from the "auditLog" table.
- * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["auditLog"] instead from "@rocicorp/zero".
- */
-export type AuditLog = Row["auditLog"];
-/**
  * Represents a row from the "channelDependencies" table.
  * This type is auto-generated from your Drizzle schema definition.
  *
  * @deprecated Use Row["channelDependencies"] instead from "@rocicorp/zero".
  */
 export type ChannelDependency = Row["channelDependencies"];
+/**
+ * Represents a row from the "contributionEvents" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["contributionEvents"] instead from "@rocicorp/zero".
+ */
+export type ContributionEvent = Row["contributionEvents"];
+/**
+ * Represents a row from the "contributionScores" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["contributionScores"] instead from "@rocicorp/zero".
+ */
+export type ContributionScore = Row["contributionScores"];
 /**
  * Represents a row from the "packageFetches" table.
  * This type is auto-generated from your Drizzle schema definition.
@@ -801,6 +1034,20 @@ export type ProjectPackage = Row["projectPackages"];
  * @deprecated Use Row["projects"] instead from "@rocicorp/zero".
  */
 export type Project = Row["projects"];
+/**
+ * Represents a row from the "suggestionVotes" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["suggestionVotes"] instead from "@rocicorp/zero".
+ */
+export type SuggestionVote = Row["suggestionVotes"];
+/**
+ * Represents a row from the "suggestions" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["suggestions"] instead from "@rocicorp/zero".
+ */
+export type Suggestion = Row["suggestions"];
 /**
  * Represents a row from the "tags" table.
  * This type is auto-generated from your Drizzle schema definition.
