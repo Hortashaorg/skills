@@ -1,7 +1,6 @@
 import { defineMutators } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountMutators from "./account.ts";
-import * as packageTagsMutators from "./package-tags.ts";
 import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packagesMutators from "./packages.ts";
 import * as projectPackagesMutators from "./project-packages.ts";
@@ -27,10 +26,7 @@ export const mutators = defineMutators({
 		update: tagsMutators.update,
 		remove: tagsMutators.remove,
 	},
-	packageTags: {
-		add: packageTagsMutators.add,
-		remove: packageTagsMutators.remove,
-	},
+	packageTags: {},
 	projects: {
 		create: projectsMutators.create,
 		update: projectsMutators.update,
