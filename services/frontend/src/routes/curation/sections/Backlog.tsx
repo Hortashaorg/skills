@@ -21,7 +21,7 @@ export interface BacklogSuggestion {
 interface BacklogProps {
 	suggestions: Accessor<readonly BacklogSuggestion[] | undefined>;
 	currentSuggestionId: Accessor<string | undefined>;
-	getTagName: (payload: unknown) => string;
+	formatDescription: (type: string, payload: unknown) => string;
 	onSelect: (id: string) => void;
 }
 
@@ -66,7 +66,10 @@ export const Backlog = (props: BacklogProps) => {
 														weight={isCurrent() ? "semibold" : "normal"}
 														class="truncate"
 													>
-														{props.getTagName(suggestion.payload)}
+														{props.formatDescription(
+															suggestion.type,
+															suggestion.payload,
+														)}
 													</Text>
 													<Text size="xs" color="muted">
 														→

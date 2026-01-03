@@ -1,4 +1,11 @@
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import {
+	formatSuggestionAction,
+	formatSuggestionDescription,
+	mutators,
+	queries,
+	useQuery,
+	useZero,
+} from "@package/database/client";
 import { useNavigate } from "@solidjs/router";
 import type { Accessor } from "solid-js";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
@@ -114,14 +121,12 @@ export const Curation = () => {
 		};
 	});
 
-	// Helper to get tag name from suggestion payload
-	const getTagNameFromPayload = (payload: unknown): string => {
-		const p = payload as { tagId?: string };
-		if (p?.tagId) {
-			return tagsById().get(p.tagId)?.name ?? "Unknown tag";
-		}
-		return "Unknown";
-	};
+	// Helper to format suggestion descriptions using shared helpers
+	const getDescription = (type: string, payload: unknown): string =>
+		formatSuggestionDescription(type, payload, { tags: tagsById() });
+
+	const getAction = (type: string, payload: unknown): string =>
+		formatSuggestionAction(type, payload, { tags: tagsById() });
 
 	// Cast vote
 	const handleVote = async (voteType: "approve" | "reject") => {
@@ -169,7 +174,7 @@ export const Curation = () => {
 								isAdmin={isAdmin}
 								hasVoted={hasVotedOnCurrent}
 								voteCounts={currentVoteCounts}
-								getTagName={getTagNameFromPayload}
+								formatAction={getAction}
 								onVote={handleVote}
 							/>
 
@@ -178,7 +183,7 @@ export const Curation = () => {
 								<Backlog
 									suggestions={allPendingSuggestions}
 									currentSuggestionId={() => currentSuggestion()?.id}
-									getTagName={getTagNameFromPayload}
+									formatDescription={getDescription}
 									onSelect={setSelectedSuggestionId}
 								/>
 							</Show>

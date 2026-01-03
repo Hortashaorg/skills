@@ -1,5 +1,6 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
+import { resolveApprovedSuggestion } from "../suggestions/resolution.ts";
 import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
@@ -102,16 +103,8 @@ export const adminResolve = defineMutator(
 		});
 
 		// Apply the change if approved
-		if (args.status === "approved" && suggestion.type === "add_tag") {
-			const payload = suggestion.payload as { tagId: string };
-			const record = newRecord();
-
-			await tx.mutate.packageTags.insert({
-				id: record.id,
-				packageId: suggestion.packageId,
-				tagId: payload.tagId,
-				createdAt: record.now,
-			});
+		if (args.status === "approved") {
+			await resolveApprovedSuggestion({ tx, suggestion });
 		}
 
 		// Award points to suggester

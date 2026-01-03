@@ -1,4 +1,11 @@
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import {
+	formatSuggestionDescription,
+	getSuggestionTypeLabel,
+	mutators,
+	queries,
+	useQuery,
+	useZero,
+} from "@package/database/client";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -61,14 +68,9 @@ export const CurateTab = (props: CurateTabProps) => {
 		availableTags().map((t) => ({ value: t.id, label: t.name })),
 	);
 
-	// Helper to get tag name from suggestion payload
-	const getTagNameFromPayload = (payload: unknown): string => {
-		const p = payload as { tagId?: string };
-		if (p?.tagId) {
-			return tagsById().get(p.tagId)?.name ?? "Unknown tag";
-		}
-		return "Unknown";
-	};
+	// Helper to format suggestion descriptions
+	const getDescription = (type: string, payload: unknown): string =>
+		formatSuggestionDescription(type, payload, { tags: tagsById() });
 
 	// Count votes by type
 	const getVoteCounts = (votes: readonly { vote: string }[] | undefined) => {
@@ -236,10 +238,13 @@ export const CurateTab = (props: CurateTabProps) => {
 											<div>
 												<Flex gap="xs" align="center">
 													<Badge variant="info" size="sm">
-														add tag
+														{getSuggestionTypeLabel(suggestion.type)}
 													</Badge>
 													<Text size="sm" weight="medium">
-														{getTagNameFromPayload(suggestion.payload)}
+														{getDescription(
+															suggestion.type,
+															suggestion.payload,
+														)}
 													</Text>
 												</Flex>
 												<Text size="xs" color="muted">

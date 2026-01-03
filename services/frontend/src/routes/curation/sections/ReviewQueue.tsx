@@ -30,7 +30,7 @@ interface ReviewQueueProps {
 	isAdmin: Accessor<boolean>;
 	hasVoted: Accessor<boolean>;
 	voteCounts: Accessor<{ approve: number; reject: number }>;
-	getTagName: (payload: unknown) => string;
+	formatAction: (type: string, payload: unknown) => string;
 	onVote: (vote: "approve" | "reject") => void;
 }
 
@@ -61,7 +61,10 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 										</Badge>
 									</Show>
 									<Text size="lg" weight="semibold">
-										Add tag "{props.getTagName(suggestion().payload)}"
+										{props.formatAction(
+											suggestion().type,
+											suggestion().payload,
+										)}
 									</Text>
 									<Flex gap="xs" align="center">
 										<Text size="sm" color="muted">

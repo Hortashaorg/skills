@@ -1,6 +1,7 @@
 import { defineMutator } from "@rocicorp/zero";
 import { z } from "zod";
 import { enums } from "../db/types.ts";
+import { resolveApprovedSuggestion } from "../suggestions/resolution.ts";
 import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
@@ -97,16 +98,8 @@ export const vote = defineMutator(
 			});
 
 			// Apply the change if approved
-			if (resolvedStatus === "approved" && suggestion.type === "add_tag") {
-				const payload = suggestion.payload as { tagId: string };
-				const tagRecord = newRecord();
-
-				await tx.mutate.packageTags.insert({
-					id: tagRecord.id,
-					packageId: suggestion.packageId,
-					tagId: payload.tagId,
-					createdAt: tagRecord.now,
-				});
+			if (resolvedStatus === "approved") {
+				await resolveApprovedSuggestion({ tx, suggestion });
 			}
 
 			// Award points to suggester
