@@ -69,13 +69,26 @@
 
 ---
 
+## Curation UX
+
+### Skip Functionality
+- [ ] Add "Skip" button to review queue
+- [ ] Track skipped suggestions per session
+- [ ] Show skipped suggestions at end of queue
+
+### Structured Logging
+- [ ] Add pino logger to backend and worker
+- [ ] Replace console.log/error with structured logs
+- [ ] Include trace context in logs (correlate with OTel spans)
+
+---
+
 ## Out of Scope (Future)
 
 - Email notifications
 - Push notifications
 - Notification preferences/settings
 - Additional suggestion types (remove_tag, link_package)
-- Skip functionality in curation queue
 
 ---
 

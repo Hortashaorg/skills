@@ -56,6 +56,20 @@
 
 ---
 
+## Curation UX
+
+### Skip Functionality
+- [ ] Add "Skip" button to review queue
+- [ ] Track skipped suggestions per session
+- [ ] Show skipped suggestions at end of queue
+
+### Structured Logging
+- [ ] Add pino logger to backend and worker
+- [ ] Replace console.log/error with structured logs
+- [ ] Include trace context in logs (correlate with OTel spans)
+
+---
+
 ## Backlog
 
 ### Future Features
@@ -63,7 +77,6 @@
 - Generalize curation UI to handle multiple suggestion types
 - New tag proposals (currently: existing tags only)
 - Complex spam detection
-- Skip functionality in review queue
 - Email/push notifications
 - Notification preferences/settings
 - Additional registry adapters (JSR, Homebrew, apt)
