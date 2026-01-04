@@ -17,13 +17,15 @@ if (enabled) {
 	sdk.start();
 
 	process.on("SIGTERM", () => {
+		let exitCode = 0;
 		sdk
 			?.shutdown()
 			.then(() => console.log("OpenTelemetry SDK shut down"))
-			.catch((error: unknown) =>
-				console.error("Error shutting down OpenTelemetry SDK", error),
-			)
-			.finally(() => process.exit(0));
+			.catch((error: unknown) => {
+				console.error("Error shutting down OpenTelemetry SDK", error);
+				exitCode = 1;
+			})
+			.finally(() => process.exit(exitCode));
 	});
 
 	console.log(`OpenTelemetry initialized for ${serviceName}`);

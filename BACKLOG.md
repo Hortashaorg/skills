@@ -23,6 +23,7 @@
 ### Accessibility
 - ~Hamburger menu aria-label~ → Sprint 4
 - [ ] Dark mode contrast audit - WCAG AA compliance
+- [ ] HoverDropdown keyboard navigation - account dropdown inaccessible to keyboard users on desktop (consider Kobalte DropdownMenu)
 
 ### UX
 - [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items + visibility functions

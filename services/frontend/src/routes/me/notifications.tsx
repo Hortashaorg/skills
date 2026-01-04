@@ -45,15 +45,15 @@ export const Notifications = () => {
 	const isLoading = () => notificationsResult().type !== "complete";
 	const unreadCount = () => unreadNotifications()?.length ?? 0;
 
-	const handleMarkRead = async (id: string) => {
+	const handleMarkRead = (id: string) => {
 		zero().mutate(mutators.notifications.markRead({ id }));
 	};
 
-	const handleMarkUnread = async (id: string) => {
+	const handleMarkUnread = (id: string) => {
 		zero().mutate(mutators.notifications.markUnread({ id }));
 	};
 
-	const handleMarkAllRead = async () => {
+	const handleMarkAllRead = () => {
 		zero().mutate(mutators.notifications.markAllRead());
 	};
 

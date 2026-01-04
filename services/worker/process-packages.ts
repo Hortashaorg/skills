@@ -60,42 +60,52 @@ export async function processPackages(): Promise<void> {
 				const result = await tracer.startActiveSpan(
 					"worker.fetch",
 					async (fetchSpan) => {
-						const res = await processFetch(fetch);
+						try {
+							const res = await processFetch(fetch);
 
-						fetchSpan.setAttribute("package", res.packageName);
-						fetchSpan.setAttribute("registry", res.registry);
-						fetchSpan.setAttribute("success", res.success);
+							fetchSpan.setAttribute("package", res.packageName);
+							fetchSpan.setAttribute("registry", res.registry);
+							fetchSpan.setAttribute("success", res.success);
 
-						if (res.success) {
-							fetchSpan.setAttribute(
-								"channels.created",
-								res.channelsCreated ?? 0,
-							);
-							fetchSpan.setAttribute(
-								"channels.updated",
-								res.channelsUpdated ?? 0,
-							);
-							fetchSpan.setAttribute(
-								"channels.deleted",
-								res.channelsDeleted ?? 0,
-							);
-							fetchSpan.setAttribute("deps.created", res.depsCreated ?? 0);
-							fetchSpan.setAttribute("deps.deleted", res.depsDeleted ?? 0);
-							fetchSpan.setAttribute(
-								"placeholders.created",
-								res.placeholdersCreated ?? 0,
-							);
-							fetchSpan.setStatus({ code: SpanStatusCode.OK });
-						} else {
-							fetchSpan.setAttribute("error", res.error ?? "unknown");
+							if (res.success) {
+								fetchSpan.setAttribute(
+									"channels.created",
+									res.channelsCreated ?? 0,
+								);
+								fetchSpan.setAttribute(
+									"channels.updated",
+									res.channelsUpdated ?? 0,
+								);
+								fetchSpan.setAttribute(
+									"channels.deleted",
+									res.channelsDeleted ?? 0,
+								);
+								fetchSpan.setAttribute("deps.created", res.depsCreated ?? 0);
+								fetchSpan.setAttribute("deps.deleted", res.depsDeleted ?? 0);
+								fetchSpan.setAttribute(
+									"placeholders.created",
+									res.placeholdersCreated ?? 0,
+								);
+								fetchSpan.setStatus({ code: SpanStatusCode.OK });
+							} else {
+								fetchSpan.setAttribute("error", res.error ?? "unknown");
+								fetchSpan.setStatus({
+									code: SpanStatusCode.ERROR,
+									message: res.error,
+								});
+							}
+
+							return res;
+						} catch (error) {
+							fetchSpan.setAttribute("error", String(error));
 							fetchSpan.setStatus({
 								code: SpanStatusCode.ERROR,
-								message: res.error,
+								message: String(error),
 							});
+							throw error;
+						} finally {
+							fetchSpan.end();
 						}
-
-						fetchSpan.end();
-						return res;
 					},
 				);
 

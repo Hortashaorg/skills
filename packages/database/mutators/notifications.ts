@@ -66,11 +66,14 @@ export const markAllRead = defineMutator(async ({ tx, ctx }) => {
 		zql.notifications.where("accountId", ctx.userID).where("read", false),
 	);
 
-	for (const notification of unread) {
-		await tx.mutate.notifications.update({
-			id: notification.id,
-			read: true,
-			updatedAt: now(),
-		});
-	}
+	const timestamp = now();
+	await Promise.all(
+		unread.map((notification) =>
+			tx.mutate.notifications.update({
+				id: notification.id,
+				read: true,
+				updatedAt: timestamp,
+			}),
+		),
+	);
 });
