@@ -59,14 +59,46 @@
 ## Curation UX
 
 ### Skip Functionality
-- [ ] Add "Skip" button to review queue
-- [ ] Track skipped suggestions per session
-- [ ] Show skipped suggestions at end of queue
+Session-based skip using SolidJS signals (resets on page refresh):
+- [ ] Add `skippedIds` signal (Set) to curation page state
+- [ ] Add "Skip" button next to Approve/Reject in ReviewQueue
+- [ ] Skip adds current suggestion ID to set, clears selection (auto-advances)
+- [ ] Modify `pendingSuggestions` memo to sort skipped IDs to end of queue
+- [ ] Show visual indicator on skipped suggestions when they reappear
 
 ### Structured Logging ✓
 - [x] Add structured logger to backend and worker (OTLP via createLogger)
 - [x] Replace console.log/error with structured logs
 - [x] Include trace context in logs (correlate with OTel spans)
+
+---
+
+## Layout Refactoring
+
+### Split Layout into Feature Components
+Current Layout.tsx (~700 lines) handles everything. Split for testability:
+
+- [ ] Create `components/feature/navbar/Navbar.tsx` - Desktop navigation
+  - Logo, nav links, connection status, notification bell, account dropdown
+  - Props: user state, connection state, notifications
+- [ ] Create `components/feature/navbar/MobileNavbar.tsx` - Mobile navigation
+  - Hamburger menu, collapsible sections, touch-friendly targets
+  - Can evolve separately based on mobile UX needs
+- [ ] Create `components/feature/navbar/NotificationBell.tsx` - Extract bell + dropdown
+- [ ] Create `components/feature/navbar/AccountDropdown.tsx` - Extract account menu
+- [ ] Simplify `Layout.tsx` to compose navbar components + breadcrumbs + main content
+
+### Storybook Stories
+- [ ] `Navbar.stories.tsx` - States: logged out, logged in, admin, with notifications
+- [ ] `MobileNavbar.stories.tsx` - States: closed, open, various menu sections
+- [ ] `NotificationBell.stories.tsx` - States: no notifications, unread count, dropdown open
+- [ ] `AccountDropdown.stories.tsx` - States: regular user, admin with extra links
+
+### Design Considerations
+- Navbar components receive data via props (testable, no Zero queries inside)
+- Layout.tsx owns Zero queries and passes data down
+- Mobile/desktop can have different interaction patterns (hover vs tap)
+- Prepare for future: dark mode toggle, search in navbar, etc.
 
 ---
 
