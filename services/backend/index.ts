@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
 import { count, db, dbSchema, eq } from "@package/database/server";
+import { createLogger, getMeter } from "@package/instrumentation/utils";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
@@ -13,6 +14,17 @@ import { handleQuery } from "./query.ts";
 import { getAuthContext } from "./util.ts";
 
 const DELETED_USER_ID = "00000000-0000-0000-0000-000000000000";
+const logger = createLogger("backend");
+const meter = getMeter("backend");
+
+const requestCounter = meter.createCounter("http.requests", {
+	description: "Number of HTTP requests",
+});
+
+const requestDuration = meter.createHistogram("http.duration_ms", {
+	description: "HTTP request duration in milliseconds",
+	unit: "ms",
+});
 
 const REFRESH_TOKEN_COOKIE = {
 	name: "refresh_token",
@@ -86,6 +98,19 @@ app.use(
 	}),
 );
 
+app.use("*", async (c, next) => {
+	const start = performance.now();
+	await next();
+	const duration = performance.now() - start;
+	const attributes = {
+		method: c.req.method,
+		route: c.req.path,
+		status: c.res.status,
+	};
+	requestCounter.add(1, attributes);
+	requestDuration.record(duration, attributes);
+});
+
 app.post("/login", async (c) => {
 	const { code } = await c.req.json();
 
@@ -135,7 +160,10 @@ app.post("/login", async (c) => {
 	}
 
 	const errorText = await res.text();
-	console.error("Zitadel token exchange failed:", res.status, errorText);
+	logger.error("Zitadel token exchange failed", {
+		status: res.status,
+		error: errorText,
+	});
 	return c.json({ error: "Authentication failed" }, 401);
 });
 
@@ -195,7 +223,10 @@ app.post("/refresh", async (c) => {
 	}
 
 	const errorText = await res.text();
-	console.error("Zitadel token refresh failed:", res.status, errorText);
+	logger.error("Zitadel token refresh failed", {
+		status: res.status,
+		error: errorText,
+	});
 
 	clearRefreshToken(c);
 
@@ -269,7 +300,7 @@ app.post("/api/account/delete", async (c) => {
 
 		return c.json({ success: true });
 	} catch (error) {
-		console.error("Failed to delete account:", error);
+		logger.error("Failed to delete account", { error: String(error) });
 		return c.json({ error: "Failed to delete account" }, 500);
 	}
 });
@@ -278,4 +309,4 @@ serve({
 	fetch: app.fetch,
 	port: 4000,
 });
-console.log("Server started on port 4000");
+logger.info("Server started", { port: 4000 });

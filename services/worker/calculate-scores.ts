@@ -22,6 +22,14 @@ import {
 	sqlExpr,
 	sum,
 } from "@package/database/server";
+import {
+	createLogger,
+	getTracer,
+	SpanStatusCode,
+} from "@package/instrumentation/utils";
+
+const logger = createLogger("worker.scores");
+const tracer = getTracer("worker");
 
 interface ScoreResult {
 	accountsUpdated: number;
@@ -29,133 +37,150 @@ interface ScoreResult {
 }
 
 export async function calculateScores(): Promise<ScoreResult> {
-	console.log("=== Score Calculation ===\n");
+	return await tracer.startActiveSpan("worker.scores", async (span) => {
+		try {
+			logger.info("Score calculation started");
 
-	const now = new Date();
-	const currentMonthStart = getMonthStartUTC(now);
+			const now = new Date();
+			const currentMonthStart = getMonthStartUTC(now);
 
-	// Find accounts with events that need processing:
-	// - Either no score record exists (left join gives null)
-	// - Or events exist after lastCalculatedAt
-	const accountsToProcess = await db
-		.selectDistinct({ accountId: dbSchema.contributionEvents.accountId })
-		.from(dbSchema.contributionEvents)
-		.leftJoin(
-			dbSchema.contributionScores,
-			eq(
-				dbSchema.contributionEvents.accountId,
-				dbSchema.contributionScores.accountId,
-			),
-		)
-		.where(
-			or(
-				isNull(dbSchema.contributionScores.id),
-				gt(
-					dbSchema.contributionEvents.createdAt,
-					dbSchema.contributionScores.lastCalculatedAt,
-				),
-			),
-		);
-
-	if (accountsToProcess.length === 0) {
-		console.log("No accounts need score updates.\n");
-		return { accountsUpdated: 0, eventsProcessed: 0 };
-	}
-
-	console.log(
-		`Processing scores for ${accountsToProcess.length} accounts...\n`,
-	);
-
-	let totalEventsProcessed = 0;
-
-	// Process each account in a transaction
-	for (const { accountId } of accountsToProcess) {
-		const eventsProcessed = await db.transaction(async (tx) => {
-			// Get existing score record
-			const [existingScore] = await tx
-				.select()
-				.from(dbSchema.contributionScores)
-				.where(eq(dbSchema.contributionScores.accountId, accountId));
-
-			const lastCalculatedAt = existingScore?.lastCalculatedAt ?? new Date(0);
-			const monthChanged = !isSameUTCMonth(lastCalculatedAt, now);
-
-			// Get new events since last calculation: sum, count, and max timestamp
-			// Using max(createdAt) ensures we track exactly which events we processed
-			const [newEventsResult] = await tx
-				.select({
-					total: sqlExpr<number>`COALESCE(${sum(dbSchema.contributionEvents.points)}, 0)`,
-					count: sqlExpr<number>`COUNT(*)`,
-					maxCreatedAt: max(dbSchema.contributionEvents.createdAt),
-				})
+			// Find accounts with events that need processing:
+			// - Either no score record exists (left join gives null)
+			// - Or events exist after lastCalculatedAt
+			const accountsToProcess = await db
+				.selectDistinct({ accountId: dbSchema.contributionEvents.accountId })
 				.from(dbSchema.contributionEvents)
+				.leftJoin(
+					dbSchema.contributionScores,
+					eq(
+						dbSchema.contributionEvents.accountId,
+						dbSchema.contributionScores.accountId,
+					),
+				)
 				.where(
-					and(
-						eq(dbSchema.contributionEvents.accountId, accountId),
-						gt(dbSchema.contributionEvents.createdAt, lastCalculatedAt),
+					or(
+						isNull(dbSchema.contributionScores.id),
+						gt(
+							dbSchema.contributionEvents.createdAt,
+							dbSchema.contributionScores.lastCalculatedAt,
+						),
 					),
 				);
 
-			const newPoints = Number(newEventsResult?.total ?? 0);
-			const eventCount = Number(newEventsResult?.count ?? 0);
-			const newLastCalculatedAt =
-				newEventsResult?.maxCreatedAt ?? lastCalculatedAt;
-			const allTimeScore = (existingScore?.allTimeScore ?? 0) + newPoints;
+			span.setAttribute("accounts.pending", accountsToProcess.length);
 
-			// Monthly score calculation:
-			// - Same month: incremental (existing + new points)
-			// - Month changed: recalculate from all events in current month
-			let monthlyScore: number;
-			if (monthChanged || !existingScore) {
-				const [monthlyResult] = await tx
-					.select({
-						total: sqlExpr<number>`COALESCE(${sum(dbSchema.contributionEvents.points)}, 0)`,
-					})
-					.from(dbSchema.contributionEvents)
-					.where(
-						and(
-							eq(dbSchema.contributionEvents.accountId, accountId),
-							gte(dbSchema.contributionEvents.createdAt, currentMonthStart),
-						),
-					);
-				monthlyScore = Number(monthlyResult?.total ?? 0);
-			} else {
-				monthlyScore = existingScore.monthlyScore + newPoints;
+			if (accountsToProcess.length === 0) {
+				logger.info("No accounts need score updates");
+				span.setStatus({ code: SpanStatusCode.OK });
+				return { accountsUpdated: 0, eventsProcessed: 0 };
 			}
 
-			if (existingScore) {
-				await tx
-					.update(dbSchema.contributionScores)
-					.set({
-						monthlyScore,
-						allTimeScore,
-						lastCalculatedAt: newLastCalculatedAt,
-					})
-					.where(eq(dbSchema.contributionScores.id, existingScore.id));
-			} else {
-				await tx.insert(dbSchema.contributionScores).values({
-					id: crypto.randomUUID(),
-					accountId,
-					monthlyScore,
-					allTimeScore,
-					lastCalculatedAt: newLastCalculatedAt,
+			logger.info("Processing scores", { accounts: accountsToProcess.length });
+
+			let totalEventsProcessed = 0;
+
+			// Process each account in a transaction
+			for (const { accountId } of accountsToProcess) {
+				const eventsProcessed = await db.transaction(async (tx) => {
+					// Get existing score record
+					const [existingScore] = await tx
+						.select()
+						.from(dbSchema.contributionScores)
+						.where(eq(dbSchema.contributionScores.accountId, accountId));
+
+					const lastCalculatedAt =
+						existingScore?.lastCalculatedAt ?? new Date(0);
+					const monthChanged = !isSameUTCMonth(lastCalculatedAt, now);
+
+					// Get new events since last calculation: sum, count, and max timestamp
+					// Using max(createdAt) ensures we track exactly which events we processed
+					const [newEventsResult] = await tx
+						.select({
+							total: sqlExpr<number>`COALESCE(${sum(dbSchema.contributionEvents.points)}, 0)`,
+							count: sqlExpr<number>`COUNT(*)`,
+							maxCreatedAt: max(dbSchema.contributionEvents.createdAt),
+						})
+						.from(dbSchema.contributionEvents)
+						.where(
+							and(
+								eq(dbSchema.contributionEvents.accountId, accountId),
+								gt(dbSchema.contributionEvents.createdAt, lastCalculatedAt),
+							),
+						);
+
+					const newPoints = Number(newEventsResult?.total ?? 0);
+					const eventCount = Number(newEventsResult?.count ?? 0);
+					const newLastCalculatedAt =
+						newEventsResult?.maxCreatedAt ?? lastCalculatedAt;
+					const allTimeScore = (existingScore?.allTimeScore ?? 0) + newPoints;
+
+					// Monthly score calculation:
+					// - Same month: incremental (existing + new points)
+					// - Month changed: recalculate from all events in current month
+					let monthlyScore: number;
+					if (monthChanged || !existingScore) {
+						const [monthlyResult] = await tx
+							.select({
+								total: sqlExpr<number>`COALESCE(${sum(dbSchema.contributionEvents.points)}, 0)`,
+							})
+							.from(dbSchema.contributionEvents)
+							.where(
+								and(
+									eq(dbSchema.contributionEvents.accountId, accountId),
+									gte(dbSchema.contributionEvents.createdAt, currentMonthStart),
+								),
+							);
+						monthlyScore = Number(monthlyResult?.total ?? 0);
+					} else {
+						monthlyScore = existingScore.monthlyScore + newPoints;
+					}
+
+					if (existingScore) {
+						await tx
+							.update(dbSchema.contributionScores)
+							.set({
+								monthlyScore,
+								allTimeScore,
+								lastCalculatedAt: newLastCalculatedAt,
+							})
+							.where(eq(dbSchema.contributionScores.id, existingScore.id));
+					} else {
+						await tx.insert(dbSchema.contributionScores).values({
+							id: crypto.randomUUID(),
+							accountId,
+							monthlyScore,
+							allTimeScore,
+							lastCalculatedAt: newLastCalculatedAt,
+						});
+					}
+
+					return eventCount;
 				});
+
+				totalEventsProcessed += eventsProcessed;
 			}
 
-			return eventCount;
-		});
+			span.setAttribute("accounts.updated", accountsToProcess.length);
+			span.setAttribute("events.processed", totalEventsProcessed);
 
-		totalEventsProcessed += eventsProcessed;
-	}
+			logger.info("Score calculation complete", {
+				accountsUpdated: accountsToProcess.length,
+				eventsProcessed: totalEventsProcessed,
+			});
 
-	console.log(`Summary:`);
-	console.log(`  Accounts updated: ${accountsToProcess.length}`);
-	console.log(`  Events processed: ${totalEventsProcessed}\n`);
-
-	return {
-		accountsUpdated: accountsToProcess.length,
-		eventsProcessed: totalEventsProcessed,
-	};
+			span.setStatus({ code: SpanStatusCode.OK });
+			return {
+				accountsUpdated: accountsToProcess.length,
+				eventsProcessed: totalEventsProcessed,
+			};
+		} catch (error) {
+			span.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+			span.recordException(error as Error);
+			throw error;
+		} finally {
+			span.end();
+		}
+	});
 }
 
 function getMonthStartUTC(date: Date): Date {

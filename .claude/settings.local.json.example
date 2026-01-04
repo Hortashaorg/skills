@@ -1,0 +1,19 @@
+{
+  "enabledMcpjsonServers": [
+    "grafana"
+  ],
+  "mcpServers": {
+    "grafana": {
+      "command": "/skills/.claude/bin/mcp-grafana",
+      "args": [
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "GRAFANA_URL": "http://otel:3000",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "<your-grafana-service-account-token>"
+      }
+    }
+  },
+  "enableAllProjectMcpServers": true
+}

@@ -112,6 +112,29 @@ export const vote = defineMutator(
 				createdAt: eventRecord.now,
 			});
 
+			// Notify the suggester
+			const notificationRecord = newRecord();
+			await tx.mutate.notifications.insert({
+				id: notificationRecord.id,
+				accountId: suggestion.accountId,
+				type:
+					resolvedStatus === "approved"
+						? "suggestion_approved"
+						: "suggestion_rejected",
+				title:
+					resolvedStatus === "approved"
+						? "Suggestion approved"
+						: "Suggestion rejected",
+				message:
+					resolvedStatus === "approved"
+						? "Your tag suggestion was approved and applied."
+						: "Your tag suggestion was rejected by the community.",
+				read: false,
+				relatedId: args.suggestionId,
+				createdAt: notificationRecord.now,
+				updatedAt: notificationRecord.now,
+			});
+
 			// Award points to voters who matched outcome
 			// Note: allVotes already includes the current vote (queried after insert)
 			for (const v of allVotes) {

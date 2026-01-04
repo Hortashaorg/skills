@@ -148,6 +148,13 @@
       "when": 1767446713456,
       "tag": "0020_clever_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1767544093752,
+      "tag": "0021_wild_nomad",
+      "breakpoints": true
     }
   ]
 }

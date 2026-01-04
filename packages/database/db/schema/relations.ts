@@ -3,6 +3,7 @@ import { account } from "./account.ts";
 import {
 	contributionEvents,
 	contributionScores,
+	notifications,
 	suggestions,
 	suggestionVotes,
 } from "./curation.ts";
@@ -27,6 +28,7 @@ export const accountRelations = relations(account, ({ many, one }) => ({
 		fields: [account.id],
 		references: [contributionScores.accountId],
 	}),
+	notifications: many(notifications),
 }));
 
 export const packagesRelations = relations(packages, ({ many }) => ({
@@ -171,3 +173,10 @@ export const contributionEventsRelations = relations(
 		}),
 	}),
 );
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+	account: one(account, {
+		fields: [notifications.accountId],
+		references: [account.id],
+	}),
+}));

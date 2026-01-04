@@ -3,6 +3,7 @@ import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
 import * as contributionScoresQueries from "./contribution-scores.ts";
+import * as notificationsQueries from "./notifications.ts";
 import * as packageFetchesQueries from "./package-fetches.ts";
 import * as packageTagsQueries from "./package-tags.ts";
 import * as packageUpvotesQueries from "./package-upvotes.ts";
@@ -64,5 +65,9 @@ export const queries = defineQueries({
 		leaderboardMonthly: contributionScoresQueries.leaderboardMonthly,
 		leaderboardAllTime: contributionScoresQueries.leaderboardAllTime,
 		forUser: contributionScoresQueries.forUser,
+	},
+	notifications: {
+		mine: notificationsQueries.mine,
+		unreadCount: notificationsQueries.unreadCount,
 	},
 });

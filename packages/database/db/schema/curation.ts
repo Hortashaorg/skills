@@ -1,8 +1,10 @@
 import {
+	boolean,
 	index,
 	integer,
 	jsonb,
 	pgTable,
+	text,
 	timestamp,
 	unique,
 	uuid,
@@ -10,6 +12,7 @@ import {
 import { account } from "./account.ts";
 import {
 	contributionEventTypeEnum,
+	notificationTypeEnum,
 	suggestionStatusEnum,
 	suggestionTypeEnum,
 	voteEnum,
@@ -93,5 +96,26 @@ export const contributionEvents = pgTable(
 	(table) => [
 		index("idx_contribution_events_account_id").on(table.accountId),
 		index("idx_contribution_events_created_at").on(table.createdAt),
+	],
+);
+
+export const notifications = pgTable(
+	"notifications",
+	{
+		id: uuid().primaryKey(),
+		accountId: uuid()
+			.notNull()
+			.references(() => account.id),
+		type: notificationTypeEnum().notNull(),
+		title: text().notNull(),
+		message: text().notNull(),
+		read: boolean().notNull(),
+		relatedId: uuid(),
+		createdAt: timestamp().notNull(),
+		updatedAt: timestamp().notNull(),
+	},
+	(table) => [
+		index("idx_notifications_account_id").on(table.accountId),
+		index("idx_notifications_created_at").on(table.createdAt),
 	],
 );

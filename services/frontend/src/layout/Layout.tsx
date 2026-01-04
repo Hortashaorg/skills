@@ -1,25 +1,22 @@
 import {
+	mutators,
 	queries,
 	useConnectionState,
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { A, useLocation, useParams } from "@solidjs/router";
+import { useLocation, useParams } from "@solidjs/router";
 import {
 	createMemo,
-	createSignal,
 	Index,
 	Match,
 	type ParentComponent,
 	Show,
 	Switch,
 } from "solid-js";
+import { Navbar } from "@/components/feature/navbar";
 import { Container } from "@/components/primitives/container";
-import { Flex } from "@/components/primitives/flex";
-import { Text } from "@/components/primitives/text";
-import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
-import { Button } from "@/components/ui/button";
 import { Toast } from "@/components/ui/toast";
 import { getAuthData, logout } from "@/context/app-provider";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
@@ -107,11 +104,19 @@ export const Layout: ParentComponent = (props) => {
 	const connectionState = useConnectionState();
 	const location = useLocation();
 	const params = useParams();
-	const [mobileMenuOpen, setMobileMenuOpen] = createSignal(false);
 
 	const breadcrumbs = createMemo(() =>
 		getBreadcrumbs(location.pathname, params),
 	);
+
+	const [notifications] = useQuery(() => queries.notifications.mine());
+	const [unreadNotifications] = useQuery(() =>
+		queries.notifications.unreadCount(),
+	);
+
+	const unreadCount = () => unreadNotifications()?.length ?? 0;
+	const isAnonymous = () => zero().userID === "anon";
+	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 
 	const handleLogout = async () => {
 		await logout();
@@ -122,401 +127,28 @@ export const Layout: ParentComponent = (props) => {
 		window.location.href = getAuthorizationUrl();
 	};
 
-	const isAnonymous = () => zero().userID === "anon";
-	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
-	const isActive = (path: string) => location.pathname.startsWith(path);
-	const isExactActive = (path: string) => location.pathname === path;
-	const closeMobileMenu = () => setMobileMenuOpen(false);
+	const handleMarkAllRead = () => {
+		zero().mutate(mutators.notifications.markAllRead());
+	};
+
+	const handleMarkRead = (id: string) => {
+		zero().mutate(mutators.notifications.markRead({ id }));
+	};
 
 	return (
 		<div class="min-h-screen bg-surface dark:bg-surface-dark">
-			<header class="border-b border-outline dark:border-outline-dark">
-				<Container>
-					<Flex justify="between" align="center" class="h-14">
-						{/* Left side: Logo + Nav links */}
-						<Flex gap="md" align="center">
-							<A
-								href="/"
-								class="hover:opacity-75 transition"
-								onClick={closeMobileMenu}
-							>
-								<Text size="lg" weight="semibold" as="span">
-									TechGarden
-								</Text>
-							</A>
-
-							{/* Desktop nav links */}
-							<nav class="hidden sm:flex gap-4">
-								<A
-									href="/packages"
-									class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
-									classList={{
-										"text-primary dark:text-primary-dark font-medium":
-											isActive("/packages"),
-										"text-on-surface-muted dark:text-on-surface-dark-muted":
-											!isActive("/packages"),
-									}}
-								>
-									Packages
-								</A>
-								<A
-									href="/projects"
-									class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
-									classList={{
-										"text-primary dark:text-primary-dark font-medium":
-											isExactActive("/projects"),
-										"text-on-surface-muted dark:text-on-surface-dark-muted":
-											!isExactActive("/projects"),
-									}}
-								>
-									Projects
-								</A>
-							</nav>
-						</Flex>
-
-						{/* Right side: Status + Account */}
-						<Flex gap="md" align="center" class="hidden sm:flex">
-							{/* Connection status badges */}
-							<Show when={connectionState().name === "connecting"}>
-								<Badge variant="info" size="sm">
-									Connecting...
-								</Badge>
-							</Show>
-							<Show when={connectionState().name === "disconnected"}>
-								<Badge variant="warning" size="sm">
-									Offline
-								</Badge>
-							</Show>
-							<Show when={connectionState().name === "needs-auth"}>
-								<Badge variant="info" size="sm">
-									Refreshing...
-								</Badge>
-							</Show>
-							<Show when={connectionState().name === "error"}>
-								<Badge variant="danger" size="sm">
-									Connection Error
-								</Badge>
-							</Show>
-
-							{/* Account dropdown or Sign in */}
-							<Show
-								when={!isAnonymous()}
-								fallback={
-									<Button variant="primary" size="sm" onClick={handleSignIn}>
-										Sign in
-									</Button>
-								}
-							>
-								<div class="relative group">
-									<button
-										type="button"
-										class="text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition flex items-center gap-1 text-on-surface-muted dark:text-on-surface-dark-muted"
-									>
-										<svg
-											class="w-5 h-5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<title>Account</title>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-											/>
-										</svg>
-										<svg
-											class="w-4 h-4"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<title>Expand</title>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"
-											/>
-										</svg>
-									</button>
-									<div class="absolute right-0 top-full pt-1 hidden group-hover:block z-50">
-										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg min-w-44">
-											<A
-												href="/me"
-												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-												classList={{
-													"text-primary dark:text-primary-dark font-medium":
-														isExactActive("/me"),
-													"text-on-surface dark:text-on-surface-dark":
-														!isExactActive("/me"),
-												}}
-											>
-												Profile
-											</A>
-											<A
-												href="/me/projects"
-												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-												classList={{
-													"text-primary dark:text-primary-dark font-medium":
-														isActive("/me/projects"),
-													"text-on-surface dark:text-on-surface-dark":
-														!isActive("/me/projects"),
-												}}
-											>
-												My Projects
-											</A>
-											<A
-												href="/curation"
-												class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-												classList={{
-													"text-primary dark:text-primary-dark font-medium":
-														isExactActive("/curation"),
-													"text-on-surface dark:text-on-surface-dark":
-														!isExactActive("/curation"),
-												}}
-											>
-												Curate
-											</A>
-											<Show when={isAdmin()}>
-												<div class="border-t border-outline dark:border-outline-dark my-1" />
-												<A
-													href="/admin/requests"
-													class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-													classList={{
-														"text-primary dark:text-primary-dark font-medium":
-															isActive("/admin/requests"),
-														"text-on-surface dark:text-on-surface-dark":
-															!isActive("/admin/requests"),
-													}}
-												>
-													Admin: Requests
-												</A>
-												<A
-													href="/admin/tags"
-													class="block px-4 py-2 text-sm hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-													classList={{
-														"text-primary dark:text-primary-dark font-medium":
-															isActive("/admin/tags"),
-														"text-on-surface dark:text-on-surface-dark":
-															!isActive("/admin/tags"),
-													}}
-												>
-													Admin: Tags
-												</A>
-											</Show>
-											<div class="border-t border-outline dark:border-outline-dark my-1" />
-											<button
-												type="button"
-												onClick={handleLogout}
-												class="block w-full text-left px-4 py-2 text-sm text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition"
-											>
-												Sign out
-											</button>
-										</div>
-									</div>
-								</div>
-							</Show>
-						</Flex>
-
-						{/* Mobile hamburger button */}
-						<button
-							type="button"
-							class="sm:hidden p-2 text-on-surface dark:text-on-surface-dark"
-							onClick={() => setMobileMenuOpen(!mobileMenuOpen())}
-						>
-							<svg
-								class="w-6 h-6"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<title>Menu</title>
-								<Show
-									when={mobileMenuOpen()}
-									fallback={
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M4 6h16M4 12h16M4 18h16"
-										/>
-									}
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M6 18L18 6M6 6l12 12"
-									/>
-								</Show>
-							</svg>
-						</button>
-					</Flex>
-
-					{/* Mobile menu */}
-					<Show when={mobileMenuOpen()}>
-						<div class="sm:hidden border-t border-outline dark:border-outline-dark py-4 space-y-2">
-							{/* Connection status */}
-							<Show when={connectionState().name === "connecting"}>
-								<Badge variant="info" size="sm">
-									Connecting...
-								</Badge>
-							</Show>
-							<Show when={connectionState().name === "disconnected"}>
-								<Badge variant="warning" size="sm">
-									Offline
-								</Badge>
-							</Show>
-							<Show when={connectionState().name === "error"}>
-								<Badge variant="danger" size="sm">
-									Connection Error
-								</Badge>
-							</Show>
-
-							{/* Browse links */}
-							<A
-								href="/packages"
-								class="block py-2 text-sm"
-								classList={{
-									"text-primary dark:text-primary-dark font-medium":
-										isActive("/packages"),
-									"text-on-surface dark:text-on-surface-dark":
-										!isActive("/packages"),
-								}}
-								onClick={closeMobileMenu}
-							>
-								Packages
-							</A>
-							<A
-								href="/projects"
-								class="block py-2 text-sm"
-								classList={{
-									"text-primary dark:text-primary-dark font-medium":
-										isExactActive("/projects"),
-									"text-on-surface dark:text-on-surface-dark":
-										!isExactActive("/projects"),
-								}}
-								onClick={closeMobileMenu}
-							>
-								Projects
-							</A>
-
-							{/* Account section */}
-							<Show when={!isAnonymous()}>
-								<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
-									<Text size="xs" color="muted" class="uppercase tracking-wide">
-										Account
-									</Text>
-									<A
-										href="/me"
-										class="block py-2 text-sm"
-										classList={{
-											"text-primary dark:text-primary-dark font-medium":
-												isExactActive("/me"),
-											"text-on-surface dark:text-on-surface-dark":
-												!isExactActive("/me"),
-										}}
-										onClick={closeMobileMenu}
-									>
-										Profile
-									</A>
-									<A
-										href="/me/projects"
-										class="block py-2 text-sm"
-										classList={{
-											"text-primary dark:text-primary-dark font-medium":
-												isActive("/me/projects"),
-											"text-on-surface dark:text-on-surface-dark":
-												!isActive("/me/projects"),
-										}}
-										onClick={closeMobileMenu}
-									>
-										My Projects
-									</A>
-									<A
-										href="/curation"
-										class="block py-2 text-sm"
-										classList={{
-											"text-primary dark:text-primary-dark font-medium":
-												isExactActive("/curation"),
-											"text-on-surface dark:text-on-surface-dark":
-												!isExactActive("/curation"),
-										}}
-										onClick={closeMobileMenu}
-									>
-										Curate
-									</A>
-								</div>
-							</Show>
-
-							{/* Admin links */}
-							<Show when={isAdmin()}>
-								<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
-									<Text size="xs" color="muted" class="uppercase tracking-wide">
-										Admin
-									</Text>
-									<A
-										href="/admin/requests"
-										class="block py-2 text-sm"
-										classList={{
-											"text-primary dark:text-primary-dark font-medium":
-												isActive("/admin/requests"),
-											"text-on-surface dark:text-on-surface-dark":
-												!isActive("/admin/requests"),
-										}}
-										onClick={closeMobileMenu}
-									>
-										Package Requests
-									</A>
-									<A
-										href="/admin/tags"
-										class="block py-2 text-sm"
-										classList={{
-											"text-primary dark:text-primary-dark font-medium":
-												isActive("/admin/tags"),
-											"text-on-surface dark:text-on-surface-dark":
-												!isActive("/admin/tags"),
-										}}
-										onClick={closeMobileMenu}
-									>
-										Tags
-									</A>
-								</div>
-							</Show>
-
-							{/* Auth actions */}
-							<div class="pt-2 border-t border-outline dark:border-outline-dark">
-								<Show
-									when={!isAnonymous()}
-									fallback={
-										<Button
-											variant="primary"
-											size="sm"
-											onClick={handleSignIn}
-											class="w-full"
-										>
-											Sign in
-										</Button>
-									}
-								>
-									<button
-										type="button"
-										onClick={() => {
-											handleLogout();
-											closeMobileMenu();
-										}}
-										class="block w-full text-left py-2 text-sm text-on-surface dark:text-on-surface-dark"
-									>
-										Sign out
-									</button>
-								</Show>
-							</div>
-						</div>
-					</Show>
-				</Container>
-			</header>
+			<Navbar
+				isLoggedIn={!isAnonymous()}
+				isAdmin={isAdmin()}
+				currentPath={location.pathname}
+				connectionState={connectionState().name}
+				notifications={notifications() ?? []}
+				unreadCount={unreadCount()}
+				onLogout={handleLogout}
+				onSignIn={handleSignIn}
+				onMarkRead={handleMarkRead}
+				onMarkAllRead={handleMarkAllRead}
+			/>
 			<Show when={breadcrumbs()}>
 				{(crumbs) => (
 					<div class="border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">

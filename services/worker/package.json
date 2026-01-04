@@ -4,14 +4,14 @@
 	"type": "module",
 	"scripts": {
 		"typecheck": "tsc --noEmit",
-		"start": "node ./index.ts"
+		"start": "OTEL_SERVICE_NAME=worker node --import @package/instrumentation ./index.ts"
 	},
 	"dependencies": {
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
+		"@package/instrumentation": "workspace:*",
 		"@types/node": "^25.0.3",
 		"ky": "^1.14.2",
-		"postgres": "^3.4.7",
-		"zod": "^4.3.2"
+		"zod": "^4.3.5"
 	}
 }

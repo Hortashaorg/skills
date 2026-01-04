@@ -14,6 +14,7 @@ import {
 	contributionEventTypeEnum,
 	dependencyTypeEnum,
 	fetchStatusEnum,
+	notificationTypeEnum,
 	packageStatusEnum,
 	registryEnum,
 	suggestionStatusEnum,
@@ -31,6 +32,7 @@ export type SuggestionStatus = (typeof suggestionStatusEnum.enumValues)[number];
 export type Vote = (typeof voteEnum.enumValues)[number];
 export type ContributionEventType =
 	(typeof contributionEventTypeEnum.enumValues)[number];
+export type NotificationType = (typeof notificationTypeEnum.enumValues)[number];
 
 // Re-export enum values for Zod validators
 // Use: z.enum(enums.registry)
@@ -43,4 +45,5 @@ export const enums = {
 	suggestionStatus: suggestionStatusEnum.enumValues,
 	vote: voteEnum.enumValues,
 	contributionEventType: contributionEventTypeEnum.enumValues,
+	notificationType: notificationTypeEnum.enumValues,
 } as const;

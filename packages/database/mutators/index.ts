@@ -1,6 +1,7 @@
 import { defineMutators } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountMutators from "./account.ts";
+import * as notificationsMutators from "./notifications.ts";
 import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packagesMutators from "./packages.ts";
 import * as projectPackagesMutators from "./project-packages.ts";
@@ -44,4 +45,9 @@ export const mutators = defineMutators({
 	},
 	contributionEvents: {},
 	contributionScores: {},
+	notifications: {
+		markRead: notificationsMutators.markRead,
+		markUnread: notificationsMutators.markUnread,
+		markAllRead: notificationsMutators.markAllRead,
+	},
 });

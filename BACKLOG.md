@@ -21,10 +21,12 @@
 ## Polish
 
 ### Accessibility
-- [ ] Hamburger menu aria-label
+- ~Hamburger menu aria-label~ → Sprint 4
 - [ ] Dark mode contrast audit - WCAG AA compliance
+- [ ] HoverDropdown keyboard navigation - account dropdown inaccessible to keyboard users on desktop (consider Kobalte DropdownMenu)
 
 ### UX
+- [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items + visibility functions
 - [ ] Full mobile audit - layout fixes across all pages
 - [ ] Edge cases: Long text tooltips for truncated names/descriptions
 - [ ] Empty state improvements - more helpful CTAs
@@ -37,7 +39,7 @@
 
 ## Technical Debt / Ops
 
-- [ ] Structured logging in backend and worker
+- ~Structured logging in backend and worker~ → Sprint 4
 - [ ] Worker metrics (requests processed, failures, duration)
 - [ ] Health checks and readiness probes
 - [ ] Resource limits and autoscaling config

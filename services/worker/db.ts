@@ -15,7 +15,15 @@ import {
 } from "@package/database/server";
 import type { PackageData } from "./registries/types.ts";
 
-type Transaction = Parameters<Parameters<typeof dbProvider.transaction>[0]>[0];
+export type Transaction = Parameters<
+	Parameters<typeof dbProvider.transaction>[0]
+>[0];
+
+// Transaction type from db.transaction (Drizzle)
+type DrizzleTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Database connection type that works with both raw db and transactions
+export type DbConnection = typeof db | DrizzleTx;
 
 const BATCH_SIZE = 1000;
 
@@ -279,8 +287,9 @@ export type ChannelDependencyInsert =
 /** Get existing release channels for a package */
 export async function getExistingChannels(
 	packageId: string,
+	conn: DbConnection = db,
 ): Promise<Map<string, { id: string; version: string }>> {
-	const rows = await db
+	const rows = await conn
 		.select({
 			id: dbSchema.packageReleaseChannels.id,
 			channel: dbSchema.packageReleaseChannels.channel,
@@ -296,31 +305,36 @@ export async function getExistingChannels(
 	return map;
 }
 
-/** Get existing dependencies for a channel, keyed by (packageId, type) */
+export interface ExistingDependency {
+	id: string;
+	dependencyPackageId: string;
+	dependencyType: string;
+	dependencyVersionRange: string;
+}
+
+/** Get existing dependencies for a channel */
 export async function getExistingDependencies(
 	channelId: string,
-): Promise<Map<string, string>> {
-	const rows = await db
+	conn: DbConnection = db,
+): Promise<ExistingDependency[]> {
+	return conn
 		.select({
 			id: dbSchema.channelDependencies.id,
 			dependencyPackageId: dbSchema.channelDependencies.dependencyPackageId,
 			dependencyType: dbSchema.channelDependencies.dependencyType,
+			dependencyVersionRange:
+				dbSchema.channelDependencies.dependencyVersionRange,
 		})
 		.from(dbSchema.channelDependencies)
 		.where(eq(dbSchema.channelDependencies.channelId, channelId));
-
-	const map = new Map<string, string>();
-	for (const row of rows) {
-		map.set(`${row.dependencyPackageId}:${row.dependencyType}`, row.id);
-	}
-	return map;
 }
 
 /** Insert a new release channel */
 export async function insertReleaseChannel(
 	channel: ReleaseChannelInsert,
+	conn: DbConnection = db,
 ): Promise<void> {
-	await db.insert(dbSchema.packageReleaseChannels).values(channel);
+	await conn.insert(dbSchema.packageReleaseChannels).values(channel);
 }
 
 /** Update an existing release channel */
@@ -329,17 +343,21 @@ export async function updateReleaseChannel(
 	version: string,
 	publishedAt: Date,
 	updatedAt: Date,
+	conn: DbConnection = db,
 ): Promise<void> {
-	await db
+	await conn
 		.update(dbSchema.packageReleaseChannels)
 		.set({ version, publishedAt, updatedAt })
 		.where(eq(dbSchema.packageReleaseChannels.id, id));
 }
 
 /** Delete release channels by IDs */
-export async function deleteReleaseChannels(ids: string[]): Promise<void> {
+export async function deleteReleaseChannels(
+	ids: string[],
+	conn: DbConnection = db,
+): Promise<void> {
 	if (ids.length === 0) return;
-	await db
+	await conn
 		.delete(dbSchema.packageReleaseChannels)
 		.where(inArray(dbSchema.packageReleaseChannels.id, ids));
 }
@@ -347,19 +365,23 @@ export async function deleteReleaseChannels(ids: string[]): Promise<void> {
 /** Insert channel dependencies */
 export async function insertChannelDependencies(
 	deps: ChannelDependencyInsert[],
+	conn: DbConnection = db,
 ): Promise<void> {
 	if (deps.length === 0) return;
 
 	for (let i = 0; i < deps.length; i += BATCH_SIZE) {
 		const batch = deps.slice(i, i + BATCH_SIZE);
-		await db.insert(dbSchema.channelDependencies).values(batch);
+		await conn.insert(dbSchema.channelDependencies).values(batch);
 	}
 }
 
 /** Delete channel dependencies by IDs */
-export async function deleteChannelDependencies(ids: string[]): Promise<void> {
+export async function deleteChannelDependencies(
+	ids: string[],
+	conn: DbConnection = db,
+): Promise<void> {
 	if (ids.length === 0) return;
-	await db
+	await conn
 		.delete(dbSchema.channelDependencies)
 		.where(inArray(dbSchema.channelDependencies.id, ids));
 }
