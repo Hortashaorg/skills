@@ -32,8 +32,10 @@ interface ReviewQueueProps {
 	isAdmin: Accessor<boolean>;
 	hasVoted: Accessor<boolean>;
 	voteCounts: Accessor<{ approve: number; reject: number }>;
+	isSkipped: Accessor<boolean>;
 	formatAction: (type: string, payload: unknown) => string;
 	onVote: (vote: "approve" | "reject") => void;
+	onSkip: () => void;
 }
 
 const ReviewQueueSkeleton = () => (
@@ -83,11 +85,18 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 						<Stack spacing="md">
 							<div class="p-4 bg-surface-alt dark:bg-surface-dark-alt rounded-radius">
 								<Stack spacing="sm">
-									<Show when={props.isOwnSuggestion() && props.isAdmin()}>
-										<Badge variant="warning" size="sm">
-											Your suggestion
-										</Badge>
-									</Show>
+									<Flex gap="xs">
+										<Show when={props.isOwnSuggestion() && props.isAdmin()}>
+											<Badge variant="warning" size="sm">
+												Your suggestion
+											</Badge>
+										</Show>
+										<Show when={props.isSkipped()}>
+											<Badge variant="info" size="sm">
+												Skipped
+											</Badge>
+										</Show>
+									</Flex>
 									<Text size="lg" weight="semibold">
 										{props.formatAction(
 											suggestion().type,
@@ -156,6 +165,9 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 										onClick={() => props.onVote("reject")}
 									>
 										Reject
+									</Button>
+									<Button size="lg" variant="secondary" onClick={props.onSkip}>
+										Skip
 									</Button>
 								</Flex>
 							</Show>

@@ -56,15 +56,15 @@
 
 ---
 
-## Curation UX
+## Curation UX ✓
 
-### Skip Functionality
+### Skip Functionality ✓
 Session-based skip using SolidJS signals (resets on page refresh):
-- [ ] Add `skippedIds` signal (Set) to curation page state
-- [ ] Add "Skip" button next to Approve/Reject in ReviewQueue
-- [ ] Skip adds current suggestion ID to set, clears selection (auto-advances)
-- [ ] Modify `pendingSuggestions` memo to sort skipped IDs to end of queue
-- [ ] Show visual indicator on skipped suggestions when they reappear
+- [x] Add `skippedIds` signal (Set) to curation page state
+- [x] Add "Skip" button next to Approve/Reject in ReviewQueue
+- [x] Skip adds current suggestion ID to set, clears selection (auto-advances)
+- [x] Modify `pendingSuggestions` memo to sort skipped IDs to end of queue
+- [x] Show visual indicator on skipped suggestions when they reappear
 
 ### Structured Logging ✓
 - [x] Add structured logger to backend and worker (OTLP via createLogger)

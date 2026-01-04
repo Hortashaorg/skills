@@ -43,6 +43,9 @@ export const Curation = () => {
 		string | null
 	>(null);
 
+	// Session-based skip - skipped suggestions move to end of queue
+	const [skippedIds, setSkippedIds] = createSignal<Set<string>>(new Set());
+
 	// Get pending suggestions - admins see all, regular users exclude own
 	const [allPending, allPendingResult] = useQuery(() =>
 		queries.suggestions.pending(),
@@ -70,13 +73,24 @@ export const Curation = () => {
 			| undefined;
 
 	// Filter to only show suggestions user hasn't voted on (for review queue)
+	// Skipped suggestions are sorted to the end
 	const pendingSuggestions = createMemo(() => {
 		const all = allPendingSuggestions();
 		if (!all) return [];
 		const userId = currentUserId();
-		return all.filter(
+		const skipped = skippedIds();
+
+		const unvoted = all.filter(
 			(s) => !(s.votes ?? []).some((v) => v.accountId === userId),
 		);
+
+		// Sort: non-skipped first, then skipped
+		return [...unvoted].sort((a, b) => {
+			const aSkipped = skipped.has(a.id);
+			const bSkipped = skipped.has(b.id);
+			if (aSkipped === bSkipped) return 0;
+			return aSkipped ? 1 : -1;
+		});
 	});
 
 	// Get all tags for name lookup
@@ -136,6 +150,22 @@ export const Curation = () => {
 		};
 	});
 
+	// Check if current suggestion was previously skipped
+	const isCurrentSkipped = createMemo(() => {
+		const suggestion = currentSuggestion();
+		if (!suggestion) return false;
+		return skippedIds().has(suggestion.id);
+	});
+
+	// Skip current suggestion - moves it to end of queue
+	const handleSkip = () => {
+		const suggestion = currentSuggestion();
+		if (!suggestion) return;
+
+		setSkippedIds((prev) => new Set([...prev, suggestion.id]));
+		setSelectedSuggestionId(null);
+	};
+
 	// Helper to format suggestion descriptions using shared helpers
 	const getDescription = (type: string, payload: unknown): string =>
 		formatSuggestionDescription(type, payload, { tags: tagsById() });
@@ -191,8 +221,10 @@ export const Curation = () => {
 								isAdmin={isAdmin}
 								hasVoted={hasVotedOnCurrent}
 								voteCounts={currentVoteCounts}
+								isSkipped={isCurrentSkipped}
 								formatAction={getAction}
 								onVote={handleVote}
+								onSkip={handleSkip}
 							/>
 
 							{/* Admin backlog */}
