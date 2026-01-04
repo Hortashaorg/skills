@@ -24,8 +24,8 @@
 - [ ] Instrument key operations:
   - [ ] Backend: Auth flows, mutation/query handlers
   - [ ] Worker: Package fetch duration, registry API calls, score calculations
-- [ ] Add trace context to structured logs
-- [ ] Replace console.log with structured logger
+- [x] Add trace context to structured logs (via OTLP logs)
+- [x] Replace console.log with structured logger (createLogger utility)
 
 ### Metrics to Track
 - [ ] Request latency (backend)
