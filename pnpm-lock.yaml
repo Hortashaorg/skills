@@ -105,9 +105,6 @@ importers:
       hono:
         specifier: ^4.11.3
         version: 4.11.3
-      postgres:
-        specifier: ^3.4.7
-        version: 3.4.7
 
   services/frontend:
     dependencies:
@@ -217,9 +214,6 @@ importers:
       ky:
         specifier: ^1.14.2
         version: 1.14.2
-      postgres:
-        specifier: ^3.4.7
-        version: 3.4.7
       zod:
         specifier: ^4.3.5
         version: 4.3.5

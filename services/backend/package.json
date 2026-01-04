@@ -13,7 +13,6 @@
 		"@package/database": "workspace:*",
 		"@package/instrumentation": "workspace:*",
 		"@types/node": "^25.0.3",
-		"hono": "^4.11.3",
-		"postgres": "^3.4.7"
+		"hono": "^4.11.3"
 	}
 }

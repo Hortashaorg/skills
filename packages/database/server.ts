@@ -27,7 +27,7 @@ export { mutators } from "./mutators/index.ts";
 export { queries } from "./queries/index.ts";
 export { schema, zql } from "./zero-schema.gen.ts";
 
-// Raw postgres client
+// Raw postgres client (OTel wrapper incompatible with Drizzle's unsafe() usage)
 const sqlClient = postgres(environment.ZERO_UPSTREAM_DB);
 
 // Drizzle ORM for type-safe bulk operations
