@@ -8,9 +8,9 @@
 
 import { db, dbSchema, eq } from "@package/database/server";
 import {
-	SpanStatusCode,
 	createLogger,
 	getTracer,
+	SpanStatusCode,
 } from "@package/instrumentation/utils";
 import { type ProcessResult, processFetch } from "./process-fetch.ts";
 import { scheduleFetchesForPlaceholders } from "./schedule-placeholders.ts";
@@ -49,7 +49,9 @@ export async function processPackages(): Promise<void> {
 				return;
 			}
 
-			logger.info("Processing package fetches", { count: pendingFetches.length });
+			logger.info("Processing package fetches", {
+				count: pendingFetches.length,
+			});
 
 			const results: ProcessResult[] = [];
 
@@ -65,12 +67,24 @@ export async function processPackages(): Promise<void> {
 						fetchSpan.setAttribute("success", res.success);
 
 						if (res.success) {
-							fetchSpan.setAttribute("channels.created", res.channelsCreated ?? 0);
-							fetchSpan.setAttribute("channels.updated", res.channelsUpdated ?? 0);
-							fetchSpan.setAttribute("channels.deleted", res.channelsDeleted ?? 0);
+							fetchSpan.setAttribute(
+								"channels.created",
+								res.channelsCreated ?? 0,
+							);
+							fetchSpan.setAttribute(
+								"channels.updated",
+								res.channelsUpdated ?? 0,
+							);
+							fetchSpan.setAttribute(
+								"channels.deleted",
+								res.channelsDeleted ?? 0,
+							);
 							fetchSpan.setAttribute("deps.created", res.depsCreated ?? 0);
 							fetchSpan.setAttribute("deps.deleted", res.depsDeleted ?? 0);
-							fetchSpan.setAttribute("placeholders.created", res.placeholdersCreated ?? 0);
+							fetchSpan.setAttribute(
+								"placeholders.created",
+								res.placeholdersCreated ?? 0,
+							);
 							fetchSpan.setStatus({ code: SpanStatusCode.OK });
 						} else {
 							fetchSpan.setAttribute("error", res.error ?? "unknown");

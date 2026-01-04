@@ -63,9 +63,7 @@ export const markAllRead = defineMutator(async ({ tx, ctx }) => {
 	}
 
 	const unread = await tx.run(
-		zql.notifications
-			.where("accountId", ctx.userID)
-			.where("read", false),
+		zql.notifications.where("accountId", ctx.userID).where("read", false),
 	);
 
 	for (const notification of unread) {

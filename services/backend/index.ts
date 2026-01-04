@@ -160,7 +160,10 @@ app.post("/login", async (c) => {
 	}
 
 	const errorText = await res.text();
-	logger.error("Zitadel token exchange failed", { status: res.status, error: errorText });
+	logger.error("Zitadel token exchange failed", {
+		status: res.status,
+		error: errorText,
+	});
 	return c.json({ error: "Authentication failed" }, 401);
 });
 
@@ -220,7 +223,10 @@ app.post("/refresh", async (c) => {
 	}
 
 	const errorText = await res.text();
-	logger.error("Zitadel token refresh failed", { status: res.status, error: errorText });
+	logger.error("Zitadel token refresh failed", {
+		status: res.status,
+		error: errorText,
+	});
 
 	clearRefreshToken(c);
 
