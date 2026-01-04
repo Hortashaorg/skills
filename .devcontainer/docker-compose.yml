@@ -51,7 +51,6 @@ services:
     environment:
       - ZERO_UPSTREAM_DB=postgresql://root:root@postgres:5432/root
       - ZERO_REPLICA_FILE=/zero_data/zero.db
-      - ZERO_STORAGE_DB_TMP_DIR=/zero_data/tmp
       - ZERO_MUTATE_URL=http://local:4000/api/mutate
       - ZERO_QUERY_URL=http://local:4000/api/query
       - ZERO_MUTATE_FORWARD_COOKIES=true
