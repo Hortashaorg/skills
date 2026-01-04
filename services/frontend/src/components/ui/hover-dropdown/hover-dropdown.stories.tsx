@@ -51,7 +51,7 @@ const MenuItems = () => (
 const Trigger = () => (
 	<button
 		type="button"
-		class="px-3 py-1.5 text-sm border border-outline dark:border-outline-dark rounded-radius hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+		class="px-3 py-1.5 text-sm border border-outline dark:border-outline-dark rounded-radius hover:bg-surface-alt dark:hover:bg-surface-dark-alt text-on-surface dark:text-on-surface-dark"
 	>
 		Hover me
 	</button>

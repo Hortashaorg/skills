@@ -91,9 +91,9 @@ Refactored Layout.tsx from ~700 lines to ~180 lines for testability:
 - [x] Simplify `Layout.tsx` to compose Navbar + breadcrumbs + main content
   - Layout owns Zero queries, passes data down to Navbar
 
-### Storybook Stories
+### Storybook Stories ✓
 - [x] `HoverDropdown.stories.tsx` - Alignments, widths, notification-style content
-- [ ] `Navbar.stories.tsx` - States: logged out, logged in, admin, mobile viewport
+- [x] `Navbar.stories.tsx` - States: logged out, logged in, admin, connection states, 20+ notifications
 
 ### Design Notes
 - Generic HoverDropdown in ui/ tier (reusable across app)

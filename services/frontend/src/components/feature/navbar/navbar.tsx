@@ -113,6 +113,7 @@ export const Navbar = (props: NavbarProps) => {
 								trigger={
 									<A
 										href="/me/notifications"
+										aria-label="Notifications"
 										class="relative block text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition"
 									>
 										<BellIcon size="sm" />
