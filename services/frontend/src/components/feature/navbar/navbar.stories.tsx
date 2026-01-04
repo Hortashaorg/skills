@@ -6,8 +6,21 @@ const meta = {
 	title: "Feature/Navbar",
 	component: Navbar,
 	tags: ["autodocs"],
+	decorators: [
+		(Story) => (
+			<div style={{ "min-width": "1024px" }}>
+				<Story />
+			</div>
+		),
+	],
 	parameters: {
 		layout: "fullscreen",
+		viewport: {
+			defaultViewport: "desktop",
+		},
+		chromatic: {
+			viewports: [1280],
+		},
 	},
 	argTypes: {
 		isLoggedIn: {
