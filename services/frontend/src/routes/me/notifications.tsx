@@ -38,11 +38,13 @@ export const Notifications = () => {
 	const [notifications, notificationsResult] = useQuery(() =>
 		queries.notifications.mine(),
 	);
-	const [unreadNotifications] = useQuery(() =>
+	const [unreadNotifications, unreadResult] = useQuery(() =>
 		queries.notifications.unreadCount(),
 	);
 
-	const isLoading = () => notificationsResult().type !== "complete";
+	const isLoading = () =>
+		notificationsResult().type !== "complete" ||
+		unreadResult().type !== "complete";
 	const unreadCount = () => unreadNotifications()?.length ?? 0;
 
 	const handleMarkRead = (id: string) => {
