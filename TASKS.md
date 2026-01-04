@@ -17,21 +17,21 @@
 
 ## Observability
 
-### Telemetry Instrumentation
+### Telemetry Instrumentation ✓
 - [x] Add OpenTelemetry SDK to backend service
 - [x] Add OpenTelemetry SDK to worker service
 - [x] Configure OTLP exporter to Grafana (via otel-lgtm container)
-- [ ] Instrument key operations:
-  - [ ] Backend: Auth flows, mutation/query handlers
-  - [ ] Worker: Package fetch duration, registry API calls, score calculations
+- [x] Instrument key operations:
+  - [x] Backend: HTTP auto-instrumentation + request metrics middleware
+  - [x] Worker: Root span (worker.run), child spans (worker.packages, worker.fetch, worker.scores)
 - [x] Add trace context to structured logs (via OTLP logs)
-- [x] Replace console.log with structured logger (createLogger utility)
+- [x] Replace console.log with structured logger (pino + OTLP)
 
-### Metrics to Track
-- [ ] Request latency (backend)
-- [ ] Fetch success/failure rates (worker)
-- [ ] Registry API response times (worker)
-- [ ] Score calculation duration (worker)
+### Metrics to Track ✓
+- [x] Request latency (backend) - http.duration_ms histogram
+- [x] Fetch success/failure rates (worker) - worker.packages.fetched counter
+- [x] Registry API response times (worker) - worker.packages.duration_ms histogram
+- [x] Score calculation duration (worker) - via worker.scores span
 
 ---
 
