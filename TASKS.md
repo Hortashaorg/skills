@@ -78,26 +78,27 @@ Session-based skip using SolidJS signals (resets on page refresh):
 ### Split Layout into Feature Components
 Current Layout.tsx (~700 lines) handles everything. Split for testability:
 
-- [ ] Create `components/feature/navbar/Navbar.tsx` - Desktop navigation
-  - Logo, nav links, connection status, notification bell, account dropdown
-  - Props: user state, connection state, notifications
-- [ ] Create `components/feature/navbar/MobileNavbar.tsx` - Mobile navigation
-  - Hamburger menu, collapsible sections, touch-friendly targets
-  - Can evolve separately based on mobile UX needs
-- [ ] Create `components/feature/navbar/NotificationBell.tsx` - Extract bell + dropdown
-- [ ] Create `components/feature/navbar/AccountDropdown.tsx` - Extract account menu
-- [ ] Simplify `Layout.tsx` to compose navbar components + breadcrumbs + main content
+- [ ] Create `components/feature/navbar/Navbar.tsx` - Unified responsive navigation
+  - Handles both desktop and mobile layouts internally (CSS/media queries)
+  - Props: user state, connection state, notifications, handlers
+- [ ] Create `components/feature/navbar/NavLinks.tsx` - Shared navigation links
+  - Packages, Projects, admin links (reused in desktop nav and mobile menu)
+- [ ] Create `components/feature/navbar/NotificationBell.tsx` - Bell icon + dropdown
+  - Props: notifications, unreadCount, onMarkRead, onMarkAllRead
+- [ ] Create `components/feature/navbar/AccountDropdown.tsx` - Account menu
+  - Props: isAdmin, onLogout, currentPath (for active states)
+- [ ] Simplify `Layout.tsx` to compose Navbar + breadcrumbs + main content
 
 ### Storybook Stories
-- [ ] `Navbar.stories.tsx` - States: logged out, logged in, admin, with notifications
-- [ ] `MobileNavbar.stories.tsx` - States: closed, open, various menu sections
-- [ ] `NotificationBell.stories.tsx` - States: no notifications, unread count, dropdown open
+- [ ] `Navbar.stories.tsx` - States: logged out, logged in, admin, mobile viewport
+- [ ] `NotificationBell.stories.tsx` - States: no notifications, unread count, 20+, dropdown
 - [ ] `AccountDropdown.stories.tsx` - States: regular user, admin with extra links
 
 ### Design Considerations
-- Navbar components receive data via props (testable, no Zero queries inside)
-- Layout.tsx owns Zero queries and passes data down
-- Mobile/desktop can have different interaction patterns (hover vs tap)
+- One Navbar component with responsive rendering (avoids duplication)
+- Shared pieces (NavLinks, NotificationBell, AccountDropdown) reused across layouts
+- Props-based design: Layout.tsx owns Zero queries, passes data down
+- Changes to auth/nav logic happen in one place
 - Prepare for future: dark mode toggle, search in navbar, etc.
 
 ---
