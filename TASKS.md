@@ -63,10 +63,10 @@
 - [ ] Track skipped suggestions per session
 - [ ] Show skipped suggestions at end of queue
 
-### Structured Logging
-- [ ] Add pino logger to backend and worker
-- [ ] Replace console.log/error with structured logs
-- [ ] Include trace context in logs (correlate with OTel spans)
+### Structured Logging ✓
+- [x] Add structured logger to backend and worker (OTLP via createLogger)
+- [x] Replace console.log/error with structured logs
+- [x] Include trace context in logs (correlate with OTel spans)
 
 ---
 
