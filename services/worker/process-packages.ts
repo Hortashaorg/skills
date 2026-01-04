@@ -10,7 +10,6 @@ import { db, dbSchema, eq } from "@package/database/server";
 import {
 	SpanStatusCode,
 	createLogger,
-	getMeter,
 	getTracer,
 } from "@package/instrumentation/utils";
 import { type ProcessResult, processFetch } from "./process-fetch.ts";
@@ -18,16 +17,6 @@ import { scheduleFetchesForPlaceholders } from "./schedule-placeholders.ts";
 
 const logger = createLogger("worker.packages");
 const tracer = getTracer("worker");
-const meter = getMeter("worker");
-
-const fetchCounter = meter.createCounter("worker.packages.fetched", {
-	description: "Number of packages fetched",
-});
-
-const fetchDuration = meter.createHistogram("worker.packages.duration_ms", {
-	description: "Time to fetch a package in milliseconds",
-	unit: "ms",
-});
 
 export async function processPackages(): Promise<void> {
 	await tracer.startActiveSpan("worker.packages", async (span) => {
@@ -66,8 +55,6 @@ export async function processPackages(): Promise<void> {
 
 			// Process fetches sequentially to avoid race conditions
 			for (const fetch of pendingFetches) {
-				const startTime = performance.now();
-
 				const result = await tracer.startActiveSpan(
 					"worker.fetch",
 					async (fetchSpan) => {
@@ -97,14 +84,6 @@ export async function processPackages(): Promise<void> {
 						return res;
 					},
 				);
-
-				const duration = performance.now() - startTime;
-				const attributes = {
-					registry: result.registry,
-					success: result.success,
-				};
-				fetchCounter.add(1, attributes);
-				fetchDuration.record(duration, attributes);
 
 				results.push(result);
 
