@@ -6,12 +6,12 @@
 
 ## PR Workflow
 
-### GitHub Actions CI
-- [ ] Create `.github/workflows/ci.yml` for PR checks
-- [ ] Run `pnpm check` (Biome lint + format)
-- [ ] Run `pnpm all typecheck` (TypeScript all workspaces)
-- [ ] Run `pnpm frontend test` (Storybook tests)
-- [ ] Fail PR if any check fails
+### GitHub Actions CI ✓
+- [x] Create `.github/workflows/ci.yml` for PR checks
+- [x] Run `pnpm check` (Biome lint + format)
+- [x] Run `pnpm all typecheck` (TypeScript all workspaces)
+- [x] Run `pnpm frontend test` (Storybook tests)
+- [x] Fail PR if any check fails
 
 ---
 

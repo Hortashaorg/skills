@@ -14,7 +14,7 @@
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"@biomejs/biome": "2.3.10",
+		"@biomejs/biome": "2.3.11",
 		"node-gyp": "^12.1.0",
 		"typescript": "^5.9.3"
 	},

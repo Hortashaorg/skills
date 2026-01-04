@@ -45,19 +45,25 @@ services:
 
   zero-cache:
     container_name: skills_zero
-    image: rocicorp/zero:0.25.2
+    image: rocicorp/zero:0.25.6
     ports:
       - "4848:4848"
     environment:
       - ZERO_UPSTREAM_DB=postgresql://root:root@postgres:5432/root
       - ZERO_REPLICA_FILE=/zero_data/zero.db
+      - ZERO_STORAGE_DB_TMP_DIR=/zero_data/tmp
       - ZERO_MUTATE_URL=http://local:4000/api/mutate
       - ZERO_QUERY_URL=http://local:4000/api/query
       - ZERO_MUTATE_FORWARD_COOKIES=true
       - ZERO_LOG_LEVEL=debug
+      - ZERO_LOG_FORMAT=json
       - ZERO_ADMIN_PASSWORD=admin
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=zero-cache
     depends_on:
       - postgres
+      - otel
     volumes:
       - "replica:/zero_data"
 
