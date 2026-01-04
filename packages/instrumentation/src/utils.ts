@@ -1,7 +1,7 @@
-import { metrics, trace } from "@opentelemetry/api";
 import type { Meter, Tracer } from "@opentelemetry/api";
-import { logs, SeverityNumber } from "@opentelemetry/api-logs";
+import { metrics, trace } from "@opentelemetry/api";
 import type { LogAttributes } from "@opentelemetry/api-logs";
+import { logs, SeverityNumber } from "@opentelemetry/api-logs";
 
 export function getTracer(name: string): Tracer {
 	return trace.getTracer(name);
@@ -30,9 +30,11 @@ export function createLogger(name: string): Logger {
 		severityNumber: SeverityNumber,
 		consoleMethod: "debug" | "info" | "warn" | "error",
 		message: string,
-		attributes?: LogAttributes
+		attributes?: LogAttributes,
 	) => {
-		console[consoleMethod](`[${name}] ${message}${formatAttributes(attributes)}`);
+		console[consoleMethod](
+			`[${name}] ${message}${formatAttributes(attributes)}`,
+		);
 
 		otelLogger.emit({
 			severityNumber,
@@ -53,7 +55,6 @@ export function createLogger(name: string): Logger {
 	};
 }
 
-export { metrics, trace } from "@opentelemetry/api";
 export type {
 	Counter,
 	Histogram,
@@ -61,4 +62,4 @@ export type {
 	Span,
 	Tracer,
 } from "@opentelemetry/api";
-export { SpanStatusCode } from "@opentelemetry/api";
+export { metrics, SpanStatusCode, trace } from "@opentelemetry/api";
