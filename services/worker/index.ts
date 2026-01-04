@@ -8,6 +8,7 @@
  * 2. Calculate contribution scores
  */
 
+import { shutdown } from "@package/instrumentation";
 import {
 	createLogger,
 	getTracer,
@@ -46,8 +47,9 @@ async function main() {
 }
 
 main()
+	.then(() => shutdown())
 	.then(() => process.exit(0))
 	.catch((error) => {
 		logger.error("Worker failed", { error: String(error) });
-		process.exit(1);
+		shutdown().finally(() => process.exit(1));
 	});
