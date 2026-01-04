@@ -25,6 +25,7 @@
 - [ ] Dark mode contrast audit - WCAG AA compliance
 
 ### UX
+- [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items + visibility functions
 - [ ] Full mobile audit - layout fixes across all pages
 - [ ] Edge cases: Long text tooltips for truncated names/descriptions
 - [ ] Empty state improvements - more helpful CTAs
