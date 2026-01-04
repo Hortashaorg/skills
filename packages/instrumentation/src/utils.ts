@@ -2,6 +2,7 @@ import type { Meter, Tracer } from "@opentelemetry/api";
 import { metrics, trace } from "@opentelemetry/api";
 import type { LogAttributes } from "@opentelemetry/api-logs";
 import { logs, SeverityNumber } from "@opentelemetry/api-logs";
+import pino from "pino";
 
 export function getTracer(name: string): Tracer {
 	return trace.getTracer(name);
@@ -18,23 +19,26 @@ export interface Logger {
 	error(message: string, attributes?: LogAttributes): void;
 }
 
-function formatAttributes(attributes?: LogAttributes): string {
-	if (!attributes || Object.keys(attributes).length === 0) return "";
-	return ` ${JSON.stringify(attributes)}`;
-}
+const pinoLogger = pino({
+	transport: {
+		target: "pino-pretty",
+		options: {
+			colorize: true,
+		},
+	},
+});
 
 export function createLogger(name: string): Logger {
 	const otelLogger = logs.getLogger(name);
+	const child = pinoLogger.child({ name });
 
 	const emit = (
 		severityNumber: SeverityNumber,
-		consoleMethod: "debug" | "info" | "warn" | "error",
+		level: "debug" | "info" | "warn" | "error",
 		message: string,
 		attributes?: LogAttributes,
 	) => {
-		console[consoleMethod](
-			`[${name}] ${message}${formatAttributes(attributes)}`,
-		);
+		child[level](attributes ?? {}, message);
 
 		otelLogger.emit({
 			severityNumber,

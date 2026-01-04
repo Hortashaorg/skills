@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
 import { count, db, dbSchema, eq } from "@package/database/server";
-import { createLogger } from "@package/instrumentation/utils";
+import { createLogger, getMeter } from "@package/instrumentation/utils";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
@@ -15,6 +15,16 @@ import { getAuthContext } from "./util.ts";
 
 const DELETED_USER_ID = "00000000-0000-0000-0000-000000000000";
 const logger = createLogger("backend");
+const meter = getMeter("backend");
+
+const requestCounter = meter.createCounter("http.requests", {
+	description: "Number of HTTP requests",
+});
+
+const requestDuration = meter.createHistogram("http.duration_ms", {
+	description: "HTTP request duration in milliseconds",
+	unit: "ms",
+});
 
 const REFRESH_TOKEN_COOKIE = {
 	name: "refresh_token",
@@ -87,6 +97,19 @@ app.use(
 		credentials: true,
 	}),
 );
+
+app.use("*", async (c, next) => {
+	const start = performance.now();
+	await next();
+	const duration = performance.now() - start;
+	const attributes = {
+		method: c.req.method,
+		route: c.req.path,
+		status: c.res.status,
+	};
+	requestCounter.add(1, attributes);
+	requestDuration.record(duration, attributes);
+});
 
 app.post("/login", async (c) => {
 	const { code } = await c.req.json();
