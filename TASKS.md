@@ -18,8 +18,8 @@
 ## Observability
 
 ### Telemetry Instrumentation
-- [ ] Add OpenTelemetry SDK to backend service
-- [ ] Add OpenTelemetry SDK to worker service
+- [x] Add OpenTelemetry SDK to backend service
+- [x] Add OpenTelemetry SDK to worker service
 - [x] Configure OTLP exporter to Grafana (via otel-lgtm container)
 - [ ] Instrument key operations:
   - [ ] Backend: Auth flows, mutation/query handlers
