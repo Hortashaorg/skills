@@ -8,11 +8,14 @@
  * 2. Calculate contribution scores
  */
 
+import { createLogger } from "@package/instrumentation/utils";
 import { calculateScores } from "./calculate-scores.ts";
 import { processPackages } from "./process-packages.ts";
 
+const logger = createLogger("worker");
+
 async function main() {
-	console.log("Worker starting...\n");
+	logger.info("Worker starting");
 
 	// Step 1: Process package fetches
 	await processPackages();
@@ -20,12 +23,12 @@ async function main() {
 	// Step 2: Calculate contribution scores
 	await calculateScores();
 
-	console.log("Worker complete.");
+	logger.info("Worker complete");
 }
 
 main()
 	.then(() => process.exit(0))
 	.catch((error) => {
-		console.error("Worker failed:", error);
+		logger.error("Worker failed", { error: String(error) });
 		process.exit(1);
 	});

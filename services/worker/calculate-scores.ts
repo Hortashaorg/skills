@@ -22,6 +22,9 @@ import {
 	sqlExpr,
 	sum,
 } from "@package/database/server";
+import { createLogger } from "@package/instrumentation/utils";
+
+const logger = createLogger("worker.scores");
 
 interface ScoreResult {
 	accountsUpdated: number;
@@ -29,7 +32,7 @@ interface ScoreResult {
 }
 
 export async function calculateScores(): Promise<ScoreResult> {
-	console.log("=== Score Calculation ===\n");
+	logger.info("Score calculation started");
 
 	const now = new Date();
 	const currentMonthStart = getMonthStartUTC(now);
@@ -58,13 +61,11 @@ export async function calculateScores(): Promise<ScoreResult> {
 		);
 
 	if (accountsToProcess.length === 0) {
-		console.log("No accounts need score updates.\n");
+		logger.info("No accounts need score updates");
 		return { accountsUpdated: 0, eventsProcessed: 0 };
 	}
 
-	console.log(
-		`Processing scores for ${accountsToProcess.length} accounts...\n`,
-	);
+	logger.info("Processing scores", { accounts: accountsToProcess.length });
 
 	let totalEventsProcessed = 0;
 
@@ -148,9 +149,10 @@ export async function calculateScores(): Promise<ScoreResult> {
 		totalEventsProcessed += eventsProcessed;
 	}
 
-	console.log(`Summary:`);
-	console.log(`  Accounts updated: ${accountsToProcess.length}`);
-	console.log(`  Events processed: ${totalEventsProcessed}\n`);
+	logger.info("Score calculation complete", {
+		accountsUpdated: accountsToProcess.length,
+		eventsProcessed: totalEventsProcessed,
+	});
 
 	return {
 		accountsUpdated: accountsToProcess.length,
