@@ -29,8 +29,8 @@
 
 ### Metrics to Track ✓
 - [x] Request latency (backend) - http.duration_ms histogram
-- [x] Fetch success/failure rates (worker) - worker.packages.fetched counter
-- [x] Registry API response times (worker) - worker.packages.duration_ms histogram
+- [x] Fetch success/failure rates (worker) - via span attributes (counters reset each run)
+- [x] Registry API response times (worker) - via span durations (batch job, no histograms)
 - [x] Score calculation duration (worker) - via worker.scores span
 
 ---

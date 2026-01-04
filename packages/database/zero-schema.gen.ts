@@ -160,6 +160,63 @@ const contributionScoresTable = {
   primaryKey: ["id"],
   serverName: "contribution_scores",
 } as const;
+const notificationsTable = {
+  name: "notifications",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    type: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "suggestion_approved"
+        | "suggestion_rejected",
+    },
+    title: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    message: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    read: {
+      type: "boolean",
+      optional: false,
+      customType: null as unknown as boolean,
+    },
+    relatedId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "related_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const packageFetchesTable = {
   name: "packageFetches",
   columns: {
@@ -652,6 +709,14 @@ const accountRelationships = {
       cardinality: "one",
     },
   ],
+  notifications: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "notifications",
+      cardinality: "many",
+    },
+  ],
 } as const;
 const channelDependenciesRelationships = {
   channel: [
@@ -690,6 +755,16 @@ const contributionEventsRelationships = {
   ],
 } as const;
 const contributionScoresRelationships = {
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const notificationsRelationships = {
   account: [
     {
       sourceField: ["accountId"],
@@ -921,6 +996,7 @@ export const schema = {
     channelDependencies: channelDependenciesTable,
     contributionEvents: contributionEventsTable,
     contributionScores: contributionScoresTable,
+    notifications: notificationsTable,
     packageFetches: packageFetchesTable,
     packageReleaseChannels: packageReleaseChannelsTable,
     packageTags: packageTagsTable,
@@ -937,6 +1013,7 @@ export const schema = {
     channelDependencies: channelDependenciesRelationships,
     contributionEvents: contributionEventsRelationships,
     contributionScores: contributionScoresRelationships,
+    notifications: notificationsRelationships,
     packageFetches: packageFetchesRelationships,
     packageReleaseChannels: packageReleaseChannelsRelationships,
     packageTags: packageTagsRelationships,
@@ -985,6 +1062,13 @@ export type ContributionEvent = Row["contributionEvents"];
  * @deprecated Use Row["contributionScores"] instead from "@rocicorp/zero".
  */
 export type ContributionScore = Row["contributionScores"];
+/**
+ * Represents a row from the "notifications" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["notifications"] instead from "@rocicorp/zero".
+ */
+export type Notification = Row["notifications"];
 /**
  * Represents a row from the "packageFetches" table.
  * This type is auto-generated from your Drizzle schema definition.

@@ -36,3 +36,8 @@ export const contributionEventTypeEnum = pgEnum("contribution_event_type", [
 	"suggestion_rejected",
 	"vote_matched",
 ]);
+
+export const notificationTypeEnum = pgEnum("notification_type", [
+	"suggestion_approved",
+	"suggestion_rejected",
+]);
