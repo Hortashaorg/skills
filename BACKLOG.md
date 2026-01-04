@@ -21,7 +21,7 @@
 ## Polish
 
 ### Accessibility
-- [ ] Hamburger menu aria-label
+- ~Hamburger menu aria-label~ → Sprint 4
 - [ ] Dark mode contrast audit - WCAG AA compliance
 
 ### UX
@@ -38,7 +38,7 @@
 
 ## Technical Debt / Ops
 
-- [ ] Structured logging in backend and worker
+- ~Structured logging in backend and worker~ → Sprint 4
 - [ ] Worker metrics (requests processed, failures, duration)
 - [ ] Health checks and readiness probes
 - [ ] Resource limits and autoscaling config

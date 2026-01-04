@@ -278,6 +278,8 @@ export const Navbar = (props: NavbarProps) => {
 					{/* Mobile hamburger button */}
 					<button
 						type="button"
+						aria-label={mobileMenuOpen() ? "Close menu" : "Open menu"}
+						aria-expanded={mobileMenuOpen()}
 						class="sm:hidden p-2 text-on-surface dark:text-on-surface-dark"
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen())}
 					>
