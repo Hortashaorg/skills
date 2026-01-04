@@ -1,5 +1,6 @@
 export { Icon, type IconProps, iconVariants } from "./icon";
 export {
+	BellIcon,
 	CheckIcon,
 	ChevronDownIcon,
 	ChevronRightIcon,

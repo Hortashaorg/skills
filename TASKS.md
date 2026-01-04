@@ -35,24 +35,24 @@
 
 ---
 
-## User Notifications
+## User Notifications ✓
 
-### Database Schema
-- [ ] Create `notifications` table
+### Database Schema ✓
+- [x] Create `notifications` table
   - id, accountId, type, title, message, read, relatedId, createdAt
-- [ ] Define notification types enum
-- [ ] Run migrations and generate Zero schema
+- [x] Define notification types enum
+- [x] Run migrations and generate Zero schema
 
-### Notification Triggers
-- [ ] `suggestion_approved` - "Your tag suggestion was approved"
-- [ ] `suggestion_rejected` - "Your tag suggestion was rejected"
+### Notification Triggers ✓
+- [x] `suggestion_approved` - "Your tag suggestion was approved"
+- [x] `suggestion_rejected` - "Your tag suggestion was rejected"
 
-### Frontend UI
-- [ ] Notification bell icon in header
-- [ ] Unread count badge
-- [ ] Dropdown/panel showing recent notifications
-- [ ] Mark as read functionality
-- [ ] Link to relevant package/suggestion
+### Frontend UI ✓
+- [x] Notification bell icon in header
+- [x] Unread count badge
+- [x] Dropdown/panel showing recent notifications
+- [x] Mark as read functionality (+ mark unread)
+- [x] /me/notifications page for full list
 
 ---
 

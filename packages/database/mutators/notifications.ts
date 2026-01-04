@@ -30,6 +30,33 @@ export const markRead = defineMutator(
 	},
 );
 
+export const markUnread = defineMutator(
+	z.object({ id: z.string() }),
+	async ({ tx, args, ctx }) => {
+		if (ctx.userID === "anon") {
+			throw new Error("Must be logged in");
+		}
+
+		const notification = await tx.run(
+			zql.notifications.one().where("id", "=", args.id),
+		);
+
+		if (!notification) {
+			throw new Error("Notification not found");
+		}
+
+		if (notification.accountId !== ctx.userID) {
+			throw new Error("Not your notification");
+		}
+
+		await tx.mutate.notifications.update({
+			id: args.id,
+			read: false,
+			updatedAt: now(),
+		});
+	},
+);
+
 export const markAllRead = defineMutator(async ({ tx, ctx }) => {
 	if (ctx.userID === "anon") {
 		throw new Error("Must be logged in");

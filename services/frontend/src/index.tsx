@@ -12,6 +12,7 @@ import { Curation } from "./routes/curation";
 import { Packages } from "./routes/home";
 import { Landing } from "./routes/landing";
 import { Profile } from "./routes/me";
+import { Notifications } from "./routes/me/notifications";
 import { Projects } from "./routes/me/projects";
 import { ProjectDetail } from "./routes/me/projects/detail";
 import { NewProject } from "./routes/me/projects/new";
@@ -37,6 +38,7 @@ loadConfig().then(() => {
 						<Route path="/packages" component={Packages} />
 						<Route path="/package/:registry/:name/*tab" component={Package} />
 						<Route path="/me" component={Profile} />
+						<Route path="/me/notifications" component={Notifications} />
 						<Route path="/me/projects" component={Projects} />
 						<Route path="/me/projects/new" component={NewProject} />
 						<Route path="/projects" component={BrowseProjects} />

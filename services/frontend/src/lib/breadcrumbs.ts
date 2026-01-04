@@ -69,6 +69,14 @@ const configs: BreadcrumbConfig[] = [
 		],
 	},
 	{
+		pattern: /^\/me\/notifications$/,
+		segments: [
+			{ label: "Home", href: "/" },
+			{ label: "Profile", href: "/me" },
+			{ label: "Notifications" },
+		],
+	},
+	{
 		pattern: /^\/me\/projects$/,
 		segments: [
 			{ label: "Home", href: "/" },

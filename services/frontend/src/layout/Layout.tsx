@@ -1,4 +1,5 @@
 import {
+	mutators,
 	queries,
 	useConnectionState,
 	useQuery,
@@ -8,6 +9,7 @@ import { A, useLocation, useParams } from "@solidjs/router";
 import {
 	createMemo,
 	createSignal,
+	For,
 	Index,
 	Match,
 	type ParentComponent,
@@ -16,6 +18,7 @@ import {
 } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
+import { BellIcon } from "@/components/primitives/icon";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
@@ -113,6 +116,12 @@ export const Layout: ParentComponent = (props) => {
 		getBreadcrumbs(location.pathname, params),
 	);
 
+	const [notifications] = useQuery(() => queries.notifications.mine());
+	const [unreadNotifications] = useQuery(() =>
+		queries.notifications.unreadCount(),
+	);
+	const unreadCount = () => unreadNotifications()?.length ?? 0;
+
 	const handleLogout = async () => {
 		await logout();
 	};
@@ -120,6 +129,14 @@ export const Layout: ParentComponent = (props) => {
 	const handleSignIn = () => {
 		saveReturnUrl();
 		window.location.href = getAuthorizationUrl();
+	};
+
+	const handleMarkAllRead = async () => {
+		zero().mutate(mutators.notifications.markAllRead());
+	};
+
+	const handleMarkRead = async (id: string) => {
+		zero().mutate(mutators.notifications.markRead({ id }));
 	};
 
 	const isAnonymous = () => zero().userID === "anon";
@@ -198,6 +215,79 @@ export const Layout: ParentComponent = (props) => {
 								</Badge>
 							</Show>
 
+							{/* Notifications bell (logged in only) */}
+							<Show when={!isAnonymous()}>
+								<div class="relative group">
+									<A
+										href="/me/notifications"
+										class="relative block text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition"
+									>
+										<BellIcon size="sm" />
+										<Show when={unreadCount() > 0}>
+											<span class="absolute -top-1 -right-1 bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark text-xs rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
+												{unreadCount() >= 20 ? "20+" : unreadCount()}
+											</span>
+										</Show>
+									</A>
+									<div class="absolute -right-2 top-full hidden group-hover:block z-50 p-2">
+										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg w-80">
+											<div class="flex items-center justify-between px-4 py-2 border-b border-outline dark:border-outline-dark">
+												<Text size="sm" weight="medium">
+													Notifications
+												</Text>
+												<Show when={unreadCount() > 0}>
+													<button
+														type="button"
+														onClick={handleMarkAllRead}
+														class="text-xs text-primary dark:text-primary-dark hover:underline"
+													>
+														Mark all read
+													</button>
+												</Show>
+											</div>
+											<div class="max-h-80 overflow-y-auto">
+												<Show
+													when={(notifications()?.length ?? 0) > 0}
+													fallback={
+														<div class="px-4 py-6 text-center">
+															<Text size="sm" color="muted">
+																No notifications
+															</Text>
+														</div>
+													}
+												>
+													<For each={notifications()}>
+														{(notification) => (
+															<button
+																type="button"
+																onClick={() => handleMarkRead(notification.id)}
+																class="block w-full text-left px-4 py-3 hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition border-b border-outline/50 dark:border-outline-dark/50 last:border-b-0"
+																classList={{
+																	"bg-primary/5 dark:bg-primary-dark/5":
+																		!notification.read,
+																}}
+															>
+																<Text
+																	size="sm"
+																	weight={
+																		notification.read ? "normal" : "medium"
+																	}
+																>
+																	{notification.title}
+																</Text>
+																<Text size="xs" color="muted" class="mt-0.5">
+																	{notification.message}
+																</Text>
+															</button>
+														)}
+													</For>
+												</Show>
+											</div>
+										</div>
+									</div>
+								</div>
+							</Show>
+
 							{/* Account dropdown or Sign in */}
 							<Show
 								when={!isAnonymous()}
@@ -241,7 +331,7 @@ export const Layout: ParentComponent = (props) => {
 											/>
 										</svg>
 									</button>
-									<div class="absolute right-0 top-full pt-1 hidden group-hover:block z-50">
+									<div class="absolute -right-2 top-full hidden group-hover:block z-50 p-2">
 										<div class="bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg min-w-44">
 											<A
 												href="/me"
@@ -448,6 +538,71 @@ export const Layout: ParentComponent = (props) => {
 									>
 										Curate
 									</A>
+
+									{/* Notifications in mobile */}
+									<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
+										<Flex justify="between" align="center">
+											<Text
+												size="xs"
+												color="muted"
+												class="uppercase tracking-wide"
+											>
+												Notifications
+												<Show when={unreadCount() > 0}>
+													<span class="ml-1 text-primary dark:text-primary-dark">
+														({unreadCount() >= 20 ? "20+" : unreadCount()})
+													</span>
+												</Show>
+											</Text>
+											<Show when={unreadCount() > 0}>
+												<button
+													type="button"
+													onClick={handleMarkAllRead}
+													class="text-xs text-primary dark:text-primary-dark hover:underline"
+												>
+													Mark all read
+												</button>
+											</Show>
+										</Flex>
+										<Show
+											when={(notifications()?.length ?? 0) > 0}
+											fallback={
+												<Text size="sm" color="muted" class="py-2">
+													No notifications
+												</Text>
+											}
+										>
+											<For each={notifications()?.slice(0, 5)}>
+												{(notification) => (
+													<button
+														type="button"
+														onClick={() => handleMarkRead(notification.id)}
+														class="block w-full text-left py-2"
+														classList={{
+															"text-on-surface dark:text-on-surface-dark":
+																!notification.read,
+															"text-on-surface-muted dark:text-on-surface-dark-muted":
+																notification.read,
+														}}
+													>
+														<Text
+															size="sm"
+															weight={notification.read ? "normal" : "medium"}
+														>
+															{notification.title}
+														</Text>
+													</button>
+												)}
+											</For>
+											<A
+												href="/me/notifications"
+												class="block py-2 text-sm text-primary dark:text-primary-dark"
+												onClick={closeMobileMenu}
+											>
+												View all notifications
+											</A>
+										</Show>
+									</div>
 								</div>
 							</Show>
 

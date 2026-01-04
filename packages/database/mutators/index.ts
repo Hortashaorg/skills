@@ -47,6 +47,7 @@ export const mutators = defineMutators({
 	contributionScores: {},
 	notifications: {
 		markRead: notificationsMutators.markRead,
+		markUnread: notificationsMutators.markUnread,
 		markAllRead: notificationsMutators.markAllRead,
 	},
 });
