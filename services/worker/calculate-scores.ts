@@ -23,9 +23,9 @@ import {
 	sum,
 } from "@package/database/server";
 import {
-	SpanStatusCode,
 	createLogger,
 	getTracer,
+	SpanStatusCode,
 } from "@package/instrumentation/utils";
 
 const logger = createLogger("worker.scores");
