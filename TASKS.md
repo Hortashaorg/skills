@@ -4,33 +4,64 @@
 
 ---
 
-## Search Improvements
+## Package Search Friction
 
-### Include Placeholder Packages in Results
-- [ ] Modify `queries.packages.search` to include `status IN ("active", "placeholder")`
-- [ ] Add `status` field to search result data for UI differentiation
-- [ ] Update SearchInput results to show "Pending" badge for placeholders
-- [ ] Verify placeholders can be added to projects
+Goal: Make finding and adding packages frictionless.
 
-### Exact Match Prioritization
-- [ ] Add exact match detection in search results processing
-- [ ] Sort order: 1) Exact name match, 2) upvoteCount DESC, 3) name ASC
+### Edge Cases to Solve
+- Exact name typed but drowns in popular results ("tailwindcss" buried under "tailw*")
+- Short package names impossible to find ("tai" matches too many)
+- Recently requested packages invisible (placeholder status)
+- No guidance when package doesn't exist
+
+### Search Results Improvements
+- [ ] Exact match prioritization
+- [ ] Include placeholder packages in results
+- [ ] Visual distinction for placeholders ("Pending" badge)
+- [ ] Consider: prefix vs contains match ranking
+
+### Project "Add Package" UX
+- [ ] Apply search improvements to project dropdown
+- [ ] Guidance when package not found
+- [ ] Handle short name edge cases
 
 ---
 
-## Request Flow Improvements
+## SEO & Discoverability
 
-### Inline Package Request
-- [ ] Detect when search query doesn't match any existing package name exactly
-- [ ] Show "Request '{query}' from npm?" option in dropdown
-- [ ] On select: call `requestPackage` mutator
-- [ ] New placeholder immediately appears in search results
+- [ ] Audit current SEO state
+- [ ] Package pages: titles, descriptions from metadata
+- [ ] Consider: sitemap, structured data
 
-### Visual Feedback for Pending Packages
-- [ ] "Pending" badge on placeholder packages in search results
-- [ ] "Pending" indicator in project package lists
-- [ ] Tooltip explaining the pending state
-- [ ] Reactive update when worker completes fetch
+---
+
+## Homepage & Onboarding
+
+- [ ] Highlight curation/contribution system
+- [ ] Show gamification (leaderboard preview?)
+- [ ] Clearer account value prop
+- [ ] Better entry points to explore
+
+---
+
+## Branding & Polish
+
+- [ ] Logo (favicon, navbar, og:image)
+- [ ] Color palette refinement
+- [ ] Dark mode contrast audit (WCAG AA)
+- [ ] Typography review
+- [ ] Tagline / about page
+- [ ] Empty state improvements
+- [ ] HoverDropdown keyboard navigation
+
+---
+
+## Auth & Token Management
+
+- [ ] Verify token refresh works after navbar refactoring
+- [ ] Proactive token refresh before expiry
+- [ ] Keep needs-auth as fallback
+- [ ] Test auth flow end-to-end
 
 ---
 

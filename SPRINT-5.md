@@ -1,119 +1,138 @@
 # Sprint 5: Search & Discovery UX
 
-> **Theme:** Make package search intuitive and let users work with packages immediately after requesting.
+> **Goal:** Make finding and adding packages frictionless.
 
 **User Feedback:**
 - Exact package names don't appear at top of search results
 - After requesting a package, can't find it or add it to projects
-- Frustrating gap between "requested" and "available"
+- Popular packages drown out the one you're actually looking for
+- Short/common package names impossible to find (e.g., "tai" buried under "tailwind*")
 
 ---
 
-## Search Improvements
+## Core Problem: Package Search Friction
 
-### Include Placeholder Packages in Results
-Currently `search` query only returns `status: "active"`. Placeholders are invisible.
+Users struggle to find packages in these scenarios:
 
-- [ ] Modify `queries.packages.search` to include `status IN ("active", "placeholder")`
-- [ ] Add `status` field to search result data for UI differentiation
-- [ ] Update SearchInput results to show "Pending" badge for placeholders
-- [ ] Verify placeholders can be added to projects (should work - just needs packageId)
+| Scenario | Example | Current Behavior |
+|----------|---------|------------------|
+| Exact name typed | "tailwindcss" | Drowns in "tailw*" results sorted by upvotes |
+| Short package name | "tai" | Impossible to find among longer matches |
+| New/unpopular package | "my-new-lib" | Low upvotes = buried in results |
+| Recently requested | Just requested "foo" | Placeholder invisible (status != active) |
+| Package doesn't exist | "nonexistent-pkg" | No guidance on what to do next |
 
-### Exact Match Prioritization
-Search sorts by `upvoteCount DESC, name ASC`. Exact matches should come first.
+### Success Criteria
 
-- [ ] Add exact match detection in search query or results processing
-- [ ] Sort order: 1) Exact name match, 2) upvoteCount DESC, 3) name ASC
-- [ ] Works for both active and placeholder packages
-
----
-
-## Request Flow Improvements
-
-### Inline Package Request
-When searching yields no exact match, offer to request it directly.
-
-- [ ] Detect when search query doesn't match any existing package name exactly
-- [ ] Show "Request '{query}' from npm?" option in dropdown
-- [ ] On select: call `requestPackage` mutator → creates placeholder + pending fetch
-- [ ] New placeholder immediately appears in search results
-- [ ] User can add to project right away
-
-### Visual Feedback for Pending Packages
-
-- [ ] "Pending" badge on placeholder packages in search results
-- [ ] "Pending" indicator in project package lists
-- [ ] Tooltip: "This package is being fetched from the registry"
-- [ ] Reactive update when worker completes (placeholder → active)
+1. Typing exact package name shows it first (or offers to request it)
+2. Can find and add packages regardless of popularity
+3. Recently requested packages are immediately usable
+4. Clear path forward when package isn't found
 
 ---
 
-## Technical Notes
+## Tasks
 
-### Current Flow
-```
-User requests → Placeholder (status: "placeholder") + Fetch (status: "pending")
-                          ↓
-              Worker processes fetch
-                          ↓
-              Package updated (status: "active") + metadata populated
-```
+### Search Results Improvements
+- [ ] Exact match prioritization - if query matches a name exactly, show first
+- [ ] Include placeholder packages in results (with visual distinction)
+- [ ] Consider: prefix match vs contains match ranking
+- [ ] Consider: showing "Request '{query}'?" when no exact match exists
 
-### Search Query Change
+### Project "Add Package" UX
+- [ ] Apply same search improvements to project package dropdown
+- [ ] Guidance when package not found (link to main search? inline request?)
+- [ ] Handle edge case: short names that match many packages
+
+### Visual Feedback
+- [ ] "Pending" indicator for placeholder packages
+- [ ] Clear distinction between active and placeholder in results
+- [ ] Loading/requesting states
+
+---
+
+## Technical Context
+
+### Current Search Query
 ```typescript
-// Before
-let q = zql.packages.where("status", "active");
+// packages/database/queries/packages.ts
+let q = zql.packages.where("status", "active");  // ← Excludes placeholders
 
-// After
-let q = zql.packages.where("status", "IN", ["active", "placeholder"]);
+return q
+  .orderBy("upvoteCount", "desc")  // ← Popular packages first
+  .orderBy("name", "asc")
+  .limit(args.limit)
 ```
 
-### Exact Match Prioritization Options
+### Package Status Values
+- `active` - Fetched successfully, has metadata
+- `placeholder` - Requested, awaiting worker fetch
+- `failed` - Fetch failed (404, rate limit, etc.)
 
-**Option A: Client-side sort (simpler)**
-```typescript
-const sorted = results.sort((a, b) => {
-  const aExact = a.name.toLowerCase() === query.toLowerCase();
-  const bExact = b.name.toLowerCase() === query.toLowerCase();
-  if (aExact && !bExact) return -1;
-  if (!aExact && bExact) return 1;
-  return 0; // preserve existing order (upvoteCount)
-});
+### Request Flow (already exists)
 ```
-
-**Option B: Database-level (if ZQL supports CASE)**
-```sql
-ORDER BY
-  CASE WHEN LOWER(name) = LOWER(:query) THEN 0 ELSE 1 END,
-  upvote_count DESC,
-  name ASC
+requestPackage mutator → creates placeholder + pending fetch
+                      → worker processes → placeholder becomes active
 ```
 
 ---
 
-## Files to Modify
+## SEO & Discoverability
 
-| File | Changes |
-|------|---------|
-| `packages/database/queries/packages.ts` | Include placeholders in search, add status to results |
-| `services/frontend/src/components/composite/search-input/` | Show pending badge, request option |
-| `services/frontend/src/routes/me/projects/detail.tsx` | Handle placeholder selection, show pending state |
-| `packages/database/queries/packages.ts` (search) | Exact match prioritization |
+Make the site more discoverable from search engines.
+
+- [ ] Audit current SEO state (meta tags, titles, descriptions)
+- [ ] Package pages: meaningful titles, descriptions from package metadata
+- [ ] Consider: sitemap generation
+- [ ] Consider: structured data (JSON-LD for packages)
+
+---
+
+## Homepage & Onboarding
+
+Make the homepage more compelling - guide users to explore and contribute.
+
+- [ ] Highlight curation/contribution system ("Help improve package data")
+- [ ] Show the gamification aspect (leaderboard preview? contribution stats?)
+- [ ] Clearer value prop for creating an account
+- [ ] Better entry points to explore (popular packages, recent activity, etc.)
+
+---
+
+## Branding & Polish
+
+Establish visual identity and polish rough edges.
+
+- [ ] Logo design (favicon, navbar, og:image)
+- [ ] Color palette refinement (does current theme feel right?)
+- [ ] Dark mode contrast audit - WCAG AA compliance
+- [ ] Typography review
+- [ ] Brand voice/tone for copy
+- [ ] Consider: tagline, about page
+- [ ] Empty state improvements - more helpful CTAs
+- [ ] HoverDropdown keyboard navigation - account dropdown inaccessible to keyboard users
+
+---
+
+## Auth & Token Management
+
+Ensure token refresh works correctly after navbar refactoring, and improve proactive refresh.
+
+- [ ] Verify access token management still works after Sprint 4 navbar changes
+- [ ] Proactive token refresh before expiry (refresh when token is about to expire, not after)
+- [ ] Keep `needs-auth` connection state as fallback if proactive refresh fails
+- [ ] Test auth flow end-to-end (login, token refresh, logout)
 
 ---
 
 ## Out of Scope
 
-- Failed package handling in search (show retry option?)
-- Search relevance beyond exact match (fuzzy matching, typo tolerance)
-- Registry-specific request flows (JSR, etc.)
+- Fuzzy matching / typo tolerance
+- Full-text search ranking
+- Registry-specific search (JSR, etc.)
 
 ---
 
-## Success Criteria
+## Notes
 
-1. Typing exact package name shows it first in results
-2. Requesting a new package makes it immediately searchable
-3. Can add placeholder packages to projects
-4. Clear visual distinction between active and pending packages
-5. Smooth transition when worker completes fetch
+Solutions will emerge during implementation. These are problem areas to improve - specific implementations are flexible.
