@@ -15,6 +15,9 @@
 - [ ] User profiles (public profile page)
 - [ ] Personal package lists / bookmarks
 - [ ] Notifications (package ready, new version)
+- [ ] Email notifications
+- [ ] Push notifications
+- [ ] Notification preferences/settings
 
 ---
 
