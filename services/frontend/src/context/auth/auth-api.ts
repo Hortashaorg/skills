@@ -1,5 +1,13 @@
+import { z } from "@package/common";
 import { getConfig } from "@/lib/config";
 import { type AuthData, EmailUnverifiedError } from "./types";
+
+const authResponseSchema = z.object({
+	access_token: z.string(),
+	expires_in: z.number(),
+	sub: z.string(),
+	roles: z.array(z.string()).optional().default([]),
+});
 
 export const authApi = {
 	async refresh(): Promise<AuthData | null> {
@@ -18,13 +26,14 @@ export const authApi = {
 				return null;
 			}
 
-			const result = await res.json();
-			if (!result.access_token || !result.sub) return null;
+			const result = authResponseSchema.safeParse(await res.json());
+			if (!result.success) return null;
 
 			return {
-				accessToken: result.access_token,
-				userId: result.sub,
-				roles: result.roles ?? [],
+				accessToken: result.data.access_token,
+				userId: result.data.sub,
+				roles: result.data.roles,
+				expiresAt: Date.now() + result.data.expires_in * 1000,
 			};
 		} catch (error) {
 			if (error instanceof EmailUnverifiedError) {
@@ -52,14 +61,16 @@ export const authApi = {
 			throw new Error(`Login failed: ${res.status} ${res.statusText}`);
 		}
 
-		if (!data.access_token || !data.sub) {
+		const result = authResponseSchema.safeParse(data);
+		if (!result.success) {
 			throw new Error("Login response missing required fields");
 		}
 
 		return {
-			accessToken: data.access_token,
-			userId: data.sub,
-			roles: data.roles ?? [],
+			accessToken: result.data.access_token,
+			userId: result.data.sub,
+			roles: result.data.roles,
+			expiresAt: Date.now() + result.data.expires_in * 1000,
 		};
 	},
 

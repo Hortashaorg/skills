@@ -80,7 +80,7 @@ await tx.mutate.table.update({
 ```tsx
 // queries/{entity}.ts
 import { defineQuery } from "@rocicorp/zero";
-import { z } from "zod";
+import { z } from "@package/common";
 import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 
@@ -126,7 +126,7 @@ export const search = defineQuery(
 ```tsx
 // mutators/{entity}.ts
 import { defineMutator } from "@rocicorp/zero";
-import { z } from "zod";
+import { z } from "@package/common";
 import { newRecord, now } from "./helpers.ts";
 
 export const create = defineMutator(

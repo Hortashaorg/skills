@@ -1,5 +1,5 @@
+import { z } from "@package/common";
 import { defineQuery } from "@rocicorp/zero";
-import { z } from "zod";
 import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 

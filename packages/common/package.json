@@ -6,5 +6,8 @@
 	"scripts": {
 		"typecheck": "tsc"
 	},
-	"author": "Martin Eide"
+	"author": "Martin Eide",
+	"dependencies": {
+		"zod": "^4.3.5"
+	}
 }

@@ -84,9 +84,9 @@ export const AppProvider: ParentComponent = (props) => {
 				schema={schema}
 				mutators={mutators}
 				cacheURL={getConfig().zeroUrl}
-				disconnectTimeoutMs={1000 * 30} // 30 seconds
+				disconnectTimeoutMs={1000 * 30}
 			>
-				<ConnectionStatus setAuthData={setAuthData}>
+				<ConnectionStatus authData={authData} setAuthData={setAuthData}>
 					{props.children}
 				</ConnectionStatus>
 			</ZeroProvider>

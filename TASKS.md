@@ -58,10 +58,13 @@ Goal: Make finding and adding packages frictionless.
 
 ## Auth & Token Management
 
-- [ ] Verify token refresh works after navbar refactoring
-- [ ] Proactive token refresh before expiry
-- [ ] Keep needs-auth as fallback
-- [ ] Test auth flow end-to-end
+- [x] Verify token refresh works after navbar refactoring
+- [x] Proactive token refresh before expiry
+- [x] Keep needs-auth as fallback
+- [ ] Switch to GitHub as Zitadel identity provider (remove email/password)
+- [ ] Store Zitadel user ID instead of email
+- [ ] Remove email from accounts table (less PII, simpler GDPR)
+- [ ] Remove email verification flow (not needed with OAuth provider)
 
 ---
 

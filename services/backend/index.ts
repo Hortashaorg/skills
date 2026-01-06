@@ -68,6 +68,8 @@ type TokenClaims = {
 	roles: string[];
 };
 
+const ACCESS_TOKEN_EXPIRY_SECONDS = 10 * 60;
+
 const userToken = async (claims: TokenClaims) => {
 	const now = Math.floor(Date.now() / 1000);
 
@@ -77,7 +79,7 @@ const userToken = async (claims: TokenClaims) => {
 			email: claims.email,
 			roles: claims.roles,
 			iat: now,
-			exp: now + 10 * 60,
+			exp: now + ACCESS_TOKEN_EXPIRY_SECONDS,
 		},
 		environment.AUTH_PRIVATE_KEY,
 	);
@@ -154,6 +156,7 @@ app.post("/login", async (c) => {
 
 		return c.json({
 			access_token: token,
+			expires_in: ACCESS_TOKEN_EXPIRY_SECONDS,
 			sub: user.id,
 			roles,
 		});
@@ -217,6 +220,7 @@ app.post("/refresh", async (c) => {
 
 		return c.json({
 			access_token: token,
+			expires_in: ACCESS_TOKEN_EXPIRY_SECONDS,
 			sub: user.id,
 			roles,
 		});

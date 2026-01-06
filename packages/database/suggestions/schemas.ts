@@ -5,7 +5,7 @@
  * Old suggestions remain valid with their original version.
  */
 
-import { z } from "zod";
+import { z } from "@package/common";
 import type { SuggestionType } from "../db/types.ts";
 
 export const suggestionPayloads = {

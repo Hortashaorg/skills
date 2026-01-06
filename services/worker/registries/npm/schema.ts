@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@package/common";
 
 /**
  * Zod schemas for npm registry API responses.
