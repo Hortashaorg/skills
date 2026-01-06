@@ -90,7 +90,9 @@ export const SearchInput = (props: SearchInputProps) => {
 				value={selectedItem()}
 				onInputChange={(value) => {
 					// Ignore if value matches an item's primary (means it's from selection, not typing)
-					const isFromSelection = props.results.some((r) => r.primary === value);
+					const isFromSelection = props.results.some(
+						(r) => r.primary === value,
+					);
 					if (isFromSelection) return;
 
 					props.onValueChange(value);
