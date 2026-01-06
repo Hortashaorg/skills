@@ -81,6 +81,18 @@ Goal: Make finding and adding packages frictionless.
 
 ---
 
+## GDPR & Data Privacy
+
+Review data storage after switching to OAuth-only authentication.
+
+- [ ] Update privacy policy for OAuth-only flow (no email stored)
+- [ ] Verify data export functionality (right to portability)
+- [ ] Document what user data is stored (Zitadel ID, username, user-generated content)
+- [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
+- [ ] Consider: remove any remaining email references from codebase/schema
+
+---
+
 ## Completed (Previous Sprints)
 
 ### Sprint 4: CI/CD, Observability & Notifications
