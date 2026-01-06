@@ -1,5 +1,7 @@
 # Project Context
 
+> **New here?** See [VISION.md](./VISION.md) for what we're building and why.
+
 ## Tech Stack
 - **SolidJS** + **@solidjs/router** - Frontend
 - **@rocicorp/zero** - Real-time sync
