@@ -1,6 +1,15 @@
 import type { Row } from "@package/database/client";
 import { useZero } from "@package/database/client";
-import { createSignal, For, Match, Show, Switch } from "solid-js";
+import {
+	createEffect,
+	createSignal,
+	For,
+	Index,
+	Match,
+	onCleanup,
+	Show,
+	Switch,
+} from "solid-js";
 import { PackageCard } from "@/components/feature/package-card";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -10,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
@@ -28,13 +38,8 @@ type Package = Row["packages"] & {
 
 export interface ResultsGridProps {
 	packages: readonly Package[];
-	totalCount: number;
-	page: number;
-	pageSize: number;
-	onPageChange: (page: number) => void;
 	isLoading?: boolean;
 	hasActiveFilters?: boolean;
-	hasExactTotal?: boolean;
 	canLoadMore?: boolean;
 	onLoadMore?: () => void;
 	exactMatch?: Package;
@@ -43,11 +48,23 @@ export interface ResultsGridProps {
 	registry?: Registry;
 }
 
-const LoadingSpinner = () => (
-	<div class="flex justify-center py-12">
-		<Spinner label="Loading packages..." />
-	</div>
+const SkeletonCard = () => (
+	<Card padding="md" class="h-full">
+		<div class="flex flex-col h-full gap-2">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-2">
+					<Skeleton width="120px" height="20px" />
+					<Skeleton width="40px" height="20px" />
+				</div>
+				<Skeleton width="50px" height="28px" variant="rectangular" />
+			</div>
+			<Skeleton width="100%" height="16px" />
+			<Skeleton width="75%" height="16px" />
+		</div>
+	</Card>
 );
+
+const SKELETON_COUNT = 6;
 
 const SearchIcon = () => (
 	<svg
@@ -66,9 +83,15 @@ const SearchIcon = () => (
 	</svg>
 );
 
+const AUTO_LOAD_LIMIT = 1000;
+
 export const ResultsGrid = (props: ResultsGridProps) => {
 	const zero = useZero();
 	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
+	const [sentinelRef, setSentinelRef] = createSignal<HTMLDivElement | null>(
+		null,
+	);
+	const [showBackToTop, setShowBackToTop] = createSignal(false);
 
 	const effectiveRegistry = (): Registry => props.registry ?? requestRegistry();
 
@@ -79,35 +102,59 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const totalPages = () => Math.ceil(props.totalCount / props.pageSize);
-	const startIndex = () => props.page * props.pageSize + 1;
-	const endIndex = () =>
-		Math.min((props.page + 1) * props.pageSize, props.totalCount);
-
-	const headerText = () => {
-		if (props.hasActiveFilters) {
-			if (props.hasExactTotal === false) {
-				return `Showing ${startIndex()}-${endIndex()}`;
-			}
-			return `Showing ${startIndex()}-${endIndex()} of ${props.totalCount} result${props.totalCount !== 1 ? "s" : ""}`;
-		}
-		return "Recently updated";
-	};
-
-	// Show empty state only when no results AND no exact match AND no add card
 	const showEmptyState = () =>
-		props.totalCount === 0 && !props.exactMatch && !props.showAddCard;
+		!props.isLoading &&
+		props.packages.length === 0 &&
+		!props.exactMatch &&
+		!props.showAddCard;
 
-	// Show results grid when we have packages OR exact match OR add card
 	const showResults = () =>
-		props.totalCount > 0 || props.exactMatch || props.showAddCard;
+		props.packages.length > 0 || props.exactMatch || props.showAddCard;
+
+	// Stop auto-loading after limit, require manual "Load more"
+	const pastAutoLoadLimit = () => props.packages.length >= AUTO_LOAD_LIMIT;
+
+	// Infinite scroll with IntersectionObserver (only before limit)
+	createEffect(() => {
+		const sentinel = sentinelRef();
+		if (!sentinel) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const entry = entries[0];
+				if (
+					entry?.isIntersecting &&
+					props.canLoadMore &&
+					props.onLoadMore &&
+					!pastAutoLoadLimit()
+				) {
+					props.onLoadMore();
+				}
+			},
+			{ rootMargin: "200px" },
+		);
+
+		observer.observe(sentinel);
+
+		onCleanup(() => observer.disconnect());
+	});
+
+	// Show back to top after scrolling down
+	createEffect(() => {
+		const handleScroll = () => {
+			setShowBackToTop(window.scrollY > 800);
+		};
+
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		onCleanup(() => window.removeEventListener("scroll", handleScroll));
+	});
+
+	const scrollToTop = () => {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
 
 	return (
 		<Switch>
-			<Match when={props.isLoading}>
-				<LoadingSpinner />
-			</Match>
-
 			<Match when={showEmptyState()}>
 				<EmptyState
 					icon={<SearchIcon />}
@@ -116,80 +163,64 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 				/>
 			</Match>
 
+			<Match when={props.isLoading && !showResults()}>
+				{/* Initial loading - show skeleton grid */}
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<Index each={Array(SKELETON_COUNT)}>{() => <SkeletonCard />}</Index>
+				</div>
+			</Match>
+
 			<Match when={showResults()}>
-				<Stack spacing="sm">
-					<Text size="sm" color="muted">
-						{headerText()}
-					</Text>
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						{/* First card: exact match or add card */}
-						<Show when={props.exactMatch}>
-							{(pkg) => <ExactMatchCard pkg={pkg()} />}
-						</Show>
-						<Show when={props.showAddCard ? props.searchTerm : undefined}>
-							{(term) => (
-								<AddPackageCard
-									searchTerm={term()}
-									isLoggedIn={isLoggedIn()}
-									registry={props.registry}
-									requestRegistry={requestRegistry()}
-									onRegistryChange={setRequestRegistry}
-									packageRequest={packageRequest}
-									effectiveRegistry={effectiveRegistry()}
-								/>
-							)}
-						</Show>
-
-						{/* Rest of the packages */}
-						<For each={props.packages}>
-							{(pkg) => <PackageCardWrapper pkg={pkg} />}
-						</For>
-					</div>
-
-					<Show when={totalPages() > 1}>
-						<Flex justify="between" align="center" class="mt-2">
-							<Text size="sm" color="muted">
-								Page {props.page + 1}
-								{props.hasExactTotal !== false && ` of ${totalPages()}`}
-							</Text>
-							<Flex gap="sm" align="center">
-								<Button
-									variant="outline"
-									size="sm"
-									disabled={props.page === 0}
-									onClick={() => props.onPageChange(props.page - 1)}
-								>
-									Previous
-								</Button>
-								<Show
-									when={
-										props.page >= totalPages() - 1 &&
-										props.canLoadMore &&
-										props.onLoadMore
-									}
-									fallback={
-										<Button
-											variant="outline"
-											size="sm"
-											disabled={props.page >= totalPages() - 1}
-											onClick={() => props.onPageChange(props.page + 1)}
-										>
-											Next
-										</Button>
-									}
-								>
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={props.onLoadMore}
-									>
-										Load more
-									</Button>
-								</Show>
-							</Flex>
-						</Flex>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					{/* First card: exact match or add card */}
+					<Show when={props.exactMatch}>
+						{(pkg) => <ExactMatchCard pkg={pkg()} />}
 					</Show>
-				</Stack>
+					<Show when={props.showAddCard ? props.searchTerm : undefined}>
+						{(term) => (
+							<AddPackageCard
+								searchTerm={term()}
+								isLoggedIn={isLoggedIn()}
+								registry={props.registry}
+								requestRegistry={requestRegistry()}
+								onRegistryChange={setRequestRegistry}
+								packageRequest={packageRequest}
+								effectiveRegistry={effectiveRegistry()}
+							/>
+						)}
+					</Show>
+
+					{/* Rest of the packages */}
+					<For each={props.packages}>
+						{(pkg) => <PackageCardWrapper pkg={pkg} />}
+					</For>
+
+					{/* Skeleton cards for auto-loading (before limit) */}
+					<Show when={props.canLoadMore && !pastAutoLoadLimit()}>
+						<Index each={Array(4)}>{() => <SkeletonCard />}</Index>
+					</Show>
+				</div>
+
+				{/* Load more button after auto-load limit */}
+				<Show when={props.canLoadMore && pastAutoLoadLimit()}>
+					<div class="flex justify-center pt-4">
+						<Button variant="outline" onClick={props.onLoadMore}>
+							Load more packages
+						</Button>
+					</div>
+				</Show>
+
+				{/* Infinite scroll sentinel */}
+				<div ref={setSentinelRef} class="h-1" />
+
+				{/* Back to top button */}
+				<Show when={showBackToTop()}>
+					<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+						<Button variant="info" size="md" onClick={scrollToTop}>
+							↑ Back to top
+						</Button>
+					</div>
+				</Show>
 			</Match>
 		</Switch>
 	);

@@ -45,7 +45,12 @@ export const PackageCard = (props: PackageCardProps) => {
 			class="relative h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt has-[[data-upvote]:hover]:bg-transparent dark:has-[[data-upvote]:hover]:bg-transparent transition-colors"
 		>
 			{/* Stretched link - covers entire card */}
-			<A href={props.href} class="absolute inset-0" aria-hidden="true" />
+			<A
+				href={props.href}
+				class="absolute inset-0"
+				aria-hidden="true"
+				tabIndex={-1}
+			/>
 
 			<div class="relative pointer-events-none flex flex-col h-full gap-1">
 				{/* Header */}

@@ -14,8 +14,8 @@ import type { Registry, RegistryFilter } from "@/lib/registries";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
 
-const PAGE_SIZE = 20;
-const SEARCH_PAGE_SIZE = PAGE_SIZE - 1; // Leave room for exact match or add card
+const INITIAL_LIMIT = 20;
+const LOAD_MORE_COUNT = 20;
 
 export const Packages = () => {
 	// URL-synced state
@@ -30,14 +30,15 @@ export const Packages = () => {
 	);
 	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
 
-	// Local state (not URL-synced)
-	const [page, setPage] = createSignal(0);
-	const [searchLimit, setSearchLimit] = createSignal(100);
+	// Local state for infinite scroll
+	const [limit, setLimit] = createSignal(INITIAL_LIMIT);
 
 	const searchTerm = () => searchValue().trim();
 	const hasSearchTerm = () => searchTerm().length > 0;
 	const hasActiveFilters = () =>
-		hasSearchTerm() || selectedTagSlugs().length > 0;
+		hasSearchTerm() ||
+		registryFilter() !== "all" ||
+		selectedTagSlugs().length > 0;
 
 	// Effective registry for exact match and request
 	const effectiveRegistry = (): Registry | undefined =>
@@ -54,9 +55,13 @@ export const Packages = () => {
 	const showAddCard = () =>
 		hasSearchTerm() && !exactMatch() && exactMatchResult().type === "complete";
 
+	// Adjust limit when exact match or add card takes a slot
+	const hasFirstCardSlot = () => !!exactMatch() || showAddCard();
+	const adjustedLimit = () => (hasFirstCardSlot() ? limit() - 1 : limit());
+
 	// Recent packages when no filters
 	const [recentPackages, recentResult] = useQuery(() =>
-		queries.packages.recent({ limit: PAGE_SIZE }),
+		queries.packages.recent({ limit: limit() }),
 	);
 
 	// Search results when filters active
@@ -66,7 +71,7 @@ export const Packages = () => {
 			query: searchTerm() || undefined,
 			registry: registry !== "all" ? (registry as Registry) : undefined,
 			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
-			limit: searchLimit(),
+			limit: adjustedLimit(),
 		});
 	});
 
@@ -81,20 +86,23 @@ export const Packages = () => {
 		);
 	};
 
-	// Reset page and limit when filters change
+	// Reset limit when filters change
 	createEffect(
 		on([searchValue, registryFilter, selectedTagSlugs], () => {
-			setPage(0);
-			setSearchLimit(100);
+			setLimit(INITIAL_LIMIT);
 		}),
 	);
 
-	// Check if we can load more results (current results equal limit)
-	const canLoadMore = () =>
-		hasActiveFilters() && (searchResults()?.length ?? 0) >= searchLimit();
+	// Check if we can load more (current results equal limit)
+	const canLoadMore = () => {
+		if (!hasActiveFilters()) {
+			return (recentPackages()?.length ?? 0) >= limit();
+		}
+		return (searchResults()?.length ?? 0) >= adjustedLimit();
+	};
 
 	const handleLoadMore = () => {
-		setSearchLimit((prev) => prev + 100);
+		setLimit((prev) => prev + LOAD_MORE_COUNT);
 	};
 
 	// Display packages - filter out exact match to avoid duplication
@@ -108,15 +116,6 @@ export const Packages = () => {
 			return results.filter((p) => p.id !== exact.id);
 		}
 		return results;
-	});
-
-	const totalCount = () => displayPackages().length;
-
-	// Paginate results (only when filters are active)
-	const paginatedPackages = createMemo(() => {
-		if (!hasActiveFilters()) return displayPackages();
-		const start = page() * SEARCH_PAGE_SIZE;
-		return displayPackages().slice(start, start + SEARCH_PAGE_SIZE);
 	});
 
 	return (
@@ -143,16 +142,11 @@ export const Packages = () => {
 						onTagsChange={setSelectedTagSlugs}
 					/>
 
-					{/* Results grid with exact match or add card first */}
+					{/* Results grid with infinite scroll */}
 					<ResultsGrid
-						packages={paginatedPackages()}
-						totalCount={totalCount()}
-						page={page()}
-						pageSize={hasActiveFilters() ? SEARCH_PAGE_SIZE : PAGE_SIZE}
-						onPageChange={setPage}
+						packages={displayPackages()}
 						isLoading={isLoading()}
 						hasActiveFilters={hasActiveFilters()}
-						hasExactTotal={!hasActiveFilters()}
 						canLoadMore={canLoadMore()}
 						onLoadMore={handleLoadMore}
 						exactMatch={exactMatch()}
