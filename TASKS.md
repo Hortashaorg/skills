@@ -1,30 +1,6 @@
-# Sprint 5 Tasks
+# Sprint 6 Tasks
 
-> **Current Sprint:** [SPRINT-5.md](./SPRINT-5.md) - Search & Discovery UX
-
----
-
-## Package Search Friction
-
-Goal: Make finding and adding packages frictionless.
-
-### Edge Cases to Solve
-- Exact name typed but drowns in popular results ("tailwindcss" buried under "tailw*")
-- Short package names impossible to find ("tai" matches too many)
-- Recently requested packages invisible (placeholder status)
-- No guidance when package doesn't exist
-
-### Search Results Improvements
-- [x] Exact match prioritization (first card in results)
-- [x] Include placeholder packages in results (exactMatch query includes all statuses)
-- [x] Visual distinction for placeholders ("Pending" badge)
-- [x] "Add package" card when no exact match exists
-- [ ] Consider: prefix vs contains match ranking
-
-### Project "Add Package" UX
-- [x] Apply search improvements to project dropdown (exact match first)
-- [x] Guidance when package not found (link to Packages page with search term)
-- [x] Show failed/pending status in dropdown results
+> **Current Sprint:** [SPRINT-6.md](./SPRINT-6.md) - Polish, SEO & Identity
 
 ---
 
@@ -57,25 +33,26 @@ Goal: Make finding and adding packages frictionless.
 
 ---
 
-## Auth & Token Management
+## Auth Cleanup
 
-- [x] Verify token refresh works after navbar refactoring
-- [x] Proactive token refresh before expiry
-- [x] Keep needs-auth as fallback
-- [x] Switch to GitHub as Zitadel identity provider (remove email/password)
-- [x] Store Zitadel user ID instead of email (zitadelId field added, lookup updated)
-- [x] Remove email verification flow (not needed with OAuth provider)
-- [x] Remove email references from UI (profile, privacy policy, project detail)
-- [x] Account deletion → anonymization (null out PII, keep contributions)
 - [ ] Remove email from accounts table (after all users have zitadelId populated)
 - [ ] Zitadel user sync job: anonymize accounts when IdP account deleted
 - [ ] Zitadel user sync job: assign roles to new accounts for self-service deletion
 
 ---
 
+## GDPR & Data Privacy
+
+- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
+- [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
+- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
+
+---
+
 ## Backlog
 
 ### Future Features
+- Prefix vs contains match ranking for search
 - Additional suggestion types (remove_tag, link_package, set_attribute)
 - Generalize curation UI to handle multiple suggestion types
 - New tag proposals (currently: existing tags only)
@@ -86,19 +63,19 @@ Goal: Make finding and adding packages frictionless.
 
 ---
 
-## GDPR & Data Privacy
-
-Review data storage after switching to OAuth-only authentication.
-
-- [x] Update privacy policy for OAuth-only flow (GitHub sign in, no email stored)
-- [x] Account deletion anonymizes PII (name, email, zitadelId → null)
-- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
-- [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
-- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
-
----
-
 ## Completed (Previous Sprints)
+
+### Sprint 5: Search & Discovery UX
+
+- Package search: exact match prioritization, placeholder visibility
+- "Add package" card when no exact match exists
+- Infinite scroll with skeleton loading, back to top button
+- Full-card clickable with distinct upvote hover
+- Project package dropdown: exact match first, status display, action items
+- SearchInput keyboard scroll-into-view
+- GitHub OAuth via Zitadel, proactive token refresh
+- GDPR-compliant account deletion (anonymization)
+- Privacy policy updated for OAuth-only flow
 
 ### Sprint 4: CI/CD, Observability & Notifications
 
