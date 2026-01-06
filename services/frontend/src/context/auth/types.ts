@@ -4,10 +4,3 @@ export type AuthData = {
 	roles: string[];
 	expiresAt: number;
 };
-
-export class EmailUnverifiedError extends Error {
-	constructor() {
-		super("Email not verified");
-		this.name = "EmailUnverifiedError";
-	}
-}

@@ -13,7 +13,6 @@ import { handleMutate } from "./mutate.ts";
 import { handleQuery } from "./query.ts";
 import { getAuthContext } from "./util.ts";
 
-const DELETED_USER_ID = "00000000-0000-0000-0000-000000000000";
 const logger = createLogger("backend");
 const meter = getMeter("backend");
 
@@ -141,15 +140,11 @@ app.post("/login", async (c) => {
 
 		const { payload } = decode(result.id_token);
 
+		const zitadelId = (payload.sub as string) ?? throwError("No sub in claim");
 		const email = (payload.email as string) ?? throwError("No email in claim");
-		const emailVerified = payload.email_verified as boolean;
-
-		if (!emailVerified) {
-			return c.json({ error: "email_unverified" }, 403);
-		}
 
 		const roles = parseRoles(payload as Record<string, unknown>);
-		const user = await ensureUser(email);
+		const user = await ensureUser({ zitadelId, email });
 		const token = await userToken({ sub: user.id, email, roles });
 
 		setRefreshToken(c, result.refresh_token);
@@ -204,16 +199,11 @@ app.post("/refresh", async (c) => {
 
 		const { payload } = decode(result.id_token);
 
+		const zitadelId = (payload.sub as string) ?? throwError("No sub in claim");
 		const email = (payload.email as string) ?? throwError("No email in claim");
-		const emailVerified = payload.email_verified as boolean;
-
-		if (!emailVerified) {
-			clearRefreshToken(c);
-			return c.json({ error: "email_unverified" }, 403);
-		}
 
 		const roles = parseRoles(payload as Record<string, unknown>);
-		const user = await ensureUser(email);
+		const user = await ensureUser({ zitadelId, email });
 		const token = await userToken({ sub: user.id, email, roles });
 
 		setRefreshToken(c, result.refresh_token);
@@ -270,36 +260,16 @@ app.post("/api/account/delete", async (c) => {
 	}
 
 	try {
-		// Ensure the "Deleted User" placeholder account exists
-		const now = new Date();
 		await db
-			.insert(dbSchema.account)
-			.values({
-				id: DELETED_USER_ID,
+			.update(dbSchema.account)
+			.set({
+				name: null,
 				email: null,
-				name: "Deleted User",
-				createdAt: now,
-				updatedAt: now,
+				zitadelId: null,
+				updatedAt: new Date(),
 			})
-			.onConflictDoNothing();
-
-		// Reassign all user's projects to the deleted user placeholder
-		await db
-			.update(dbSchema.projects)
-			.set({ accountId: DELETED_USER_ID, updatedAt: now })
-			.where(eq(dbSchema.projects.accountId, ctx.userID));
-
-		// Delete user's upvotes
-		await db
-			.delete(dbSchema.packageUpvotes)
-			.where(eq(dbSchema.packageUpvotes.accountId, ctx.userID));
-
-		// Delete the user's account
-		await db
-			.delete(dbSchema.account)
 			.where(eq(dbSchema.account.id, ctx.userID));
 
-		// Clear refresh token
 		clearRefreshToken(c);
 
 		return c.json({ success: true });

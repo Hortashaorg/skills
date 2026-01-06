@@ -24,6 +24,12 @@ const accountTable = {
       optional: true,
       customType: null as unknown as string,
     },
+    zitadelId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "zitadel_id",
+    },
     createdAt: {
       type: "number",
       optional: false,

@@ -61,10 +61,14 @@ Goal: Make finding and adding packages frictionless.
 - [x] Verify token refresh works after navbar refactoring
 - [x] Proactive token refresh before expiry
 - [x] Keep needs-auth as fallback
-- [ ] Switch to GitHub as Zitadel identity provider (remove email/password)
-- [ ] Store Zitadel user ID instead of email
-- [ ] Remove email from accounts table (less PII, simpler GDPR)
-- [ ] Remove email verification flow (not needed with OAuth provider)
+- [x] Switch to GitHub as Zitadel identity provider (remove email/password)
+- [x] Store Zitadel user ID instead of email (zitadelId field added, lookup updated)
+- [x] Remove email verification flow (not needed with OAuth provider)
+- [x] Remove email references from UI (profile, privacy policy, project detail)
+- [x] Account deletion → anonymization (null out PII, keep contributions)
+- [ ] Remove email from accounts table (after all users have zitadelId populated)
+- [ ] Zitadel user sync job: anonymize accounts when IdP account deleted
+- [ ] Zitadel user sync job: assign roles to new accounts for self-service deletion
 
 ---
 
@@ -85,11 +89,11 @@ Goal: Make finding and adding packages frictionless.
 
 Review data storage after switching to OAuth-only authentication.
 
-- [ ] Update privacy policy for OAuth-only flow (no email stored)
-- [ ] Verify data export functionality (right to portability)
-- [ ] Document what user data is stored (Zitadel ID, username, user-generated content)
+- [x] Update privacy policy for OAuth-only flow (GitHub sign in, no email stored)
+- [x] Account deletion anonymizes PII (name, email, zitadelId → null)
+- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
 - [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
-- [ ] Consider: remove any remaining email references from codebase/schema
+- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
 
 ---
 

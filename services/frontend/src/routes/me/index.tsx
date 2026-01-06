@@ -265,12 +265,6 @@ export const Profile = () => {
 											</div>
 											<div>
 												<Text size="sm" color="muted">
-													Email
-												</Text>
-												<Text weight="medium">{acc().email || "Not set"}</Text>
-											</div>
-											<div>
-												<Text size="sm" color="muted">
 													Member since
 												</Text>
 												<Text weight="medium">
@@ -308,7 +302,7 @@ export const Profile = () => {
 											<IconLinkCard
 												href={zitadelAccountUrl()}
 												title="Account Settings"
-												description="Manage password & security"
+												description="Manage your identity provider"
 												color="secondary"
 												external
 												icon={<SettingsIcon title="Account Settings" />}
@@ -366,7 +360,7 @@ export const Profile = () => {
 				open={deleteDialogOpen()}
 				onOpenChange={setDeleteDialogOpen}
 				title="Delete Account"
-				description="Are you sure you want to delete your account? This action cannot be undone. Your email and username will be permanently removed. Projects you created will remain but show 'Deleted User' as the author."
+				description="Are you sure you want to delete your account? This action cannot be undone. Your username will be permanently removed. Your contributions will remain but will no longer be linked to your identity."
 				confirmText="Delete My Account"
 				variant="danger"
 				onConfirm={handleDeleteAccount}

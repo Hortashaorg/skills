@@ -296,10 +296,7 @@ export const ProjectDetail = () => {
 														<Text color="muted">{p().description}</Text>
 													</Show>
 													<Text size="sm" color="muted">
-														Created by{" "}
-														{p().account?.name ??
-															p().account?.email ??
-															"Unknown"}
+														Created by {p().account?.name ?? "Unknown"}
 													</Text>
 												</Stack>
 												<Show when={isOwner()}>

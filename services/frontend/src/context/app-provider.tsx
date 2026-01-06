@@ -3,7 +3,7 @@ import { createSignal, onMount, type ParentComponent, Show } from "solid-js";
 import { getAndClearReturnUrl } from "@/lib/auth-url";
 import { getConfig } from "@/lib/config";
 import { authApi } from "./auth/auth-api";
-import { type AuthData, EmailUnverifiedError } from "./auth/types";
+import type { AuthData } from "./auth/types";
 import { ConnectionStatus } from "./ConnectionStatus";
 
 let _setAuthData: ((data: AuthData | null) => void) | undefined;
@@ -46,10 +46,6 @@ export const AppProvider: ParentComponent = (props) => {
 					window.history.replaceState({}, "", window.location.pathname);
 				}
 			} catch (error) {
-				if (error instanceof EmailUnverifiedError) {
-					window.location.href = "/verify-email";
-					return;
-				}
 				console.error("Login with code failed:", error);
 			} finally {
 				setAuthLoading(false);
@@ -61,10 +57,6 @@ export const AppProvider: ParentComponent = (props) => {
 					setAuthData(data);
 				}
 			} catch (error) {
-				if (error instanceof EmailUnverifiedError) {
-					window.location.href = "/verify-email";
-					return;
-				}
 				console.error("Token refresh failed:", error);
 			} finally {
 				setAuthLoading(false);
