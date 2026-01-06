@@ -54,6 +54,26 @@ export const byIdWithTags = defineQuery(
 	},
 );
 
+// Exact match lookup for search - includes placeholders, optional registry
+export const exactMatch = defineQuery(
+	z.object({
+		name: z.string(),
+		registry: z.enum(enums.registry).optional(),
+	}),
+	({ args }) => {
+		let q = zql.packages.where("name", args.name);
+
+		if (args.registry) {
+			q = q.where("registry", args.registry);
+		}
+
+		return q
+			.related("upvotes")
+			.related("packageTags", (pt) => pt.related("tag"))
+			.one();
+	},
+);
+
 // Recently updated packages for homepage default view
 export const recent = defineQuery(
 	z.object({ limit: z.number().default(20) }),

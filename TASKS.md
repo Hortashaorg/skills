@@ -15,9 +15,10 @@ Goal: Make finding and adding packages frictionless.
 - No guidance when package doesn't exist
 
 ### Search Results Improvements
-- [ ] Exact match prioritization
-- [ ] Include placeholder packages in results
-- [ ] Visual distinction for placeholders ("Pending" badge)
+- [x] Exact match prioritization (first card in results)
+- [x] Include placeholder packages in results (exactMatch query includes all statuses)
+- [x] Visual distinction for placeholders ("Pending" badge)
+- [x] "Add package" card when no exact match exists
 - [ ] Consider: prefix vs contains match ranking
 
 ### Project "Add Package" UX

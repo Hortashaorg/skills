@@ -1,13 +1,20 @@
 import type { Row } from "@package/database/client";
-import { For, type JSX, Match, Show, Switch } from "solid-js";
+import { useZero } from "@package/database/client";
+import { createSignal, For, Match, Show, Switch } from "solid-js";
 import { PackageCard } from "@/components/feature/package-card";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Select } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { REGISTRY_OPTIONS, type Registry } from "@/lib/registries";
 import { buildPackageUrl } from "@/lib/url";
 
 type PackageTag = Row["packageTags"] & {
@@ -27,14 +34,13 @@ export interface ResultsGridProps {
 	onPageChange: (page: number) => void;
 	isLoading?: boolean;
 	hasActiveFilters?: boolean;
-	/** When false, pagination shows "Page X" instead of "Page X of Y" (for limited/capped results) */
 	hasExactTotal?: boolean;
-	/** When true and on last page, shows "Load more" button */
 	canLoadMore?: boolean;
 	onLoadMore?: () => void;
-	emptyMessage?: string;
-	emptyDescription?: string;
-	emptyAction?: JSX.Element;
+	exactMatch?: Package;
+	showAddCard?: boolean;
+	searchTerm?: string;
+	registry?: Registry;
 }
 
 const LoadingSpinner = () => (
@@ -61,6 +67,18 @@ const SearchIcon = () => (
 );
 
 export const ResultsGrid = (props: ResultsGridProps) => {
+	const zero = useZero();
+	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
+
+	const effectiveRegistry = (): Registry => props.registry ?? requestRegistry();
+
+	const packageRequest = createPackageRequest(() => ({
+		name: props.searchTerm ?? "",
+		registry: effectiveRegistry(),
+	}));
+
+	const isLoggedIn = () => zero().userID !== "anon";
+
 	const totalPages = () => Math.ceil(props.totalCount / props.pageSize);
 	const startIndex = () => props.page * props.pageSize + 1;
 	const endIndex = () =>
@@ -76,68 +94,58 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 		return "Recently updated";
 	};
 
+	// Show empty state only when no results AND no exact match AND no add card
+	const showEmptyState = () =>
+		props.totalCount === 0 && !props.exactMatch && !props.showAddCard;
+
+	// Show results grid when we have packages OR exact match OR add card
+	const showResults = () =>
+		props.totalCount > 0 || props.exactMatch || props.showAddCard;
+
 	return (
 		<Switch>
-			{/* Loading state */}
 			<Match when={props.isLoading}>
 				<LoadingSpinner />
 			</Match>
 
-			{/* Empty state */}
-			<Match when={props.totalCount === 0}>
+			<Match when={showEmptyState()}>
 				<EmptyState
 					icon={<SearchIcon />}
-					title={props.emptyMessage ?? "No packages found"}
-					description={
-						props.emptyDescription ??
-						"Try a different search term or adjust your filters."
-					}
-					action={props.emptyAction}
+					title="No packages found"
+					description="Try a different search term or adjust your filters."
 				/>
 			</Match>
 
-			{/* Results */}
-			<Match when={props.totalCount > 0}>
+			<Match when={showResults()}>
 				<Stack spacing="sm">
 					<Text size="sm" color="muted">
 						{headerText()}
 					</Text>
 					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<For each={props.packages}>
-							{(pkg) => {
-								const upvote = createPackageUpvote(() => pkg);
-								const tags = () =>
-									pkg.packageTags
-										?.filter(
-											(
-												pt,
-											): pt is typeof pt & {
-												tag: NonNullable<typeof pt.tag>;
-											} => !!pt.tag,
-										)
-										.map((pt) => ({
-											name: pt.tag.name,
-											slug: pt.tag.slug,
-										})) ?? [];
+						{/* First card: exact match or add card */}
+						<Show when={props.exactMatch}>
+							{(pkg) => <ExactMatchCard pkg={pkg()} />}
+						</Show>
+						<Show when={props.showAddCard ? props.searchTerm : undefined}>
+							{(term) => (
+								<AddPackageCard
+									searchTerm={term()}
+									isLoggedIn={isLoggedIn()}
+									registry={props.registry}
+									requestRegistry={requestRegistry()}
+									onRegistryChange={setRequestRegistry}
+									packageRequest={packageRequest}
+									effectiveRegistry={effectiveRegistry()}
+								/>
+							)}
+						</Show>
 
-								return (
-									<PackageCard
-										name={pkg.name}
-										registry={pkg.registry}
-										description={pkg.description}
-										href={buildPackageUrl(pkg.registry, pkg.name)}
-										upvoteCount={upvote.upvoteCount()}
-										isUpvoted={upvote.isUpvoted()}
-										upvoteDisabled={upvote.isDisabled()}
-										onUpvote={upvote.toggle}
-										tags={tags()}
-									/>
-								);
-							}}
+						{/* Rest of the packages */}
+						<For each={props.packages}>
+							{(pkg) => <PackageCardWrapper pkg={pkg} />}
 						</For>
 					</div>
 
-					{/* Pagination controls */}
 					<Show when={totalPages() > 1}>
 						<Flex justify="between" align="center" class="mt-2">
 							<Text size="sm" color="muted">
@@ -184,5 +192,140 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 				</Stack>
 			</Match>
 		</Switch>
+	);
+};
+
+const PackageCardWrapper = (props: { pkg: Package }) => {
+	const upvote = createPackageUpvote(() => props.pkg);
+	const tags = () =>
+		props.pkg.packageTags
+			?.filter(
+				(pt): pt is typeof pt & { tag: NonNullable<typeof pt.tag> } => !!pt.tag,
+			)
+			.map((pt) => ({
+				name: pt.tag.name,
+				slug: pt.tag.slug,
+			})) ?? [];
+
+	return (
+		<PackageCard
+			name={props.pkg.name}
+			registry={props.pkg.registry}
+			description={props.pkg.description}
+			href={buildPackageUrl(props.pkg.registry, props.pkg.name)}
+			upvoteCount={upvote.upvoteCount()}
+			isUpvoted={upvote.isUpvoted()}
+			upvoteDisabled={upvote.isDisabled()}
+			onUpvote={upvote.toggle}
+			tags={tags()}
+		/>
+	);
+};
+
+const ExactMatchCard = (props: { pkg: Package }) => {
+	const upvote = createPackageUpvote(() => props.pkg);
+	const tags = () =>
+		props.pkg.packageTags
+			?.filter(
+				(pt): pt is typeof pt & { tag: NonNullable<typeof pt.tag> } => !!pt.tag,
+			)
+			.map((pt) => ({
+				name: pt.tag.name,
+				slug: pt.tag.slug,
+			})) ?? [];
+
+	const isPending = () => props.pkg.status === "placeholder";
+
+	return (
+		<div class="relative">
+			<div class="absolute -top-2 left-2 z-10 flex gap-1">
+				<Badge variant="info" size="sm">
+					Exact match
+				</Badge>
+				<Show when={isPending()}>
+					<Badge variant="warning" size="sm">
+						Pending
+					</Badge>
+				</Show>
+			</div>
+			<PackageCard
+				name={props.pkg.name}
+				registry={props.pkg.registry}
+				description={props.pkg.description}
+				href={buildPackageUrl(props.pkg.registry, props.pkg.name)}
+				upvoteCount={upvote.upvoteCount()}
+				isUpvoted={upvote.isUpvoted()}
+				upvoteDisabled={upvote.isDisabled()}
+				onUpvote={upvote.toggle}
+				tags={tags()}
+			/>
+		</div>
+	);
+};
+
+interface AddPackageCardProps {
+	searchTerm: string;
+	isLoggedIn: boolean;
+	registry: Registry | undefined;
+	requestRegistry: Registry;
+	onRegistryChange: (registry: Registry) => void;
+	packageRequest: ReturnType<typeof createPackageRequest>;
+	effectiveRegistry: Registry;
+}
+
+const AddPackageCard = (props: AddPackageCardProps) => {
+	return (
+		<Card padding="md" class="flex flex-col justify-center min-h-30">
+			<Stack spacing="sm">
+				<Text weight="medium">Add "{props.searchTerm}"</Text>
+				<Show
+					when={props.isLoggedIn}
+					fallback={
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={() => {
+								saveReturnUrl();
+								window.location.href = getAuthorizationUrl();
+							}}
+						>
+							Sign in to request
+						</Button>
+					}
+				>
+					<Show
+						when={!props.packageRequest.isRequested()}
+						fallback={<Badge variant="success">Request submitted</Badge>}
+					>
+						<Flex gap="sm" align="center" wrap="wrap">
+							<Show when={!props.registry}>
+								<Select
+									options={REGISTRY_OPTIONS}
+									value={props.requestRegistry}
+									onChange={props.onRegistryChange}
+									aria-label="Select registry"
+									disabled={props.packageRequest.isSubmitting()}
+									class="w-auto"
+								/>
+							</Show>
+							<Button
+								variant="primary"
+								size="sm"
+								onClick={() => props.packageRequest.submit()}
+								disabled={props.packageRequest.isSubmitting()}
+							>
+								<Show
+									when={props.packageRequest.isSubmitting()}
+									fallback={`Request from ${props.effectiveRegistry}`}
+								>
+									<Spinner size="sm" srText="Requesting" />
+									<span class="ml-2">Requesting...</span>
+								</Show>
+							</Button>
+						</Flex>
+					</Show>
+				</Show>
+			</Stack>
+		</Card>
 	);
 };
