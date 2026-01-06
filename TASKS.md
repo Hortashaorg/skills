@@ -4,6 +4,16 @@
 
 ---
 
+## Brand Color & Visual Identity
+
+- [ ] Define brand green (garden-themed accent color)
+- [ ] Apply to navbar: "TechGarden" with green emphasis
+- [ ] Use for key emphasis text, CTAs, success states
+- [ ] Dark mode: ensure brand green has good contrast
+- [ ] Favicon: simple green-themed icon
+
+---
+
 ## SEO & Discoverability
 
 - [ ] Audit current SEO state
@@ -21,15 +31,11 @@
 
 ---
 
-## Branding & Polish
+## Polish & UX
 
-- [ ] Logo (favicon, navbar, og:image)
-- [ ] Color palette refinement
-- [ ] Dark mode contrast audit (WCAG AA)
-- [ ] Typography review
-- [ ] Tagline / about page
 - [ ] Empty state improvements
 - [ ] HoverDropdown keyboard navigation
+- [ ] Dark mode contrast audit (WCAG AA)
 
 ---
 

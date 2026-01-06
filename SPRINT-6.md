@@ -1,6 +1,18 @@
 # Sprint 6: Polish, SEO & Identity
 
-> **Goal:** Establish visual identity, improve discoverability, and complete auth cleanup.
+> **Goal:** Establish visual identity with brand color, improve discoverability, and complete auth cleanup.
+
+---
+
+## Brand Color & Visual Identity
+
+Establish "TechGarden" identity through intentional color usage.
+
+- [ ] Define brand green (garden-themed accent color)
+- [ ] Apply to navbar: "Tech**Garden**" with green emphasis
+- [ ] Use for key emphasis text, CTAs, success states
+- [ ] Dark mode: ensure brand green has good contrast
+- [ ] Favicon: simple green-themed icon
 
 ---
 
@@ -26,17 +38,11 @@ Make the homepage more compelling - guide users to explore and contribute.
 
 ---
 
-## Branding & Polish
+## Polish & UX
 
-Establish visual identity and polish rough edges.
-
-- [ ] Logo design (favicon, navbar, og:image)
-- [ ] Color palette refinement
-- [ ] Dark mode contrast audit (WCAG AA)
-- [ ] Typography review
-- [ ] Tagline / about page
-- [ ] Empty state improvements
+- [ ] Empty state improvements (packages, projects, notifications)
 - [ ] HoverDropdown keyboard navigation
+- [ ] Dark mode contrast audit (WCAG AA for text)
 
 ---
 
@@ -69,10 +75,3 @@ Complete the OAuth migration.
 - Notification preferences/settings
 - Additional registry adapters (JSR, Homebrew, apt)
 
----
-
-## Out of Scope
-
-- Fuzzy matching / typo tolerance
-- Full-text search ranking
-- Registry-specific search
