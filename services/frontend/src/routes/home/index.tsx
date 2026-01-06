@@ -1,35 +1,23 @@
-import { queries, useQuery, useZero } from "@package/database/client";
-import { createEffect, createMemo, createSignal, on, Show } from "solid-js";
+import { queries, useQuery } from "@package/database/client";
+import { createEffect, createMemo, createSignal, on } from "solid-js";
 import { Container } from "@/components/primitives/container";
-import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
-import { createPackageRequest } from "@/hooks/createPackageRequest";
 import {
 	createUrlArraySignal,
 	createUrlSignal,
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
 import { Layout } from "@/layout/Layout";
-import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
-import {
-	REGISTRY_OPTIONS,
-	type Registry,
-	type RegistryFilter,
-} from "@/lib/registries";
+import type { Registry, RegistryFilter } from "@/lib/registries";
 import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
 
-const PAGE_SIZE = 20;
+const INITIAL_LIMIT = 20;
+const LOAD_MORE_COUNT = 20;
 
 export const Packages = () => {
-	const zero = useZero();
-
 	// URL-synced state
 	const [searchValue, setSearchValue] = createUrlStringSignal("q");
 	const [registryFilter, setRegistryFilter] = createUrlSignal<RegistryFilter>(
@@ -42,161 +30,93 @@ export const Packages = () => {
 	);
 	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
 
-	// Local state (not URL-synced)
-	const [page, setPage] = createSignal(0);
-	const [searchLimit, setSearchLimit] = createSignal(100);
-	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
+	// Local state for infinite scroll
+	const [limit, setLimit] = createSignal(INITIAL_LIMIT);
 
-	// Check if any filters are active
+	const searchTerm = () => searchValue().trim();
+	const hasSearchTerm = () => searchTerm().length > 0;
 	const hasActiveFilters = () =>
-		searchValue().trim().length > 0 || selectedTagSlugs().length > 0;
+		hasSearchTerm() ||
+		registryFilter() !== "all" ||
+		selectedTagSlugs().length > 0;
 
-	// Use different queries based on whether filters are active
-	// Recent packages when no filters, search results when filters active
-	const [recentPackages, recentResult] = useQuery(() =>
-		queries.packages.recent({ limit: PAGE_SIZE }),
-	);
+	// Effective registry for exact match and request
+	const effectiveRegistry = (): Registry | undefined =>
+		registryFilter() !== "all" ? (registryFilter() as Registry) : undefined;
 
-	const [searchResults, searchResult] = useQuery(() => {
-		const registry = registryFilter();
-		return queries.packages.search({
-			query: searchValue().trim() || undefined,
-			registry: registry !== "all" ? (registry as Registry) : undefined,
-			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
-			limit: searchLimit(),
-		});
-	});
-
-	// Loading state based on which query is active
-	const isLoading = () =>
-		hasActiveFilters()
-			? searchResult().type !== "complete"
-			: recentResult().type !== "complete";
-
-	// Reset page and limit when filters change
-	createEffect(
-		on([searchValue, registryFilter, selectedTagSlugs], () => {
-			setPage(0);
-			setSearchLimit(100);
+	// Exact match query - runs when there's a search term
+	const [exactMatch, exactMatchResult] = useQuery(() =>
+		queries.packages.exactMatch({
+			name: searchTerm(),
+			registry: effectiveRegistry(),
 		}),
 	);
 
-	// Check if we can load more results (current results equal limit)
-	const canLoadMore = () =>
-		hasActiveFilters() && (searchResults()?.length ?? 0) >= searchLimit();
+	const showAddCard = () =>
+		hasSearchTerm() && !exactMatch() && exactMatchResult().type === "complete";
 
-	const handleLoadMore = () => {
-		setSearchLimit((prev) => prev + 100);
+	// Adjust limit when exact match or add card takes a slot
+	const hasFirstCardSlot = () => !!exactMatch() || showAddCard();
+	const adjustedLimit = () => (hasFirstCardSlot() ? limit() - 1 : limit());
+
+	// Recent packages when no filters
+	const [recentPackages, recentResult] = useQuery(() =>
+		queries.packages.recent({ limit: limit() }),
+	);
+
+	// Search results when filters active
+	const [searchResults, searchResult] = useQuery(() => {
+		const registry = registryFilter();
+		return queries.packages.search({
+			query: searchTerm() || undefined,
+			registry: registry !== "all" ? (registry as Registry) : undefined,
+			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
+			limit: adjustedLimit(),
+		});
+	});
+
+	// Loading state based on which queries are active
+	const isLoading = () => {
+		if (!hasActiveFilters()) {
+			return recentResult().type !== "complete";
+		}
+		return (
+			searchResult().type !== "complete" ||
+			(hasSearchTerm() && exactMatchResult().type !== "complete")
+		);
 	};
 
-	// Display packages - use appropriate query result
-	// Search results are sorted alphabetically by name (server-side)
-	// Recently updated are sorted by updatedAt (server-side)
+	// Reset limit when filters change
+	createEffect(
+		on([searchValue, registryFilter, selectedTagSlugs], () => {
+			setLimit(INITIAL_LIMIT);
+		}),
+	);
+
+	// Check if we can load more (current results equal limit)
+	const canLoadMore = () => {
+		if (!hasActiveFilters()) {
+			return (recentPackages()?.length ?? 0) >= limit();
+		}
+		return (searchResults()?.length ?? 0) >= adjustedLimit();
+	};
+
+	const handleLoadMore = () => {
+		setLimit((prev) => prev + LOAD_MORE_COUNT);
+	};
+
+	// Display packages - filter out exact match to avoid duplication
 	const displayPackages = createMemo(() => {
 		if (!hasActiveFilters()) {
 			return recentPackages() ?? [];
 		}
-		return searchResults() ?? [];
+		const results = searchResults() ?? [];
+		const exact = exactMatch();
+		if (exact) {
+			return results.filter((p) => p.id !== exact.id);
+		}
+		return results;
 	});
-
-	const totalCount = () => displayPackages().length;
-
-	// Paginate results (only when filters are active)
-	const paginatedPackages = createMemo(() => {
-		if (!hasActiveFilters()) return displayPackages();
-		const start = page() * PAGE_SIZE;
-		return displayPackages().slice(start, start + PAGE_SIZE);
-	});
-
-	// Effective registry for request (use filter if specific, otherwise requestRegistry)
-	const effectiveRegistry = (): Registry =>
-		registryFilter() !== "all"
-			? (registryFilter() as Registry)
-			: requestRegistry();
-
-	// Package request hook
-	const packageRequest = createPackageRequest(() => ({
-		name: searchValue().trim(),
-		registry: effectiveRegistry(),
-	}));
-
-	// Can show request option when searching for something not in DB
-	const canRequest = () =>
-		hasActiveFilters() &&
-		!isLoading() &&
-		totalCount() === 0 &&
-		searchValue().trim().length > 0;
-
-	// Empty state message based on filter type
-	const emptyMessage = () => {
-		if (selectedTagSlugs().length > 0 && !searchValue().trim()) {
-			return "No packages match the selected tags.";
-		}
-		if (canRequest()) {
-			return `"${searchValue()}" not found`;
-		}
-		return "No packages found";
-	};
-
-	const emptyDescription = () => {
-		if (canRequest()) {
-			return "This package isn't in our database yet. Request it to add it.";
-		}
-		return "Try a different search term or adjust your filters.";
-	};
-
-	// Build the empty state action (request button)
-	const emptyAction = () => {
-		if (!canRequest()) return undefined;
-
-		const isLoggedIn = zero().userID !== "anon";
-
-		if (!isLoggedIn) {
-			return (
-				<Button
-					variant="primary"
-					onClick={() => {
-						saveReturnUrl();
-						window.location.href = getAuthorizationUrl();
-					}}
-				>
-					Sign in to request
-				</Button>
-			);
-		}
-
-		if (packageRequest.isRequested()) {
-			return <Badge variant="success">Request submitted</Badge>;
-		}
-
-		return (
-			<Flex gap="sm" align="center">
-				<Show when={registryFilter() === "all"}>
-					<Select
-						options={REGISTRY_OPTIONS}
-						value={requestRegistry()}
-						onChange={setRequestRegistry}
-						aria-label="Select registry for package request"
-						disabled={packageRequest.isSubmitting()}
-						class="w-auto"
-					/>
-				</Show>
-				<Button
-					variant="primary"
-					onClick={() => packageRequest.submit()}
-					disabled={packageRequest.isSubmitting()}
-				>
-					<Show
-						when={packageRequest.isSubmitting()}
-						fallback={`Request from ${effectiveRegistry()}`}
-					>
-						<Spinner size="sm" srText="Requesting package" />
-						<span class="ml-2">Requesting...</span>
-					</Show>
-				</Button>
-			</Flex>
-		);
-	};
 
 	return (
 		<Layout>
@@ -222,21 +142,17 @@ export const Packages = () => {
 						onTagsChange={setSelectedTagSlugs}
 					/>
 
-					{/* Unified package grid - handles loading, empty, and results */}
+					{/* Results grid with infinite scroll */}
 					<ResultsGrid
-						packages={paginatedPackages()}
-						totalCount={totalCount()}
-						page={page()}
-						pageSize={PAGE_SIZE}
-						onPageChange={setPage}
+						packages={displayPackages()}
 						isLoading={isLoading()}
 						hasActiveFilters={hasActiveFilters()}
-						hasExactTotal={!hasActiveFilters()}
 						canLoadMore={canLoadMore()}
 						onLoadMore={handleLoadMore}
-						emptyMessage={emptyMessage()}
-						emptyDescription={emptyDescription()}
-						emptyAction={emptyAction()}
+						exactMatch={exactMatch()}
+						showAddCard={showAddCard()}
+						searchTerm={searchTerm()}
+						registry={effectiveRegistry()}
 					/>
 				</Stack>
 			</Container>

@@ -1,5 +1,5 @@
+import { z } from "@package/common";
 import { defineQuery } from "@rocicorp/zero";
-import { z } from "zod";
 import { enums } from "../db/types.ts";
 import { zql } from "../zero-schema.gen.ts";
 
@@ -51,6 +51,26 @@ export const byIdWithTags = defineQuery(
 	z.object({ id: z.string() }),
 	({ args }) => {
 		return zql.packages.where("id", args.id).related("packageTags").one();
+	},
+);
+
+// Exact match lookup for search - includes placeholders, optional registry
+export const exactMatch = defineQuery(
+	z.object({
+		name: z.string(),
+		registry: z.enum(enums.registry).optional(),
+	}),
+	({ args }) => {
+		let q = zql.packages.where("name", args.name);
+
+		if (args.registry) {
+			q = q.where("registry", args.registry);
+		}
+
+		return q
+			.related("upvotes")
+			.related("packageTags", (pt) => pt.related("tag"))
+			.one();
 	},
 );
 

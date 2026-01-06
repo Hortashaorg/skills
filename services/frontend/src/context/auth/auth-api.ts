@@ -1,5 +1,13 @@
+import { z } from "@package/common";
 import { getConfig } from "@/lib/config";
-import { type AuthData, EmailUnverifiedError } from "./types";
+import type { AuthData } from "./types";
+
+const authResponseSchema = z.object({
+	access_token: z.string(),
+	expires_in: z.number(),
+	sub: z.string(),
+	roles: z.array(z.string()).optional().default([]),
+});
 
 export const authApi = {
 	async refresh(): Promise<AuthData | null> {
@@ -10,26 +18,18 @@ export const authApi = {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			if (!res.ok) {
-				const data = await res.json().catch(() => ({}));
-				if (data.error === "email_unverified") {
-					throw new EmailUnverifiedError();
-				}
-				return null;
-			}
+			if (!res.ok) return null;
 
-			const result = await res.json();
-			if (!result.access_token || !result.sub) return null;
+			const result = authResponseSchema.safeParse(await res.json());
+			if (!result.success) return null;
 
 			return {
-				accessToken: result.access_token,
-				userId: result.sub,
-				roles: result.roles ?? [],
+				accessToken: result.data.access_token,
+				userId: result.data.sub,
+				roles: result.data.roles,
+				expiresAt: Date.now() + result.data.expires_in * 1000,
 			};
 		} catch (error) {
-			if (error instanceof EmailUnverifiedError) {
-				throw error;
-			}
 			console.error("Token refresh failed:", error);
 			return null;
 		}
@@ -46,20 +46,19 @@ export const authApi = {
 		const data = await res.json();
 
 		if (!res.ok) {
-			if (data.error === "email_unverified") {
-				throw new EmailUnverifiedError();
-			}
 			throw new Error(`Login failed: ${res.status} ${res.statusText}`);
 		}
 
-		if (!data.access_token || !data.sub) {
+		const result = authResponseSchema.safeParse(data);
+		if (!result.success) {
 			throw new Error("Login response missing required fields");
 		}
 
 		return {
-			accessToken: data.access_token,
-			userId: data.sub,
-			roles: data.roles ?? [],
+			accessToken: result.data.access_token,
+			userId: result.data.sub,
+			roles: result.data.roles,
+			expiresAt: Date.now() + result.data.expires_in * 1000,
 		};
 	},
 

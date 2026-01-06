@@ -1,5 +1,5 @@
+import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
-import { z } from "zod";
 import { newRecord, now } from "./helpers.ts";
 
 const slugify = (text: string): string =>

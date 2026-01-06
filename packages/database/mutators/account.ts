@@ -1,5 +1,5 @@
+import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
-import { z } from "zod";
 import { now } from "./helpers.ts";
 
 export const updateName = defineMutator(

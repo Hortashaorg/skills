@@ -29,6 +29,8 @@ import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
 import { buildPackageUrl } from "@/lib/url";
 
+const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
+
 type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
 };
@@ -77,6 +79,13 @@ export const ProjectDetail = () => {
 		queries.packages.search({
 			query: packageSearch() || undefined,
 			limit: 10,
+		}),
+	);
+
+	// Exact match query for prioritization
+	const [exactMatch] = useQuery(() =>
+		queries.packages.exactMatch({
+			name: packageSearch().trim(),
 		}),
 	);
 
@@ -131,35 +140,97 @@ export const ProjectDetail = () => {
 		return { groups, sortedTags, uncategorized };
 	});
 
+	const getPackageSecondary = (pkg: {
+		description?: string | null;
+		status?: string | null;
+		failureReason?: string | null;
+	}) => {
+		if (pkg.status === "failed") {
+			return pkg.failureReason || "Failed to fetch";
+		}
+		if (pkg.status === "placeholder") {
+			return "Pending fetch...";
+		}
+		return pkg.description ?? undefined;
+	};
+
+	const getPackageLabel = (pkg: {
+		registry: string;
+		status?: string | null;
+	}) => {
+		if (pkg.status === "failed") return "failed";
+		if (pkg.status === "placeholder") return "pending";
+		return pkg.registry;
+	};
+
 	const packageSearchResults = createMemo((): SearchResultItem[] => {
 		const results = searchResults() ?? [];
 		const existing = existingPackageIds();
-		return results
-			.filter((pkg) => !existing.has(pkg.id))
-			.map((pkg) => ({
+		const exact = exactMatch();
+		const searchTerm = packageSearch().trim();
+		const items: SearchResultItem[] = [];
+
+		// Add exact match first if not already in project
+		if (exact && !existing.has(exact.id)) {
+			items.push({
+				id: exact.id,
+				primary: exact.name,
+				secondary: getPackageSecondary(exact),
+				label: getPackageLabel(exact),
+			});
+		}
+
+		// Add "search on packages page" option when no exact match
+		if (!exact && searchTerm.length > 0) {
+			items.push({
+				id: `${SEARCH_PACKAGES_PREFIX}${searchTerm}`,
+				primary: `Search "${searchTerm}" on Packages page`,
+				secondary: "Request new packages there",
+				label: "→",
+				isAction: true,
+			});
+		}
+
+		// Add rest of search results (excluding exact match to avoid duplication)
+		for (const pkg of results) {
+			if (existing.has(pkg.id)) continue;
+			if (exact && pkg.id === exact.id) continue;
+			items.push({
 				id: pkg.id,
 				primary: pkg.name,
-				secondary: pkg.description ?? undefined,
-				label: pkg.registry,
-			}));
+				secondary: getPackageSecondary(pkg),
+				label: getPackageLabel(pkg),
+			});
+		}
+
+		return items;
 	});
 
-	const handleAddPackage = async (item: SearchResultItem) => {
+	const handleAddPackage = (item: SearchResultItem) => {
+		// Navigate to packages page with search term
+		if (item.id.startsWith(SEARCH_PACKAGES_PREFIX)) {
+			const searchTerm = item.id.slice(SEARCH_PACKAGES_PREFIX.length);
+			navigate(`/packages?q=${encodeURIComponent(searchTerm)}`);
+			return;
+		}
+
 		const p = project();
 		if (!p) return;
 
-		try {
-			await zero().mutate(
+		zero()
+			.mutate(
 				mutators.projectPackages.add({
 					projectId: p.id,
 					packageId: item.id,
 				}),
-			).client;
-			setPackageSearch("");
-		} catch (err) {
-			console.error("Failed to add package:", err);
-			toast.error("Failed to add package. Please try again.");
-		}
+			)
+			.client.then(() => {
+				setPackageSearch("");
+			})
+			.catch((err) => {
+				console.error("Failed to add package:", err);
+				toast.error("Failed to add package. Please try again.");
+			});
 	};
 
 	const startEditing = () => {
@@ -296,10 +367,7 @@ export const ProjectDetail = () => {
 														<Text color="muted">{p().description}</Text>
 													</Show>
 													<Text size="sm" color="muted">
-														Created by{" "}
-														{p().account?.name ??
-															p().account?.email ??
-															"Unknown"}
+														Created by {p().account?.name ?? "Unknown"}
 													</Text>
 												</Stack>
 												<Show when={isOwner()}>
@@ -398,7 +466,6 @@ export const ProjectDetail = () => {
 												isLoading={isSearching()}
 												onSelect={handleAddPackage}
 												placeholder="Search packages to add..."
-												noResultsMessage="No matching packages found"
 											/>
 										</Show>
 

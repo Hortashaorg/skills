@@ -1,5 +1,5 @@
+import type { z } from "@package/common";
 import ky, { HTTPError } from "ky";
-import type { z } from "zod";
 import type { NpmPackageResponse } from "./schema.ts";
 import { schemas } from "./schema.ts";
 

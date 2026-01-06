@@ -1,5 +1,5 @@
+import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
-import { z } from "zod";
 import { enums } from "../db/types.ts";
 import { resolveApprovedSuggestion } from "../suggestions/resolution.ts";
 import { zql } from "../zero-schema.gen.ts";

@@ -1,0 +1,78 @@
+# Sprint 6: Polish, SEO & Identity
+
+> **Goal:** Establish visual identity, improve discoverability, and complete auth cleanup.
+
+---
+
+## SEO & Discoverability
+
+Make the site discoverable from search engines.
+
+- [ ] Audit current SEO state (meta tags, titles, descriptions)
+- [ ] Package pages: meaningful titles, descriptions from package metadata
+- [ ] Consider: sitemap generation
+- [ ] Consider: structured data (JSON-LD for packages)
+
+---
+
+## Homepage & Onboarding
+
+Make the homepage more compelling - guide users to explore and contribute.
+
+- [ ] Highlight curation/contribution system ("Help improve package data")
+- [ ] Show gamification aspect (leaderboard preview? contribution stats?)
+- [ ] Clearer value prop for creating an account
+- [ ] Better entry points to explore (popular packages, recent activity)
+
+---
+
+## Branding & Polish
+
+Establish visual identity and polish rough edges.
+
+- [ ] Logo design (favicon, navbar, og:image)
+- [ ] Color palette refinement
+- [ ] Dark mode contrast audit (WCAG AA)
+- [ ] Typography review
+- [ ] Tagline / about page
+- [ ] Empty state improvements
+- [ ] HoverDropdown keyboard navigation
+
+---
+
+## Auth Cleanup
+
+Complete the OAuth migration.
+
+- [ ] Remove email from accounts table (after all users have zitadelId populated)
+- [ ] Zitadel user sync job: anonymize accounts when IdP account deleted
+- [ ] Zitadel user sync job: assign roles to new accounts for self-service deletion
+
+---
+
+## GDPR & Data Privacy
+
+- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
+- [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
+- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
+
+---
+
+## Backlog (Future)
+
+- Prefix vs contains match ranking for search
+- Additional suggestion types (remove_tag, link_package, set_attribute)
+- Generalize curation UI to handle multiple suggestion types
+- New tag proposals (currently: existing tags only)
+- Complex spam detection
+- Email/push notifications
+- Notification preferences/settings
+- Additional registry adapters (JSR, Homebrew, apt)
+
+---
+
+## Out of Scope
+
+- Fuzzy matching / typo tolerance
+- Full-text search ranking
+- Registry-specific search

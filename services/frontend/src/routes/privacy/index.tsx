@@ -20,15 +20,15 @@ export const Privacy = () => {
 									What We Collect
 								</Heading>
 								<Stack spacing="sm">
-									<Text>When you create an account, we collect:</Text>
+									<Text>When you sign in with GitHub, we store:</Text>
 									<ul class="list-disc list-inside space-y-1 text-on-surface dark:text-on-surface-dark">
-										<li>Email address (for authentication)</li>
+										<li>A unique account identifier</li>
 										<li>Username (displayed on your projects)</li>
 										<li>Account creation date</li>
 									</ul>
 									<Text>
 										We also store your activity on the platform: projects you
-										create, packages you upvote, and tags you add.
+										create, packages you upvote, and tags you suggest.
 									</Text>
 								</Stack>
 							</section>
@@ -81,9 +81,9 @@ export const Privacy = () => {
 								</Heading>
 								<Text>
 									When you delete your account, your personal information
-									(email, username) is permanently removed. Projects you created
-									remain visible but are attributed to "Deleted User" to
-									preserve community content.
+									(username) is permanently removed. Your contributions
+									(projects, suggestions, votes) remain to preserve community
+									content, but are no longer linked to your identity.
 								</Text>
 							</section>
 

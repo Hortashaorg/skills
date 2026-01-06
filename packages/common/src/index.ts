@@ -1,3 +1,4 @@
+export { z } from "zod";
 export * from "./date.ts";
 
 export const throwError = (message: string): never => {

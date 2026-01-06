@@ -1,5 +1,5 @@
+import { z } from "@package/common";
 import { defineQuery } from "@rocicorp/zero";
-import { z } from "zod";
 import { zql } from "../zero-schema.gen.ts";
 
 export const list = defineQuery(() => {

@@ -18,10 +18,17 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/common: {}
+  packages/common:
+    dependencies:
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
 
   packages/database:
     dependencies:
+      '@package/common':
+        specifier: workspace:*
+        version: link:../common
       '@rocicorp/zero':
         specifier: ^0.25.6
         version: 0.25.6(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(encoding@0.1.13)
@@ -37,13 +44,7 @@ importers:
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
     devDependencies:
-      '@package/common':
-        specifier: workspace:*
-        version: link:../common
       '@types/node':
         specifier: ^25.0.3
         version: 25.0.3

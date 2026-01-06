@@ -77,7 +77,7 @@ Generate?
 **1. schema.ts** - Zod schemas for API validation
 
 ```tsx
-import { z } from "zod";
+import { z } from "@package/common";
 
 // Define schemas matching the actual API response
 export const {Registry}VersionSchema = z.object({
@@ -105,7 +105,7 @@ export const schemas = {
 
 ```tsx
 import ky, { HTTPError } from "ky";
-import type { z } from "zod";
+import type { z } from "@package/common";
 import type { {Registry}PackageResponse } from "./schema.ts";
 import { schemas } from "./schema.ts";
 
