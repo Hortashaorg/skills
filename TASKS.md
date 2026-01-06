@@ -22,9 +22,9 @@ Goal: Make finding and adding packages frictionless.
 - [ ] Consider: prefix vs contains match ranking
 
 ### Project "Add Package" UX
-- [ ] Apply search improvements to project dropdown
-- [ ] Guidance when package not found
-- [ ] Handle short name edge cases
+- [x] Apply search improvements to project dropdown (exact match first)
+- [x] Guidance when package not found (link to Packages page with search term)
+- [x] Show failed/pending status in dropdown results
 
 ---
 

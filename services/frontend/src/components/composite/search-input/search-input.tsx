@@ -1,5 +1,5 @@
 import { Combobox } from "@kobalte/core/combobox";
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 import {
 	SearchIcon,
 	SpinnerIcon,
@@ -18,6 +18,8 @@ export interface SearchResultItem {
 	secondary?: string;
 	/** Optional label for badge (e.g., category, type) */
 	label?: string;
+	/** If true, selecting this item triggers an action (e.g., navigation) without updating input */
+	isAction?: boolean;
 }
 
 export interface SearchInputProps {
@@ -46,6 +48,30 @@ export interface SearchInputProps {
 export const SearchInput = (props: SearchInputProps) => {
 	const [isOpen, setIsOpen] = createSignal(false);
 	const [selectedItem, setSelectedItem] = createSignal<SearchResultItem>();
+	const [listboxRef, setListboxRef] = createSignal<HTMLUListElement | null>(
+		null,
+	);
+
+	// Auto-scroll highlighted item into view during keyboard navigation
+	createEffect(() => {
+		const listbox = listboxRef();
+		if (!listbox) return;
+
+		const observer = new MutationObserver(() => {
+			const highlighted = listbox.querySelector("[data-highlighted]");
+			if (highlighted) {
+				highlighted.scrollIntoView({ block: "nearest" });
+			}
+		});
+
+		observer.observe(listbox, {
+			attributes: true,
+			subtree: true,
+			attributeFilter: ["data-highlighted"],
+		});
+
+		onCleanup(() => observer.disconnect());
+	});
 
 	const handleClear = () => {
 		props.onValueChange("");
@@ -62,19 +88,24 @@ export const SearchInput = (props: SearchInputProps) => {
 		<div class={props.class}>
 			<Combobox<SearchResultItem>
 				value={selectedItem()}
-				noResetInputOnBlur={true}
+				onInputChange={(value) => {
+					// Ignore if value matches an item's primary (means it's from selection, not typing)
+					const isFromSelection = props.results.some((r) => r.primary === value);
+					if (isFromSelection) return;
+
+					props.onValueChange(value);
+					setSelectedItem(undefined);
+					setIsOpen(value.length > 0);
+				}}
 				onChange={(item) => {
 					if (item) {
-						setSelectedItem(item);
-						props.onValueChange(item.primary);
 						props.onSelect?.(item);
+						if (!item.isAction) {
+							setSelectedItem(item);
+							props.onValueChange(item.primary);
+						}
 						setIsOpen(false);
 					}
-				}}
-				onInputChange={(value) => {
-					props.onValueChange(value);
-					setSelectedItem(undefined); // Clear selection when typing
-					setIsOpen(value.length > 0);
 				}}
 				open={isOpen()}
 				onOpenChange={setIsOpen}
@@ -88,7 +119,7 @@ export const SearchInput = (props: SearchInputProps) => {
 				itemComponent={(itemProps) => (
 					<Combobox.Item
 						item={itemProps.item}
-						class="w-full text-left px-4 py-3 hover:bg-surface-alt dark:hover:bg-surface-dark-alt ui-highlighted:bg-surface-alt dark:ui-highlighted:bg-surface-dark-alt transition-colors border-b border-outline/50 dark:border-outline-dark/50 last:border-b-0 cursor-pointer outline-none"
+						class="w-full text-left px-4 py-3 hover:bg-surface-alt dark:hover:bg-surface-dark-alt ui-highlighted:bg-surface-alt dark:ui-highlighted:bg-surface-dark-alt transition-colors border-b border-outline/50 dark:border-outline-dark/50 last:border-b-0 cursor-pointer outline-none scroll-my-2"
 					>
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex-1 min-w-0">
@@ -124,7 +155,10 @@ export const SearchInput = (props: SearchInputProps) => {
 							<SearchIcon size="sm" />
 						</div>
 
-						<Combobox.Input class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger ui-invalid:dark:text-danger-dark pl-9 pr-20" />
+						<Combobox.Input
+							value={props.value}
+							class="flex h-10 w-full rounded-md border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm text-on-surface dark:text-on-surface-dark placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ui-invalid:border-danger ui-invalid:text-danger ui-invalid:dark:text-danger-dark pl-9 pr-20"
+						/>
 
 						<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
 							<Show when={props.isLoading}>
@@ -149,7 +183,7 @@ export const SearchInput = (props: SearchInputProps) => {
 
 				<Combobox.Portal>
 					<Combobox.Content class="z-50 mt-1 max-w-(--kb-popper-anchor-width) bg-surface dark:bg-surface-dark border border-outline dark:border-outline-dark rounded-md shadow-lg max-h-60 overflow-auto ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95 ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95">
-						<Combobox.Listbox class="flex flex-col" />
+						<Combobox.Listbox ref={setListboxRef} class="flex flex-col" />
 						<Show
 							when={
 								props.value && props.results.length === 0 && !props.isLoading
