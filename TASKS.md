@@ -57,15 +57,7 @@
 
 ## Backlog
 
-### Future Features
-- Prefix vs contains match ranking for search
-- Additional suggestion types (remove_tag, link_package, set_attribute)
-- Generalize curation UI to handle multiple suggestion types
-- New tag proposals (currently: existing tags only)
-- Complex spam detection
-- Email/push notifications
-- Notification preferences/settings
-- Additional registry adapters (JSR, Homebrew, apt)
+See [BACKLOG.md](./BACKLOG.md) for full list.
 
 ---
 

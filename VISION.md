@@ -1,100 +1,103 @@
 # TechGarden Vision
 
-A community-driven technology ecosystem built on high-quality, curated package data.
+A place for engineers to learn, contribute, and grow - built around high-quality package data.
 
 ## Core Concept
 
-TechGarden aggregates package metadata from multiple sources (npm, jsr, brew, apt-get, etc.) and enables community-driven curation through tagging, linking, and insights. Think of it as a living garden where technology knowledge grows naturally through good foundational data.
+TechGarden is a community built around the technology ecosystem. Packages are the foundation - aggregated from npm, jsr, brew, apt, and more - but the real value is what grows on top: engineers learning together, curating knowledge, and building their presence through meaningful contributions.
+
+Think of it as a garden where both technology knowledge and the people cultivating it can grow.
+
+## For Engineers
+
+- **Learn the ecosystem**: Understand how packages relate, what tools exist for different use cases, and how technologies fit together
+- **Contribute meaningfully**: Curate packages, help others in discussions, share your knowledge - work that matters beyond just code
+- **Build your presence**: Your contributions are visible. Become known for the technologies you understand deeply
+- **Explore projects**: Organize your own stack, see how others build theirs, discover new tools
 
 ## Key Features
 
 ### Package Curation
 
-- **Multi-source aggregation**: Fetch packages from npm, jsr, brew, apt-get, and other registries
+- **Multi-source aggregation**: Fetch packages from npm, jsr, brew, apt, and other registries
 - **Rich metadata**: Version history, descriptions, dependencies, maintainers, download stats, publish dates
 - **Cross-registry linking**: Connect equivalent packages across sources (e.g., "hono" on npm = "@hono/hono" on jsr)
 - **Dependency mapping**: Visualize and analyze package relationships
 
-### Tagging & Organization
+### Tagging & Categories
 
-- **Community tagging**: Label packages with categories like "database", "frontend", "styling", "devops"
-- **Quality control**: Voting system for tag suggestions to ensure accuracy
-- **Multi-dimensional classification**: Packages can have multiple tags for nuanced discovery
+- **Community tagging**: Label packages with professional areas like "frontend", "backend", "tooling", "testing", "design"
+- **Package categories**: Group packages by use case (ORM, HTTP Client, State Management) for comparison and discussion
+- **Quality control**: Voting system for suggestions to ensure accuracy
+- **Multi-dimensional classification**: Packages can have tags AND belong to categories
 
-### Community & Gamification
+### Community & Engagement
 
-- **XP system**: Earn experience points by solving community issues, tagging packages, and helping others
-- **Leaderboards**: "For this package, this person has solved the most community issues"
-- **Contribution tracking**: "This user has helped tag 100+ packages"
-- **High-quality Q&A**: Stack Overflow-style but with better quality control
+- **Contextual discussions**: All conversations are tied to packages, categories, or projects - no free-form posting. Keeps discussions relevant and purposeful.
+- **Follow what matters**: Follow packages or categories to get notified of new versions, discussions, or replies. Not social following - relevant updates only.
+- **Per-package leaderboards**: "Top React helper", "Top Express expert" - recognition for helping others with specific technologies
+- **Contribution tracking**: Score users for curation work (tagging, voting, suggesting)
+- **Public profiles**: Showcase your projects, expertise areas, and contribution history
 
 ### Project Discovery
 
-- **Tech stack comparison**: Define your project's technologies and find similar projects for inspiration
-- **Package recommendations**: "People who use this package are also 67% likely to use this other package"
-- **Ecosystem insights**: Analyze patterns across projects and package usage
-
-## Why TechGarden?
-
-- **Better data quality**: Curated, linked, and validated by community experts
-- **Cross-ecosystem insights**: See connections between npm, jsr, brew, and more in one place
-- **Reward contributors**: Recognize and gamify knowledge sharing
-- **Discover hidden gems**: Find packages through relationships, not just search keywords
+- **Public by default**: Projects are shared - show off your stack, discover what others are building
+- **Tech stack exploration**: See what packages others are using together, find projects using specific packages
+- **Import your stack**: Upload package.json to instantly visualize and categorize your existing projects
 
 ## Phases
 
 ### Phase 1: Foundation ✅
 
-**Status**: Complete - [tech-garden.dev](https://tech-garden.dev) is live
-
 - Package search, browsing, and details (npm)
-- User authentication (OAuth)
+- User authentication (OAuth via Zitadel)
 - Package requests with auto-queue dependencies
 - Upvoting system
 - Admin dashboard (tags, request management)
 - Worker processing packages continuously
 
-### Phase 2: Projects (Current)
-
-**Focus**: Explore what value emerges from letting users create projects with package selections
+### Phase 2: Projects & Curation ✅
 
 - Project creation and management
 - Associate packages with projects
-- Discover what metadata/relations become useful through experimentation
-- GDPR-compliant user data handling
+- Community curation system (suggestions, votes, contribution scoring)
+- Curation leaderboard
+- GDPR-compliant user data handling (deletion, anonymization)
 
-This phase is exploratory - build the foundation and iterate based on what we learn.
+### Phase 3: Identity & Discovery (Current)
 
-### Phase 3: Engagement (Deferred)
+- Brand identity (TechGarden green accent, visual polish)
+- SEO and discoverability (meta tags, sitemap, structured data)
+- Homepage improvements (entry points, value proposition)
 
-**Requires**: Active user base to be meaningful
+### Phase 4: Categories & Discussion
 
-- User XP and contribution tracking
-- Leaderboards for package experts
-- Tag voting and suggestions
-- Q&A system for package-specific help
+- Package categories (compare packages within use cases)
+- Discussion/comments on packages and categories
+- Per-package leaderboards (recognize package experts)
+- Upvote ranking within categories
 
-Deferred until there's a community to engage with these features.
+### Phase 5: Expansion
 
-### Phase 4: Expansion
-
-- Additional package sources (jsr, brew, apt-get)
+- Additional package sources (jsr, brew, apt)
 - Cross-registry package linking
-- Advanced analytics and visualizations
-- API for third-party integrations
+- New tag proposals (community-suggested tags)
 
 ## Technical Architecture
 
 - **Frontend**: SolidJS + @rocicorp/zero for real-time sync
 - **Backend**: Hono API server
-- **Auth**: OAuth2 with refresh tokens
+- **Auth**: OAuth2 via Zitadel with refresh tokens
 - **Database**: PostgreSQL with Zero's real-time queries/mutations
 - **Data sources**: npm API (expandable to other registries)
+- **Infra**: Kubernetes with OpenTelemetry observability
 
 ## Design Principles
 
+- **Cultivate a learning culture**: Good engineers are open-minded, share opinions freely, ask questions comfortably, and discuss constructively without ego. Reward curiosity and helpfulness. No downvotes, no gatekeeping, no punishment mechanics.
+- **Content has context**: All discussions and contributions are anchored to packages, categories, or projects. No posting into the void. This keeps the platform focused and conversations relevant.
+- **Solo-first features**: Build things that work without needing other users first
 - **Data quality over quantity**: Curated and validated information
 - **Explore before optimizing**: Build features, see what's valuable, iterate
-- **Solo-first features**: Build things that work without needing other users first
 - **Real-time collaboration**: Zero enables live updates across users
-- **Community features when there's a community**: Defer gamification until there's critical mass
+- **Community features when there's a community**: Defer heavy engagement until there's critical mass
