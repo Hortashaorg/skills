@@ -42,12 +42,15 @@ export const PackageCard = (props: PackageCardProps) => {
 	return (
 		<Card
 			padding="md"
-			class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors"
+			class="relative h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt has-[[data-upvote]:hover]:bg-transparent dark:has-[[data-upvote]:hover]:bg-transparent transition-colors"
 		>
-			<div class="flex flex-col h-full gap-1">
+			{/* Stretched link - covers entire card */}
+			<A href={props.href} class="absolute inset-0" aria-hidden="true" />
+
+			<div class="relative pointer-events-none flex flex-col h-full gap-1">
 				{/* Header */}
 				<Flex gap="sm" align="center" justify="between">
-					<A href={props.href} class="flex items-center gap-2 min-w-0 flex-1">
+					<div class="flex items-center gap-2 min-w-0 flex-1">
 						<Text
 							weight="semibold"
 							class="text-on-surface dark:text-on-surface-dark truncate"
@@ -57,8 +60,8 @@ export const PackageCard = (props: PackageCardProps) => {
 						<Badge variant="secondary" size="sm">
 							{props.registry}
 						</Badge>
-					</A>
-					<Flex gap="xs" align="center">
+					</div>
+					<Flex gap="xs" align="center" class="pointer-events-auto" data-upvote>
 						<UpvoteButton
 							count={props.upvoteCount}
 							isUpvoted={props.isUpvoted}
@@ -97,11 +100,9 @@ export const PackageCard = (props: PackageCardProps) => {
 
 				{/* Description - grows to fill space */}
 				<Show when={props.description}>
-					<A href={props.href} class="flex-1">
-						<Text size="sm" color="muted" class="line-clamp-2">
-							{props.description}
-						</Text>
-					</A>
+					<Text size="sm" color="muted" class="line-clamp-2 flex-1">
+						{props.description}
+					</Text>
 				</Show>
 
 				{/* Footer: Tags, version range, and status */}

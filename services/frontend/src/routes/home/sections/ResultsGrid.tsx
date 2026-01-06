@@ -235,6 +235,9 @@ const ExactMatchCard = (props: { pkg: Package }) => {
 			})) ?? [];
 
 	const isPending = () => props.pkg.status === "placeholder";
+	const isFailed = () => props.pkg.status === "failed";
+	const status = () =>
+		isPending() ? "placeholder" : isFailed() ? "failed" : undefined;
 
 	return (
 		<div class="relative">
@@ -245,6 +248,11 @@ const ExactMatchCard = (props: { pkg: Package }) => {
 				<Show when={isPending()}>
 					<Badge variant="warning" size="sm">
 						Pending
+					</Badge>
+				</Show>
+				<Show when={isFailed()}>
+					<Badge variant="danger" size="sm">
+						Failed
 					</Badge>
 				</Show>
 			</div>
@@ -258,6 +266,8 @@ const ExactMatchCard = (props: { pkg: Package }) => {
 				upvoteDisabled={upvote.isDisabled()}
 				onUpvote={upvote.toggle}
 				tags={tags()}
+				status={status()}
+				failureReason={props.pkg.failureReason}
 			/>
 		</div>
 	);
