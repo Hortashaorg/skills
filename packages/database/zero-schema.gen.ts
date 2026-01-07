@@ -14,11 +14,6 @@ const accountTable = {
       optional: false,
       customType: null as unknown as string,
     },
-    email: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-    },
     name: {
       type: "string",
       optional: true,
@@ -26,7 +21,7 @@ const accountTable = {
     },
     zitadelId: {
       type: "string",
-      optional: true,
+      optional: false,
       customType: null as unknown as string,
       serverName: "zitadel_id",
     },

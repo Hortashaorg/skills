@@ -54,7 +54,7 @@ Complete the OAuth migration.
 - [ ] Zitadel Actions 2 webhook endpoint (POST) - handle IdP events
   - [ ] User deleted: anonymize account
   - [ ] User created: assign default roles for self-service deletion
-- [ ] Remove email from accounts table (after all users have zitadelId populated)
+- [x] Remove email from accounts table, make zitadelId NOT NULL
 
 ---
 
