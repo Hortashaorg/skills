@@ -40,6 +40,7 @@ Make the homepage more compelling - guide users to explore and contribute.
 
 ## Polish & UX
 
+- [x] Infinite scroll refinements (snapshot pattern, stale-while-revalidate)
 - [ ] Empty state improvements (packages, projects, notifications)
 - [ ] HoverDropdown keyboard navigation
 - [ ] Dark mode contrast audit (WCAG AA for text)
@@ -50,9 +51,10 @@ Make the homepage more compelling - guide users to explore and contribute.
 
 Complete the OAuth migration.
 
+- [ ] Zitadel Actions 2 webhook endpoint (POST) - handle IdP events
+  - [ ] User deleted: anonymize account
+  - [ ] User created: assign default roles for self-service deletion
 - [ ] Remove email from accounts table (after all users have zitadelId populated)
-- [ ] Zitadel user sync job: anonymize accounts when IdP account deleted
-- [ ] Zitadel user sync job: assign roles to new accounts for self-service deletion
 
 ---
 
@@ -60,7 +62,7 @@ Complete the OAuth migration.
 
 - [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
 - [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
-- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
+- [ ] Edge case: users who delete IdP account before app account (handled by webhook)
 
 ---
 
