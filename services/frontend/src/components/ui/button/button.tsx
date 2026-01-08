@@ -107,6 +107,16 @@ const buttonVariants = cva(
 					"dark:text-on-success",
 					"dark:focus-visible:outline-success",
 				],
+				brand: [
+					"bg-brand",
+					"border-brand",
+					"text-on-brand",
+					"focus-visible:outline-brand",
+					"dark:bg-brand-dark",
+					"dark:border-brand-dark",
+					"dark:text-on-brand-dark",
+					"dark:focus-visible:outline-brand-dark",
+				],
 				outline: [
 					"bg-transparent",
 					"border-outline-strong",

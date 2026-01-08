@@ -28,7 +28,7 @@ const FeatureCard = (props: {
 	return (
 		<Card padding="lg" class="h-full">
 			<Stack spacing="md">
-				<div class="p-3 rounded-radius bg-primary/10 dark:bg-primary-dark/10 w-fit">
+				<div class="p-3 rounded-radius bg-brand/10 dark:bg-brand-dark/10 w-fit">
 					{props.icon}
 				</div>
 				<Heading level="h3">{props.title}</Heading>
@@ -36,7 +36,7 @@ const FeatureCard = (props: {
 				<Show when={props.href}>
 					<A
 						href={props.href ?? ""}
-						class="text-sm text-primary dark:text-primary-dark hover:underline mt-auto"
+						class="text-sm text-brand dark:text-brand-dark hover:underline mt-auto"
 					>
 						{props.linkText} →
 					</A>
@@ -106,7 +106,7 @@ export const Landing = () => {
 								icon={
 									<PackageIcon
 										size="xl"
-										class="text-primary dark:text-primary-dark"
+										class="text-brand dark:text-brand-dark"
 									/>
 								}
 								title="Package Browser"
@@ -118,7 +118,7 @@ export const Landing = () => {
 								icon={
 									<FolderIcon
 										size="xl"
-										class="text-primary dark:text-primary-dark"
+										class="text-brand dark:text-brand-dark"
 									/>
 								}
 								title="Projects"
@@ -130,7 +130,7 @@ export const Landing = () => {
 								icon={
 									<UsersIcon
 										size="xl"
-										class="text-primary dark:text-primary-dark"
+										class="text-brand dark:text-brand-dark"
 									/>
 								}
 								title="Public by Default"

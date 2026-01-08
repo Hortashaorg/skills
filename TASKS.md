@@ -6,11 +6,11 @@
 
 ## Brand Color & Visual Identity
 
-- [ ] Define brand green (garden-themed accent color)
-- [ ] Apply to navbar: "TechGarden" with green emphasis
-- [ ] Use for key emphasis text, CTAs, success states
-- [ ] Dark mode: ensure brand green has good contrast
-- [ ] Favicon: simple green-themed icon
+- [x] Define brand green (garden-themed accent color)
+- [x] Apply to navbar: "TechGarden" with green emphasis
+- [x] Use for key emphasis text, CTAs, success states
+- [x] Dark mode: ensure brand green has good contrast
+- [x] Favicon: simple green-themed icon (already exists)
 
 ---
 
@@ -35,7 +35,7 @@
 
 - [x] Infinite scroll refinements (snapshot pattern, no jumping/jerking)
 - [ ] Empty state improvements
-- [ ] HoverDropdown keyboard navigation
+- [x] Dropdown keyboard navigation (migrated to Kobalte DropdownMenu)
 - [ ] Dark mode contrast audit (WCAG AA)
 
 ---
