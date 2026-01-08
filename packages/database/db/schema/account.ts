@@ -6,4 +6,5 @@ export const account = pgTable("account", {
 	zitadelId: varchar({ length: 30 }).notNull().unique(),
 	createdAt: timestamp().notNull(),
 	updatedAt: timestamp().notNull(),
+	deletedAt: timestamp(),
 });

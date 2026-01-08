@@ -259,11 +259,13 @@ app.post("/api/account/delete", async (c) => {
 	}
 
 	try {
+		const now = new Date();
 		await db
 			.update(dbSchema.account)
 			.set({
 				name: null,
-				updatedAt: new Date(),
+				deletedAt: now,
+				updatedAt: now,
 			})
 			.where(eq(dbSchema.account.id, ctx.userID));
 
