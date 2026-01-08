@@ -9,6 +9,7 @@ import { cors } from "hono/cors";
 import { decode, sign } from "hono/jwt";
 import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
+import { handleGdprExport } from "./gdpr-export.ts";
 import { handleMutate } from "./mutate.ts";
 import { handleQuery } from "./query.ts";
 import { getAuthContext } from "./util.ts";
@@ -247,6 +248,8 @@ app.get("/api/stats", async (c) => {
 		pendingFetches: pending?.count ?? 0,
 	});
 });
+
+app.get("/api/account/export", handleGdprExport);
 
 app.post("/api/account/delete", async (c) => {
 	const ctx = await getAuthContext(c);

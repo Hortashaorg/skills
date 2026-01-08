@@ -58,7 +58,7 @@ Complete the OAuth migration.
 
 ## GDPR & Data Privacy
 
-- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
+- [x] Data export: GET /api/account/export (all user data as JSON)
 - [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
 - [ ] Edge case: users who delete IdP account before app account (handled by webhook)
 

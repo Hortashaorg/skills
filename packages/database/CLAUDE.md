@@ -252,3 +252,21 @@ Import from `db/types.ts`:
 import { enums } from "../db/types.ts";
 z.enum(enums.registry)  // ["npm", "jsr", "brew", "apt"]
 ```
+
+## User Data Tables (GDPR)
+
+Tables containing user-specific data that must be included in GDPR data export:
+
+| Table | Key Column | Description |
+|-------|-----------|-------------|
+| `account` | `id` | User account (primary) |
+| `projects` | `accountId` | User's projects |
+| `projectPackages` | via `projects` | Packages in user's projects |
+| `packageUpvotes` | `accountId` | User's package upvotes |
+| `suggestions` | `accountId` | User's curation suggestions |
+| `suggestionVotes` | `accountId` | User's votes on suggestions |
+| `contributionEvents` | `accountId` | User's contribution history |
+| `contributionScores` | `accountId` | User's contribution scores |
+| `notifications` | `accountId` | User's notifications |
+
+**When adding new tables with `accountId`:** Update the GDPR export endpoint in `services/backend/index.ts`.
