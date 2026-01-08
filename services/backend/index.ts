@@ -111,6 +111,10 @@ app.use("*", async (c, next) => {
 	requestDuration.record(duration, attributes);
 });
 
+app.get("/health", (c) => {
+	return c.json({ status: "ok" });
+});
+
 app.post("/login", async (c) => {
 	const { code } = await c.req.json();
 
