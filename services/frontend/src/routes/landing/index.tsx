@@ -1,14 +1,19 @@
-import { useZero } from "@package/database/client";
+import { queries, useQuery, useZero } from "@package/database/client";
 import { A } from "@solidjs/router";
 import type { JSX } from "solid-js";
-import { Show } from "solid-js";
+import { createMemo, Show } from "solid-js";
+import { SEO } from "@/components/composite/seo";
+import {
+	type LeaderboardEntry,
+	LeaderboardPreview,
+} from "@/components/feature/leaderboard-preview";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import {
 	FolderIcon,
 	PackageIcon,
-	UsersIcon,
+	TrophyIcon,
 } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -50,6 +55,47 @@ export const Landing = () => {
 	const zero = useZero();
 	const isLoggedIn = () => zero().userID !== "anon";
 
+	const [monthlyData, monthlyResult] = useQuery(() =>
+		queries.contributionScores.leaderboardMonthly({ limit: 5 }),
+	);
+
+	const [allTimeData, allTimeResult] = useQuery(() =>
+		queries.contributionScores.leaderboardAllTime({ limit: 5 }),
+	);
+
+	const monthlyEntries = createMemo((): readonly LeaderboardEntry[] => {
+		const data = monthlyData();
+		if (!data) return [];
+
+		return data
+			.filter((entry) => entry.monthlyScore > 0)
+			.map((entry, index) => ({
+				rank: index + 1,
+				name: entry.account?.name ?? "Unknown",
+				score: entry.monthlyScore,
+				isCurrentUser: entry.accountId === zero().userID,
+			}));
+	});
+
+	const allTimeEntries = createMemo((): readonly LeaderboardEntry[] => {
+		const data = allTimeData();
+		if (!data) return [];
+
+		return data
+			.filter((entry) => entry.allTimeScore > 0)
+			.map((entry, index) => ({
+				rank: index + 1,
+				name: entry.account?.name ?? "Unknown",
+				score: entry.allTimeScore,
+				isCurrentUser: entry.accountId === zero().userID,
+			}));
+	});
+
+	const showLeaderboards = () =>
+		monthlyResult().type === "complete" &&
+		allTimeResult().type === "complete" &&
+		(monthlyEntries().length > 0 || allTimeEntries().length > 0);
+
 	const handleSignIn = () => {
 		saveReturnUrl();
 		window.location.href = getAuthorizationUrl();
@@ -57,6 +103,7 @@ export const Landing = () => {
 
 	return (
 		<Layout>
+			<SEO description="Discover packages through the eyes of developers. See what the community recommends, organize your own collections, and watch them grow." />
 			<Container size="lg">
 				<Stack spacing="xl" class="py-12">
 					{/* Hero Section */}
@@ -69,9 +116,13 @@ export const Landing = () => {
 						<Heading level="h1" class="text-4xl sm:text-5xl">
 							TechGarden
 						</Heading>
-						<Text size="lg" color="muted" class="max-w-xl">
-							An experiment in package discovery and curation. Browse packages,
-							organize them into projects, and see what grows.
+						<Text size="xl" class="max-w-xl">
+							Discover packages through the eyes of developers.
+						</Text>
+						<Text color="muted" class="max-w-xl">
+							Not just download counts — see what the community actually
+							recommends. Organize your own collections, share your discoveries,
+							and watch them grow.
 						</Text>
 						<Flex gap="md" wrap="wrap" justify="center">
 							<A href="/packages">
@@ -110,7 +161,7 @@ export const Landing = () => {
 									/>
 								}
 								title="Package Browser"
-								description="Search npm packages, view their details and dependencies. Request packages to add them to the database."
+								description="Search packages, view their details and dependencies. Request new packages to add them to the garden."
 								href="/packages"
 								linkText="Browse packages"
 							/>
@@ -122,22 +173,51 @@ export const Landing = () => {
 									/>
 								}
 								title="Projects"
-								description="Create collections of packages. Useful for tracking tech stacks, learning paths, or just bookmarking."
+								description="Create collections of packages. Track your tech stacks, learning paths, or bookmark favorites."
 								href="/projects"
 								linkText="See projects"
 							/>
 							<FeatureCard
 								icon={
-									<UsersIcon
+									<TrophyIcon
 										size="xl"
 										class="text-brand dark:text-brand-dark"
 									/>
 								}
-								title="Public by Default"
-								description="All projects are public. Maybe that becomes useful for discovery later, we'll see."
+								title="Community Curation"
+								description="Help improve package discovery. Vote on suggestions, earn points, and climb the leaderboard."
+								href={isLoggedIn() ? "/curation" : undefined}
+								linkText="Start curating"
 							/>
 						</div>
 					</Stack>
+
+					{/* Top Contributors Section */}
+					<Show when={showLeaderboards()}>
+						<Stack spacing="lg" class="pt-8">
+							<Heading level="h2" class="text-center">
+								Top Contributors
+							</Heading>
+							<div class="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto w-full">
+								<Show when={monthlyEntries().length > 0}>
+									<LeaderboardPreview
+										entries={monthlyEntries()}
+										title="This Month"
+										subtitle=""
+										viewAllHref={isLoggedIn() ? "/curation" : undefined}
+									/>
+								</Show>
+								<Show when={allTimeEntries().length > 0}>
+									<LeaderboardPreview
+										entries={allTimeEntries()}
+										title="All Time"
+										subtitle=""
+										viewAllHref={isLoggedIn() ? "/curation" : undefined}
+									/>
+								</Show>
+							</div>
+						</Stack>
+					</Show>
 				</Stack>
 			</Container>
 		</Layout>

@@ -1,5 +1,6 @@
 import { queries, useQuery } from "@package/database/client";
 import { batch, createEffect, createSignal, on } from "solid-js";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -155,6 +156,10 @@ export const Packages = () => {
 
 	return (
 		<Layout>
+			<SEO
+				title="Browse Packages"
+				description="Search and discover npm packages. Request packages, view details, and track dependencies."
+			/>
 			<Container size="md">
 				<Stack spacing="xl" class="py-8">
 					{/* Header */}

@@ -3,6 +3,7 @@ import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { useNavigate } from "@solidjs/router";
 import { createEffect, createSignal, Show } from "solid-js";
 import { IconLinkCard } from "@/components/composite/icon-link-card";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -224,6 +225,7 @@ export const Profile = () => {
 
 	return (
 		<Layout>
+			<SEO title="Profile" />
 			<Container size="md">
 				<Stack spacing="lg" class="py-8">
 					<Heading level="h1">Your Profile</Heading>

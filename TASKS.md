@@ -16,18 +16,19 @@
 
 ## SEO & Discoverability
 
-- [ ] Audit current SEO state
-- [ ] Package pages: titles, descriptions from metadata
-- [ ] Consider: sitemap, structured data
+- [x] Dynamic page titles and meta descriptions (@solidjs/meta)
+- [x] Package pages: titles, descriptions from metadata
+- [x] Open Graph tags for social sharing
+- [x] robots.txt
 
 ---
 
 ## Homepage & Onboarding
 
-- [ ] Highlight curation/contribution system
-- [ ] Show gamification (leaderboard preview?)
-- [ ] Clearer account value prop
-- [ ] Better entry points to explore
+- [x] New value proposition copy ("Discover packages through the eyes of developers")
+- [x] Highlight curation/contribution system (feature card)
+- [x] Leaderboard preview (monthly + all-time)
+- [x] Auth-aware links (curation links only shown when logged in)
 
 ---
 

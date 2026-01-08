@@ -37,6 +37,7 @@
 		"@kobalte/tailwindcss": "^0.9.0",
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
+		"@solidjs/meta": "^0.29.4",
 		"@solidjs/router": "^0.15.4",
 		"@std/uuid": "jsr:^1.1.0",
 		"@tailwindcss/vite": "^4.1.18",

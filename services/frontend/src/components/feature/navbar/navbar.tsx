@@ -140,7 +140,9 @@ export const Navbar = (props: NavbarProps) => {
 						{/* Dark mode toggle */}
 						<button
 							type="button"
-							aria-label={isDark() ? "Switch to light mode" : "Switch to dark mode"}
+							aria-label={
+								isDark() ? "Switch to light mode" : "Switch to dark mode"
+							}
 							class={iconButtonClass}
 							onClick={toggleDarkMode}
 						>
@@ -241,10 +243,7 @@ export const Navbar = (props: NavbarProps) => {
 									<ChevronDownIcon size="xs" />
 								</Dropdown.Trigger>
 								<Dropdown.Content width="sm">
-									<Dropdown.LinkItem
-										href="/me"
-										active={isExactActive("/me")}
-									>
+									<Dropdown.LinkItem href="/me" active={isExactActive("/me")}>
 										Profile
 									</Dropdown.LinkItem>
 									<Dropdown.LinkItem
@@ -288,7 +287,9 @@ export const Navbar = (props: NavbarProps) => {
 						{/* Dark mode toggle */}
 						<button
 							type="button"
-							aria-label={isDark() ? "Switch to light mode" : "Switch to dark mode"}
+							aria-label={
+								isDark() ? "Switch to light mode" : "Switch to dark mode"
+							}
 							class={iconButtonClass}
 							onClick={toggleDarkMode}
 						>

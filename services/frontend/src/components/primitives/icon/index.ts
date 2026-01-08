@@ -17,6 +17,7 @@ export {
 	SpinnerIcon,
 	SunIcon,
 	TrashIcon,
+	TrophyIcon,
 	UsersIcon,
 	XCircleIcon,
 	XIcon,
