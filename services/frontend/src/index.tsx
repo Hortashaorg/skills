@@ -1,4 +1,5 @@
 /* @refresh reload */
+import { MetaProvider } from "@solidjs/meta";
 import { Route, Router } from "@solidjs/router";
 import { ErrorBoundary } from "solid-js";
 import { render } from "solid-js/web";
@@ -31,24 +32,26 @@ loadConfig().then(() => {
 			<ErrorBoundary
 				fallback={(err, reset) => <ErrorFallback error={err} reset={reset} />}
 			>
-				<AppProvider>
-					<Router>
-						<Route path="/" component={Landing} />
-						<Route path="/packages" component={Packages} />
-						<Route path="/package/:registry/:name/*tab" component={Package} />
-						<Route path="/me" component={Profile} />
-						<Route path="/me/notifications" component={Notifications} />
-						<Route path="/me/projects" component={Projects} />
-						<Route path="/me/projects/new" component={NewProject} />
-						<Route path="/projects" component={BrowseProjects} />
-						<Route path="/projects/:id" component={ProjectDetail} />
-						<Route path="/curation" component={Curation} />
-						<Route path="/privacy" component={Privacy} />
-						<Route path="/admin/requests" component={AdminRequests} />
-						<Route path="/admin/tags" component={AdminTags} />
-						<Route path="*" component={NotFound} />
-					</Router>
-				</AppProvider>
+				<MetaProvider>
+					<AppProvider>
+						<Router>
+							<Route path="/" component={Landing} />
+							<Route path="/packages" component={Packages} />
+							<Route path="/package/:registry/:name/*tab" component={Package} />
+							<Route path="/me" component={Profile} />
+							<Route path="/me/notifications" component={Notifications} />
+							<Route path="/me/projects" component={Projects} />
+							<Route path="/me/projects/new" component={NewProject} />
+							<Route path="/projects" component={BrowseProjects} />
+							<Route path="/projects/:id" component={ProjectDetail} />
+							<Route path="/curation" component={Curation} />
+							<Route path="/privacy" component={Privacy} />
+							<Route path="/admin/requests" component={AdminRequests} />
+							<Route path="/admin/tags" component={AdminTags} />
+							<Route path="*" component={NotFound} />
+						</Router>
+					</AppProvider>
+				</MetaProvider>
 			</ErrorBoundary>
 		),
 		root,

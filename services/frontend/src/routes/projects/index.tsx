@@ -1,5 +1,6 @@
 import { queries, useQuery } from "@package/database/client";
 import { For, Show } from "solid-js";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -15,6 +16,10 @@ export const BrowseProjects = () => {
 
 	return (
 		<Layout>
+			<SEO
+				title="Projects"
+				description="Explore how others organize their tech stacks. Browse public projects and discover new tools."
+			/>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
 					<Stack spacing="sm" align="center">

@@ -1,5 +1,6 @@
 import { queries, useQuery } from "@package/database/client";
-import { createEffect, createMemo, createSignal, on } from "solid-js";
+import { batch, createEffect, createSignal, on } from "solid-js";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -11,7 +12,7 @@ import {
 } from "@/hooks/createUrlSignal";
 import { Layout } from "@/layout/Layout";
 import type { Registry, RegistryFilter } from "@/lib/registries";
-import { ResultsGrid } from "./sections/ResultsGrid";
+import { type Package, ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
 
 const INITIAL_LIMIT = 20;
@@ -75,18 +76,66 @@ export const Packages = () => {
 		});
 	});
 
-	// Loading state based on which queries are active
-	const isLoading = () => {
+	// Query completion state
+	const allQueriesComplete = () => {
 		if (!hasActiveFilters()) {
-			return recentResult().type !== "complete";
+			return recentResult().type === "complete";
 		}
 		return (
-			searchResult().type !== "complete" ||
-			(hasSearchTerm() && exactMatchResult().type !== "complete")
+			searchResult().type === "complete" &&
+			(!hasSearchTerm() || exactMatchResult().type === "complete")
 		);
 	};
 
-	// Reset limit when filters change
+	// Stable snapshot signals - only update when all queries complete
+	const [stablePackages, setStablePackages] = createSignal<Package[]>([]);
+	const [stableExactMatch, setStableExactMatch] = createSignal<
+		Package | undefined
+	>(undefined);
+	const [stableShowAddCard, setStableShowAddCard] = createSignal(false);
+
+	// Compute filtered packages (helper for effect)
+	const computeDisplayPackages = (): Package[] => {
+		if (!hasActiveFilters()) {
+			return (recentPackages() as Package[]) ?? [];
+		}
+		const results = (searchResults() as Package[]) ?? [];
+		const exact = exactMatch();
+		if (exact) {
+			return results.filter((p) => p.id !== exact.id);
+		}
+		return results;
+	};
+
+	// Update snapshots only when all queries complete
+	createEffect(() => {
+		if (!allQueriesComplete()) return;
+
+		const packages = computeDisplayPackages();
+		const exact = exactMatch() as Package | undefined;
+		const showAdd = showAddCard();
+
+		batch(() => {
+			setStablePackages(packages);
+			setStableExactMatch(exact);
+			setStableShowAddCard(showAdd);
+		});
+	});
+
+	// Track if we've ever loaded data (for true initial load detection)
+	const [hasEverLoaded, setHasEverLoaded] = createSignal(false);
+
+	// Initial loading = never loaded any data yet
+	const isInitialLoading = () => !hasEverLoaded() && !allQueriesComplete();
+
+	// Mark as loaded once we have data
+	createEffect(() => {
+		if (allQueriesComplete() && !hasEverLoaded()) {
+			setHasEverLoaded(true);
+		}
+	});
+
+	// Reset limit when filters change (keep old data visible until new arrives)
 	createEffect(
 		on([searchValue, registryFilter, selectedTagSlugs], () => {
 			setLimit(INITIAL_LIMIT);
@@ -105,21 +154,12 @@ export const Packages = () => {
 		setLimit((prev) => prev + LOAD_MORE_COUNT);
 	};
 
-	// Display packages - filter out exact match to avoid duplication
-	const displayPackages = createMemo(() => {
-		if (!hasActiveFilters()) {
-			return recentPackages() ?? [];
-		}
-		const results = searchResults() ?? [];
-		const exact = exactMatch();
-		if (exact) {
-			return results.filter((p) => p.id !== exact.id);
-		}
-		return results;
-	});
-
 	return (
 		<Layout>
+			<SEO
+				title="Browse Packages"
+				description="Search and discover npm packages. Request packages, view details, and track dependencies."
+			/>
 			<Container size="md">
 				<Stack spacing="xl" class="py-8">
 					{/* Header */}
@@ -144,13 +184,13 @@ export const Packages = () => {
 
 					{/* Results grid with infinite scroll */}
 					<ResultsGrid
-						packages={displayPackages()}
-						isLoading={isLoading()}
+						packages={stablePackages()}
+						isLoading={isInitialLoading()}
 						hasActiveFilters={hasActiveFilters()}
 						canLoadMore={canLoadMore()}
 						onLoadMore={handleLoadMore}
-						exactMatch={exactMatch()}
-						showAddCard={showAddCard()}
+						exactMatch={stableExactMatch()}
+						showAddCard={stableShowAddCard()}
 						searchTerm={searchTerm()}
 						registry={effectiveRegistry()}
 					/>

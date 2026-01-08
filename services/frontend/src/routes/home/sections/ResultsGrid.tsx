@@ -31,7 +31,7 @@ type PackageTag = Row["packageTags"] & {
 	tag?: Row["tags"];
 };
 
-type Package = Row["packages"] & {
+export type Package = Row["packages"] & {
 	upvotes?: readonly Row["packageUpvotes"][];
 	packageTags?: readonly PackageTag[];
 };
@@ -83,7 +83,7 @@ const SearchIcon = () => (
 	</svg>
 );
 
-const AUTO_LOAD_LIMIT = 1000;
+const AUTO_LOAD_LIMIT = 200;
 
 export const ResultsGrid = (props: ResultsGridProps) => {
 	const zero = useZero();
@@ -114,6 +114,18 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 	// Stop auto-loading after limit, require manual "Load more"
 	const pastAutoLoadLimit = () => props.packages.length >= AUTO_LOAD_LIMIT;
 
+	// Debounced load more to prevent rapid-fire calls
+	let loadMoreTimeout: ReturnType<typeof setTimeout> | undefined;
+	const loadMoreDebounced = () => {
+		if (loadMoreTimeout) return;
+		loadMoreTimeout = setTimeout(() => {
+			loadMoreTimeout = undefined;
+			if (props.canLoadMore && props.onLoadMore && !pastAutoLoadLimit()) {
+				props.onLoadMore();
+			}
+		}, 100);
+	};
+
 	// Infinite scroll with IntersectionObserver (only before limit)
 	createEffect(() => {
 		const sentinel = sentinelRef();
@@ -121,14 +133,8 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 		const observer = new IntersectionObserver(
 			(entries) => {
-				const entry = entries[0];
-				if (
-					entry?.isIntersecting &&
-					props.canLoadMore &&
-					props.onLoadMore &&
-					!pastAutoLoadLimit()
-				) {
-					props.onLoadMore();
+				if (entries[0]?.isIntersecting) {
+					loadMoreDebounced();
 				}
 			},
 			{ rootMargin: "200px" },
@@ -136,7 +142,13 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 		observer.observe(sentinel);
 
-		onCleanup(() => observer.disconnect());
+		onCleanup(() => {
+			observer.disconnect();
+			if (loadMoreTimeout) {
+				clearTimeout(loadMoreTimeout);
+				loadMoreTimeout = undefined;
+			}
+		});
 	});
 
 	// Show back to top after scrolling down

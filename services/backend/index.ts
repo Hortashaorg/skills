@@ -9,6 +9,7 @@ import { cors } from "hono/cors";
 import { decode, sign } from "hono/jwt";
 import { ensureUser } from "./ensure-user.ts";
 import { environment } from "./environment.ts";
+import { handleGdprExport } from "./gdpr-export.ts";
 import { handleMutate } from "./mutate.ts";
 import { handleQuery } from "./query.ts";
 import { getAuthContext } from "./util.ts";
@@ -63,7 +64,6 @@ const parseRoles = (payload: Record<string, unknown>): string[] => {
 
 type TokenClaims = {
 	sub: string;
-	email: string;
 	roles: string[];
 };
 
@@ -75,7 +75,6 @@ const userToken = async (claims: TokenClaims) => {
 	const token = await sign(
 		{
 			sub: claims.sub,
-			email: claims.email,
 			roles: claims.roles,
 			iat: now,
 			exp: now + ACCESS_TOKEN_EXPIRY_SECONDS,
@@ -112,6 +111,10 @@ app.use("*", async (c, next) => {
 	requestDuration.record(duration, attributes);
 });
 
+app.get("/health", (c) => {
+	return c.json({ status: "ok" });
+});
+
 app.post("/login", async (c) => {
 	const { code } = await c.req.json();
 
@@ -136,18 +139,17 @@ app.post("/login", async (c) => {
 	});
 
 	if (res.ok) {
-		const result = await res.json();
+		const tokenResponse = await res.json();
 
-		const { payload } = decode(result.id_token);
+		const { payload } = decode(tokenResponse.id_token);
 
 		const zitadelId = (payload.sub as string) ?? throwError("No sub in claim");
-		const email = (payload.email as string) ?? throwError("No email in claim");
 
 		const roles = parseRoles(payload as Record<string, unknown>);
-		const user = await ensureUser({ zitadelId, email });
-		const token = await userToken({ sub: user.id, email, roles });
+		const user = await ensureUser(zitadelId);
+		const token = await userToken({ sub: user.id, roles });
 
-		setRefreshToken(c, result.refresh_token);
+		setRefreshToken(c, tokenResponse.refresh_token);
 
 		return c.json({
 			access_token: token,
@@ -200,11 +202,10 @@ app.post("/refresh", async (c) => {
 		const { payload } = decode(result.id_token);
 
 		const zitadelId = (payload.sub as string) ?? throwError("No sub in claim");
-		const email = (payload.email as string) ?? throwError("No email in claim");
 
 		const roles = parseRoles(payload as Record<string, unknown>);
-		const user = await ensureUser({ zitadelId, email });
-		const token = await userToken({ sub: user.id, email, roles });
+		const user = await ensureUser(zitadelId);
+		const token = await userToken({ sub: user.id, roles });
 
 		setRefreshToken(c, result.refresh_token);
 
@@ -252,6 +253,8 @@ app.get("/api/stats", async (c) => {
 	});
 });
 
+app.get("/api/account/export", handleGdprExport);
+
 app.post("/api/account/delete", async (c) => {
 	const ctx = await getAuthContext(c);
 
@@ -260,13 +263,13 @@ app.post("/api/account/delete", async (c) => {
 	}
 
 	try {
+		const now = new Date();
 		await db
 			.update(dbSchema.account)
 			.set({
 				name: null,
-				email: null,
-				zitadelId: null,
-				updatedAt: new Date(),
+				deletedAt: now,
+				updatedAt: now,
 			})
 			.where(eq(dbSchema.account.id, ctx.userID));
 

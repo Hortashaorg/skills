@@ -40,7 +40,7 @@ export const NavLinks = (props: NavLinksProps) => {
 								: "block py-2 text-sm"
 						}
 						classList={{
-							"text-primary dark:text-primary-dark font-medium": isActive(link),
+							"text-brand dark:text-brand-dark font-medium": isActive(link),
 							"text-on-surface-muted dark:text-on-surface-dark-muted":
 								!isActive(link) && horizontal(),
 							"text-on-surface dark:text-on-surface-dark":

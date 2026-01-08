@@ -7,52 +7,55 @@
 ## Growth
 
 - [ ] JSR registry adapter
+- [ ] Homebrew registry adapter
+- [ ] apt registry adapter
 
 ---
 
-## Engagement
+## Projects
 
-- [ ] User profiles (public profile page)
-- [ ] Personal package lists / bookmarks
-- [ ] Notifications (package ready, new version)
-- [ ] Email notifications
-- [ ] Push notifications
-- [ ] Notification preferences/settings
+- [ ] Package.json import - upload and auto-create project with packages
+- [ ] Deprecated/unmaintained package detection in projects
+
+---
+
+## User Discovery
+
+- [ ] Public user profiles (`/u/username` or `/@username`)
+- [ ] Display projects, contribution score, curation activity
+- [ ] "Expert in" packages (from per-package contribution tracking)
+
+---
+
+## Curation & Discovery
+
+- [ ] New tag proposals (allow users to suggest new tags)
+- [ ] Package categories (ORM, HTTP Client, etc.) - compare packages within use cases, upvote ranking, discussion
+- [ ] Follow packages/categories - notifications for new versions, discussions, replies
+- [ ] Contextual discussions - comments on packages, categories, projects (no free-form posting)
 
 ---
 
 ## Polish
 
-### Accessibility
-- ~Hamburger menu aria-label~ → Sprint 4
-- ~Dark mode contrast audit - WCAG AA compliance~ → Sprint 5
-- ~HoverDropdown keyboard navigation~ → Sprint 5
-
 ### UX
-- [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items + visibility functions
+- [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items
 - [ ] Full mobile audit - layout fixes across all pages
 - [ ] Edge cases: Long text tooltips for truncated names/descriptions
-- ~Empty state improvements - more helpful CTAs~ → Sprint 5
 - [ ] Zero preloading on link hover
-- ~Loading skeletons~ → Sprint 3
-- ~Toast notifications~ → Sprint 3
 
 ### Performance
 - [ ] Query optimization audit
 
+---
+
 ## Technical Debt / Ops
 
-- ~Structured logging in backend and worker~ → Sprint 4
-- [ ] Worker metrics (requests processed, failures, duration)
-- [ ] Health checks and readiness probes
-- [ ] Resource limits and autoscaling config
-- [ ] Database backup strategy
-- [ ] Test coverage - add unit tests and e2e tests (currently Storybook only)
-- ~Raw form inputs~ → Sprint 3
+- [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
 
 ---
 
-## Rate Limiting (Verify Status)
+## Rate Limiting
 
-- [ ] User rate limiting (10 requests/hour) - verify if implemented
+- [ ] User rate limiting (10 requests/hour) - verify current state
 - [ ] Clear error messages when limit reached

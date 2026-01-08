@@ -1,34 +1,23 @@
 import { dbProvider, zql } from "@package/database/server";
 
-type EnsureUserParams = {
-	zitadelId: string;
-	email: string;
-};
-
-export const ensureUser = async ({ zitadelId, email }: EnsureUserParams) => {
+export const ensureUser = async (zitadelId: string) => {
 	const account = await dbProvider.transaction(async (tx) => {
-		const byZitadelId = await tx.run(
-			zql.account.where("zitadelId", zitadelId).one(),
+		// Only find active (non-deleted) accounts
+		const existing = await tx.run(
+			zql.account
+				.where("zitadelId", zitadelId)
+				.where("deletedAt", "IS", null)
+				.one(),
 		);
-		if (byZitadelId) {
-			return byZitadelId;
+		if (existing) {
+			return existing;
 		}
 
-		const byEmail = await tx.run(zql.account.where("email", email).one());
-		if (byEmail) {
-			await tx.mutate.account.update({
-				id: byEmail.id,
-				zitadelId,
-				updatedAt: Date.now(),
-			});
-			return { ...byEmail, zitadelId };
-		}
-
+		// Create new account (works even if deleted account with same zitadelId exists)
 		const id = crypto.randomUUID();
 		const now = Date.now();
 		const user = {
 			id,
-			email,
 			zitadelId,
 			name: null,
 			createdAt: now,

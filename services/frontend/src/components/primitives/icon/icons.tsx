@@ -197,4 +197,44 @@ export const BellIcon = (props: IconComponentProps) => {
 	);
 };
 
+export const SunIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Light mode"} {...others}>
+			<circle cx="12" cy="12" r="4" />
+			<path d="M12 2v2" />
+			<path d="M12 20v2" />
+			<path d="m4.93 4.93 1.41 1.41" />
+			<path d="m17.66 17.66 1.41 1.41" />
+			<path d="M2 12h2" />
+			<path d="M20 12h2" />
+			<path d="m6.34 17.66-1.41 1.41" />
+			<path d="m19.07 4.93-1.41 1.41" />
+		</Icon>
+	);
+};
+
+export const MoonIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Dark mode"} {...others}>
+			<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+		</Icon>
+	);
+};
+
+export const TrophyIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Trophy"} {...others}>
+			<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+			<path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+			<path d="M4 22h16" />
+			<path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+			<path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+			<path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+		</Icon>
+	);
+};
+
 export type { IconComponentProps };

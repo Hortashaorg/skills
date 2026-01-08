@@ -4,62 +4,64 @@
 
 ---
 
+## Brand Color & Visual Identity
+
+- [x] Define brand green (garden-themed accent color)
+- [x] Apply to navbar: "TechGarden" with green emphasis
+- [x] Use for key emphasis text, CTAs, success states
+- [x] Dark mode: ensure brand green has good contrast
+- [x] Favicon: simple green-themed icon (already exists)
+
+---
+
 ## SEO & Discoverability
 
-- [ ] Audit current SEO state
-- [ ] Package pages: titles, descriptions from metadata
-- [ ] Consider: sitemap, structured data
+- [x] Dynamic page titles and meta descriptions (@solidjs/meta)
+- [x] Package pages: titles, descriptions from metadata
+- [x] Open Graph tags for social sharing
+- [x] robots.txt
 
 ---
 
 ## Homepage & Onboarding
 
-- [ ] Highlight curation/contribution system
-- [ ] Show gamification (leaderboard preview?)
-- [ ] Clearer account value prop
-- [ ] Better entry points to explore
+- [x] New value proposition copy ("Discover packages through the eyes of developers")
+- [x] Highlight curation/contribution system (feature card)
+- [x] Leaderboard preview (monthly + all-time)
+- [x] Auth-aware links (curation links only shown when logged in)
 
 ---
 
-## Branding & Polish
+## Polish & UX
 
-- [ ] Logo (favicon, navbar, og:image)
-- [ ] Color palette refinement
-- [ ] Dark mode contrast audit (WCAG AA)
-- [ ] Typography review
-- [ ] Tagline / about page
-- [ ] Empty state improvements
-- [ ] HoverDropdown keyboard navigation
+- [x] Infinite scroll refinements (snapshot pattern, no jumping/jerking)
+- [x] Empty state improvements (reviewed, existing states sufficient)
+- [x] Dropdown keyboard navigation (migrated to Kobalte DropdownMenu)
+- [x] Dark mode contrast audit (WCAG AA compliant)
 
 ---
 
 ## Auth Cleanup
 
-- [ ] Remove email from accounts table (after all users have zitadelId populated)
-- [ ] Zitadel user sync job: anonymize accounts when IdP account deleted
-- [ ] Zitadel user sync job: assign roles to new accounts for self-service deletion
+- [x] Zitadel Actions 2 webhook endpoint (POST) - services/webhook
+  - Handlers deferred to Sprint 7 (need to explore event payloads first)
+- [x] Remove email from accounts table, make zitadelId NOT NULL
 
 ---
 
 ## GDPR & Data Privacy
 
-- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
-- [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
-- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
+- [x] Data export: GET /api/account/export (all user data as JSON)
+- [x] Soft delete with deletedAt, getDisplayName shows "Deleted User"
+- [x] Partial unique index on zitadelId (allows re-registration after deletion)
+- [x] Export button on profile page
+- [x] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
 
 ---
 
 ## Backlog
 
-### Future Features
-- Prefix vs contains match ranking for search
-- Additional suggestion types (remove_tag, link_package, set_attribute)
-- Generalize curation UI to handle multiple suggestion types
-- New tag proposals (currently: existing tags only)
-- Complex spam detection
-- Email/push notifications
-- Notification preferences/settings
-- Additional registry adapters (JSR, Homebrew, apt)
+See [BACKLOG.md](./BACKLOG.md) for full list.
 
 ---
 

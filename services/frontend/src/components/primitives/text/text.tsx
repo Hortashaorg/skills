@@ -27,6 +27,7 @@ const textVariants = cva("", {
 			success: "text-success dark:text-success-dark",
 			warning: "text-warning dark:text-warning-dark",
 			info: "text-info dark:text-info-dark",
+			brand: "text-brand dark:text-brand-dark",
 		},
 	},
 	defaultVariants: {

@@ -7,6 +7,7 @@ import {
 import { A, useNavigate, useParams } from "@solidjs/router";
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js";
 import { QueryBoundary } from "@/components/composite/query-boundary";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -137,6 +138,13 @@ export const Package = () => {
 
 	return (
 		<Layout>
+			<SEO
+				title={packageName()}
+				description={
+					pkg()?.description ||
+					`View details, dependencies, and versions for ${packageName()} on ${registry()}.`
+				}
+			/>
 			<Container size="md">
 				<Stack spacing="lg" class="py-8">
 					<QueryBoundary

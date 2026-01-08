@@ -3,6 +3,7 @@ import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { useNavigate } from "@solidjs/router";
 import { createEffect, createSignal, Show } from "solid-js";
 import { IconLinkCard } from "@/components/composite/icon-link-card";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -86,6 +87,50 @@ export const Profile = () => {
 	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
 	const [isDeleting, setIsDeleting] = createSignal(false);
 	const [deleteError, setDeleteError] = createSignal<string | null>(null);
+
+	// Export data state
+	const [isExporting, setIsExporting] = createSignal(false);
+
+	const handleExportData = async () => {
+		setIsExporting(true);
+		try {
+			const config = getConfig();
+			const authData = getAuthData();
+			const response = await fetch(`${config.backendUrl}/api/account/export`, {
+				method: "GET",
+				credentials: "include",
+				headers: authData?.accessToken
+					? { Authorization: `Bearer ${authData.accessToken}` }
+					: {},
+			});
+
+			if (!response.ok) {
+				const data = await response.json().catch(() => ({}));
+				throw new Error(data.error || "Failed to export data");
+			}
+
+			const data = await response.json();
+			const blob = new Blob([JSON.stringify(data, null, 2)], {
+				type: "application/json",
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `techgarden-export-${new Date().toISOString().split("T")[0]}.json`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			toast.success("Data exported successfully");
+		} catch (err) {
+			console.error("Failed to export data:", err);
+			const message =
+				err instanceof Error ? err.message : "Failed to export data";
+			toast.error(message);
+		} finally {
+			setIsExporting(false);
+		}
+	};
 
 	const startEditingUsername = () => {
 		const acc = account();
@@ -180,6 +225,7 @@ export const Profile = () => {
 
 	return (
 		<Layout>
+			<SEO title="Profile" />
 			<Container size="md">
 				<Stack spacing="lg" class="py-8">
 					<Heading level="h1">Your Profile</Heading>
@@ -322,6 +368,26 @@ export const Profile = () => {
 											color="info"
 											icon={<DocumentIcon title="Privacy Policy" />}
 										/>
+
+										<div class="pt-4 border-t border-outline dark:border-outline-dark">
+											<Stack spacing="sm">
+												<Heading level="h3">Export Your Data</Heading>
+												<Text size="sm" color="muted">
+													Download a copy of all your data including your
+													profile, projects, upvotes, and contributions.
+												</Text>
+												<div>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={handleExportData}
+														disabled={isExporting()}
+													>
+														{isExporting() ? "Exporting..." : "Export Data"}
+													</Button>
+												</div>
+											</Stack>
+										</div>
 
 										<div class="pt-4 border-t border-outline dark:border-outline-dark">
 											<Stack spacing="sm">

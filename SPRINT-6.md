@@ -1,6 +1,18 @@
 # Sprint 6: Polish, SEO & Identity
 
-> **Goal:** Establish visual identity, improve discoverability, and complete auth cleanup.
+> **Goal:** Establish visual identity with brand color, improve discoverability, and complete auth cleanup.
+
+---
+
+## Brand Color & Visual Identity
+
+Establish "TechGarden" identity through intentional color usage.
+
+- [ ] Define brand green (garden-themed accent color)
+- [ ] Apply to navbar: "Tech**Garden**" with green emphasis
+- [ ] Use for key emphasis text, CTAs, success states
+- [ ] Dark mode: ensure brand green has good contrast
+- [ ] Favicon: simple green-themed icon
 
 ---
 
@@ -26,17 +38,12 @@ Make the homepage more compelling - guide users to explore and contribute.
 
 ---
 
-## Branding & Polish
+## Polish & UX
 
-Establish visual identity and polish rough edges.
-
-- [ ] Logo design (favicon, navbar, og:image)
-- [ ] Color palette refinement
-- [ ] Dark mode contrast audit (WCAG AA)
-- [ ] Typography review
-- [ ] Tagline / about page
-- [ ] Empty state improvements
+- [x] Infinite scroll refinements (snapshot pattern, stale-while-revalidate)
+- [ ] Empty state improvements (packages, projects, notifications)
 - [ ] HoverDropdown keyboard navigation
+- [ ] Dark mode contrast audit (WCAG AA for text)
 
 ---
 
@@ -44,35 +51,20 @@ Establish visual identity and polish rough edges.
 
 Complete the OAuth migration.
 
-- [ ] Remove email from accounts table (after all users have zitadelId populated)
-- [ ] Zitadel user sync job: anonymize accounts when IdP account deleted
-- [ ] Zitadel user sync job: assign roles to new accounts for self-service deletion
+- [x] Zitadel Actions 2 webhook endpoint (POST) - services/webhook
+- [x] Remove email from accounts table, make zitadelId NOT NULL
 
 ---
 
 ## GDPR & Data Privacy
 
-- [ ] Data export: individual records, not aggregates (account, projects, suggestions, votes)
+- [x] Data export: GET /api/account/export (all user data as JSON)
 - [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
-- [ ] Edge case: users who delete IdP account before app account (handled by sync job)
+- [ ] Edge case: users who delete IdP account before app account (handled by webhook)
 
 ---
 
 ## Backlog (Future)
 
-- Prefix vs contains match ranking for search
-- Additional suggestion types (remove_tag, link_package, set_attribute)
-- Generalize curation UI to handle multiple suggestion types
-- New tag proposals (currently: existing tags only)
-- Complex spam detection
-- Email/push notifications
-- Notification preferences/settings
-- Additional registry adapters (JSR, Homebrew, apt)
+See [BACKLOG.md](./BACKLOG.md) for full list.
 
----
-
-## Out of Scope
-
-- Fuzzy matching / typo tolerance
-- Full-text search ranking
-- Registry-specific search

@@ -68,7 +68,7 @@ export const Leaderboard = () => {
 									align="center"
 									class="px-2 py-1.5 rounded hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
 									classList={{
-										"bg-primary/10 dark:bg-primary-dark/10":
+										"bg-brand/10 dark:bg-brand-dark/10":
 											score.accountId === currentUserId(),
 									}}
 								>

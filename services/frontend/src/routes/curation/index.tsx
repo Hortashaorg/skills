@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "@solidjs/router";
 import type { Accessor } from "solid-js";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
+import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -202,6 +203,10 @@ export const Curation = () => {
 
 	return (
 		<Layout>
+			<SEO
+				title="Curation"
+				description="Help curate packages by reviewing tag suggestions. Vote on suggestions, earn points, and climb the leaderboard."
+			/>
 			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
 					<div>
