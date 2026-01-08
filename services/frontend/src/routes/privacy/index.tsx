@@ -60,6 +60,7 @@ export const Privacy = () => {
 									<ul class="list-disc list-inside space-y-1 text-on-surface dark:text-on-surface-dark">
 										<li>View your account information</li>
 										<li>Update your username</li>
+										<li>Export all your data as JSON</li>
 										<li>Delete your account entirely</li>
 									</ul>
 									<Text>

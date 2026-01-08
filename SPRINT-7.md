@@ -8,8 +8,9 @@
 
 After exploring webhook payloads in Sprint 6, implement actual handlers:
 
-- [ ] User deleted event: anonymize account (zitadelId lookup)
+- [ ] User deleted event: set deletedAt on account (zitadelId lookup)
 - [ ] User created event: assign default roles for self-service deletion
+- [ ] Edge case: users who delete IdP account before app account
 - [ ] Other events as needed based on logged data
 
 ---

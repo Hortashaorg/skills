@@ -51,8 +51,10 @@
 ## GDPR & Data Privacy
 
 - [x] Data export: GET /api/account/export (all user data as JSON)
-- [ ] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
-- [ ] Edge case: users who delete IdP account before app account (handled by webhook)
+- [x] Soft delete with deletedAt, getDisplayName shows "Deleted User"
+- [x] Partial unique index on zitadelId (allows re-registration after deletion)
+- [x] Export button on profile page
+- [x] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
 
 ---
 

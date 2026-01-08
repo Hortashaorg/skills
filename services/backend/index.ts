@@ -135,9 +135,9 @@ app.post("/login", async (c) => {
 	});
 
 	if (res.ok) {
-		const result = await res.json();
+		const tokenResponse = await res.json();
 
-		const { payload } = decode(result.id_token);
+		const { payload } = decode(tokenResponse.id_token);
 
 		const zitadelId = (payload.sub as string) ?? throwError("No sub in claim");
 
@@ -145,7 +145,7 @@ app.post("/login", async (c) => {
 		const user = await ensureUser(zitadelId);
 		const token = await userToken({ sub: user.id, roles });
 
-		setRefreshToken(c, result.refresh_token);
+		setRefreshToken(c, tokenResponse.refresh_token);
 
 		return c.json({
 			access_token: token,

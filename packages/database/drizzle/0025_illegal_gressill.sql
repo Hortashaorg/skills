@@ -1,0 +1,2 @@
+ALTER TABLE "account" DROP CONSTRAINT "account_zitadelId_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_account_zitadel_id_active" ON "account" USING btree ("zitadel_id") WHERE "account"."deleted_at" is null;
