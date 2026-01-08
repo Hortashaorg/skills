@@ -34,9 +34,9 @@
 ## Polish & UX
 
 - [x] Infinite scroll refinements (snapshot pattern, no jumping/jerking)
-- [ ] Empty state improvements
+- [x] Empty state improvements (reviewed, existing states sufficient)
 - [x] Dropdown keyboard navigation (migrated to Kobalte DropdownMenu)
-- [ ] Dark mode contrast audit (WCAG AA)
+- [x] Dark mode contrast audit (WCAG AA compliant)
 
 ---
 
