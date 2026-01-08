@@ -8,6 +8,7 @@
 		"frontend": "pnpm --filter '@service/frontend'",
 		"backend": "pnpm --filter '@service/backend'",
 		"worker": "pnpm --filter '@service/worker'",
+		"webhook": "pnpm --filter '@service/webhook'",
 		"check": "biome check",
 		"format": "biome format --write",
 		"database": "pnpm --filter '@package/database'"
