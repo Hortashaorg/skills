@@ -52,8 +52,6 @@ Make the homepage more compelling - guide users to explore and contribute.
 Complete the OAuth migration.
 
 - [x] Zitadel Actions 2 webhook endpoint (POST) - services/webhook
-  - [ ] User deleted: anonymize account
-  - [ ] User created: assign default roles for self-service deletion
 - [x] Remove email from accounts table, make zitadelId NOT NULL
 
 ---

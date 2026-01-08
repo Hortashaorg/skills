@@ -43,8 +43,7 @@
 ## Auth Cleanup
 
 - [x] Zitadel Actions 2 webhook endpoint (POST) - services/webhook
-  - [ ] User deleted: anonymize account
-  - [ ] User created: assign default roles for self-service deletion
+  - Handlers deferred to Sprint 7 (need to explore event payloads first)
 - [x] Remove email from accounts table, make zitadelId NOT NULL
 
 ---
