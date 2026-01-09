@@ -49,8 +49,27 @@
 
 ---
 
-## Technical Debt / Ops
+## Technical Debt
 
+### Error Handling
+- [ ] Extract reusable mutation error handler (console.error + toast pattern)
+- [ ] Surface errors to users - 16+ places log errors without user feedback
+- [ ] Add error type system for worker/backend (retry-able vs permanent)
+
+### Testing
+- [ ] Unit tests for worker sync logic (process-fetch.ts, db.ts)
+- [ ] Unit tests for score calculation algorithm
+- [ ] Unit tests for backend auth token refresh
+
+### Type Safety
+- [ ] Fix unsafe type assertions (createUrlSignal, curation page casting)
+
+### Code Organization
+- [ ] Split large components: me/projects/detail.tsx (605 lines), navbar.tsx (455 lines)
+- [ ] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon) into icon primitives
+- [ ] Centralize hardcoded constants (limits, timeouts, batch sizes)
+
+### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
 
 ---
