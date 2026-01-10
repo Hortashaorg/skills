@@ -228,15 +228,26 @@ app.post("/zitadel/actions", async (c) => {
 			familyName = parsed.last;
 		}
 
-		// Start with existing addHumanUser or create new one
-		const addHumanUser = payload.response?.addHumanUser ?? {};
+		// Build the user.human structure for idpInformation
+		// RetrieveIdentityProviderIntent expects modifications in idpInformation.user.human
+		const human: {
+			profile?: {
+				givenName?: string;
+				familyName?: string;
+				displayName?: string;
+			};
+			email?: {
+				email?: string;
+				isVerified?: boolean;
+			};
+		} = {};
 
 		// Set profile if we have name data
 		if (givenName) {
-			addHumanUser.profile = {
-				...addHumanUser.profile,
+			human.profile = {
 				givenName,
-				familyName: familyName ?? addHumanUser.profile?.familyName,
+				familyName,
+				displayName: displayName,
 			};
 			logger.info("Setting user profile", {
 				givenName,
@@ -251,17 +262,23 @@ app.post("/zitadel/actions", async (c) => {
 		if (email) {
 			// If provider explicitly says not verified, don't mark as verified
 			const shouldVerify = providerEmailVerified !== false;
-			addHumanUser.email = {
-				...addHumanUser.email,
+			human.email = {
 				email,
 				isVerified: shouldVerify,
 			};
 			logger.info("Setting email", { email, isVerified: shouldVerify });
 		}
 
-		// Return the modified response
+		// Return the modified idpInformation structure
 		// See: https://zitadel.com/docs/guides/integrate/actions/testing-response-manipulation
-		const response = { addHumanUser };
+		const response = {
+			idpInformation: {
+				...idpInfo,
+				user: {
+					human,
+				},
+			},
+		};
 
 		// Log full response for debugging
 		logger.info("Returning response", {
