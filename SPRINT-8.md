@@ -27,13 +27,13 @@ First step toward multi-registry support:
 
 ---
 
-## Zitadel Webhook Handlers
+## Zitadel Webhook Handlers ✅
 
 Complete webhook integration based on logged event data:
 
-- [ ] User deleted event: set deletedAt on account (zitadelId lookup)
-- [ ] User created event: assign default roles for self-service deletion
-- [ ] Edge case: users who delete IdP account before app account
+- [x] User deleted event: set deletedAt on account (zitadelId lookup)
+- [x] User created event: assign ORG_USER_SELF_MANAGER role + verify email
+- [x] Edge case: users who delete IdP account before app account
 
 ---
 

@@ -6,6 +6,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
+import { getDisplayName } from "@/lib/account";
 
 export const Leaderboard = () => {
 	const zero = useZero();
@@ -88,7 +89,7 @@ export const Leaderboard = () => {
 													: "normal"
 											}
 										>
-											{score.account?.name ?? "Unknown"}
+											{getDisplayName(score.account)}
 											{score.accountId === currentUserId() && " (you)"}
 										</Text>
 									</Flex>

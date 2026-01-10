@@ -27,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
+import { getDisplayName } from "@/lib/account";
 import { buildPackageUrl } from "@/lib/url";
 
 const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
@@ -367,7 +368,7 @@ export const ProjectDetail = () => {
 														<Text color="muted">{p().description}</Text>
 													</Show>
 													<Text size="sm" color="muted">
-														Created by {p().account?.name ?? "Unknown"}
+														Created by {getDisplayName(p().account)}
 													</Text>
 												</Stack>
 												<Show when={isOwner()}>

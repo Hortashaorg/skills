@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getDisplayName } from "@/lib/account";
 import { buildPackageUrl } from "@/lib/url";
 
 export interface ReviewQueueSuggestion {
@@ -16,7 +17,7 @@ export interface ReviewQueueSuggestion {
 	type: string;
 	payload: unknown;
 	accountId: string;
-	account?: { name: string | null } | null;
+	account?: { name: string | null; deletedAt?: Date | number | null } | null;
 	package?: {
 		name: string | null;
 		registry: string | null;
@@ -128,7 +129,7 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 									<div class="pt-2 border-t border-outline/50 dark:border-outline-dark/50">
 										<Flex gap="md" align="center">
 											<Text size="xs" color="muted">
-												by {suggestion().account?.name ?? "Unknown"}
+												by {getDisplayName(suggestion().account)}
 											</Text>
 											<Flex gap="xs">
 												<Badge variant="success" size="sm">

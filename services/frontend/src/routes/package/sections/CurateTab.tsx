@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
+import { getDisplayName } from "@/lib/account";
 
 interface CurateTabProps {
 	packageId: string;
@@ -248,7 +249,7 @@ export const CurateTab = (props: CurateTabProps) => {
 													</Text>
 												</Flex>
 												<Text size="xs" color="muted">
-													by {suggestion.account?.name ?? "Unknown"}
+													by {getDisplayName(suggestion.account)}
 												</Text>
 											</div>
 											<Flex gap="sm" align="center">

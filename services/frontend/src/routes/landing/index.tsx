@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
+import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 
 const FeatureCard = (props: {
@@ -71,7 +72,7 @@ export const Landing = () => {
 			.filter((entry) => entry.monthlyScore > 0)
 			.map((entry, index) => ({
 				rank: index + 1,
-				name: entry.account?.name ?? "Unknown",
+				name: getDisplayName(entry.account),
 				score: entry.monthlyScore,
 				isCurrentUser: entry.accountId === zero().userID,
 			}));
@@ -85,7 +86,7 @@ export const Landing = () => {
 			.filter((entry) => entry.allTimeScore > 0)
 			.map((entry, index) => ({
 				rank: index + 1,
-				name: entry.account?.name ?? "Unknown",
+				name: getDisplayName(entry.account),
 				score: entry.allTimeScore,
 				isCurrentUser: entry.accountId === zero().userID,
 			}));
