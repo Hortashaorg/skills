@@ -1,11 +1,37 @@
 import { serve } from "@hono/node-server";
 import { db, softDeleteAccountByZitadelId } from "@package/database/server";
 import { createLogger } from "@package/instrumentation/utils";
+import type { Context } from "hono";
 import { Hono } from "hono";
 
 const logger = createLogger("webhook");
 
 const app = new Hono();
+
+// Cache IDP user data between RetrieveIdentityProviderIntent and AddHumanUser
+// Key: `${idpId}:${idpUserId}` -> user data from GitHub/Google
+// TTL: 5 minutes (registration should complete quickly)
+const idpDataCache = new Map<
+	string,
+	{
+		givenName?: string;
+		familyName?: string;
+		email?: string;
+		emailVerified: boolean;
+		timestamp: number;
+	}
+>();
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function cleanExpiredCache() {
+	const now = Date.now();
+	for (const [key, value] of idpDataCache.entries()) {
+		if (now - value.timestamp > CACHE_TTL_MS) {
+			idpDataCache.delete(key);
+		}
+	}
+}
 
 // Types for ZITADEL Events (used by event webhooks)
 type ZitadelEvent = {
@@ -13,15 +39,33 @@ type ZitadelEvent = {
 	event_type: string;
 };
 
-// Types for ZITADEL Actions V2 Response manipulation
+// Types for ZITADEL Actions V2
 // See: https://zitadel.com/docs/guides/integrate/actions/testing-response-manipulation
-// Note: Field names use uppercase "ID" suffix per ZITADEL's protobuf conventions
 type ActionsV2Payload = {
 	fullMethod: string;
 	instanceID: string;
 	orgID: string;
 	userID: string;
-	request: Record<string, unknown>;
+	request: {
+		// AddHumanUser request fields
+		profile?: {
+			givenName?: string;
+			familyName?: string;
+			displayName?: string;
+			nickName?: string;
+			preferredLanguage?: string;
+			gender?: string;
+		};
+		email?: {
+			email?: string;
+			isVerified?: boolean;
+		};
+		idpLinks?: Array<{
+			idpId: string;
+			userId: string;
+			userName: string;
+		}>;
+	} & Record<string, unknown>;
 	response: {
 		idpInformation?: {
 			oauth?: {
@@ -31,44 +75,14 @@ type ActionsV2Payload = {
 			idpId?: string;
 			userId?: string;
 			userName?: string;
-			// rawInformation contains provider-specific user data (snake_case from providers)
-			// For GitHub: { User: { name, email, login, avatar_url, ... } }
-			// For Google: { User: { given_name, family_name, email, email_verified, ... } }
 			rawInformation?: {
 				User?: Record<string, unknown>;
 			} & Record<string, unknown>;
-		};
-		addHumanUser?: {
-			idpLinks?: Array<{
-				idpId: string;
-				userId: string;
-				userName: string;
-			}>;
-			username?: string;
-			profile?: {
-				givenName?: string;
-				familyName?: string;
-				displayName?: string;
-				nickName?: string;
-				preferredLanguage?: string;
-				gender?: string;
-			};
-			email?: {
-				email?: string;
-				isVerified?: boolean;
-			};
-			metadata?: Array<{
-				key: string;
-				value: string;
-			}>;
 		};
 	};
 };
 
 // Parse display name into first/last name
-// "John Doe" -> { first: "John", last: "Doe" }
-// "John" -> { first: "John", last: undefined }
-// "John William Doe" -> { first: "John", last: "William Doe" }
 function parseDisplayName(displayName: string | undefined | null): {
 	first: string | undefined;
 	last: string | undefined;
@@ -92,6 +106,173 @@ function parseDisplayName(displayName: string | undefined | null): {
 		first: parts[0],
 		last: parts.slice(1).join(" "),
 	};
+}
+
+// Handler: RetrieveIdentityProviderIntent (Response manipulation)
+// Caches IDP data for use in AddHumanUser, and returns data for auto-updating existing users
+function handleRetrieveIdentityProviderIntent(
+	payload: ActionsV2Payload,
+	c: Context,
+) {
+	const idpInfo = payload.response?.idpInformation;
+	const rawInfo = idpInfo?.rawInformation;
+	const userData = rawInfo?.User ?? rawInfo;
+
+	// Extract user data from provider
+	const displayName =
+		(userData?.name as string) ??
+		(userData?.login as string) ??
+		idpInfo?.userName;
+	const email = userData?.email as string | undefined;
+	const providerEmailVerified = userData?.email_verified as boolean | undefined;
+	const providerGivenName = userData?.given_name as string | undefined;
+	const providerFamilyName = userData?.family_name as string | undefined;
+
+	logger.info("Processing IDP intent", {
+		idpId: idpInfo?.idpId,
+		displayName,
+		email,
+		providerEmailVerified,
+		hasProviderNames: !!(providerGivenName || providerFamilyName),
+	});
+
+	// Determine first/last name
+	let givenName: string | undefined;
+	let familyName: string | undefined;
+
+	if (providerGivenName) {
+		givenName = providerGivenName;
+		familyName = providerFamilyName;
+	} else if (displayName) {
+		const parsed = parseDisplayName(displayName);
+		givenName = parsed.first;
+		familyName = parsed.last;
+	}
+
+	// Cache the IDP data for use in AddHumanUser Request
+	if (idpInfo?.idpId && idpInfo?.userId) {
+		const cacheKey = `${idpInfo.idpId}:${idpInfo.userId}`;
+		idpDataCache.set(cacheKey, {
+			givenName,
+			familyName,
+			email,
+			emailVerified: providerEmailVerified !== false,
+			timestamp: Date.now(),
+		});
+		logger.info("Cached IDP data for registration", { cacheKey });
+		cleanExpiredCache();
+	}
+
+	// Build response for auto-updating existing linked users
+	const human: {
+		profile?: { givenName?: string; familyName?: string; displayName?: string };
+		email?: { email?: string; isVerified?: boolean };
+	} = {};
+
+	if (givenName) {
+		human.profile = { givenName, familyName, displayName };
+		logger.info("Setting user profile", { givenName, familyName });
+	}
+
+	if (email) {
+		const shouldVerify = providerEmailVerified !== false;
+		human.email = { email, isVerified: shouldVerify };
+		logger.info("Setting email", { email, isVerified: shouldVerify });
+	}
+
+	const response = {
+		idpInformation: {
+			...idpInfo,
+			user: { human },
+		},
+	};
+
+	logger.info("Returning RetrieveIdentityProviderIntent response", {
+		response: JSON.stringify(response),
+	});
+
+	return c.json(response);
+}
+
+// Handler: AddHumanUser (Request manipulation)
+// Injects cached IDP data into the user creation request
+function handleAddHumanUser(payload: ActionsV2Payload, c: Context) {
+	const request = payload.request;
+	const idpLinks = request.idpLinks;
+
+	// Only modify if this is an OAuth registration (has idpLinks)
+	if (!idpLinks || idpLinks.length === 0) {
+		logger.info("AddHumanUser without idpLinks, passing through");
+		return c.json({});
+	}
+
+	const idpLink = idpLinks[0];
+	if (!idpLink) {
+		logger.info("AddHumanUser with empty idpLinks, passing through");
+		return c.json({});
+	}
+	const cacheKey = `${idpLink.idpId}:${idpLink.userId}`;
+	const cachedData = idpDataCache.get(cacheKey);
+
+	logger.info("Processing AddHumanUser request", {
+		cacheKey,
+		hasCachedData: !!cachedData,
+		existingProfile: !!request.profile,
+		existingEmail: !!request.email,
+	});
+
+	// Build modified request
+	const modifiedRequest: Record<string, unknown> = { ...request };
+
+	if (cachedData) {
+		// Use cached IDP data for profile if available
+		if (cachedData.givenName) {
+			modifiedRequest.profile = {
+				...request.profile,
+				givenName: cachedData.givenName,
+				familyName: cachedData.familyName ?? request.profile?.familyName,
+			};
+			logger.info("Injecting profile from cache", {
+				givenName: cachedData.givenName,
+				familyName: cachedData.familyName,
+			});
+		}
+
+		// Mark email as verified
+		if (cachedData.email && cachedData.emailVerified) {
+			modifiedRequest.email = {
+				...request.email,
+				email: cachedData.email,
+				isVerified: true,
+			};
+			logger.info("Injecting verified email from cache", {
+				email: cachedData.email,
+			});
+		}
+
+		// Clean up used cache entry
+		idpDataCache.delete(cacheKey);
+	} else {
+		// No cached data, but still mark email as verified for OAuth registrations
+		// (GitHub requires verified email for OAuth)
+		if (request.email?.email) {
+			modifiedRequest.email = {
+				...request.email,
+				isVerified: true,
+			};
+			logger.info("Marking email as verified (OAuth registration)", {
+				email: request.email.email,
+			});
+		}
+	}
+
+	const response = { request: modifiedRequest };
+
+	logger.info("Returning AddHumanUser request modification", {
+		response: JSON.stringify(response),
+	});
+
+	return c.json(response);
 }
 
 // Handler: User deleted in ZITADEL (Event)
@@ -144,18 +325,14 @@ app.post("/zitadel/events", async (c) => {
 	}
 });
 
-// Route: ZITADEL Actions V2 Response manipulation
-// Handles RetrieveIdentityProviderIntent to set firstname/lastname and verify email
-// See: https://zitadel.com/docs/guides/integrate/actions/migrate-from-v1
+// Route: ZITADEL Actions V2 (Request/Response manipulation)
 app.post("/zitadel/actions", async (c) => {
-	// Track non-sensitive metadata for error logging
 	let context: { fullMethod?: string; userID?: string; orgID?: string } = {};
 
 	try {
 		const rawBody = await c.req.text();
 		const payload = JSON.parse(rawBody) as ActionsV2Payload;
 
-		// Store non-sensitive fields for error context
 		context = {
 			fullMethod: payload.fullMethod,
 			userID: payload.userID,
@@ -164,135 +341,25 @@ app.post("/zitadel/actions", async (c) => {
 
 		logger.info("Zitadel action received", context);
 
-		// Only handle RetrieveIdentityProviderIntent
-		if (
-			payload.fullMethod !==
-			"/zitadel.user.v2.UserService/RetrieveIdentityProviderIntent"
-		) {
-			logger.info("Unhandled method, passing through", {
-				fullMethod: payload.fullMethod,
-			});
-			return c.json({});
+		// Route to appropriate handler
+		switch (payload.fullMethod) {
+			case "/zitadel.user.v2.UserService/RetrieveIdentityProviderIntent":
+				return handleRetrieveIdentityProviderIntent(payload, c);
+
+			case "/zitadel.user.v2.UserService/AddHumanUser":
+				return handleAddHumanUser(payload, c);
+
+			default:
+				logger.info("Unhandled method, passing through", {
+					fullMethod: payload.fullMethod,
+				});
+				return c.json({});
 		}
-
-		// Log the full payload structure for debugging (only in development)
-		logger.debug("Full payload structure", {
-			hasIdpInformation: !!payload.response?.idpInformation,
-			hasAddHumanUser: !!payload.response?.addHumanUser,
-			rawInfoKeys: payload.response?.idpInformation?.rawInformation
-				? Object.keys(payload.response.idpInformation.rawInformation)
-				: [],
-		});
-
-		// Extract IDP info - GitHub data is under rawInformation.User
-		const idpInfo = payload.response?.idpInformation;
-		const rawInfo = idpInfo?.rawInformation;
-		const userData = rawInfo?.User ?? rawInfo; // Try User object first, fallback to rawInfo
-
-		// GitHub provides: name, email, login, avatar_url, etc. (no email_verified)
-		// Google provides: given_name, family_name, email, email_verified, etc.
-		const displayName =
-			(userData?.name as string) ??
-			(userData?.login as string) ??
-			idpInfo?.userName;
-		const email = userData?.email as string | undefined;
-		// Some providers (Google) include email_verified, GitHub doesn't but requires verified email
-		const providerEmailVerified = userData?.email_verified as
-			| boolean
-			| undefined;
-
-		// Check if provider already gave us separate names (like Google)
-		const providerGivenName = userData?.given_name as string | undefined;
-		const providerFamilyName = userData?.family_name as string | undefined;
-
-		logger.info("Processing IDP intent", {
-			idpId: idpInfo?.idpId,
-			displayName,
-			email,
-			providerEmailVerified,
-			hasProviderNames: !!(providerGivenName || providerFamilyName),
-		});
-
-		// Determine first/last name
-		let givenName: string | undefined;
-		let familyName: string | undefined;
-
-		if (providerGivenName) {
-			// Provider gave us structured names (Google, etc.)
-			givenName = providerGivenName;
-			familyName = providerFamilyName;
-		} else if (displayName) {
-			// Parse from display name (GitHub)
-			const parsed = parseDisplayName(displayName);
-			givenName = parsed.first;
-			familyName = parsed.last;
-		}
-
-		// Build the user.human structure for idpInformation
-		// RetrieveIdentityProviderIntent expects modifications in idpInformation.user.human
-		const human: {
-			profile?: {
-				givenName?: string;
-				familyName?: string;
-				displayName?: string;
-			};
-			email?: {
-				email?: string;
-				isVerified?: boolean;
-			};
-		} = {};
-
-		// Set profile if we have name data
-		if (givenName) {
-			human.profile = {
-				givenName,
-				familyName,
-				displayName: displayName,
-			};
-			logger.info("Setting user profile", {
-				givenName,
-				familyName,
-			});
-		}
-
-		// Set email as verified if we have email from the provider
-		// - Google: Check email_verified field from provider
-		// - GitHub: Doesn't provide email_verified, but requires verified email for OAuth
-		// For providers without email_verified, we trust the email if it was provided
-		if (email) {
-			// If provider explicitly says not verified, don't mark as verified
-			const shouldVerify = providerEmailVerified !== false;
-			human.email = {
-				email,
-				isVerified: shouldVerify,
-			};
-			logger.info("Setting email", { email, isVerified: shouldVerify });
-		}
-
-		// Return the modified idpInformation structure
-		// See: https://zitadel.com/docs/guides/integrate/actions/testing-response-manipulation
-		const response = {
-			idpInformation: {
-				...idpInfo,
-				user: {
-					human,
-				},
-			},
-		};
-
-		// Log full response for debugging
-		logger.info("Returning response", {
-			response: JSON.stringify(response),
-		});
-
-		return c.json(response);
 	} catch (error) {
-		// Log error with non-sensitive context only (no tokens, emails, or raw body)
 		logger.error("Failed to process action", {
 			error: String(error),
 			...context,
 		});
-		// Return empty object to pass through - don't block user registration
 		return c.json({});
 	}
 });
