@@ -263,9 +263,9 @@ app.post("/zitadel/actions", async (c) => {
 		// See: https://zitadel.com/docs/guides/integrate/actions/testing-response-manipulation
 		const response = { addHumanUser };
 
-		logger.debug("Returning modified response", {
-			hasProfile: !!response.addHumanUser.profile,
-			hasEmail: !!response.addHumanUser.email,
+		// Log full response for debugging
+		logger.info("Returning response", {
+			response: JSON.stringify(response),
 		});
 
 		return c.json(response);
