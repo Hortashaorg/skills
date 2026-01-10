@@ -1,6 +1,14 @@
-# Sprint 7 Tasks
+# Sprint 8 Tasks
 
-> **Current Sprint:** [SPRINT-7.md](./SPRINT-7.md) - Profiles, JSR & Zitadel
+> **Current Sprint:** [SPRINT-8.md](./SPRINT-8.md) - UI Polish & Profiles
+
+---
+
+## Deleted User Display ✅
+
+- [x] Use getDisplayName() consistently across all components
+- [x] Update ProjectCard, ProjectDetail, CurateTab
+- [x] Update ReviewQueue, Backlog, Leaderboard, Landing
 
 ---
 
@@ -23,14 +31,6 @@
 
 ---
 
-## Zitadel Webhook Handlers
-
-- [ ] User deleted event: set deletedAt on account (zitadelId lookup)
-- [ ] User created event: assign default roles for self-service deletion
-- [ ] Edge case: users who delete IdP account before app account
-
----
-
 ## Tech Debt Cleanup
 
 - [ ] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
@@ -46,6 +46,13 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 7: Zitadel Webhooks
+
+- Zitadel webhook handlers for user lifecycle events
+- User deleted: soft-delete account via zitadelId lookup
+- User created (OAuth): verify email + assign ORG_USER_SELF_MANAGER role
+- Fixed email verification API (v1 management API, not v2)
 
 ### Sprint 6: Polish, SEO & Identity
 

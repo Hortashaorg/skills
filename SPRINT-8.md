@@ -1,6 +1,16 @@
-# Sprint 7: Profiles, JSR & Zitadel
+# Sprint 8: UI Polish & Profiles
 
-> **Goal:** Add public user profiles, expand to JSR registry, complete Zitadel webhook handlers.
+> **Goal:** Fix display issues, add public profiles, continue toward multi-registry.
+
+---
+
+## Deleted User Display ✅
+
+Show "Deleted User" instead of "Anonymous" for soft-deleted accounts:
+
+- [x] Use getDisplayName() consistently across all components
+- [x] Update ProjectCard, ProjectDetail, CurateTab
+- [x] Update ReviewQueue, Backlog, Leaderboard, Landing
 
 ---
 
@@ -24,16 +34,6 @@ First step toward multi-registry support:
 - [ ] Schema, client, mapper for JSR packages
 - [ ] Registry selection in package search/browse
 - [ ] Test with popular JSR packages
-
----
-
-## Zitadel Webhook Handlers ✅
-
-Complete webhook integration based on logged event data:
-
-- [x] User deleted event: set deletedAt on account (zitadelId lookup)
-- [x] User created event: assign ORG_USER_SELF_MANAGER role + verify email
-- [x] Edge case: users who delete IdP account before app account
 
 ---
 
