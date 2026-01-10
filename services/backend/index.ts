@@ -1,6 +1,12 @@
 import { serve } from "@hono/node-server";
 import { throwError } from "@package/common";
-import { count, db, dbSchema, eq } from "@package/database/server";
+import {
+	count,
+	db,
+	dbSchema,
+	eq,
+	softDeleteAccountById,
+} from "@package/database/server";
 import { createLogger, getMeter } from "@package/instrumentation/utils";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -263,15 +269,11 @@ app.post("/api/account/delete", async (c) => {
 	}
 
 	try {
-		const now = new Date();
-		await db
-			.update(dbSchema.account)
-			.set({
-				name: null,
-				deletedAt: now,
-				updatedAt: now,
-			})
-			.where(eq(dbSchema.account.id, ctx.userID));
+		const result = await softDeleteAccountById(db, ctx.userID);
+
+		if (result.notFound) {
+			return c.json({ error: "Account not found" }, 404);
+		}
 
 		clearRefreshToken(c);
 
