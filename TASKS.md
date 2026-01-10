@@ -1,61 +1,41 @@
-# Sprint 6 Tasks
+# Sprint 7 Tasks
 
-> **Current Sprint:** [SPRINT-6.md](./SPRINT-6.md) - Polish, SEO & Identity
-
----
-
-## Brand Color & Visual Identity
-
-- [x] Define brand green (garden-themed accent color)
-- [x] Apply to navbar: "TechGarden" with green emphasis
-- [x] Use for key emphasis text, CTAs, success states
-- [x] Dark mode: ensure brand green has good contrast
-- [x] Favicon: simple green-themed icon (already exists)
+> **Current Sprint:** [SPRINT-7.md](./SPRINT-7.md) - Profiles, JSR & Zitadel
 
 ---
 
-## SEO & Discoverability
+## Public User Profiles
 
-- [x] Dynamic page titles and meta descriptions (@solidjs/meta)
-- [x] Package pages: titles, descriptions from metadata
-- [x] Open Graph tags for social sharing
-- [x] robots.txt
-
----
-
-## Homepage & Onboarding
-
-- [x] New value proposition copy ("Discover packages through the eyes of developers")
-- [x] Highlight curation/contribution system (feature card)
-- [x] Leaderboard preview (monthly + all-time)
-- [x] Auth-aware links (curation links only shown when logged in)
+- [ ] Route: `/u/:username` for public profile pages
+- [ ] Display: username, contribution score, member since
+- [ ] Show user's public projects
+- [ ] Show curation activity summary
+- [ ] Link from leaderboards to profiles
 
 ---
 
-## Polish & UX
+## JSR Registry Adapter
 
-- [x] Infinite scroll refinements (snapshot pattern, no jumping/jerking)
-- [x] Empty state improvements (reviewed, existing states sufficient)
-- [x] Dropdown keyboard navigation (migrated to Kobalte DropdownMenu)
-- [x] Dark mode contrast audit (WCAG AA compliant)
-
----
-
-## Auth Cleanup
-
-- [x] Zitadel Actions 2 webhook endpoint (POST) - services/webhook
-  - Handlers deferred to Sprint 7 (need to explore event payloads first)
-- [x] Remove email from accounts table, make zitadelId NOT NULL
+- [ ] Create JSR adapter following npm adapter pattern
+- [ ] Schema, client, mapper for JSR packages
+- [ ] Registry selection in package search/browse
+- [ ] Test with popular JSR packages
 
 ---
 
-## GDPR & Data Privacy
+## Zitadel Webhook Handlers
 
-- [x] Data export: GET /api/account/export (all user data as JSON)
-- [x] Soft delete with deletedAt, getDisplayName shows "Deleted User"
-- [x] Partial unique index on zitadelId (allows re-registration after deletion)
-- [x] Export button on profile page
-- [x] Review cookie usage (auth cookies = strictly necessary, no consent banner needed)
+- [ ] User deleted event: set deletedAt on account (zitadelId lookup)
+- [ ] User created event: assign default roles for self-service deletion
+- [ ] Edge case: users who delete IdP account before app account
+
+---
+
+## Tech Debt Cleanup
+
+- [ ] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
+- [ ] Centralize constants (limits, timeouts, batch sizes → config module)
+- [ ] Extract reusable mutation error handler (console.error + toast pattern)
 
 ---
 
@@ -66,6 +46,15 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 6: Polish, SEO & Identity
+
+- Brand colors: garden-themed green accent, dark mode toggle
+- SEO: @solidjs/meta, dynamic titles/descriptions, Open Graph, robots.txt
+- Homepage: new value proposition, curation feature card, leaderboard preview
+- Polish: infinite scroll, Dropdown component (Kobalte), dark mode contrast
+- Auth: Zitadel webhook endpoint, removed email from accounts
+- GDPR: data export, soft delete, re-registration support
 
 ### Sprint 5: Search & Discovery UX
 

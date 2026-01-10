@@ -41,6 +41,12 @@ export { dbSchema };
 
 export const dbProvider = zeroPostgresJS(schema, sqlClient);
 
+// Shared account operations
+export {
+	type SoftDeleteResult,
+	softDeleteAccountById,
+	softDeleteAccountByZitadelId,
+} from "./account-ops.ts";
 // Re-export inferred types from schema
 export type {
 	ContributionEventType,
