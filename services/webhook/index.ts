@@ -8,7 +8,11 @@ const logger = createLogger("webhook");
 
 const app = new Hono();
 
-// Cache IDP user data between RetrieveIdentityProviderIntent and AddHumanUser
+// Environment variables
+const ZITADEL_ISSUER = process.env.ZITADEL_ISSUER;
+const ZITADEL_SERVICE_TOKEN = process.env.ZITADEL_SERVICE_TOKEN;
+
+// Cache IDP user data between RetrieveIdentityProviderIntent and post-creation
 // Key: `${idpId}:${idpUserId}` -> user data from GitHub/Google
 // TTL: 5 minutes (registration should complete quickly)
 const idpDataCache = new Map<
@@ -33,39 +37,28 @@ function cleanExpiredCache() {
 	}
 }
 
-// Types for ZITADEL Events (used by event webhooks)
+// Types for ZITADEL Events
 type ZitadelEvent = {
 	aggregateID: string;
+	aggregateType: string;
+	resourceOwner: string;
+	instanceID: string;
 	event_type: string;
+	event_payload?: {
+		idpConfigId?: string;
+		userId?: string;
+		displayName?: string;
+		email?: string;
+	};
 };
 
 // Types for ZITADEL Actions V2
-// See: https://zitadel.com/docs/guides/integrate/actions/testing-response-manipulation
 type ActionsV2Payload = {
 	fullMethod: string;
 	instanceID: string;
 	orgID: string;
 	userID: string;
-	request: {
-		// AddHumanUser request fields
-		profile?: {
-			givenName?: string;
-			familyName?: string;
-			displayName?: string;
-			nickName?: string;
-			preferredLanguage?: string;
-			gender?: string;
-		};
-		email?: {
-			email?: string;
-			isVerified?: boolean;
-		};
-		idpLinks?: Array<{
-			idpId: string;
-			userId: string;
-			userName: string;
-		}>;
-	} & Record<string, unknown>;
+	request: Record<string, unknown>;
 	response: {
 		idpInformation?: {
 			oauth?: {
@@ -108,8 +101,143 @@ function parseDisplayName(displayName: string | undefined | null): {
 	};
 }
 
+// ZITADEL Management API: Verify user email
+async function verifyUserEmail(userId: string): Promise<boolean> {
+	if (!ZITADEL_ISSUER || !ZITADEL_SERVICE_TOKEN) {
+		logger.warn("ZITADEL API credentials not configured");
+		return false;
+	}
+
+	try {
+		// First get user to find their email
+		const userResponse = await fetch(`${ZITADEL_ISSUER}/v2/users/${userId}`, {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${ZITADEL_SERVICE_TOKEN}`,
+				"Content-Type": "application/json",
+			},
+		});
+
+		if (!userResponse.ok) {
+			const error = await userResponse.text();
+			logger.error("Failed to get user", {
+				userId,
+				status: userResponse.status,
+				error,
+			});
+			return false;
+		}
+
+		const userData = await userResponse.json();
+		const email = userData.user?.human?.email?.email;
+
+		if (!email) {
+			logger.warn("User has no email", { userId });
+			return false;
+		}
+
+		// Check if already verified
+		if (userData.user?.human?.email?.isVerified) {
+			logger.info("Email already verified", { userId, email });
+			return true;
+		}
+
+		// Get org ID from user data for the management API header
+		const orgId = userData.user?.details?.resourceOwner;
+
+		// Set email as verified using the v1 management API (v2 doesn't support this)
+		const verifyResponse = await fetch(
+			`${ZITADEL_ISSUER}/management/v1/users/${userId}/email`,
+			{
+				method: "PUT",
+				headers: {
+					Authorization: `Bearer ${ZITADEL_SERVICE_TOKEN}`,
+					"Content-Type": "application/json",
+					...(orgId && { "x-zitadel-orgid": orgId }),
+				},
+				body: JSON.stringify({
+					email: email,
+					isEmailVerified: true,
+				}),
+			},
+		);
+
+		if (!verifyResponse.ok) {
+			const error = await verifyResponse.text();
+			logger.error("Failed to verify user email", {
+				userId,
+				status: verifyResponse.status,
+				error,
+			});
+			return false;
+		}
+
+		logger.info("Marked email as verified", { userId, email });
+		return true;
+	} catch (error) {
+		logger.error("Error verifying email", { userId, error: String(error) });
+		return false;
+	}
+}
+
+// ZITADEL Management API: Add org membership for self-management
+async function addOrgMembership(
+	userId: string,
+	orgId: string,
+): Promise<boolean> {
+	if (!ZITADEL_ISSUER || !ZITADEL_SERVICE_TOKEN) {
+		logger.warn("ZITADEL API credentials not configured");
+		return false;
+	}
+
+	try {
+		const response = await fetch(
+			`${ZITADEL_ISSUER}/management/v1/orgs/me/members`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${ZITADEL_SERVICE_TOKEN}`,
+					"Content-Type": "application/json",
+					"x-zitadel-orgid": orgId,
+				},
+				body: JSON.stringify({
+					userId: userId,
+					roles: ["ORG_USER_SELF_MANAGER"],
+				}),
+			},
+		);
+
+		if (!response.ok) {
+			const error = await response.text();
+			// 409 means already exists
+			if (response.status === 409) {
+				logger.info("User already has org membership", { userId });
+				return true;
+			}
+			logger.error("Failed to add org membership", {
+				userId,
+				status: response.status,
+				error,
+			});
+			return false;
+		}
+
+		logger.info("Added org membership for self-management", {
+			userId,
+			roles: ["ORG_USER_SELF_MANAGER"],
+		});
+		return true;
+	} catch (error) {
+		logger.error("Error adding org membership", {
+			userId,
+			error: String(error),
+		});
+		return false;
+	}
+}
+
 // Handler: RetrieveIdentityProviderIntent (Response manipulation)
-// Caches IDP data for use in AddHumanUser, and returns data for auto-updating existing users
+// Caches IDP data for post-creation use, returns data for auto-updating existing users
 function handleRetrieveIdentityProviderIntent(
 	payload: ActionsV2Payload,
 	c: Context,
@@ -149,7 +277,7 @@ function handleRetrieveIdentityProviderIntent(
 		familyName = parsed.last;
 	}
 
-	// Cache the IDP data for use in AddHumanUser Request
+	// Cache the IDP data for post-creation use
 	if (idpInfo?.idpId && idpInfo?.userId) {
 		const cacheKey = `${idpInfo.idpId}:${idpInfo.userId}`;
 		idpDataCache.set(cacheKey, {
@@ -159,7 +287,7 @@ function handleRetrieveIdentityProviderIntent(
 			emailVerified: providerEmailVerified !== false,
 			timestamp: Date.now(),
 		});
-		logger.info("Cached IDP data for registration", { cacheKey });
+		logger.info("Cached IDP data for post-creation", { cacheKey });
 		cleanExpiredCache();
 	}
 
@@ -194,85 +322,48 @@ function handleRetrieveIdentityProviderIntent(
 	return c.json(response);
 }
 
-// Handler: AddHumanUser (Request manipulation)
-// Injects cached IDP data into the user creation request
-function handleAddHumanUser(payload: ActionsV2Payload, c: Context) {
-	const request = payload.request;
-	const idpLinks = request.idpLinks;
+// Handler: External IDP linked (Event)
+// Called after user registers via OAuth - verify email and assign role
+async function handleExternalIdpAdded(event: ZitadelEvent): Promise<void> {
+	const zitadelId = event.aggregateID;
+	const orgId = event.resourceOwner;
+	const idpConfigId = event.event_payload?.idpConfigId;
+	const idpUserId = event.event_payload?.userId;
+	const displayName = event.event_payload?.displayName;
 
-	// Only modify if this is an OAuth registration (has idpLinks)
-	if (!idpLinks || idpLinks.length === 0) {
-		logger.info("AddHumanUser without idpLinks, passing through");
-		return c.json({});
-	}
-
-	const idpLink = idpLinks[0];
-	if (!idpLink) {
-		logger.info("AddHumanUser with empty idpLinks, passing through");
-		return c.json({});
-	}
-	const cacheKey = `${idpLink.idpId}:${idpLink.userId}`;
-	const cachedData = idpDataCache.get(cacheKey);
-
-	logger.info("Processing AddHumanUser request", {
-		cacheKey,
-		hasCachedData: !!cachedData,
-		existingProfile: !!request.profile,
-		existingEmail: !!request.email,
+	logger.info("Processing user.human.externalidp.added event", {
+		zitadelId,
+		displayName,
 	});
 
-	// Build modified request
-	const modifiedRequest: Record<string, unknown> = { ...request };
-
-	if (cachedData) {
-		// Use cached IDP data for profile if available
-		if (cachedData.givenName) {
-			modifiedRequest.profile = {
-				...request.profile,
-				givenName: cachedData.givenName,
-				familyName: cachedData.familyName ?? request.profile?.familyName,
-			};
-			logger.info("Injecting profile from cache", {
-				givenName: cachedData.givenName,
-				familyName: cachedData.familyName,
-			});
-		}
-
-		// Mark email as verified
-		if (cachedData.email && cachedData.emailVerified) {
-			modifiedRequest.email = {
-				...request.email,
-				email: cachedData.email,
-				isVerified: true,
-			};
-			logger.info("Injecting verified email from cache", {
-				email: cachedData.email,
-			});
-		}
-
-		// Clean up used cache entry
-		idpDataCache.delete(cacheKey);
-	} else {
-		// No cached data, but still mark email as verified for OAuth registrations
-		// (GitHub requires verified email for OAuth)
-		if (request.email?.email) {
-			modifiedRequest.email = {
-				...request.email,
-				isVerified: true,
-			};
-			logger.info("Marking email as verified (OAuth registration)", {
-				email: request.email.email,
-			});
+	// Try to get cached data from RetrieveIdentityProviderIntent
+	let cachedData = null;
+	if (idpConfigId && idpUserId) {
+		const cacheKey = `${idpConfigId}:${idpUserId}`;
+		cachedData = idpDataCache.get(cacheKey);
+		if (cachedData) {
+			logger.info("Found cached IDP data", { cacheKey });
+			idpDataCache.delete(cacheKey);
 		}
 	}
 
-	const response = { request: modifiedRequest };
+	// Verify email (GitHub requires verified email for OAuth, so we trust it)
+	const emailVerified = await verifyUserEmail(zitadelId);
+	if (!emailVerified) {
+		logger.warn("Failed to verify email", { zitadelId });
+	}
 
-	logger.info("Returning AddHumanUser request modification", {
-		response: JSON.stringify(response),
+	// Add org membership for self-management (so users can delete their account)
+	const membershipAdded = await addOrgMembership(zitadelId, orgId);
+	if (!membershipAdded) {
+		logger.warn("Failed to assign self-management role", { zitadelId });
+	}
+
+	logger.info("Completed post-registration setup", {
+		zitadelId,
+		emailVerified,
+		membershipAdded,
 	});
-
-	return c.json(response);
 }
 
 // Handler: User deleted in ZITADEL (Event)
@@ -298,7 +389,7 @@ app.get("/health", (c) => {
 	return c.json({ status: "ok" });
 });
 
-// Route: ZITADEL Events (user.removed, etc.)
+// Route: ZITADEL Events (user.removed, user.human.externalidp.added, etc.)
 app.post("/zitadel/events", async (c) => {
 	try {
 		const rawBody = await c.req.text();
@@ -312,6 +403,10 @@ app.post("/zitadel/events", async (c) => {
 		switch (event.event_type) {
 			case "user.removed":
 				await handleUserRemoved(event);
+				break;
+
+			case "user.human.externalidp.added":
+				await handleExternalIdpAdded(event);
 				break;
 
 			default:
@@ -345,9 +440,6 @@ app.post("/zitadel/actions", async (c) => {
 		switch (payload.fullMethod) {
 			case "/zitadel.user.v2.UserService/RetrieveIdentityProviderIntent":
 				return handleRetrieveIdentityProviderIntent(payload, c);
-
-			case "/zitadel.user.v2.UserService/AddHumanUser":
-				return handleAddHumanUser(payload, c);
 
 			default:
 				logger.info("Unhandled method, passing through", {
