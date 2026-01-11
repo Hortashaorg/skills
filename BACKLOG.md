@@ -4,16 +4,6 @@
 
 ---
 
-## Growth
-
-- [x] JSR registry adapter (Sprint 8)
-- [x] NuGet registry adapter (Sprint 8)
-- [x] Docker Hub registry adapter (Sprint 8)
-- [x] Homebrew registry adapter (Sprint 8)
-- [x] Arch Linux registry adapter (Sprint 8)
-
----
-
 ## Projects
 
 - [ ] Package.json import - upload and auto-create project with packages
@@ -40,13 +30,7 @@
 
 ## Polish
 
-### UX
-- [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items
-- [ ] Full mobile audit - layout fixes across all pages
-- [ ] Edge cases: Long text tooltips for truncated names/descriptions
 - [ ] Zero preloading on link hover
-
-### Performance
 - [ ] Query optimization audit
 
 ---
@@ -58,15 +42,10 @@
 - [ ] Add error type system for worker/backend (retry-able vs permanent)
 
 ### Testing
-- [ ] Unit tests for worker sync logic (process-fetch.ts, db.ts)
-- [ ] Unit tests for score calculation algorithm
 - [ ] Unit tests for backend auth token refresh
 
-### Type Safety
-- [ ] Fix unsafe type assertions (createUrlSignal, curation page casting)
-
 ### Code Organization
-- [ ] Split large components: me/projects/detail.tsx (605 lines), navbar.tsx (455 lines)
+- [ ] Split navbar.tsx (455 lines)
 
 ### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
