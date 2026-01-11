@@ -7,6 +7,7 @@ import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { getDisplayName } from "@/lib/account";
+import { LEADERBOARD_LIMIT } from "@/lib/constants";
 
 export const Leaderboard = () => {
 	const zero = useZero();
@@ -15,11 +16,11 @@ export const Leaderboard = () => {
 	const [tab, setTab] = createSignal<"monthly" | "allTime">("monthly");
 
 	const [monthlyLeaderboard] = useQuery(() =>
-		queries.contributionScores.leaderboardMonthly({ limit: 50 }),
+		queries.contributionScores.leaderboardMonthly({ limit: LEADERBOARD_LIMIT }),
 	);
 
 	const [allTimeLeaderboard] = useQuery(() =>
-		queries.contributionScores.leaderboardAllTime({ limit: 50 }),
+		queries.contributionScores.leaderboardAllTime({ limit: LEADERBOARD_LIMIT }),
 	);
 
 	const [myScore] = useQuery(() =>

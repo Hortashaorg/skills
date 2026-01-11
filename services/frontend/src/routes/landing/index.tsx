@@ -23,6 +23,7 @@ import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { LEADERBOARD_PREVIEW_LIMIT } from "@/lib/constants";
 
 const FeatureCard = (props: {
 	title: string;
@@ -57,11 +58,15 @@ export const Landing = () => {
 	const isLoggedIn = () => zero().userID !== "anon";
 
 	const [monthlyData, monthlyResult] = useQuery(() =>
-		queries.contributionScores.leaderboardMonthly({ limit: 5 }),
+		queries.contributionScores.leaderboardMonthly({
+			limit: LEADERBOARD_PREVIEW_LIMIT,
+		}),
 	);
 
 	const [allTimeData, allTimeResult] = useQuery(() =>
-		queries.contributionScores.leaderboardAllTime({ limit: 5 }),
+		queries.contributionScores.leaderboardAllTime({
+			limit: LEADERBOARD_PREVIEW_LIMIT,
+		}),
 	);
 
 	const monthlyEntries = createMemo((): readonly LeaderboardEntry[] => {

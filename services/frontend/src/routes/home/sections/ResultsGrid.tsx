@@ -24,6 +24,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import {
+	BACK_TO_TOP_SCROLL_THRESHOLD,
+	INFINITE_SCROLL_DEBOUNCE_MS,
+	INFINITE_SCROLL_ROOT_MARGIN,
+	PACKAGES_AUTO_LOAD_LIMIT,
+} from "@/lib/constants";
 import { REGISTRY_OPTIONS, type Registry } from "@/lib/registries";
 import { buildPackageUrl } from "@/lib/url";
 
@@ -83,8 +89,6 @@ const SearchIcon = () => (
 	</svg>
 );
 
-const AUTO_LOAD_LIMIT = 200;
-
 export const ResultsGrid = (props: ResultsGridProps) => {
 	const zero = useZero();
 	const [requestRegistry, setRequestRegistry] = createSignal<Registry>("npm");
@@ -112,7 +116,8 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 		props.packages.length > 0 || props.exactMatch || props.showAddCard;
 
 	// Stop auto-loading after limit, require manual "Load more"
-	const pastAutoLoadLimit = () => props.packages.length >= AUTO_LOAD_LIMIT;
+	const pastAutoLoadLimit = () =>
+		props.packages.length >= PACKAGES_AUTO_LOAD_LIMIT;
 
 	// Debounced load more to prevent rapid-fire calls
 	let loadMoreTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -123,7 +128,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 			if (props.canLoadMore && props.onLoadMore && !pastAutoLoadLimit()) {
 				props.onLoadMore();
 			}
-		}, 100);
+		}, INFINITE_SCROLL_DEBOUNCE_MS);
 	};
 
 	// Infinite scroll with IntersectionObserver (only before limit)
@@ -137,7 +142,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 					loadMoreDebounced();
 				}
 			},
-			{ rootMargin: "200px" },
+			{ rootMargin: INFINITE_SCROLL_ROOT_MARGIN },
 		);
 
 		observer.observe(sentinel);
@@ -154,7 +159,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 	// Show back to top after scrolling down
 	createEffect(() => {
 		const handleScroll = () => {
-			setShowBackToTop(window.scrollY > 800);
+			setShowBackToTop(window.scrollY > BACK_TO_TOP_SCROLL_THRESHOLD);
 		};
 
 		window.addEventListener("scroll", handleScroll, { passive: true });

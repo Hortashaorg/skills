@@ -28,6 +28,7 @@ import { toast } from "@/components/ui/toast";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
+import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
 import { buildPackageUrl } from "@/lib/url";
 
 const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
@@ -79,7 +80,7 @@ export const ProjectDetail = () => {
 	const [searchResults, searchResultsStatus] = useQuery(() =>
 		queries.packages.search({
 			query: packageSearch() || undefined,
-			limit: 10,
+			limit: PACKAGE_SEARCH_LIMIT,
 		}),
 	);
 

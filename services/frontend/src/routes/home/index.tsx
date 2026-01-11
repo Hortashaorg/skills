@@ -11,12 +11,13 @@ import {
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
 import { Layout } from "@/layout/Layout";
+import {
+	PACKAGES_INITIAL_LIMIT,
+	PACKAGES_LOAD_MORE_COUNT,
+} from "@/lib/constants";
 import type { Registry, RegistryFilter } from "@/lib/registries";
 import { type Package, ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
-
-const INITIAL_LIMIT = 20;
-const LOAD_MORE_COUNT = 20;
 
 export const Packages = () => {
 	// URL-synced state
@@ -32,7 +33,7 @@ export const Packages = () => {
 	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
 
 	// Local state for infinite scroll
-	const [limit, setLimit] = createSignal(INITIAL_LIMIT);
+	const [limit, setLimit] = createSignal(PACKAGES_INITIAL_LIMIT);
 
 	const searchTerm = () => searchValue().trim();
 	const hasSearchTerm = () => searchTerm().length > 0;
@@ -138,7 +139,7 @@ export const Packages = () => {
 	// Reset limit when filters change (keep old data visible until new arrives)
 	createEffect(
 		on([searchValue, registryFilter, selectedTagSlugs], () => {
-			setLimit(INITIAL_LIMIT);
+			setLimit(PACKAGES_INITIAL_LIMIT);
 		}),
 	);
 
@@ -151,7 +152,7 @@ export const Packages = () => {
 	};
 
 	const handleLoadMore = () => {
-		setLimit((prev) => prev + LOAD_MORE_COUNT);
+		setLimit((prev) => prev + PACKAGES_LOAD_MORE_COUNT);
 	};
 
 	return (
