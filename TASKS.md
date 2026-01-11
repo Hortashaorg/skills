@@ -12,14 +12,15 @@
 
 ---
 
-## JSR Registry Adapter
+## Multi-Registry Support ✅
 
-- [x] Create JSR adapter following npm adapter pattern
-- [x] Schema, client, mapper for JSR packages
-- [x] Cross-registry dependency support (jsr: and npm: prefixes)
-- [x] Registry dispatcher in worker
-- [ ] Registry selection in package search/browse (frontend)
-- [ ] Test with popular JSR packages
+- [x] JSR adapter (cross-registry deps: jsr/npm)
+- [x] NuGet adapter (paginated responses, framework dep groups)
+- [x] Docker Hub adapter (named tags only, no deps)
+- [x] Homebrew adapter (runtime/build/optional deps)
+- [x] Arch Linux adapter (dedupe deps, filter .so provides)
+- [x] Registry dispatcher routing
+- [x] Updated skill documentation
 
 ---
 

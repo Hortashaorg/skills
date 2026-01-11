@@ -1,6 +1,6 @@
-# Sprint 8: UI Polish & Profiles
+# Sprint 8: UI Polish & Multi-Registry
 
-> **Goal:** Fix display issues, add public profiles, continue toward multi-registry.
+> **Goal:** Fix display issues, expand to multi-registry support.
 
 ---
 
@@ -14,16 +14,18 @@ Show "Deleted User" instead of "Anonymous" for soft-deleted accounts:
 
 ---
 
-## JSR Registry Adapter
+## Multi-Registry Support ✅
 
-First step toward multi-registry support:
+Expanded from npm-only to 6 registries:
 
-- [x] Create JSR adapter following npm adapter pattern
-- [x] Schema, client, mapper for JSR packages
-- [x] Cross-registry dependency support (jsr: and npm: prefixes)
-- [x] Registry dispatcher in worker
-- [ ] Registry selection in package search/browse (frontend)
-- [ ] Test with popular JSR packages
+- [x] **JSR** - Cross-registry deps (jsr/npm), separate endpoints
+- [x] **NuGet** - .NET packages, paginated responses, framework dep groups
+- [x] **Docker Hub** - Container images, named tags only (no deps)
+- [x] **Homebrew** - macOS/Linux, runtime/build/optional deps
+- [x] **Arch Linux** - Official repos, dedupe deps, filter .so provides
+- [x] Registry dispatcher routing
+- [x] Updated registry-adapter skill documentation
+- [x] Updated VISION.md phases
 
 ---
 
