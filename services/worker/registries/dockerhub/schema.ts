@@ -18,7 +18,7 @@ export const DockerHubRepositorySchema = z.object({
 export const DockerHubTagSchema = z.object({
 	name: z.string(),
 	last_updated: z.string().nullable(),
-	digest: z.string().nullable(),
+	digest: z.string().nullish(), // Can be null, undefined, or missing entirely
 });
 
 export const DockerHubTagsResponseSchema = z.object({
