@@ -14,18 +14,6 @@ Show "Deleted User" instead of "Anonymous" for soft-deleted accounts:
 
 ---
 
-## Public User Profiles
-
-Make contribution data visible with public profile pages:
-
-- [ ] Route: `/u/:username` for public profile pages
-- [ ] Display: username, contribution score, member since
-- [ ] Show user's public projects
-- [ ] Show curation activity summary
-- [ ] Link from leaderboards to profiles
-
----
-
 ## JSR Registry Adapter
 
 First step toward multi-registry support:

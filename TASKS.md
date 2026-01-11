@@ -12,16 +12,6 @@
 
 ---
 
-## Public User Profiles
-
-- [ ] Route: `/u/:username` for public profile pages
-- [ ] Display: username, contribution score, member since
-- [ ] Show user's public projects
-- [ ] Show curation activity summary
-- [ ] Link from leaderboards to profiles
-
----
-
 ## JSR Registry Adapter
 
 - [ ] Create JSR adapter following npm adapter pattern

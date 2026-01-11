@@ -52,7 +52,6 @@
 ## Technical Debt
 
 ### Error Handling
-- [ ] Extract reusable mutation error handler (console.error + toast pattern)
 - [ ] Surface errors to users - 16+ places log errors without user feedback
 - [ ] Add error type system for worker/backend (retry-able vs permanent)
 
@@ -66,8 +65,6 @@
 
 ### Code Organization
 - [ ] Split large components: me/projects/detail.tsx (605 lines), navbar.tsx (455 lines)
-- [ ] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon) into icon primitives
-- [ ] Centralize hardcoded constants (limits, timeouts, batch sizes)
 
 ### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
