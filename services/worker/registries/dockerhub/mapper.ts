@@ -66,7 +66,7 @@ function mapReleaseChannels(
 
 function parsePublishedAt(timeString: string | null): Date {
 	if (!timeString) {
-		return new Date(0);
+		return new Date(); // No timestamp - use fetch time as fallback
 	}
 	return new Date(timeString);
 }

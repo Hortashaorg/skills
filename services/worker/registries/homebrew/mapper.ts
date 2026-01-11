@@ -32,7 +32,7 @@ function mapReleaseChannels(formula: HomebrewFormula): ReleaseChannelData[] {
 		channels.push({
 			channel: "latest",
 			version: formula.versions.stable,
-			publishedAt: new Date(0), // Homebrew API doesn't provide publish date
+			publishedAt: new Date(), // Homebrew API doesn't provide publish date - use fetch time
 			dependencies: mapDependencies(formula),
 		});
 	}
