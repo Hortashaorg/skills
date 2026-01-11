@@ -6,7 +6,7 @@
 
 ## Growth
 
-- [ ] JSR registry adapter
+- [x] JSR registry adapter (Sprint 8)
 - [ ] Homebrew registry adapter
 - [ ] apt registry adapter
 

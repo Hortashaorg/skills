@@ -178,7 +178,9 @@ function mapVersions(response: {Registry}PackageResponse): VersionData[] {
 }
 
 function mapDependencies(/* registry-specific version */): DependencyData[] {
-  // Transform to { name, versionRange, type: "runtime"|"dev"|"peer"|"optional" }
+  // Transform to { name, versionRange, type, registry }
+  // IMPORTANT: Set registry on each dependency (required field)
+  // For cross-registry deps, parse the specifier (e.g., "npm:lodash" → registry: "npm")
 }
 ```
 
@@ -215,23 +217,38 @@ export async function getPackages(
 **1. Add export to registries/index.ts:**
 
 ```tsx
+import * as {registry} from "./{registry}/index.ts";
+
 export * as {registry} from "./{registry}/index.ts";
 ```
 
-**2. Add to registry enum (if not already present):**
+**2. Add to dispatcher switch in registries/index.ts:**
 
-In `packages/database/db/schema.ts`:
 ```tsx
-export const registryEnum = pgEnum("registry", ["npm", "jsr", "brew", "apt", "{registry}"]);
+export async function getPackages(registry: Registry, names: string[], concurrency = 5) {
+  switch (registry) {
+    case "npm":
+      return npm.getPackages(names, concurrency);
+    case "{registry}":
+      return {registry}.getPackages(names, concurrency);
+    // ... other cases
+  }
+}
 ```
 
-Then run: `pnpm database zero`
+**3. Add to registry enum (if not already present):**
 
-**3. Validate:**
+In `packages/database/db/schema/enums.ts`:
+```tsx
+export const registryEnum = pgEnum("registry", ["npm", "jsr", "{registry}"]);
+```
+
+Then run: `pnpm database zero && pnpm database migrate`
+
+**4. Validate:**
 
 ```bash
-cd /skills/services/worker && pnpm typecheck
-cd /skills/services/worker && pnpm check
+pnpm check && pnpm all typecheck
 ```
 
 **Post-generation response:**
@@ -265,14 +282,13 @@ interface PackageData {
   repository?: string;
   latestVersion?: string;
   distTags?: Record<string, string>;
-  versions: VersionData[];
+  releaseChannels: ReleaseChannelData[];  // NOT versions[]
 }
 
-interface VersionData {
+interface ReleaseChannelData {
+  channel: string;       // e.g., "latest", "next", "beta"
   version: string;
   publishedAt: Date;
-  isPrerelease: boolean;
-  isYanked: boolean;
   dependencies: DependencyData[];
 }
 
@@ -280,16 +296,27 @@ interface DependencyData {
   name: string;
   versionRange: string;
   type: "runtime" | "dev" | "peer" | "optional";
+  registry: Registry;    // REQUIRED - set by the mapper
 }
 ```
 
+## Cross-Registry Dependencies
+
+Some registries (like JSR) can have dependencies from multiple registries:
+- `jsr:@std/path` → registry: "jsr", name: "@std/path"
+- `npm:lodash` → registry: "npm", name: "lodash"
+
+The mapper is responsible for parsing these specifiers and setting the correct registry on each dependency. The worker's `process-fetch.ts` groups dependencies by registry and creates placeholders in the appropriate registry.
+
 ## Registry-Specific Notes
 
-### jsr (jsr.io)
+### jsr (jsr.io) ✅ IMPLEMENTED
 - API: `https://api.jsr.io`
-- Endpoint: `/packages/{scope}/{name}`
+- Endpoint: `/scopes/{scope}/packages/{name}`
 - Uses scoped packages like `@std/path`
-- Has `exports` instead of traditional entry points
+- Dependencies can be cross-registry: `jsr:@scope/name` or `npm:package-name`
+- Only has "latest" channel (no dist-tags like npm)
+- See `/skills/services/worker/registries/jsr/` for reference
 
 ### brew (Homebrew)
 - API: `https://formulae.brew.sh/api`

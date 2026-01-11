@@ -183,6 +183,13 @@
       "when": 1767901249322,
       "tag": "0025_illegal_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1768138388350,
+      "tag": "0026_fuzzy_thunderbird",
+      "breakpoints": true
     }
   ]
 }

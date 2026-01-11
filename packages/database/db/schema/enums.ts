@@ -1,6 +1,6 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const registryEnum = pgEnum("registry", ["npm"]);
+export const registryEnum = pgEnum("registry", ["npm", "jsr"]);
 
 export const dependencyTypeEnum = pgEnum("dependency_type", [
 	"runtime",

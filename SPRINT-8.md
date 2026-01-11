@@ -18,9 +18,11 @@ Show "Deleted User" instead of "Anonymous" for soft-deleted accounts:
 
 First step toward multi-registry support:
 
-- [ ] Create JSR adapter following npm adapter pattern
-- [ ] Schema, client, mapper for JSR packages
-- [ ] Registry selection in package search/browse
+- [x] Create JSR adapter following npm adapter pattern
+- [x] Schema, client, mapper for JSR packages
+- [x] Cross-registry dependency support (jsr: and npm: prefixes)
+- [x] Registry dispatcher in worker
+- [ ] Registry selection in package search/browse (frontend)
 - [ ] Test with popular JSR packages
 
 ---
