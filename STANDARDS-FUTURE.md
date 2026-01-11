@@ -2,7 +2,7 @@
 
 ## The Problem
 
-TechGarden focuses on installable packages (npm, jsr, brew, apt-get), but developers also work with **standards** that aren't installable:
+TechGarden focuses on installable packages (npm, jsr, nuget, homebrew, archlinux, dockerhub), but developers also work with **standards** that aren't installable:
 
 - **Language specs**: ECMAScript, TypeScript
 - **Protocols**: HTTP, WebSocket, TLS, OAuth

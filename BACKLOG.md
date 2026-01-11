@@ -7,8 +7,10 @@
 ## Growth
 
 - [x] JSR registry adapter (Sprint 8)
-- [ ] Homebrew registry adapter
-- [ ] apt registry adapter
+- [x] NuGet registry adapter (Sprint 8)
+- [x] Docker Hub registry adapter (Sprint 8)
+- [x] Homebrew registry adapter (Sprint 8)
+- [x] Arch Linux registry adapter (Sprint 8)
 
 ---
 

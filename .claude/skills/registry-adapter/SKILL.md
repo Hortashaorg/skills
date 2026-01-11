@@ -1,6 +1,6 @@
 ---
 name: registry-adapter
-description: Generate a new package registry adapter for the worker service. Creates schema, client, mapper, and index files following the npm adapter pattern. Use when adding support for a new package registry (jsr, brew, apt, etc.).
+description: Generate a new package registry adapter for the worker service. Creates schema, client, mapper, and index files following the npm adapter pattern. Use when adding support for a new package registry.
 ---
 
 # Registry Adapter Generator
@@ -351,10 +351,6 @@ Reference: `/skills/services/worker/registries/homebrew/` (simple API, runtime/b
 ### archlinux ✅ IMPLEMENTED
 Reference: `/skills/services/worker/registries/archlinux/` (official repos, depends/optdepends/makedepends)
 
-### apt (Debian/Ubuntu)
-- No single API - would need to parse package index files
-- Consider using `packages.debian.org` or `api.launchpad.net`
-- Complex: multiple distributions, architectures
 
 ## Key Principles
 
