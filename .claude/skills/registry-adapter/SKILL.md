@@ -24,10 +24,9 @@ registries/{registry}/
 Before generating, read these reference files:
 
 1. **`/skills/services/worker/registries/types.ts`** - Common types all adapters must return
-2. **`/skills/services/worker/registries/npm/schema.ts`** - Schema pattern
-3. **`/skills/services/worker/registries/npm/client.ts`** - Client pattern
-4. **`/skills/services/worker/registries/npm/mapper.ts`** - Mapper pattern
-5. **`/skills/services/worker/registries/npm/index.ts`** - Public API pattern
+2. **`/skills/services/worker/registries/npm/`** - Primary reference (single API endpoint)
+3. **`/skills/services/worker/registries/jsr/`** - Reference for separate endpoints + cross-registry deps
+4. **`/skills/services/worker/registries/index.ts`** - Registry dispatcher (add new registry here)
 
 ## Workflow
 
@@ -51,14 +50,16 @@ Before generating, understand the target API:
    - `homepage` (optional)
    - `repository` (optional)
    - `latestVersion` (optional)
-   - `distTags` (optional)
-   - `versions[]` with dependencies
+   - `distTags` (optional) - release channels like "latest", "next", "beta"
+   - `releaseChannels[]` with dependencies
 
 3. Note any API quirks:
    - Authentication requirements
    - Rate limiting headers
    - Pagination for versions
    - Different dependency formats
+   - **Separate endpoints** - Some APIs split data across multiple endpoints (e.g., JSR has separate `/dependencies` endpoint)
+   - **Cross-registry dependencies** - Can packages depend on other registries? (e.g., JSR packages can depend on npm packages)
 
 ### Stage 3: Confirm
 
@@ -158,26 +159,29 @@ export async function fetchPackages(
 **3. mapper.ts** - Transform to common format
 
 ```tsx
-import type { DependencyData, PackageData, VersionData } from "../types.ts";
-import type { {Registry}PackageResponse } from "./schema.ts";
+import type { Registry } from "@package/database/server";
+import type { DependencyData, PackageData, ReleaseChannelData } from "../types.ts";
+import type { {Registry}FetchResult } from "./client.ts";
 
-export function map{Registry}Package(response: {Registry}PackageResponse): PackageData {
+export function map{Registry}Package(result: {Registry}FetchResult): PackageData {
   return {
-    name: response.name,
-    description: response.description,
-    homepage: /* extract from response */,
+    name: result.package.name,
+    description: result.package.description,
+    homepage: /* extract from response, or undefined if not provided */,
     repository: /* extract from response */,
     latestVersion: /* extract from response */,
     distTags: /* extract from response */,
-    versions: mapVersions(response),
+    releaseChannels: mapReleaseChannels(result),
   };
 }
 
-function mapVersions(response: {Registry}PackageResponse): VersionData[] {
-  // Transform registry-specific version format to common VersionData
+function mapReleaseChannels(result: {Registry}FetchResult): ReleaseChannelData[] {
+  // Transform registry-specific format to ReleaseChannelData[]
+  // Most registries only have "latest" channel
+  // npm has dist-tags: latest, next, beta, etc.
 }
 
-function mapDependencies(/* registry-specific version */): DependencyData[] {
+function mapDependencies(/* registry-specific deps */): DependencyData[] {
   // Transform to { name, versionRange, type, registry }
   // IMPORTANT: Set registry on each dependency (required field)
   // For cross-registry deps, parse the specifier (e.g., "npm:lodash" → registry: "npm")
@@ -251,6 +255,28 @@ Then run: `pnpm database zero && pnpm database migrate`
 pnpm check && pnpm all typecheck
 ```
 
+**5. Test the adapter:**
+
+```bash
+cd /skills/services/worker && pnpm dlx tsx -e "
+import { fetchPackageWithVersion } from './registries/{registry}/client.ts';
+
+async function test() {
+  const result = await fetchPackageWithVersion('{test-package-name}');
+  console.log('Package:', result.package.name);
+  console.log('Latest version:', result.package.latestVersion);
+  console.log('Dependencies count:', result.dependencies?.length ?? 0);
+}
+
+test().catch(console.error);
+"
+```
+
+Verify:
+- Package metadata is fetched correctly
+- Dependencies are populated (if the test package has any)
+- No schema validation errors
+
 **Post-generation response:**
 ```
 ✅ Generated {REGISTRY} adapter successfully!
@@ -312,10 +338,13 @@ The mapper is responsible for parsing these specifiers and setting the correct r
 
 ### jsr (jsr.io) ✅ IMPLEMENTED
 - API: `https://api.jsr.io`
-- Endpoint: `/scopes/{scope}/packages/{name}`
-- Uses scoped packages like `@std/path`
-- Dependencies can be cross-registry: `jsr:@scope/name` or `npm:package-name`
+- Package: `/scopes/{scope}/packages/{name}`
+- Version: `/scopes/{scope}/packages/{name}/versions/{version}`
+- **Dependencies: `/scopes/{scope}/packages/{name}/versions/{version}/dependencies`** (separate endpoint!)
+- Uses scoped packages like `@std/path` - requires `parseJsrName()` helper
+- Dependencies are cross-registry with `kind` field: `"jsr"` or `"npm"`
 - Only has "latest" channel (no dist-tags like npm)
+- Does NOT provide homepage URL (only `githubRepository`)
 - See `/skills/services/worker/registries/jsr/` for reference
 
 ### brew (Homebrew)
