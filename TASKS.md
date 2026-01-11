@@ -8,19 +8,23 @@
 
 ### Quick Wins
 
+- [ ] Upgrade dependencies (zero, hono, pino, rolldown-vite, types)
 - [ ] Split `webhook/index.ts` into separate handler files
 - [ ] Split `me/projects/detail.tsx` into sections
 - [ ] Fix `createUrlSignal` type assertion
+- [ ] Dead code cleanup (unused exports, stale files)
 
 ### Foundational
 
 - [ ] Add vitest + first unit tests for `process-fetch.ts`
 - [ ] Add tests for score calculation
+- [ ] Error boundary component for frontend
 
 ### Polish
 
 - [ ] Data-driven Navbar navigation
 - [ ] Mobile audit (main pages)
+- [ ] Update CLAUDE.md docs if stale
 
 ---
 
