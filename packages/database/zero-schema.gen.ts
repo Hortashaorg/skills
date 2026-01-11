@@ -387,7 +387,7 @@ const packagesTable = {
     registry: {
       type: "string",
       optional: false,
-      customType: null as unknown as "npm" | "jsr" | "nuget",
+      customType: null as unknown as "npm" | "jsr" | "nuget" | "dockerhub",
     },
     status: {
       type: "string",

@@ -197,6 +197,13 @@
       "when": 1768141566799,
       "tag": "0027_amazing_spot",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1768143156014,
+      "tag": "0028_dapper_rhino",
+      "breakpoints": true
     }
   ]
 }

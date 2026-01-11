@@ -1,8 +1,10 @@
 import type { Registry } from "@package/database/server";
+import * as dockerhub from "./dockerhub/index.ts";
 import * as jsr from "./jsr/index.ts";
 import * as npm from "./npm/index.ts";
 import * as nuget from "./nuget/index.ts";
 
+export * as dockerhub from "./dockerhub/index.ts";
 export * as jsr from "./jsr/index.ts";
 export * as npm from "./npm/index.ts";
 export * as nuget from "./nuget/index.ts";
@@ -25,6 +27,8 @@ export async function getPackages(
 			return jsr.getPackages(names, concurrency);
 		case "nuget":
 			return nuget.getPackages(names, concurrency);
+		case "dockerhub":
+			return dockerhub.getPackages(names, concurrency);
 		default: {
 			const _exhaustive: never = registry;
 			throw new Error(`Unknown registry: ${_exhaustive}`);

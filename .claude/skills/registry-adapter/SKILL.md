@@ -342,6 +342,9 @@ Reference: `/skills/services/worker/registries/jsr/` (separate endpoints, cross-
 ### nuget ✅ IMPLEMENTED
 Reference: `/skills/services/worker/registries/nuget/` (paginated responses, dependency groups)
 
+### dockerhub ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/dockerhub/` (no deps, named tags only)
+
 ### brew (Homebrew)
 - API: `https://formulae.brew.sh/api`
 - Endpoint: `/formula/{name}.json`
