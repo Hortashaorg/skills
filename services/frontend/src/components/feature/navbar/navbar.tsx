@@ -5,8 +5,11 @@ import { Flex } from "@/components/primitives/flex";
 import {
 	BellIcon,
 	ChevronDownIcon,
+	MenuIcon,
 	MoonIcon,
 	SunIcon,
+	UserIcon,
+	XIcon,
 } from "@/components/primitives/icon";
 import { Text } from "@/components/primitives/text";
 import { Button } from "@/components/ui/button";
@@ -43,42 +46,6 @@ export type NavbarProps = {
 	onMarkRead: (id: string) => void;
 	onMarkAllRead: () => void;
 };
-
-const UserIcon = () => (
-	<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-		<title>Account</title>
-		<path
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			stroke-width="2"
-			d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-		/>
-	</svg>
-);
-
-const MenuIcon = () => (
-	<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-		<title>Menu</title>
-		<path
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			stroke-width="2"
-			d="M4 6h16M4 12h16M4 18h16"
-		/>
-	</svg>
-);
-
-const CloseIcon = () => (
-	<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-		<title>Close</title>
-		<path
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			stroke-width="2"
-			d="M6 18L18 6M6 6l12 12"
-		/>
-	</svg>
-);
 
 export const Navbar = (props: NavbarProps) => {
 	const [mobileMenuOpen, setMobileMenuOpen] = createSignal(false);
@@ -239,7 +206,7 @@ export const Navbar = (props: NavbarProps) => {
 									aria-label="Account menu"
 									class={`flex items-center gap-0.5 ${iconButtonClass}`}
 								>
-									<UserIcon />
+									<UserIcon size="sm" />
 									<ChevronDownIcon size="xs" />
 								</Dropdown.Trigger>
 								<Dropdown.Content width="sm">
@@ -319,8 +286,8 @@ export const Navbar = (props: NavbarProps) => {
 							class={iconButtonClass}
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen())}
 						>
-							<Show when={mobileMenuOpen()} fallback={<MenuIcon />}>
-								<CloseIcon />
+							<Show when={mobileMenuOpen()} fallback={<MenuIcon size="lg" />}>
+								<XIcon size="lg" />
 							</Show>
 						</button>
 					</Flex>

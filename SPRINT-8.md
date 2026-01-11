@@ -41,7 +41,7 @@ First step toward multi-registry support:
 
 Small improvements to code quality:
 
-- [ ] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
+- [x] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
 - [x] Centralize constants (limits, timeouts, batch sizes → lib/constants.ts)
 - [ ] Extract reusable mutation error handler (console.error + toast pattern)
 

@@ -4,6 +4,7 @@ import {
 } from "@kobalte/core/toggle-button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { type JSX, splitProps } from "solid-js";
+import { ArrowUpIcon } from "@/components/primitives/icon";
 import { cn } from "@/lib/utils";
 
 const upvoteButtonVariants = cva(
@@ -32,24 +33,6 @@ const upvoteButtonVariants = cva(
 			size: "sm",
 		},
 	},
-);
-
-const ArrowUpIcon = (props: JSX.SvgSVGAttributes<SVGSVGElement>) => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		viewBox="0 0 20 20"
-		fill="currentColor"
-		width="1em"
-		height="1em"
-		aria-hidden="true"
-		{...props}
-	>
-		<path
-			fill-rule="evenodd"
-			d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z"
-			clip-rule="evenodd"
-		/>
-	</svg>
 );
 
 export type UpvoteButtonProps = Omit<
@@ -87,7 +70,7 @@ export const UpvoteButton = (props: UpvoteButtonProps) => {
 					local.class,
 				)}
 			>
-				<ArrowUpIcon />
+				<ArrowUpIcon size="xs" />
 				<span>{local.count}</span>
 			</span>
 		);
@@ -129,7 +112,7 @@ export const UpvoteButton = (props: UpvoteButtonProps) => {
 			)}
 			{...others}
 		>
-			<ArrowUpIcon />
+			<ArrowUpIcon size="xs" />
 			<span>{local.count}</span>
 		</ToggleButtonPrimitive>
 	);
