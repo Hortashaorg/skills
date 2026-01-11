@@ -11,6 +11,7 @@
 - [ ] Upgrade dependencies (zero, hono, pino, rolldown-vite, types)
 - [ ] Split `webhook/index.ts` into separate handler files
 - [ ] Split `me/projects/detail.tsx` into sections
+- [ ] Split `navbar.tsx` into smaller components
 - [ ] Fix `createUrlSignal` type assertion
 - [ ] Dead code cleanup (unused exports, stale files)
 

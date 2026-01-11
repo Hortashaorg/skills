@@ -44,9 +44,6 @@
 ### Testing
 - [ ] Unit tests for backend auth token refresh
 
-### Code Organization
-- [ ] Split navbar.tsx (455 lines)
-
 ### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
 
