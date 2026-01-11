@@ -20,10 +20,15 @@
 - [ ] Add tests for score calculation
 - [ ] Error boundary component for frontend
 
+### UI Fixes
+
+- [ ] Text overflow in cards (truncate long names/descriptions)
+- [ ] Mobile horizontal scroll issues (content not fitting viewport)
+- [ ] Responsive breakpoint audit
+
 ### Polish
 
 - [ ] Data-driven Navbar navigation
-- [ ] Mobile audit (main pages)
 - [ ] Update CLAUDE.md docs if stale
 
 ---
