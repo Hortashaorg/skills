@@ -5,6 +5,8 @@ export const registryEnum = pgEnum("registry", [
 	"jsr",
 	"nuget",
 	"dockerhub",
+	"homebrew",
+	"archlinux",
 ]);
 
 export const dependencyTypeEnum = pgEnum("dependency_type", [

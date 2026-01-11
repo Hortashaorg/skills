@@ -345,11 +345,11 @@ Reference: `/skills/services/worker/registries/nuget/` (paginated responses, dep
 ### dockerhub ✅ IMPLEMENTED
 Reference: `/skills/services/worker/registries/dockerhub/` (no deps, named tags only)
 
-### brew (Homebrew)
-- API: `https://formulae.brew.sh/api`
-- Endpoint: `/formula/{name}.json`
-- No version history - only latest
-- Dependencies are system-level, not versioned
+### homebrew ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/homebrew/` (simple API, runtime/build/optional deps)
+
+### archlinux ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/archlinux/` (official repos, depends/optdepends/makedepends)
 
 ### apt (Debian/Ubuntu)
 - No single API - would need to parse package index files

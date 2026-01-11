@@ -1,10 +1,14 @@
 import type { Registry } from "@package/database/server";
+import * as archlinux from "./archlinux/index.ts";
 import * as dockerhub from "./dockerhub/index.ts";
+import * as homebrew from "./homebrew/index.ts";
 import * as jsr from "./jsr/index.ts";
 import * as npm from "./npm/index.ts";
 import * as nuget from "./nuget/index.ts";
 
+export * as archlinux from "./archlinux/index.ts";
 export * as dockerhub from "./dockerhub/index.ts";
+export * as homebrew from "./homebrew/index.ts";
 export * as jsr from "./jsr/index.ts";
 export * as npm from "./npm/index.ts";
 export * as nuget from "./nuget/index.ts";
@@ -29,6 +33,10 @@ export async function getPackages(
 			return nuget.getPackages(names, concurrency);
 		case "dockerhub":
 			return dockerhub.getPackages(names, concurrency);
+		case "homebrew":
+			return homebrew.getPackages(names, concurrency);
+		case "archlinux":
+			return archlinux.getPackages(names, concurrency);
 		default: {
 			const _exhaustive: never = registry;
 			throw new Error(`Unknown registry: ${_exhaustive}`);

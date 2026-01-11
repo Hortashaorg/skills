@@ -387,7 +387,13 @@ const packagesTable = {
     registry: {
       type: "string",
       optional: false,
-      customType: null as unknown as "npm" | "jsr" | "nuget" | "dockerhub",
+      customType: null as unknown as
+        | "npm"
+        | "jsr"
+        | "nuget"
+        | "dockerhub"
+        | "homebrew"
+        | "archlinux",
     },
     status: {
       type: "string",
