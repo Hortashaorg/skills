@@ -23,6 +23,7 @@ import { toast } from "@/components/ui/toast";
 import { getAuthData, logout } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { getConfig } from "@/lib/config";
+import { handleMutationError } from "@/lib/mutation-error";
 
 const ProfileSkeleton = () => (
 	<Stack spacing="lg">
@@ -123,10 +124,7 @@ export const Profile = () => {
 			URL.revokeObjectURL(url);
 			toast.success("Data exported successfully");
 		} catch (err) {
-			console.error("Failed to export data:", err);
-			const message =
-				err instanceof Error ? err.message : "Failed to export data";
-			toast.error(message);
+			handleMutationError(err, "export data", { useErrorMessage: true });
 		} finally {
 			setIsExporting(false);
 		}
@@ -174,13 +172,14 @@ export const Profile = () => {
 				.client;
 			setIsEditingUsername(false);
 		} catch (err) {
-			console.error("Failed to update username:", err);
-			const message =
+			const customMessage =
 				err instanceof Error && err.message.includes("unique")
 					? "This username is already taken"
-					: "Failed to update username. Please try again.";
+					: undefined;
+			const message = handleMutationError(err, "update username", {
+				message: customMessage,
+			});
 			setUsernameError(message);
-			toast.error(message);
 		} finally {
 			setIsSaving(false);
 		}
@@ -214,11 +213,10 @@ export const Profile = () => {
 			await logout();
 			navigate("/", { replace: true });
 		} catch (err) {
-			console.error("Failed to delete account:", err);
-			const message =
-				err instanceof Error ? err.message : "Failed to delete account";
+			const message = handleMutationError(err, "delete account", {
+				useErrorMessage: true,
+			});
 			setDeleteError(message);
-			toast.error(message);
 			setIsDeleting(false);
 		}
 	};

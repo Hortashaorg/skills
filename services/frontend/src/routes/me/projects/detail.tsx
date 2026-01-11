@@ -24,9 +24,11 @@ import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/components/ui/toast";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
+import { getDisplayName } from "@/lib/account";
+import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
+import { handleMutationError } from "@/lib/mutation-error";
 import { buildPackageUrl } from "@/lib/url";
 
 const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
@@ -78,7 +80,7 @@ export const ProjectDetail = () => {
 	const [searchResults, searchResultsStatus] = useQuery(() =>
 		queries.packages.search({
 			query: packageSearch() || undefined,
-			limit: 10,
+			limit: PACKAGE_SEARCH_LIMIT,
 		}),
 	);
 
@@ -228,8 +230,7 @@ export const ProjectDetail = () => {
 				setPackageSearch("");
 			})
 			.catch((err) => {
-				console.error("Failed to add package:", err);
-				toast.error("Failed to add package. Please try again.");
+				handleMutationError(err, "add package");
 			});
 	};
 
@@ -263,8 +264,7 @@ export const ProjectDetail = () => {
 			).client;
 			setIsEditing(false);
 		} catch (err) {
-			console.error("Failed to update project:", err);
-			toast.error("Failed to update project. Please try again.");
+			handleMutationError(err, "update project");
 		} finally {
 			setIsSaving(false);
 		}
@@ -288,8 +288,7 @@ export const ProjectDetail = () => {
 				}),
 			).client;
 		} catch (err) {
-			console.error("Failed to remove package:", err);
-			toast.error("Failed to remove package. Please try again.");
+			handleMutationError(err, "remove package");
 		}
 		setRemovePackageId(null);
 	};
@@ -302,8 +301,7 @@ export const ProjectDetail = () => {
 			await zero().mutate(mutators.projects.remove({ id: p.id })).client;
 			navigate("/me/projects");
 		} catch (err) {
-			console.error("Failed to delete project:", err);
-			toast.error("Failed to delete project. Please try again.");
+			handleMutationError(err, "delete project");
 		}
 	};
 
@@ -367,7 +365,7 @@ export const ProjectDetail = () => {
 														<Text color="muted">{p().description}</Text>
 													</Show>
 													<Text size="sm" color="muted">
-														Created by {p().account?.name ?? "Unknown"}
+														Created by {getDisplayName(p().account)}
 													</Text>
 												</Stack>
 												<Show when={isOwner()}>

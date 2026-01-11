@@ -21,11 +21,11 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { handleMutationError } from "@/lib/mutation-error";
 import { cn } from "@/lib/utils";
 
 type Package = Row["packages"] & {
@@ -69,8 +69,7 @@ export const Header = (props: HeaderProps) => {
 				}),
 			);
 		} catch (err) {
-			console.error("Failed to add package to project:", err);
-			toast.error("Failed to add package to project. Please try again.");
+			handleMutationError(err, "add package to project");
 		} finally {
 			setAddingToProject(null);
 		}
@@ -238,18 +237,15 @@ export const Header = (props: HeaderProps) => {
 
 				{/* Update button */}
 				<Flex gap="sm" align="center">
-					<Show
-						when={!request.isRequested() && !request.isDisabled()}
-						fallback={
-							<Show when={request.isRequested()}>
-								<Badge variant="info" size="md">
-									Update requested
-								</Badge>
+					<Show when={!request.isDisabled()}>
+						<Button
+							variant="outline"
+							onClick={() => request.submit()}
+							disabled={request.isSubmitting()}
+						>
+							<Show when={request.isSubmitting()} fallback="Request Update">
+								Requesting...
 							</Show>
-						}
-					>
-						<Button variant="outline" onClick={() => request.submit()}>
-							Request Update
 						</Button>
 					</Show>
 					<Show when={!isLoggedIn()}>

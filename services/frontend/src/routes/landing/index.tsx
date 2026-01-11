@@ -21,7 +21,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
+import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { LEADERBOARD_PREVIEW_LIMIT } from "@/lib/constants";
 
 const FeatureCard = (props: {
 	title: string;
@@ -56,11 +58,15 @@ export const Landing = () => {
 	const isLoggedIn = () => zero().userID !== "anon";
 
 	const [monthlyData, monthlyResult] = useQuery(() =>
-		queries.contributionScores.leaderboardMonthly({ limit: 5 }),
+		queries.contributionScores.leaderboardMonthly({
+			limit: LEADERBOARD_PREVIEW_LIMIT,
+		}),
 	);
 
 	const [allTimeData, allTimeResult] = useQuery(() =>
-		queries.contributionScores.leaderboardAllTime({ limit: 5 }),
+		queries.contributionScores.leaderboardAllTime({
+			limit: LEADERBOARD_PREVIEW_LIMIT,
+		}),
 	);
 
 	const monthlyEntries = createMemo((): readonly LeaderboardEntry[] => {
@@ -71,7 +77,7 @@ export const Landing = () => {
 			.filter((entry) => entry.monthlyScore > 0)
 			.map((entry, index) => ({
 				rank: index + 1,
-				name: entry.account?.name ?? "Unknown",
+				name: getDisplayName(entry.account),
 				score: entry.monthlyScore,
 				isCurrentUser: entry.accountId === zero().userID,
 			}));
@@ -85,7 +91,7 @@ export const Landing = () => {
 			.filter((entry) => entry.allTimeScore > 0)
 			.map((entry, index) => ({
 				rank: index + 1,
-				name: entry.account?.name ?? "Unknown",
+				name: getDisplayName(entry.account),
 				score: entry.allTimeScore,
 				isCurrentUser: entry.accountId === zero().userID,
 			}));

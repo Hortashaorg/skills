@@ -4,7 +4,7 @@ A place for engineers to learn, contribute, and grow - built around high-quality
 
 ## Core Concept
 
-TechGarden is a community built around the technology ecosystem. Packages are the foundation - aggregated from npm, jsr, brew, apt, and more - but the real value is what grows on top: engineers learning together, curating knowledge, and building their presence through meaningful contributions.
+TechGarden is a community built around the technology ecosystem. Packages are the foundation - aggregated from npm, jsr, nuget, homebrew, archlinux, dockerhub, and more - but the real value is what grows on top: engineers learning together, curating knowledge, and building their presence through meaningful contributions.
 
 Think of it as a garden where both technology knowledge and the people cultivating it can grow.
 
@@ -19,7 +19,7 @@ Think of it as a garden where both technology knowledge and the people cultivati
 
 ### Package Curation
 
-- **Multi-source aggregation**: Fetch packages from npm, jsr, brew, apt, and other registries
+- **Multi-source aggregation**: Fetch packages from npm, jsr, nuget, homebrew, archlinux, dockerhub, and other registries
 - **Rich metadata**: Version history, descriptions, dependencies, maintainers, download stats, publish dates
 - **Cross-registry linking**: Connect equivalent packages across sources (e.g., "hono" on npm = "@hono/hono" on jsr)
 - **Dependency mapping**: Visualize and analyze package relationships
@@ -64,22 +64,23 @@ Think of it as a garden where both technology knowledge and the people cultivati
 - Curation leaderboard
 - GDPR-compliant user data handling (deletion, anonymization)
 
-### Phase 3: Identity & Discovery (Current)
+### Phase 3: Identity & Discovery ✅
 
 - Brand identity (TechGarden green accent, visual polish)
 - SEO and discoverability (meta tags, sitemap, structured data)
 - Homepage improvements (entry points, value proposition)
 
-### Phase 4: Categories & Discussion
+### Phase 4: Multi-Registry ✅
+
+- Additional package sources: jsr, nuget, dockerhub, homebrew, archlinux
+- Registry adapter pattern for easy expansion
+- Cross-registry dependencies (jsr packages can depend on npm)
+
+### Phase 5: Categories & Discussion (Current)
 
 - Package categories (compare packages within use cases)
 - Discussion/comments on packages and categories
 - Per-package leaderboards (recognize package experts)
-- Upvote ranking within categories
-
-### Phase 5: Expansion
-
-- Additional package sources (jsr, brew, apt)
 - Cross-registry package linking
 - New tag proposals (community-suggested tags)
 

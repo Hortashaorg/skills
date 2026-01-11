@@ -237,4 +237,35 @@ export const TrophyIcon = (props: IconComponentProps) => {
 	);
 };
 
+export const UserIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Account"} {...others}>
+			<circle cx="12" cy="8" r="5" />
+			<path d="M20 21a8 8 0 0 0-16 0" />
+		</Icon>
+	);
+};
+
+export const MenuIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Menu"} {...others}>
+			<path d="M4 6h16" />
+			<path d="M4 12h16" />
+			<path d="M4 18h16" />
+		</Icon>
+	);
+};
+
+export const ArrowUpIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Arrow up"} {...others}>
+			<path d="m5 12 7-7 7 7" />
+			<path d="M12 19V5" />
+		</Icon>
+	);
+};
+
 export type { IconComponentProps };

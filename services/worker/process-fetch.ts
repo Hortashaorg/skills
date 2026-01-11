@@ -24,7 +24,7 @@ import {
 	updateReleaseChannel,
 	upsertPackage,
 } from "./db.ts";
-import { npm } from "./registries/index.ts";
+import { getPackages } from "./registries/index.ts";
 import type { ReleaseChannelData } from "./registries/types.ts";
 
 const COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
@@ -94,10 +94,11 @@ async function syncChannelsAndDeps(
 			// Build dependencies with resolved IDs
 			const newDeps: ChannelDependencyInsert[] = [];
 			for (const dep of channel.dependencies) {
-				const depPackageId = packageNames.get(dep.name);
+				const depKey = `${dep.registry}:${dep.name}`;
+				const depPackageId = packageNames.get(depKey);
 				if (!depPackageId) {
 					throw new Error(
-						`Failed to resolve package ID for dependency: ${dep.name}`,
+						`Failed to resolve package ID for dependency: ${depKey}`,
 					);
 				}
 
@@ -250,7 +251,7 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		}
 
 		// Fetch from registry
-		const fetchResult = await npm.getPackages([pkg.name]);
+		const fetchResult = await getPackages(pkg.registry, [pkg.name]);
 		const packageData = fetchResult.get(pkg.name);
 
 		if (!packageData) {
@@ -267,20 +268,36 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		});
 		result.packageId = packageId;
 
-		// Collect all dependency names across all channels
-		const allDepNames = new Set<string>();
+		// Collect all dependencies grouped by registry
+		const depsByRegistry = new Map<Registry, Set<string>>();
 		for (const channel of packageData.releaseChannels) {
 			for (const dep of channel.dependencies) {
-				allDepNames.add(dep.name);
+				const registry = dep.registry;
+				let names = depsByRegistry.get(registry);
+				if (!names) {
+					names = new Set();
+					depsByRegistry.set(registry, names);
+				}
+				names.add(dep.name);
 			}
 		}
 
 		// Ensure all dependency packages exist (creates placeholders for missing)
-		const { ids: packageNames, created: createdPlaceholders } =
-			await ensurePackagesExist([...allDepNames], pkg.registry);
+		// Process each registry separately
+		const packageNames = new Map<string, string>();
+		let totalCreated = 0;
+
+		for (const [registry, names] of depsByRegistry) {
+			const { ids, created } = await ensurePackagesExist([...names], registry);
+			for (const [name, id] of ids) {
+				// Key by registry:name to handle cross-registry deps with same name
+				packageNames.set(`${registry}:${name}`, id);
+			}
+			totalCreated += created.size;
+		}
 
 		// Add main package to the map
-		packageNames.set(packageData.name, packageId);
+		packageNames.set(`${pkg.registry}:${packageData.name}`, packageId);
 
 		const now = Date.now();
 
@@ -298,7 +315,7 @@ export async function processFetch(fetch: FetchRecord): Promise<ProcessResult> {
 		result.channelsDeleted = syncResult.channelsDeleted;
 		result.depsCreated = syncResult.depsCreated;
 		result.depsDeleted = syncResult.depsDeleted;
-		result.placeholdersCreated = createdPlaceholders.size;
+		result.placeholdersCreated = totalCreated;
 
 		// Mark completed (in same transaction as sync would be ideal, but
 		// markFetchCompleted uses Zero mutations which need separate tx)

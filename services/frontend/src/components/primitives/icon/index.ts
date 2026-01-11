@@ -1,5 +1,6 @@
 export { Icon, type IconProps, iconVariants } from "./icon";
 export {
+	ArrowUpIcon,
 	BellIcon,
 	CheckIcon,
 	ChevronDownIcon,
@@ -8,6 +9,7 @@ export {
 	DocumentIcon,
 	ExternalLinkIcon,
 	FolderIcon,
+	MenuIcon,
 	MoonIcon,
 	PackageIcon,
 	PencilIcon,
@@ -18,6 +20,7 @@ export {
 	SunIcon,
 	TrashIcon,
 	TrophyIcon,
+	UserIcon,
 	UsersIcon,
 	XCircleIcon,
 	XIcon,

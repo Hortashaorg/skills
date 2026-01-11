@@ -1,6 +1,6 @@
 ---
 name: registry-adapter
-description: Generate a new package registry adapter for the worker service. Creates schema, client, mapper, and index files following the npm adapter pattern. Use when adding support for a new package registry (jsr, brew, apt, etc.).
+description: Generate a new package registry adapter for the worker service. Creates schema, client, mapper, and index files following the npm adapter pattern. Use when adding support for a new package registry.
 ---
 
 # Registry Adapter Generator
@@ -24,10 +24,9 @@ registries/{registry}/
 Before generating, read these reference files:
 
 1. **`/skills/services/worker/registries/types.ts`** - Common types all adapters must return
-2. **`/skills/services/worker/registries/npm/schema.ts`** - Schema pattern
-3. **`/skills/services/worker/registries/npm/client.ts`** - Client pattern
-4. **`/skills/services/worker/registries/npm/mapper.ts`** - Mapper pattern
-5. **`/skills/services/worker/registries/npm/index.ts`** - Public API pattern
+2. **`/skills/services/worker/registries/npm/`** - Primary reference (single API endpoint)
+3. **`/skills/services/worker/registries/jsr/`** - Reference for separate endpoints + cross-registry deps
+4. **`/skills/services/worker/registries/index.ts`** - Registry dispatcher (add new registry here)
 
 ## Workflow
 
@@ -51,14 +50,16 @@ Before generating, understand the target API:
    - `homepage` (optional)
    - `repository` (optional)
    - `latestVersion` (optional)
-   - `distTags` (optional)
-   - `versions[]` with dependencies
+   - `distTags` (optional) - release channels like "latest", "next", "beta"
+   - `releaseChannels[]` with dependencies
 
 3. Note any API quirks:
    - Authentication requirements
    - Rate limiting headers
    - Pagination for versions
    - Different dependency formats
+   - **Separate endpoints** - Some APIs split data across multiple endpoints (e.g., JSR has separate `/dependencies` endpoint)
+   - **Cross-registry dependencies** - Can packages depend on other registries? (e.g., JSR packages can depend on npm packages)
 
 ### Stage 3: Confirm
 
@@ -158,27 +159,32 @@ export async function fetchPackages(
 **3. mapper.ts** - Transform to common format
 
 ```tsx
-import type { DependencyData, PackageData, VersionData } from "../types.ts";
-import type { {Registry}PackageResponse } from "./schema.ts";
+import type { Registry } from "@package/database/server";
+import type { DependencyData, PackageData, ReleaseChannelData } from "../types.ts";
+import type { {Registry}FetchResult } from "./client.ts";
 
-export function map{Registry}Package(response: {Registry}PackageResponse): PackageData {
+export function map{Registry}Package(result: {Registry}FetchResult): PackageData {
   return {
-    name: response.name,
-    description: response.description,
-    homepage: /* extract from response */,
+    name: result.package.name,
+    description: result.package.description,
+    homepage: /* extract from response, or undefined if not provided */,
     repository: /* extract from response */,
     latestVersion: /* extract from response */,
     distTags: /* extract from response */,
-    versions: mapVersions(response),
+    releaseChannels: mapReleaseChannels(result),
   };
 }
 
-function mapVersions(response: {Registry}PackageResponse): VersionData[] {
-  // Transform registry-specific version format to common VersionData
+function mapReleaseChannels(result: {Registry}FetchResult): ReleaseChannelData[] {
+  // Transform registry-specific format to ReleaseChannelData[]
+  // Most registries only have "latest" channel
+  // npm has dist-tags: latest, next, beta, etc.
 }
 
-function mapDependencies(/* registry-specific version */): DependencyData[] {
-  // Transform to { name, versionRange, type: "runtime"|"dev"|"peer"|"optional" }
+function mapDependencies(/* registry-specific deps */): DependencyData[] {
+  // Transform to { name, versionRange, type, registry }
+  // IMPORTANT: Set registry on each dependency (required field)
+  // For cross-registry deps, parse the specifier (e.g., "npm:lodash" → registry: "npm")
 }
 ```
 
@@ -215,24 +221,61 @@ export async function getPackages(
 **1. Add export to registries/index.ts:**
 
 ```tsx
+import * as {registry} from "./{registry}/index.ts";
+
 export * as {registry} from "./{registry}/index.ts";
 ```
 
-**2. Add to registry enum (if not already present):**
+**2. Add to dispatcher switch in registries/index.ts:**
 
-In `packages/database/db/schema.ts`:
 ```tsx
-export const registryEnum = pgEnum("registry", ["npm", "jsr", "brew", "apt", "{registry}"]);
+export async function getPackages(registry: Registry, names: string[], concurrency = 5) {
+  switch (registry) {
+    case "npm":
+      return npm.getPackages(names, concurrency);
+    case "{registry}":
+      return {registry}.getPackages(names, concurrency);
+    // ... other cases
+  }
+}
 ```
 
-Then run: `pnpm database zero`
+**3. Add to registry enum (if not already present):**
 
-**3. Validate:**
+In `packages/database/db/schema/enums.ts`:
+```tsx
+export const registryEnum = pgEnum("registry", ["npm", "jsr", "{registry}"]);
+```
+
+Then run: `pnpm database zero && pnpm database migrate`
+
+**4. Validate:**
 
 ```bash
-cd /skills/services/worker && pnpm typecheck
-cd /skills/services/worker && pnpm check
+pnpm check && pnpm all typecheck
 ```
+
+**5. Test the adapter:**
+
+```bash
+cd /skills/services/worker && pnpm dlx tsx -e "
+import { fetchPackageWithVersion } from './registries/{registry}/client.ts';
+
+async function test() {
+  const result = await fetchPackageWithVersion('{test-package-name}');
+  console.log('Package:', result.package.name);
+  console.log('Latest version:', result.package.latestVersion);
+  console.log('Dependencies count:', result.dependencies?.length ?? 0);
+}
+
+test().catch(console.error);
+"
+```
+
+Verify:
+- Package metadata is fetched correctly
+- Dependencies are populated (if the test package has any)
+- No schema validation errors
 
 **Post-generation response:**
 ```
@@ -265,14 +308,13 @@ interface PackageData {
   repository?: string;
   latestVersion?: string;
   distTags?: Record<string, string>;
-  versions: VersionData[];
+  releaseChannels: ReleaseChannelData[];  // NOT versions[]
 }
 
-interface VersionData {
+interface ReleaseChannelData {
+  channel: string;       // e.g., "latest", "next", "beta"
   version: string;
   publishedAt: Date;
-  isPrerelease: boolean;
-  isYanked: boolean;
   dependencies: DependencyData[];
 }
 
@@ -280,27 +322,35 @@ interface DependencyData {
   name: string;
   versionRange: string;
   type: "runtime" | "dev" | "peer" | "optional";
+  registry: Registry;    // REQUIRED - set by the mapper
 }
 ```
 
+## Cross-Registry Dependencies
+
+Some registries (like JSR) can have dependencies from multiple registries:
+- `jsr:@std/path` → registry: "jsr", name: "@std/path"
+- `npm:lodash` → registry: "npm", name: "lodash"
+
+The mapper is responsible for parsing these specifiers and setting the correct registry on each dependency. The worker's `process-fetch.ts` groups dependencies by registry and creates placeholders in the appropriate registry.
+
 ## Registry-Specific Notes
 
-### jsr (jsr.io)
-- API: `https://api.jsr.io`
-- Endpoint: `/packages/{scope}/{name}`
-- Uses scoped packages like `@std/path`
-- Has `exports` instead of traditional entry points
+### jsr ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/jsr/` (separate endpoints, cross-registry deps)
 
-### brew (Homebrew)
-- API: `https://formulae.brew.sh/api`
-- Endpoint: `/formula/{name}.json`
-- No version history - only latest
-- Dependencies are system-level, not versioned
+### nuget ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/nuget/` (paginated responses, dependency groups)
 
-### apt (Debian/Ubuntu)
-- No single API - would need to parse package index files
-- Consider using `packages.debian.org` or `api.launchpad.net`
-- Complex: multiple distributions, architectures
+### dockerhub ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/dockerhub/` (no deps, named tags only)
+
+### homebrew ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/homebrew/` (simple API, runtime/build/optional deps)
+
+### archlinux ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/archlinux/` (official repos, depends/optdepends/makedepends)
+
 
 ## Key Principles
 

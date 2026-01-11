@@ -114,7 +114,7 @@ import { ChevronDownIcon, SearchIcon, PlusIcon } from "@/components/primitives/i
 <SearchIcon size="md" title="Search" />
 ```
 
-Available icons: `SearchIcon`, `SpinnerIcon`, `XCircleIcon`, `XIcon`, `CheckIcon`, `ChevronDownIcon`, `ChevronUpIcon`, `ChevronRightIcon`, `PencilIcon`, `PlusIcon`, `FolderIcon`, `SettingsIcon`, `DocumentIcon`, `ExternalLinkIcon`, `TrashIcon`, `PackageIcon`, `UsersIcon`
+Available icons: `ArrowUpIcon`, `BellIcon`, `CheckIcon`, `ChevronDownIcon`, `ChevronRightIcon`, `ChevronUpIcon`, `DocumentIcon`, `ExternalLinkIcon`, `FolderIcon`, `MenuIcon`, `MoonIcon`, `PackageIcon`, `PencilIcon`, `PlusIcon`, `SearchIcon`, `SettingsIcon`, `SpinnerIcon`, `SunIcon`, `TrashIcon`, `TrophyIcon`, `UserIcon`, `UsersIcon`, `XCircleIcon`, `XIcon`
 
 **Adding new icons:**
 1. Add to `components/primitives/icon/icons.tsx`

@@ -6,6 +6,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
+import { getDisplayName } from "@/lib/account";
 
 type ProjectWithPackages = Row["projects"] & {
 	projectPackages?: readonly Row["projectPackages"][];
@@ -52,7 +53,7 @@ export const ProjectCard = (props: ProjectCardProps) => {
 							}
 						>
 							<Text size="xs" color="muted">
-								by {props.project.account?.name || "Anonymous"}
+								by {getDisplayName(props.project.account)}
 							</Text>
 						</Show>
 					</Flex>

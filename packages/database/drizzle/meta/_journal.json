@@ -183,6 +183,34 @@
       "when": 1767901249322,
       "tag": "0025_illegal_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1768138388350,
+      "tag": "0026_fuzzy_thunderbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1768141566799,
+      "tag": "0027_amazing_spot",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1768143156014,
+      "tag": "0028_dapper_rhino",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1768144173157,
+      "tag": "0029_mysterious_demogoblin",
+      "breakpoints": true
     }
   ]
 }

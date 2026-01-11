@@ -7,13 +7,14 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getDisplayName } from "@/lib/account";
 
 export interface BacklogSuggestion {
 	id: string;
 	type: string;
 	payload: unknown;
 	accountId: string;
-	account?: { name: string | null } | null;
+	account?: { name: string | null; deletedAt?: Date | number | null } | null;
 	package?: { name: string | null } | null;
 	votes?: readonly { accountId: string; vote: string }[];
 }
@@ -80,7 +81,7 @@ export const Backlog = (props: BacklogProps) => {
 												</Flex>
 												<Flex gap="xs" align="center">
 													<Text size="xs" color="muted">
-														by {suggestion.account?.name ?? "Unknown"}
+														by {getDisplayName(suggestion.account)}
 													</Text>
 													<Show when={isOwn()}>
 														<Badge variant="warning" size="sm">

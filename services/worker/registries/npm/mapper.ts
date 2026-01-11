@@ -80,13 +80,18 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 
 	if (version.dependencies && typeof version.dependencies === "object") {
 		for (const [name, range] of Object.entries(version.dependencies)) {
-			deps.push({ name, versionRange: range, type: "runtime" });
+			deps.push({
+				name,
+				versionRange: range,
+				type: "runtime",
+				registry: "npm",
+			});
 		}
 	}
 
 	if (version.devDependencies && typeof version.devDependencies === "object") {
 		for (const [name, range] of Object.entries(version.devDependencies)) {
-			deps.push({ name, versionRange: range, type: "dev" });
+			deps.push({ name, versionRange: range, type: "dev", registry: "npm" });
 		}
 	}
 
@@ -95,7 +100,7 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 		typeof version.peerDependencies === "object"
 	) {
 		for (const [name, range] of Object.entries(version.peerDependencies)) {
-			deps.push({ name, versionRange: range, type: "peer" });
+			deps.push({ name, versionRange: range, type: "peer", registry: "npm" });
 		}
 	}
 
@@ -104,7 +109,12 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 		typeof version.optionalDependencies === "object"
 	) {
 		for (const [name, range] of Object.entries(version.optionalDependencies)) {
-			deps.push({ name, versionRange: range, type: "optional" });
+			deps.push({
+				name,
+				versionRange: range,
+				type: "optional",
+				registry: "npm",
+			});
 		}
 	}
 

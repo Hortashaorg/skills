@@ -1,41 +1,34 @@
-# Sprint 7 Tasks
+# Sprint 8 Tasks
 
-> **Current Sprint:** [SPRINT-7.md](./SPRINT-7.md) - Profiles, JSR & Zitadel
-
----
-
-## Public User Profiles
-
-- [ ] Route: `/u/:username` for public profile pages
-- [ ] Display: username, contribution score, member since
-- [ ] Show user's public projects
-- [ ] Show curation activity summary
-- [ ] Link from leaderboards to profiles
+> **Current Sprint:** [SPRINT-8.md](./SPRINT-8.md) - UI Polish & Profiles
 
 ---
 
-## JSR Registry Adapter
+## Deleted User Display ✅
 
-- [ ] Create JSR adapter following npm adapter pattern
-- [ ] Schema, client, mapper for JSR packages
-- [ ] Registry selection in package search/browse
-- [ ] Test with popular JSR packages
-
----
-
-## Zitadel Webhook Handlers
-
-- [ ] User deleted event: set deletedAt on account (zitadelId lookup)
-- [ ] User created event: assign default roles for self-service deletion
-- [ ] Edge case: users who delete IdP account before app account
+- [x] Use getDisplayName() consistently across all components
+- [x] Update ProjectCard, ProjectDetail, CurateTab
+- [x] Update ReviewQueue, Backlog, Leaderboard, Landing
 
 ---
 
-## Tech Debt Cleanup
+## Multi-Registry Support ✅
 
-- [ ] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
-- [ ] Centralize constants (limits, timeouts, batch sizes → config module)
-- [ ] Extract reusable mutation error handler (console.error + toast pattern)
+- [x] JSR adapter (cross-registry deps: jsr/npm)
+- [x] NuGet adapter (paginated responses, framework dep groups)
+- [x] Docker Hub adapter (named tags only, no deps)
+- [x] Homebrew adapter (runtime/build/optional deps)
+- [x] Arch Linux adapter (dedupe deps, filter .so provides)
+- [x] Registry dispatcher routing
+- [x] Updated skill documentation
+
+---
+
+## Tech Debt Cleanup ✅
+
+- [x] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
+- [x] Centralize constants (limits, timeouts, batch sizes → lib/constants.ts)
+- [x] Extract reusable mutation error handler (console.error + toast pattern)
 
 ---
 
@@ -46,6 +39,13 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 7: Zitadel Webhooks
+
+- Zitadel webhook handlers for user lifecycle events
+- User deleted: soft-delete account via zitadelId lookup
+- User created (OAuth): verify email + assign ORG_USER_SELF_MANAGER role
+- Fixed email verification API (v1 management API, not v2)
 
 ### Sprint 6: Polish, SEO & Identity
 

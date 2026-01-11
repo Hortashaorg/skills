@@ -250,7 +250,7 @@ export const channelDependencies = pgTable("channel_dependencies", {
 Import from `db/types.ts`:
 ```tsx
 import { enums } from "../db/types.ts";
-z.enum(enums.registry)  // ["npm", "jsr", "brew", "apt"]
+z.enum(enums.registry)  // ["npm", "jsr", "nuget", "dockerhub", "homebrew", "archlinux"]
 ```
 
 ## User Data Tables (GDPR)

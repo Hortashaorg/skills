@@ -3,16 +3,18 @@
  * All registries return data in this format, ready for database insertion.
  */
 
-// Import the canonical DependencyType from database schema
-export type { DependencyType } from "@package/database/server";
+// Import canonical types from database schema
+export type { DependencyType, Registry } from "@package/database/server";
 
 // Re-import for local use
-import type { DependencyType } from "@package/database/server";
+import type { DependencyType, Registry } from "@package/database/server";
 
 export interface DependencyData {
 	name: string;
 	versionRange: string;
 	type: DependencyType;
+	/** Registry for this dependency. Set by the adapter's mapper. */
+	registry: Registry;
 }
 
 export interface ReleaseChannelData {
