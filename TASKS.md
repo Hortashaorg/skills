@@ -25,6 +25,7 @@
 - [ ] Text overflow in cards (truncate long names/descriptions)
 - [ ] Mobile horizontal scroll issues (content not fitting viewport)
 - [ ] Responsive breakpoint audit
+- [ ] Infinite scroll flicker (packages briefly appear/disappear during load)
 
 ### Polish
 
