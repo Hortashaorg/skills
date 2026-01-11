@@ -64,21 +64,23 @@ Think of it as a garden where both technology knowledge and the people cultivati
 - Curation leaderboard
 - GDPR-compliant user data handling (deletion, anonymization)
 
-### Phase 3: Identity & Discovery (Current)
+### Phase 3: Identity & Discovery ✅
 
 - Brand identity (TechGarden green accent, visual polish)
 - SEO and discoverability (meta tags, sitemap, structured data)
 - Homepage improvements (entry points, value proposition)
 
-### Phase 4: Categories & Discussion
+### Phase 4: Multi-Registry ✅
+
+- Additional package sources: jsr, nuget, dockerhub, homebrew, archlinux
+- Registry adapter pattern for easy expansion
+- Cross-registry dependencies (jsr packages can depend on npm)
+
+### Phase 5: Categories & Discussion (Current)
 
 - Package categories (compare packages within use cases)
 - Discussion/comments on packages and categories
 - Per-package leaderboards (recognize package experts)
-- Upvote ranking within categories
-
-### Phase 5: Expansion
-
 - Cross-registry package linking
 - New tag proposals (community-suggested tags)
 
