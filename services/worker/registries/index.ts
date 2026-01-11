@@ -1,9 +1,11 @@
 import type { Registry } from "@package/database/server";
 import * as jsr from "./jsr/index.ts";
 import * as npm from "./npm/index.ts";
+import * as nuget from "./nuget/index.ts";
 
 export * as jsr from "./jsr/index.ts";
 export * as npm from "./npm/index.ts";
+export * as nuget from "./nuget/index.ts";
 export type { FetchResult } from "./types.ts";
 export * from "./types.ts";
 
@@ -21,6 +23,8 @@ export async function getPackages(
 			return npm.getPackages(names, concurrency);
 		case "jsr":
 			return jsr.getPackages(names, concurrency);
+		case "nuget":
+			return nuget.getPackages(names, concurrency);
 		default: {
 			const _exhaustive: never = registry;
 			throw new Error(`Unknown registry: ${_exhaustive}`);
