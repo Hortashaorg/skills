@@ -45,16 +45,26 @@ function mapReleaseChannels(result: JsrFetchResult): ReleaseChannelData[] {
 
 function parsePublishedAt(timeString: string | undefined): Date {
 	if (!timeString) {
-		return new Date(0);
+		return new Date(); // No timestamp - use fetch time as fallback
 	}
 	return new Date(timeString);
 }
 
 function mapDependencies(dependencies: JsrDependency[]): DependencyData[] {
-	return dependencies.map((dep) => ({
-		name: dep.name,
-		versionRange: dep.constraint,
-		type: "runtime" as const,
-		registry: dep.kind as Registry,
-	}));
+	// Use Map to dedupe by registry:name - first occurrence wins
+	const depsMap = new Map<string, DependencyData>();
+
+	for (const dep of dependencies) {
+		const key = `${dep.kind}:${dep.name}`;
+		if (!depsMap.has(key)) {
+			depsMap.set(key, {
+				name: dep.name,
+				versionRange: dep.constraint,
+				type: "runtime" as const,
+				registry: dep.kind as Registry,
+			});
+		}
+	}
+
+	return Array.from(depsMap.values());
 }
