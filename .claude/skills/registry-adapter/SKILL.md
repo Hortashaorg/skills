@@ -336,16 +336,11 @@ The mapper is responsible for parsing these specifiers and setting the correct r
 
 ## Registry-Specific Notes
 
-### jsr (jsr.io) ✅ IMPLEMENTED
-- API: `https://api.jsr.io`
-- Package: `/scopes/{scope}/packages/{name}`
-- Version: `/scopes/{scope}/packages/{name}/versions/{version}`
-- **Dependencies: `/scopes/{scope}/packages/{name}/versions/{version}/dependencies`** (separate endpoint!)
-- Uses scoped packages like `@std/path` - requires `parseJsrName()` helper
-- Dependencies are cross-registry with `kind` field: `"jsr"` or `"npm"`
-- Only has "latest" channel (no dist-tags like npm)
-- Does NOT provide homepage URL (only `githubRepository`)
-- See `/skills/services/worker/registries/jsr/` for reference
+### jsr ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/jsr/` (separate endpoints, cross-registry deps)
+
+### nuget ✅ IMPLEMENTED
+Reference: `/skills/services/worker/registries/nuget/` (paginated responses, dependency groups)
 
 ### brew (Homebrew)
 - API: `https://formulae.brew.sh/api`
