@@ -45,7 +45,8 @@ export function parseJsrName(fullName: string): {
 	scope: string;
 	name: string;
 } {
-	const match = fullName.match(/^@([^/]+)\/(.+)$/);
+	// Use [^/]+ for both scope and name to prevent path traversal attacks
+	const match = fullName.match(/^@([^/]+)\/([^/]+)$/);
 	if (!match || !match[1] || !match[2]) {
 		throw new Error(
 			`Invalid JSR package name "${fullName}". Must be scoped (@scope/name).`,
@@ -62,7 +63,9 @@ export async function fetchPackage(
 ): Promise<JsrPackageResponse> {
 	const { scope, name } = parseJsrName(fullName);
 	const raw: unknown = await client
-		.get(`scopes/${scope}/packages/${name}`)
+		.get(
+			`scopes/${encodeURIComponent(scope)}/packages/${encodeURIComponent(name)}`,
+		)
 		.json();
 
 	const parseResult = schemas.package.safeParse(raw);
@@ -82,7 +85,9 @@ export async function fetchVersion(
 ): Promise<JsrVersionResponse> {
 	const { scope, name } = parseJsrName(fullName);
 	const raw: unknown = await client
-		.get(`scopes/${scope}/packages/${name}/versions/${version}`)
+		.get(
+			`scopes/${encodeURIComponent(scope)}/packages/${encodeURIComponent(name)}/versions/${encodeURIComponent(version)}`,
+		)
 		.json();
 
 	const parseResult = schemas.version.safeParse(raw);
@@ -103,7 +108,9 @@ export async function fetchDependencies(
 ): Promise<JsrDependency[]> {
 	const { scope, name } = parseJsrName(fullName);
 	const raw: unknown = await client
-		.get(`scopes/${scope}/packages/${name}/versions/${version}/dependencies`)
+		.get(
+			`scopes/${encodeURIComponent(scope)}/packages/${encodeURIComponent(name)}/versions/${encodeURIComponent(version)}/dependencies`,
+		)
 		.json();
 
 	const parseResult = schemas.dependencies.safeParse(raw);
@@ -181,9 +188,11 @@ export async function fetchPackages(
 }
 
 function chunk<T>(array: T[], size: number): T[][] {
+	// Guard against infinite loop if size <= 0
+	const safeSize = Math.max(1, size);
 	const chunks: T[][] = [];
-	for (let i = 0; i < array.length; i += size) {
-		chunks.push(array.slice(i, i + size));
+	for (let i = 0; i < array.length; i += safeSize) {
+		chunks.push(array.slice(i, i + safeSize));
 	}
 	return chunks;
 }

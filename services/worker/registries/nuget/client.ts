@@ -59,12 +59,14 @@ export async function fetchRegistration(
 
 /**
  * Fetch a specific page if items aren't inlined in the registration response.
+ * Uses configured client for consistent retry/timeout settings.
  */
 async function fetchPage(
 	pageUrl: string,
 	packageName: string,
 ): Promise<NuGetPage> {
-	const raw: unknown = await ky.get(pageUrl).json();
+	// Use client with absolute URL (ky uses the URL directly when absolute)
+	const raw: unknown = await client.get(pageUrl).json();
 	const parseResult = schemas.page.safeParse(raw);
 	if (!parseResult.success) {
 		throw new NuGetSchemaError(packageName, parseResult.error);
@@ -193,9 +195,11 @@ export async function fetchPackages(
 }
 
 function chunk<T>(array: T[], size: number): T[][] {
+	// Guard against infinite loop if size <= 0
+	const safeSize = Math.max(1, size);
 	const chunks: T[][] = [];
-	for (let i = 0; i < array.length; i += size) {
-		chunks.push(array.slice(i, i + size));
+	for (let i = 0; i < array.length; i += safeSize) {
+		chunks.push(array.slice(i, i + safeSize));
 	}
 	return chunks;
 }

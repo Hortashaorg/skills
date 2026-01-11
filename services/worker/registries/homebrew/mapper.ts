@@ -41,37 +41,44 @@ function mapReleaseChannels(formula: HomebrewFormula): ReleaseChannelData[] {
 }
 
 function mapDependencies(formula: HomebrewFormula): DependencyData[] {
-	const deps: DependencyData[] = [];
+	// Use Map to dedupe by name - first occurrence wins (runtime > dev > optional)
+	const depsMap = new Map<string, DependencyData>();
 
-	// Runtime dependencies
+	// Runtime dependencies (highest priority)
 	for (const dep of formula.dependencies ?? []) {
-		deps.push({
-			name: dep,
-			versionRange: "*",
-			type: "runtime",
-			registry: "homebrew",
-		});
+		if (!depsMap.has(dep)) {
+			depsMap.set(dep, {
+				name: dep,
+				versionRange: "*",
+				type: "runtime",
+				registry: "homebrew",
+			});
+		}
 	}
 
 	// Build dependencies
 	for (const dep of formula.build_dependencies ?? []) {
-		deps.push({
-			name: dep,
-			versionRange: "*",
-			type: "dev",
-			registry: "homebrew",
-		});
+		if (!depsMap.has(dep)) {
+			depsMap.set(dep, {
+				name: dep,
+				versionRange: "*",
+				type: "dev",
+				registry: "homebrew",
+			});
+		}
 	}
 
-	// Optional dependencies
+	// Optional dependencies (lowest priority)
 	for (const dep of formula.optional_dependencies ?? []) {
-		deps.push({
-			name: dep,
-			versionRange: "*",
-			type: "optional",
-			registry: "homebrew",
-		});
+		if (!depsMap.has(dep)) {
+			depsMap.set(dep, {
+				name: dep,
+				versionRange: "*",
+				type: "optional",
+				registry: "homebrew",
+			});
+		}
 	}
 
-	return deps;
+	return Array.from(depsMap.values());
 }

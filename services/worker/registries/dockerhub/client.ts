@@ -163,9 +163,11 @@ export async function fetchImages(
 }
 
 function chunk<T>(array: T[], size: number): T[][] {
+	// Guard against infinite loop if size <= 0
+	const safeSize = Math.max(1, size);
 	const chunks: T[][] = [];
-	for (let i = 0; i < array.length; i += size) {
-		chunks.push(array.slice(i, i + size));
+	for (let i = 0; i < array.length; i += safeSize) {
+		chunks.push(array.slice(i, i + safeSize));
 	}
 	return chunks;
 }
