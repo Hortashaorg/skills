@@ -1,34 +1,26 @@
-# Sprint 8 Tasks
+# Tasks
 
-> **Current Sprint:** [SPRINT-8.md](./SPRINT-8.md) - UI Polish & Profiles
-
----
-
-## Deleted User Display ✅
-
-- [x] Use getDisplayName() consistently across all components
-- [x] Update ProjectCard, ProjectDetail, CurateTab
-- [x] Update ReviewQueue, Backlog, Leaderboard, Landing
+> Current work and backlog. See [BACKLOG.md](./BACKLOG.md) for deferred items.
 
 ---
 
-## Multi-Registry Support ✅
+## Sprint 9: Tech Debt
 
-- [x] JSR adapter (cross-registry deps: jsr/npm)
-- [x] NuGet adapter (paginated responses, framework dep groups)
-- [x] Docker Hub adapter (named tags only, no deps)
-- [x] Homebrew adapter (runtime/build/optional deps)
-- [x] Arch Linux adapter (dedupe deps, filter .so provides)
-- [x] Registry dispatcher routing
-- [x] Updated skill documentation
+### Quick Wins
 
----
+- [ ] Split `webhook/index.ts` into separate handler files
+- [ ] Split `me/projects/detail.tsx` into sections
+- [ ] Fix `createUrlSignal` type assertion
 
-## Tech Debt Cleanup ✅
+### Foundational
 
-- [x] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
-- [x] Centralize constants (limits, timeouts, batch sizes → lib/constants.ts)
-- [x] Extract reusable mutation error handler (console.error + toast pattern)
+- [ ] Add vitest + first unit tests for `process-fetch.ts`
+- [ ] Add tests for score calculation
+
+### Polish
+
+- [ ] Data-driven Navbar navigation
+- [ ] Mobile audit (main pages)
 
 ---
 
@@ -39,6 +31,13 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 8: Multi-Registry Support
+
+- Deleted user display (getDisplayName across components)
+- 6 registry adapters: npm, jsr, nuget, dockerhub, homebrew, archlinux
+- Registry dispatcher routing
+- Tech debt: icon consolidation, constants, mutation error handler
 
 ### Sprint 7: Zitadel Webhooks
 
