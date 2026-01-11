@@ -13,7 +13,7 @@ export function mapDockerHubImage(result: DockerHubFetchResult): PackageData {
 	return {
 		name: formatImageName(repository.namespace, repository.name),
 		description: repository.description ?? undefined,
-		homepage: `https://hub.docker.com/${repository.namespace === "library" ? "_" : "r"}/${repository.namespace}/${repository.name}`,
+		homepage: undefined,
 		repository: undefined,
 		latestVersion: latestTag ? "latest" : namedTags[0]?.name,
 		distTags: buildDistTags(namedTags),
