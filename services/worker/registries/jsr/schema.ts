@@ -35,21 +35,31 @@ export const JsrPackageSchema = z.object({
 
 export const JsrVersionSchema = z.object({
 	scope: z.string(),
-	name: z.string(),
+	package: z.string(),
 	version: z.string(),
 	yanked: z.boolean().optional(),
 	usesNpm: z.boolean().optional(),
 	createdAt: z.string().optional(),
 	updatedAt: z.string().optional(),
 	exports: z.record(z.string(), z.string()).optional(),
-	// Dependencies are in format: "jsr:@scope/name": "^1.0.0" or "npm:lodash": "^4.0.0"
-	dependencies: z.record(z.string(), z.string()).optional(),
 });
+
+// Dependencies come from a separate endpoint: /versions/{version}/dependencies
+export const JsrDependencySchema = z.object({
+	kind: z.enum(["npm", "jsr"]),
+	name: z.string(),
+	constraint: z.string(),
+	path: z.string().optional(),
+});
+
+export const JsrDependenciesSchema = z.array(JsrDependencySchema);
 
 export type JsrPackageResponse = z.infer<typeof JsrPackageSchema>;
 export type JsrVersionResponse = z.infer<typeof JsrVersionSchema>;
+export type JsrDependency = z.infer<typeof JsrDependencySchema>;
 
 export const schemas = {
 	package: JsrPackageSchema,
 	version: JsrVersionSchema,
+	dependencies: JsrDependenciesSchema,
 };

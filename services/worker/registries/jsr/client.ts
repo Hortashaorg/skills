@@ -1,6 +1,10 @@
 import type { z } from "@package/common";
 import ky, { HTTPError } from "ky";
-import type { JsrPackageResponse, JsrVersionResponse } from "./schema.ts";
+import type {
+	JsrDependency,
+	JsrPackageResponse,
+	JsrVersionResponse,
+} from "./schema.ts";
 import { schemas } from "./schema.ts";
 
 const JSR_API = "https://api.jsr.io";
@@ -89,13 +93,35 @@ export async function fetchVersion(
 	return parseResult.data;
 }
 
+/**
+ * Fetch dependencies for a specific version from JSR.
+ * Dependencies are in a separate endpoint from version details.
+ */
+export async function fetchDependencies(
+	fullName: string,
+	version: string,
+): Promise<JsrDependency[]> {
+	const { scope, name } = parseJsrName(fullName);
+	const raw: unknown = await client
+		.get(`scopes/${scope}/packages/${name}/versions/${version}/dependencies`)
+		.json();
+
+	const parseResult = schemas.dependencies.safeParse(raw);
+	if (!parseResult.success) {
+		throw new JsrSchemaError(fullName, parseResult.error);
+	}
+
+	return parseResult.data;
+}
+
 export interface JsrFetchResult {
 	package: JsrPackageResponse;
 	latestVersion: JsrVersionResponse | null;
+	dependencies: JsrDependency[];
 }
 
 /**
- * Fetch package and its latest version details.
+ * Fetch package, its latest version details, and dependencies.
  */
 export async function fetchPackageWithVersion(
 	fullName: string,
@@ -103,11 +129,19 @@ export async function fetchPackageWithVersion(
 	const pkg = await fetchPackage(fullName);
 
 	let latestVersion: JsrVersionResponse | null = null;
+	let dependencies: JsrDependency[] = [];
+
 	if (pkg.latestVersion) {
-		latestVersion = await fetchVersion(fullName, pkg.latestVersion);
+		// Fetch version and dependencies in parallel
+		const [version, deps] = await Promise.all([
+			fetchVersion(fullName, pkg.latestVersion),
+			fetchDependencies(fullName, pkg.latestVersion),
+		]);
+		latestVersion = version;
+		dependencies = deps;
 	}
 
-	return { package: pkg, latestVersion };
+	return { package: pkg, latestVersion, dependencies };
 }
 
 /**

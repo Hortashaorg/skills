@@ -5,7 +5,7 @@ import type {
 	ReleaseChannelData,
 } from "../types.ts";
 import type { JsrFetchResult } from "./client.ts";
-import type { JsrVersionResponse } from "./schema.ts";
+import type { JsrDependency } from "./schema.ts";
 
 /**
  * Transform JSR API response to common PackageData format.
@@ -17,7 +17,7 @@ export function mapJsrPackage(result: JsrFetchResult): PackageData {
 	return {
 		name: fullName,
 		description: pkg.description,
-		homepage: `https://jsr.io/${fullName}`,
+		homepage: undefined, // JSR doesn't provide homepage, only githubRepository
 		repository: pkg.githubRepository
 			? `https://github.com/${pkg.githubRepository.owner}/${pkg.githubRepository.name}`
 			: undefined,
@@ -36,7 +36,7 @@ function mapReleaseChannels(result: JsrFetchResult): ReleaseChannelData[] {
 			channel: "latest",
 			version: result.package.latestVersion,
 			publishedAt: parsePublishedAt(result.latestVersion.createdAt),
-			dependencies: mapDependencies(result.latestVersion),
+			dependencies: mapDependencies(result.dependencies),
 		});
 	}
 
@@ -50,40 +50,11 @@ function parsePublishedAt(timeString: string | undefined): Date {
 	return new Date(timeString);
 }
 
-/**
- * Parse JSR dependency specifier to extract registry and name.
- * Format: "jsr:@scope/name" or "npm:package-name"
- */
-function parseDependencySpecifier(specifier: string): {
-	registry: Registry;
-	name: string;
-} {
-	if (specifier.startsWith("jsr:")) {
-		return { registry: "jsr", name: specifier.slice(4) };
-	}
-	if (specifier.startsWith("npm:")) {
-		return { registry: "npm", name: specifier.slice(4) };
-	}
-	// Default to jsr if no prefix (shouldn't happen in practice)
-	return { registry: "jsr", name: specifier };
-}
-
-function mapDependencies(version: JsrVersionResponse): DependencyData[] {
-	const deps: DependencyData[] = [];
-
-	if (version.dependencies) {
-		for (const [specifier, versionRange] of Object.entries(
-			version.dependencies,
-		)) {
-			const { registry, name } = parseDependencySpecifier(specifier);
-			deps.push({
-				name,
-				versionRange,
-				type: "runtime",
-				registry,
-			});
-		}
-	}
-
-	return deps;
+function mapDependencies(dependencies: JsrDependency[]): DependencyData[] {
+	return dependencies.map((dep) => ({
+		name: dep.name,
+		versionRange: dep.constraint,
+		type: "runtime" as const,
+		registry: dep.kind as Registry,
+	}));
 }
