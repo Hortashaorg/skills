@@ -237,18 +237,15 @@ export const Header = (props: HeaderProps) => {
 
 				{/* Update button */}
 				<Flex gap="sm" align="center">
-					<Show
-						when={!request.isRequested() && !request.isDisabled()}
-						fallback={
-							<Show when={request.isRequested()}>
-								<Badge variant="info" size="md">
-									Update requested
-								</Badge>
+					<Show when={!request.isDisabled()}>
+						<Button
+							variant="outline"
+							onClick={() => request.submit()}
+							disabled={request.isSubmitting()}
+						>
+							<Show when={request.isSubmitting()} fallback="Request Update">
+								Requesting...
 							</Show>
-						}
-					>
-						<Button variant="outline" onClick={() => request.submit()}>
-							Request Update
 						</Button>
 					</Show>
 					<Show when={!isLoggedIn()}>

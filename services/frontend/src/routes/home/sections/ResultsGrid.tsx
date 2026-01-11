@@ -351,37 +351,32 @@ const AddPackageCard = (props: AddPackageCardProps) => {
 						</Button>
 					}
 				>
-					<Show
-						when={!props.packageRequest.isRequested()}
-						fallback={<Badge variant="success">Request submitted</Badge>}
-					>
-						<Flex gap="sm" align="center" wrap="wrap">
-							<Show when={!props.registry}>
-								<Select
-									options={REGISTRY_OPTIONS}
-									value={props.requestRegistry}
-									onChange={props.onRegistryChange}
-									aria-label="Select registry"
-									disabled={props.packageRequest.isSubmitting()}
-									class="w-auto"
-								/>
-							</Show>
-							<Button
-								variant="primary"
-								size="sm"
-								onClick={() => props.packageRequest.submit()}
+					<Flex gap="sm" align="center" wrap="wrap">
+						<Show when={!props.registry}>
+							<Select
+								options={REGISTRY_OPTIONS}
+								value={props.requestRegistry}
+								onChange={props.onRegistryChange}
+								aria-label="Select registry"
 								disabled={props.packageRequest.isSubmitting()}
+								class="w-auto"
+							/>
+						</Show>
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={() => props.packageRequest.submit()}
+							disabled={props.packageRequest.isSubmitting()}
+						>
+							<Show
+								when={props.packageRequest.isSubmitting()}
+								fallback={`Request from ${props.effectiveRegistry}`}
 							>
-								<Show
-									when={props.packageRequest.isSubmitting()}
-									fallback={`Request from ${props.effectiveRegistry}`}
-								>
-									<Spinner size="sm" srText="Requesting" />
-									<span class="ml-2">Requesting...</span>
-								</Show>
-							</Button>
-						</Flex>
-					</Show>
+								<Spinner size="sm" srText="Requesting" />
+								<span class="ml-2">Requesting...</span>
+							</Show>
+						</Button>
+					</Flex>
 				</Show>
 			</Stack>
 		</Card>

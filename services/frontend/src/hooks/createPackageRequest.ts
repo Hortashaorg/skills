@@ -10,7 +10,6 @@ type RequestParams = {
 
 export function createPackageRequest(params: () => RequestParams) {
 	const zero = useZero();
-	const [isRequested, setIsRequested] = createSignal(false);
 	const [isSubmitting, setIsSubmitting] = createSignal(false);
 
 	const isDisabled = () => zero().userID === "anon";
@@ -32,16 +31,14 @@ export function createPackageRequest(params: () => RequestParams) {
 				return;
 			}
 
-			setIsRequested(true);
 			options?.onSuccess?.();
-			toast.success(`Request submitted for "${name}"`);
+			toast.success(`Requested "${name}" from ${registry}`);
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
 	return {
-		isRequested,
 		isDisabled,
 		isSubmitting,
 		submit,
