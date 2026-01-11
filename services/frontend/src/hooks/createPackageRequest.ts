@@ -1,6 +1,7 @@
 import { mutators, type Registry, useZero } from "@package/database/client";
 import { createSignal } from "solid-js";
 import { toast } from "@/components/ui/toast";
+import { handleMutationError } from "@/lib/mutation-error";
 
 type RequestParams = {
 	name: string;
@@ -27,8 +28,7 @@ export function createPackageRequest(params: () => RequestParams) {
 			const res = await write.client;
 
 			if (res.type === "error") {
-				console.error("Failed to request package:", res.error);
-				toast.error("Failed to submit request. Please try again.");
+				handleMutationError(res.error, "submit request");
 				return;
 			}
 

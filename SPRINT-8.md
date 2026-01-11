@@ -37,13 +37,13 @@ First step toward multi-registry support:
 
 ---
 
-## Tech Debt Cleanup
+## Tech Debt Cleanup ✅
 
 Small improvements to code quality:
 
 - [x] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
 - [x] Centralize constants (limits, timeouts, batch sizes → lib/constants.ts)
-- [ ] Extract reusable mutation error handler (console.error + toast pattern)
+- [x] Extract reusable mutation error handler (console.error + toast pattern)
 
 ---
 

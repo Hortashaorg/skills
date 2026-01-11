@@ -1,5 +1,5 @@
 import { mutators, useZero } from "@package/database/client";
-import { toast } from "@/components/ui/toast";
+import { handleMutationError } from "@/lib/mutation-error";
 
 type PackageWithUpvotes = {
 	id: string;
@@ -44,8 +44,7 @@ export function createPackageUpvote(pkg: () => PackageWithUpvotes) {
 				}
 			}
 		} catch (err) {
-			console.error("Failed to toggle upvote:", err);
-			toast.error("Failed to update upvote. Please try again.");
+			handleMutationError(err, "update upvote");
 		}
 	};
 

@@ -12,8 +12,12 @@ const widthClasses = {
 
 export type DropdownWidth = keyof typeof widthClasses;
 
-const Root = (props: { children: JSX.Element }) => {
-	return <DropdownMenuPrimitive>{props.children}</DropdownMenuPrimitive>;
+const Root = (props: { children: JSX.Element; modal?: boolean }) => {
+	return (
+		<DropdownMenuPrimitive modal={props.modal ?? false}>
+			{props.children}
+		</DropdownMenuPrimitive>
+	);
 };
 
 type TriggerProps = {

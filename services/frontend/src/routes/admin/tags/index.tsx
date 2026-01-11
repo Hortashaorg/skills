@@ -16,9 +16,9 @@ import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
+import { handleMutationError } from "@/lib/mutation-error";
 import { TagForm } from "./sections/TagForm";
 import { TagsList } from "./sections/TagsList";
 
@@ -98,8 +98,7 @@ export const AdminTags = () => {
 				throw result.error;
 			}
 		} catch (err) {
-			console.error("Failed to delete tag:", err);
-			toast.error("Failed to delete tag. Please try again.");
+			handleMutationError(err, "delete tag");
 		} finally {
 			setTagToDelete(null);
 			setDeleteDialogOpen(false);
@@ -134,8 +133,7 @@ export const AdminTags = () => {
 			setShowForm(false);
 			setEditingTag(null);
 		} catch (err) {
-			console.error("Failed to save tag:", err);
-			toast.error("Failed to save tag. Please try again.");
+			handleMutationError(err, "save tag");
 		}
 	};
 
