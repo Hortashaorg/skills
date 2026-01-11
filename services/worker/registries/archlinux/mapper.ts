@@ -39,42 +39,55 @@ function mapReleaseChannels(pkg: ArchPackage): ReleaseChannelData[] {
 }
 
 function mapDependencies(pkg: ArchPackage): DependencyData[] {
-	const deps: DependencyData[] = [];
+	// Use Map to dedupe by name - first occurrence wins (runtime > optional > dev)
+	const depsMap = new Map<string, DependencyData>();
 
-	// Runtime dependencies
+	// Runtime dependencies (highest priority)
 	for (const dep of pkg.depends ?? []) {
-		deps.push({
-			name: parseDepName(dep),
-			versionRange: parseDepVersion(dep),
-			type: "runtime",
-			registry: "archlinux",
-		});
-	}
-
-	// Optional dependencies (strip description after colon)
-	for (const dep of pkg.optdepends ?? []) {
-		const name = dep.split(":")[0]?.trim();
-		if (name) {
-			deps.push({
-				name: parseDepName(name),
-				versionRange: "*",
-				type: "optional",
+		const name = parseDepName(dep);
+		// Skip shared library dependencies (e.g., libfoo.so, libbar.so.1)
+		if (isSharedLibrary(name)) continue;
+		if (!depsMap.has(name)) {
+			depsMap.set(name, {
+				name,
+				versionRange: parseDepVersion(dep),
+				type: "runtime",
 				registry: "archlinux",
 			});
 		}
 	}
 
-	// Make dependencies (build-time)
-	for (const dep of pkg.makedepends ?? []) {
-		deps.push({
-			name: parseDepName(dep),
-			versionRange: parseDepVersion(dep),
-			type: "dev",
-			registry: "archlinux",
-		});
+	// Optional dependencies (strip description after colon)
+	for (const dep of pkg.optdepends ?? []) {
+		const rawName = dep.split(":")[0]?.trim();
+		if (rawName) {
+			const name = parseDepName(rawName);
+			if (!depsMap.has(name)) {
+				depsMap.set(name, {
+					name,
+					versionRange: "*",
+					type: "optional",
+					registry: "archlinux",
+				});
+			}
+		}
 	}
 
-	return deps;
+	// Make dependencies (build-time, lowest priority)
+	for (const dep of pkg.makedepends ?? []) {
+		const name = parseDepName(dep);
+		if (isSharedLibrary(name)) continue;
+		if (!depsMap.has(name)) {
+			depsMap.set(name, {
+				name,
+				versionRange: parseDepVersion(dep),
+				type: "dev",
+				registry: "archlinux",
+			});
+		}
+	}
+
+	return Array.from(depsMap.values());
 }
 
 /**
@@ -93,4 +106,12 @@ function parseDepName(dep: string): string {
 function parseDepVersion(dep: string): string {
 	const match = dep.match(/([<>=]+.*)$/);
 	return match?.[1] ?? "*";
+}
+
+/**
+ * Check if dependency is a shared library rather than a package name.
+ * Examples: "libgobject-2.0.so", "libfoo.so.1" → true
+ */
+function isSharedLibrary(name: string): boolean {
+	return /\.so(\.\d+)*$/.test(name);
 }
