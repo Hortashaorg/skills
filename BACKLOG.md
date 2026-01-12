@@ -32,6 +32,7 @@
 
 - [ ] ghcr.io (GitHub Container Registry) adapter - many cloud-native tools publish here (CloudNativePG, etc.)
 - [ ] homebrew-cask adapter - macOS GUI applications (Discord, VS Code, 1Password, etc.)
+- [ ] homebrew taps adapter - third-party formulas (fluxcd, argocd, etc.)
 - [ ] AUR (Arch User Repository) adapter - Arch community packages
 
 ---
