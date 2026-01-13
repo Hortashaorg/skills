@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { createMemo, For } from "solid-js";
+import { createMemo, For, Show } from "solid-js";
 import type { NavItem } from "./types";
 
 export type NavLinksProps = {
@@ -28,25 +28,32 @@ export const NavLinks = (props: NavLinksProps) => {
 	const horizontal = () => props.layout === "horizontal";
 
 	return (
-		<nav class={horizontal() ? "hidden sm:flex gap-4" : "space-y-2"}>
+		<nav class={horizontal() ? "hidden sm:flex gap-1" : "space-y-1"}>
 			<For each={filteredItems()}>
 				{(item) => (
 					<A
 						href={item.href}
 						class={
 							horizontal()
-								? "text-sm hover:text-on-surface dark:hover:text-on-surface-dark transition"
-								: "block py-2 text-sm"
+								? "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-all duration-200"
+								: "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all duration-200"
 						}
 						classList={{
-							"text-brand dark:text-brand-dark font-medium": isActive(item),
-							"text-on-surface-muted dark:text-on-surface-dark-muted":
+							"bg-brand/10 dark:bg-brand-dark/15 text-brand dark:text-brand-dark font-medium":
+								isActive(item),
+							"text-on-surface-muted dark:text-on-surface-dark-muted hover:bg-surface-alt dark:hover:bg-surface-dark-alt hover:text-on-surface dark:hover:text-on-surface-dark":
 								!isActive(item) && horizontal(),
-							"text-on-surface dark:text-on-surface-dark":
+							"text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt":
 								!isActive(item) && !horizontal(),
 						}}
 						onClick={props.onNavigate}
 					>
+						<Show when={item.icon}>
+							{(IconComponent) => {
+								const Icon = IconComponent();
+								return <Icon size="sm" />;
+							}}
+						</Show>
 						{item.label}
 					</A>
 				)}

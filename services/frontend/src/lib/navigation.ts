@@ -1,8 +1,9 @@
 import type { NavItem } from "@/components/feature/navbar/types";
+import { FolderIcon, PackageIcon } from "@/components/primitives/icon";
 
 export const mainNavItems: NavItem[] = [
-	{ href: "/packages", label: "Packages" },
-	{ href: "/projects", label: "Projects", exactMatch: true },
+	{ href: "/packages", label: "Packages", icon: PackageIcon },
+	{ href: "/projects", label: "Projects", exactMatch: true, icon: FolderIcon },
 ];
 
 export const accountNavItems: NavItem[] = [

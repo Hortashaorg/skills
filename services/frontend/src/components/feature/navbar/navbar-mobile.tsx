@@ -64,18 +64,20 @@ export const NavbarMobile = (props: NavbarMobileProps) => {
 			/>
 
 			<Show when={props.isLoggedIn}>
-				<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
-					<Text size="xs" color="muted" class="uppercase tracking-wide">
+				<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-1">
+					<Text size="xs" color="muted" class="uppercase tracking-wide px-3">
 						Account
 					</Text>
 					<For each={regularAccountItems()}>
 						{(item) => (
 							<A
 								href={item.href}
-								class="block py-2 text-sm"
+								class="block px-3 py-2 text-sm rounded-lg transition-all duration-200"
 								classList={{
-									"text-brand dark:text-brand-dark font-medium": isActive(item),
-									"text-on-surface dark:text-on-surface-dark": !isActive(item),
+									"bg-brand/10 dark:bg-brand-dark/15 text-brand dark:text-brand-dark font-medium":
+										isActive(item),
+									"text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt":
+										!isActive(item),
 								}}
 								onClick={props.onNavigate}
 							>
@@ -87,18 +89,20 @@ export const NavbarMobile = (props: NavbarMobileProps) => {
 			</Show>
 
 			<Show when={adminItems().length > 0}>
-				<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-2">
-					<Text size="xs" color="muted" class="uppercase tracking-wide">
+				<div class="pt-2 border-t border-outline dark:border-outline-dark space-y-1">
+					<Text size="xs" color="muted" class="uppercase tracking-wide px-3">
 						Admin
 					</Text>
 					<For each={adminItems()}>
 						{(item) => (
 							<A
 								href={item.href}
-								class="block py-2 text-sm"
+								class="block px-3 py-2 text-sm rounded-lg transition-all duration-200"
 								classList={{
-									"text-brand dark:text-brand-dark font-medium": isActive(item),
-									"text-on-surface dark:text-on-surface-dark": !isActive(item),
+									"bg-brand/10 dark:bg-brand-dark/15 text-brand dark:text-brand-dark font-medium":
+										isActive(item),
+									"text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt":
+										!isActive(item),
 								}}
 								onClick={props.onNavigate}
 							>
@@ -129,7 +133,7 @@ export const NavbarMobile = (props: NavbarMobileProps) => {
 							props.onLogout();
 							props.onNavigate();
 						}}
-						class="block w-full text-left py-2 text-sm text-on-surface dark:text-on-surface-dark"
+						class="block w-full text-left px-3 py-2 text-sm rounded-lg text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-all duration-200"
 					>
 						Sign out
 					</button>

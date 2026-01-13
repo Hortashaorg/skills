@@ -11,7 +11,7 @@
 - [x] Upgrade dependencies (zero, hono, pino, rolldown-vite, types)
 - [ ] Split `webhook/index.ts` into separate handler files
 - [ ] Split `me/projects/detail.tsx` into sections
-- [ ] Split `navbar.tsx` into smaller components
+- [x] Split `navbar.tsx` into smaller components
 - [ ] Fix `createUrlSignal` type assertion
 - [ ] Dead code cleanup (unused exports, stale files)
 
@@ -30,7 +30,7 @@
 
 ### Polish
 
-- [ ] Data-driven Navbar navigation
+- [x] Data-driven Navbar navigation
 - [ ] Update CLAUDE.md docs if stale
 
 ---
@@ -48,7 +48,8 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 - Deleted user display (getDisplayName across components)
 - 6 registry adapters: npm, jsr, nuget, dockerhub, homebrew, archlinux
 - Registry dispatcher routing
-- Tech debt: icon consolidation, constants, mutation error handler
+- Tech debt: icon
+consolidation, constants, mutation error handler
 
 ### Sprint 7: Zitadel Webhooks
 

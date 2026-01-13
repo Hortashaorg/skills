@@ -50,10 +50,10 @@ const Content = (props: ContentProps) => {
 		<DropdownMenuPrimitive.Portal>
 			<DropdownMenuPrimitive.Content
 				class={cn(
-					"z-50 overflow-hidden",
+					"z-50 overflow-hidden p-1",
 					"bg-surface dark:bg-surface-dark",
 					"border border-outline dark:border-outline-dark",
-					"rounded-md shadow-lg",
+					"rounded-lg shadow-lg",
 					"origin-(--kb-menu-content-transform-origin)",
 					"animate-in fade-in-0 zoom-in-95",
 					widthClasses[width()],
@@ -86,11 +86,11 @@ const Item = (props: ItemProps) => {
 	return (
 		<DropdownMenuPrimitive.Item
 			class={cn(
-				"block w-full text-left px-4 py-2 text-sm",
+				"block w-full text-left px-3 py-2 text-sm rounded-md",
 				"text-on-surface dark:text-on-surface-dark",
 				"hover:bg-surface-alt dark:hover:bg-surface-dark-alt",
 				"focus:bg-surface-alt dark:focus:bg-surface-dark-alt",
-				"outline-none transition cursor-pointer",
+				"outline-none transition-all duration-200 cursor-pointer",
 				"disabled:opacity-50 disabled:cursor-not-allowed",
 				local.class,
 			)}
@@ -126,13 +126,11 @@ const LinkItem = (props: LinkItemProps) => {
 			as="a"
 			href={local.href}
 			class={cn(
-				"block w-full text-left px-4 py-2 text-sm",
-				"hover:bg-surface-alt dark:hover:bg-surface-dark-alt",
-				"focus:bg-surface-alt dark:focus:bg-surface-dark-alt",
-				"outline-none transition cursor-pointer",
+				"block w-full text-left px-3 py-2 text-sm rounded-md",
+				"outline-none transition-all duration-200 cursor-pointer",
 				local.active
-					? "text-brand dark:text-brand-dark font-medium"
-					: "text-on-surface dark:text-on-surface-dark",
+					? "bg-brand/10 dark:bg-brand-dark/15 text-brand dark:text-brand-dark font-medium"
+					: "text-on-surface dark:text-on-surface-dark hover:bg-surface-alt dark:hover:bg-surface-dark-alt",
 				local.class,
 			)}
 			closeOnSelect={true}
@@ -148,7 +146,7 @@ const Separator = (props: { class?: string }) => {
 	return (
 		<DropdownMenuPrimitive.Separator
 			class={cn(
-				"border-t border-outline dark:border-outline-dark my-1",
+				"border-t border-outline dark:border-outline-dark my-1 -mx-1",
 				props.class,
 			)}
 		/>
@@ -161,7 +159,7 @@ const GroupLabel = (props: { children: JSX.Element; class?: string }) => {
 	return (
 		<DropdownMenuPrimitive.GroupLabel
 			class={cn(
-				"px-4 py-2 text-xs text-on-surface-muted dark:text-on-surface-dark-muted uppercase tracking-wide",
+				"px-3 py-2 text-xs text-on-surface-muted dark:text-on-surface-dark-muted uppercase tracking-wide",
 				props.class,
 			)}
 		>
