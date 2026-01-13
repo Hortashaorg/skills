@@ -2,23 +2,40 @@ import { useSearchParams } from "@solidjs/router";
 import { createEffect, createSignal, on, type Signal } from "solid-js";
 
 type UrlSignalOptions<T> = {
-	parse?: (value: string | undefined) => T;
-	serialize?: (value: T) => string | undefined;
+	parse: (value: string | undefined) => T;
+	serialize: (value: T) => string | undefined;
 };
 
-const defaultParse = <T>(value: string | undefined): T =>
-	(value ?? "") as unknown as T;
-const defaultSerialize = <T>(value: T): string | undefined =>
-	value ? String(value) : undefined;
+// String-specific defaults - only used when T = string
+const stringParse = (value: string | undefined): string => value ?? "";
+const stringSerialize = (value: string): string | undefined =>
+	value || undefined;
 
-export function createUrlSignal<T = string>(
+// Overload: string type uses defaults
+export function createUrlSignal(
+	key: string,
+	defaultValue: string,
+): Signal<string>;
+
+// Overload: custom types require parse/serialize
+export function createUrlSignal<T>(
+	key: string,
+	defaultValue: T,
+	options: UrlSignalOptions<T>,
+): Signal<T>;
+
+// Implementation
+export function createUrlSignal<T>(
 	key: string,
 	defaultValue: T,
 	options?: UrlSignalOptions<T>,
 ): Signal<T> {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const parse = options?.parse ?? defaultParse<T>;
-	const serialize = options?.serialize ?? defaultSerialize<T>;
+
+	// Type-safe: if options not provided, T must be string
+	const parse = options?.parse ?? (stringParse as (v: string | undefined) => T);
+	const serialize =
+		options?.serialize ?? (stringSerialize as (v: T) => string | undefined);
 
 	const initialValue = searchParams[key]
 		? parse(searchParams[key] as string)

@@ -9,11 +9,11 @@
 ### Quick Wins
 
 - [x] Upgrade dependencies (zero, hono, pino, rolldown-vite, types)
-- [ ] Split `webhook/index.ts` into separate handler files
-- [ ] Split `me/projects/detail.tsx` into sections
+- [x] Split `webhook/index.ts` into separate handler files
+- [x] Split `me/projects/detail.tsx` into sections
 - [x] Split `navbar.tsx` into smaller components
-- [ ] Fix `createUrlSignal` type assertion
-- [ ] Dead code cleanup (unused exports, stale files)
+- [x] Fix `createUrlSignal` type assertion
+- [x] Dead code cleanup (unused exports, stale files)
 
 ### Foundational
 

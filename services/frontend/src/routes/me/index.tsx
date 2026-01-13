@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { getAuthData, logout } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
+import { getZitadelAccountUrl } from "@/lib/auth-url";
 import { getConfig } from "@/lib/config";
 import { handleMutationError } from "@/lib/mutation-error";
 
@@ -185,11 +186,6 @@ export const Profile = () => {
 		}
 	};
 
-	const zitadelAccountUrl = () => {
-		const config = getConfig();
-		return `${config.zitadelIssuer}/ui/console/users/me`;
-	};
-
 	const handleDeleteAccount = async () => {
 		setIsDeleting(true);
 		setDeleteError(null);
@@ -344,7 +340,7 @@ export const Profile = () => {
 											/>
 
 											<IconLinkCard
-												href={zitadelAccountUrl()}
+												href={getZitadelAccountUrl()}
 												title="Account Settings"
 												description="Manage your identity provider"
 												color="secondary"
