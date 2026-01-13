@@ -15,12 +15,6 @@
 - [x] Fix `createUrlSignal` type assertion
 - [x] Dead code cleanup (unused exports, stale files)
 
-### Foundational
-
-- [ ] Add vitest + first unit tests for `process-fetch.ts`
-- [ ] Add tests for score calculation
-- [ ] Error boundary component for frontend
-
 ### UI Fixes
 
 - [ ] Text overflow in cards (truncate long names/descriptions)

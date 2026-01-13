@@ -50,9 +50,6 @@
 - [ ] Surface errors to users - 16+ places log errors without user feedback
 - [ ] Add error type system for worker/backend (retry-able vs permanent)
 
-### Testing
-- [ ] Unit tests for backend auth token refresh
-
 ### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
 
