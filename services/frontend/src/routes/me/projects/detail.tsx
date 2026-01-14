@@ -128,7 +128,6 @@ export const ProjectDetail = () => {
 		status?: string | null;
 	}) => {
 		if (pkg.status === "failed") return "failed";
-		if (pkg.status === "placeholder") return "pending";
 		return pkg.registry;
 	};
 
