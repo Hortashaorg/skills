@@ -50,9 +50,9 @@ export const ProjectDetail = () => {
 		}),
 	);
 
-	// Exact match query for prioritization
-	const [exactMatch] = useQuery(() =>
-		queries.packages.exactMatch({
+	// Exact matches query - returns all packages with exact name across registries
+	const [exactMatchResults] = useQuery(() =>
+		queries.packages.exactMatches({
 			name: packageSearch().trim(),
 		}),
 	);
@@ -135,12 +135,14 @@ export const ProjectDetail = () => {
 	const packageSearchResults = createMemo((): SearchResultItem[] => {
 		const results = searchResults() ?? [];
 		const existing = existingPackageIds();
-		const exact = exactMatch();
+		const exactMatches = exactMatchResults() ?? [];
 		const searchTerm = packageSearch().trim();
 		const items: SearchResultItem[] = [];
+		const exactIds = new Set(exactMatches.map((p) => p.id));
 
-		// Add exact match first if not already in project
-		if (exact && !existing.has(exact.id)) {
+		// Add all exact matches first (sorted by upvotes from query)
+		for (const exact of exactMatches) {
+			if (existing.has(exact.id)) continue;
 			items.push({
 				id: exact.id,
 				primary: exact.name,
@@ -149,8 +151,8 @@ export const ProjectDetail = () => {
 			});
 		}
 
-		// Add "search on packages page" option when no exact match
-		if (!exact && searchTerm.length > 0) {
+		// Add "search on packages page" option when no exact matches
+		if (exactMatches.length === 0 && searchTerm.length > 0) {
 			items.push({
 				id: `${SEARCH_PACKAGES_PREFIX}${searchTerm}`,
 				primary: `Search "${searchTerm}" on Packages page`,
@@ -160,10 +162,10 @@ export const ProjectDetail = () => {
 			});
 		}
 
-		// Add rest of search results (excluding exact match to avoid duplication)
+		// Add rest of search results (excluding exact matches to avoid duplication)
 		for (const pkg of results) {
 			if (existing.has(pkg.id)) continue;
-			if (exact && pkg.id === exact.id) continue;
+			if (exactIds.has(pkg.id)) continue;
 			items.push({
 				id: pkg.id,
 				primary: pkg.name,
