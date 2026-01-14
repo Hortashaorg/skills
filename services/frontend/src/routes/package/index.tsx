@@ -194,7 +194,7 @@ export const Package = () => {
 												Details
 											</Tabs.Trigger>
 											<Tabs.Trigger value="suggest" variant="contained">
-												Suggest Changes
+												Suggest
 											</Tabs.Trigger>
 										</Tabs.List>
 									</Tabs.Root>

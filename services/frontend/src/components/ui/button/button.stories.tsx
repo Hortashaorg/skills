@@ -19,6 +19,7 @@ const meta = {
 				"warning",
 				"success",
 				"outline",
+				"ghost",
 			],
 			description: "Button color variant",
 		},
@@ -173,6 +174,21 @@ const outlineThemed = createThemedStories({
 export const OutlineLight = outlineThemed.Light;
 export const OutlineDark = outlineThemed.Dark;
 
+const ghostBase: Story = {
+	args: {
+		variant: "ghost",
+		children: "Ghost Button",
+	},
+};
+
+const ghostThemed = createThemedStories({
+	story: ghostBase,
+	testMode: "both",
+});
+
+export const GhostLight = ghostThemed.Light;
+export const GhostDark = ghostThemed.Dark;
+
 const smallBase: Story = {
 	args: {
 		size: "sm",
@@ -261,6 +277,7 @@ const allVariantsBase: Story = {
 				<Button variant="warning">Warning</Button>
 				<Button variant="success">Success</Button>
 				<Button variant="outline">Outline</Button>
+				<Button variant="ghost">Ghost</Button>
 			</div>
 			<div style={{ display: "flex", gap: "0.5rem", "align-items": "center" }}>
 				<Button size="sm">Small</Button>

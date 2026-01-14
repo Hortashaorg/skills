@@ -16,10 +16,12 @@ import {
 	ChevronDownIcon,
 	ExternalLinkIcon,
 	PlusIcon,
+	SpinnerIcon,
 } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
@@ -205,16 +207,20 @@ export const Header = (props: HeaderProps) => {
 							Synced {formatShortDate(props.pkg.lastFetchSuccess)}
 						</Text>
 						<Show when={!request.isDisabled()}>
-							<button
-								type="button"
+							<Button
+								variant="ghost"
+								size="sm"
 								onClick={() => request.submit()}
 								disabled={request.isSubmitting()}
-								class="text-xs text-primary dark:text-primary-dark hover:underline cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 							>
-								<Show when={request.isSubmitting()} fallback="Refresh">
-									Refreshing...
+								<Show
+									when={request.isSubmitting()}
+									fallback="Refresh"
+								>
+									<SpinnerIcon size="sm" class="mr-1" />
+									Syncing
 								</Show>
-							</button>
+							</Button>
 						</Show>
 					</Flex>
 
