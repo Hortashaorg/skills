@@ -18,13 +18,11 @@ import { Tabs } from "@/components/ui/tabs";
 import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
 import { buildPackageUrl } from "@/lib/url";
-import { ActionBar } from "./sections/ActionBar";
 import { ChannelSelector } from "./sections/ChannelSelector";
 import { CurateTab } from "./sections/CurateTab";
 import { Dependencies } from "./sections/Dependencies";
 import { DetailsTab } from "./sections/DetailsTab";
 import { Header } from "./sections/Header";
-import { PackageTags } from "./sections/PackageTags";
 
 type ReleaseChannel = Row["packageReleaseChannels"];
 
@@ -176,9 +174,6 @@ export const Package = () => {
 								{/* Package header */}
 								<Header pkg={p} />
 
-								{/* Action bar */}
-								<ActionBar pkg={p} />
-
 								{/* Tabbed content card */}
 								<Card class="overflow-hidden">
 									<Tabs.Root
@@ -198,8 +193,8 @@ export const Package = () => {
 											<Tabs.Trigger value="details" variant="contained">
 												Details
 											</Tabs.Trigger>
-											<Tabs.Trigger value="curate" variant="contained">
-												Curate
+											<Tabs.Trigger value="suggest" variant="contained">
+												Suggest Changes
 											</Tabs.Trigger>
 										</Tabs.List>
 									</Tabs.Root>
@@ -209,7 +204,6 @@ export const Package = () => {
 										<Stack spacing="lg">
 											<Switch>
 												<Match when={tab() === "overview"}>
-													<PackageTags packageId={p.id} />
 													<Show when={sortedChannels().length > 0}>
 														<ChannelSelector
 															channels={sortedChannels()}
@@ -237,7 +231,7 @@ export const Package = () => {
 													/>
 												</Match>
 
-												<Match when={tab() === "curate"}>
+												<Match when={tab() === "suggest"}>
 													<CurateTab packageId={p.id} />
 												</Match>
 											</Switch>
