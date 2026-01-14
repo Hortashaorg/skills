@@ -122,7 +122,7 @@ export const CurateTab = (props: CurateTabProps) => {
 		voteType: "approve" | "reject",
 	) => {
 		try {
-			await zero().mutate(
+			zero().mutate(
 				mutators.suggestionVotes.vote({ suggestionId, vote: voteType }),
 			);
 			toast.success(

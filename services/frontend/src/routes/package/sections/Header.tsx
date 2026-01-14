@@ -69,6 +69,17 @@ export const Header = (props: HeaderProps) => {
 		return new Map(all.map((t) => [t.id, t]));
 	});
 
+	// Fetch history to check for pending sync
+	const [fetchHistory] = useQuery(() =>
+		queries.packageFetches.byPackageId({ packageId: props.pkg.id }),
+	);
+
+	const hasPendingFetch = createMemo(() => {
+		const history = fetchHistory();
+		if (!history?.length) return false;
+		return history[0]?.status === "pending";
+	});
+
 	// Projects for add-to-project
 	const [projects] = useQuery(() => queries.projects.mine());
 	const [addingToProject, setAddingToProject] = createSignal<string | null>(
@@ -204,29 +215,45 @@ export const Header = (props: HeaderProps) => {
 				<Flex
 					gap="md"
 					align="center"
+					justify="between"
 					wrap="wrap"
 					class="pt-2 border-t border-outline dark:border-outline-dark"
 				>
 					<Flex gap="sm" align="center" class="min-w-0">
-						<Text size="xs" color="muted">
-							Synced {formatShortDate(props.pkg.lastFetchSuccess)}
-						</Text>
-						<Show when={!request.isDisabled()}>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => request.submit()}
-								disabled={request.isSubmitting()}
-							>
-								<Show when={request.isSubmitting()} fallback="Refresh">
-									<SpinnerIcon size="sm" class="mr-1" />
-									Syncing
-								</Show>
-							</Button>
+						<Show
+							when={!hasPendingFetch()}
+							fallback={
+								<Flex gap="xs" align="center">
+									<SpinnerIcon
+										size="sm"
+										class="text-primary dark:text-primary-dark"
+									/>
+									<Text size="xs" color="muted">
+										Sync pending...
+									</Text>
+								</Flex>
+							}
+						>
+							<Text size="xs" color="muted">
+								Synced {formatShortDate(props.pkg.lastFetchSuccess)}
+							</Text>
+							<Show when={!request.isDisabled()}>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => request.submit()}
+									disabled={request.isSubmitting()}
+								>
+									<Show when={request.isSubmitting()} fallback="Refresh">
+										<SpinnerIcon size="sm" class="mr-1" />
+										Syncing
+									</Show>
+								</Button>
+							</Show>
 						</Show>
 					</Flex>
 
-					<div class="ml-auto shrink-0">
+					<div class="shrink-0">
 						<Show when={isLoggedIn()}>
 							<Popover>
 								<Popover.Trigger
