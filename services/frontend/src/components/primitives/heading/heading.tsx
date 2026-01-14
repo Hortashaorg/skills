@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 const headingVariants = cva("font-title font-semibold", {
 	variants: {
 		level: {
-			h1: "text-3xl sm:text-4xl",
-			h2: "text-2xl sm:text-3xl",
-			h3: "text-xl sm:text-2xl",
-			h4: "text-lg sm:text-xl",
-			h5: "text-base sm:text-lg",
-			h6: "text-sm sm:text-base",
+			h1: "text-2xl sm:text-3xl",
+			h2: "text-xl sm:text-2xl",
+			h3: "text-lg sm:text-xl",
+			h4: "text-base sm:text-lg",
+			h5: "text-sm sm:text-base",
+			h6: "text-xs sm:text-sm",
 		},
 		color: {
 			default: "text-on-surface-strong dark:text-on-surface-dark-strong",

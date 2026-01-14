@@ -136,23 +136,23 @@ export const Dependencies = (props: DependenciesProps) => {
 						<Tabs.Root defaultValue={defaultTab}>
 							<Tabs.List variant="line">
 								<Show when={counts.runtime > 0}>
-									<Tabs.Trigger value="runtime" variant="line">
-										Runtime ({counts.runtime})
+									<Tabs.Trigger value="runtime" variant="line" size="sm">
+										Run ({counts.runtime})
 									</Tabs.Trigger>
 								</Show>
 								<Show when={counts.dev > 0}>
-									<Tabs.Trigger value="dev" variant="line">
+									<Tabs.Trigger value="dev" variant="line" size="sm">
 										Dev ({counts.dev})
 									</Tabs.Trigger>
 								</Show>
 								<Show when={counts.peer > 0}>
-									<Tabs.Trigger value="peer" variant="line">
+									<Tabs.Trigger value="peer" variant="line" size="sm">
 										Peer ({counts.peer})
 									</Tabs.Trigger>
 								</Show>
 								<Show when={counts.optional > 0}>
-									<Tabs.Trigger value="optional" variant="line">
-										Optional ({counts.optional})
+									<Tabs.Trigger value="optional" variant="line" size="sm">
+										Opt ({counts.optional})
 									</Tabs.Trigger>
 								</Show>
 							</Tabs.List>
