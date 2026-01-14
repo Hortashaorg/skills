@@ -201,7 +201,12 @@ export const Header = (props: HeaderProps) => {
 				</Show>
 
 				{/* Footer: Sync info + Actions */}
-				<Flex gap="md" align="center" wrap="wrap" class="pt-2 border-t border-outline dark:border-outline-dark">
+				<Flex
+					gap="md"
+					align="center"
+					wrap="wrap"
+					class="pt-2 border-t border-outline dark:border-outline-dark"
+				>
 					<Flex gap="sm" align="center" class="min-w-0">
 						<Text size="xs" color="muted">
 							Synced {formatShortDate(props.pkg.lastFetchSuccess)}
@@ -213,10 +218,7 @@ export const Header = (props: HeaderProps) => {
 								onClick={() => request.submit()}
 								disabled={request.isSubmitting()}
 							>
-								<Show
-									when={request.isSubmitting()}
-									fallback="Refresh"
-								>
+								<Show when={request.isSubmitting()} fallback="Refresh">
 									<SpinnerIcon size="sm" class="mr-1" />
 									Syncing
 								</Show>

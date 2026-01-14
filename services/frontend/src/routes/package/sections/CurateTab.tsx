@@ -12,7 +12,6 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { getDisplayName } from "@/lib/account";
@@ -96,7 +95,7 @@ export const CurateTab = (props: CurateTabProps) => {
 
 		setIsSubmitting(true);
 		try {
-			await zero().mutate(
+			zero().mutate(
 				mutators.suggestions.createAddTag({
 					packageId: props.packageId,
 					tagId,
@@ -141,167 +140,154 @@ export const CurateTab = (props: CurateTabProps) => {
 	return (
 		<Stack spacing="lg">
 			{/* Current tags */}
-			<Card padding="md">
-				<Stack spacing="sm">
-					<Text weight="semibold">Current Tags</Text>
-					<Show
-						when={packageTags().length > 0}
-						fallback={
-							<Text size="sm" color="muted">
-								No tags yet. Be the first to suggest one!
-							</Text>
-						}
-					>
-						<div class="flex flex-wrap gap-2">
-							<For each={packageTags()}>
-								{(pt) => (
-									<Badge variant="secondary">
-										{tagsById().get(pt.tagId)?.name ?? "Unknown"}
-									</Badge>
-								)}
-							</For>
-						</div>
-					</Show>
-				</Stack>
-			</Card>
+			<Stack spacing="sm">
+				<Text weight="semibold">Current Tags</Text>
+				<Show
+					when={packageTags().length > 0}
+					fallback={
+						<Text size="sm" color="muted">
+							No tags yet. Be the first to suggest one!
+						</Text>
+					}
+				>
+					<div class="flex flex-wrap gap-2">
+						<For each={packageTags()}>
+							{(pt) => (
+								<Badge variant="secondary">
+									{tagsById().get(pt.tagId)?.name ?? "Unknown"}
+								</Badge>
+							)}
+						</For>
+					</div>
+				</Show>
+			</Stack>
 
 			{/* Suggest a tag */}
-			<Card padding="md">
-				<Stack spacing="sm">
-					<Text weight="semibold">Suggest a Tag</Text>
+			<Stack spacing="sm">
+				<Text weight="semibold">Suggest a Tag</Text>
+				<Show
+					when={isLoggedIn()}
+					fallback={
+						<Text size="sm" color="muted">
+							Sign in to suggest tags for this package.
+						</Text>
+					}
+				>
 					<Show
-						when={isLoggedIn()}
+						when={availableTags().length > 0}
 						fallback={
 							<Text size="sm" color="muted">
-								Sign in to suggest tags for this package.
+								All available tags are either applied or pending.
 							</Text>
 						}
 					>
-						<Show
-							when={availableTags().length > 0}
-							fallback={
-								<Text size="sm" color="muted">
-									All available tags are either applied or pending.
-								</Text>
-							}
-						>
-							<Flex gap="sm" align="end">
-								<div class="flex-1">
-									<Select
-										options={tagOptions()}
-										value={selectedTagId()}
-										onChange={setSelectedTagId}
-										placeholder="Select a tag..."
-										size="sm"
-										aria-label="Select a tag to suggest"
-									/>
-								</div>
-								<Button
+						<Flex gap="sm" align="end">
+							<div class="flex-1">
+								<Select
+									options={tagOptions()}
+									value={selectedTagId()}
+									onChange={setSelectedTagId}
+									placeholder="Select a tag..."
 									size="sm"
-									variant="primary"
-									onClick={handleSubmitSuggestion}
-									disabled={!selectedTagId() || isSubmitting()}
-								>
-									{isSubmitting() ? "Submitting..." : "Suggest"}
-								</Button>
-							</Flex>
-							<Text size="xs" color="muted">
-								Suggestions need 3 community votes to be approved.
-							</Text>
-						</Show>
+									aria-label="Select a tag to suggest"
+								/>
+							</div>
+							<Button
+								size="sm"
+								variant="primary"
+								onClick={handleSubmitSuggestion}
+								disabled={!selectedTagId() || isSubmitting()}
+							>
+								{isSubmitting() ? "Submitting..." : "Suggest"}
+							</Button>
+						</Flex>
+						<Text size="xs" color="muted">
+							Suggestions need 3 community votes to be approved.
+						</Text>
 					</Show>
-				</Stack>
-			</Card>
+				</Show>
+			</Stack>
 
 			{/* Pending suggestions */}
-			<Card padding="md">
-				<Stack spacing="sm">
-					<Text weight="semibold">
-						Pending Suggestions ({suggestions()?.length ?? 0})
-					</Text>
-					<Show
-						when={suggestions()?.length}
-						fallback={
-							<Text size="sm" color="muted">
-								No pending suggestions for this package.
-							</Text>
-						}
-					>
-						<Stack spacing="xs">
-							<For each={suggestions()}>
-								{(suggestion) => {
-									const counts = () => getVoteCounts(suggestion.votes);
-									const voted = () => hasVoted(suggestion.votes);
-									const isOwn = () => suggestion.accountId === currentUserId();
+			<Stack spacing="sm">
+				<Text weight="semibold">
+					Pending Suggestions ({suggestions()?.length ?? 0})
+				</Text>
+				<Show
+					when={suggestions()?.length}
+					fallback={
+						<Text size="sm" color="muted">
+							No pending suggestions for this package.
+						</Text>
+					}
+				>
+					<Stack spacing="xs">
+						<For each={suggestions()}>
+							{(suggestion) => {
+								const counts = () => getVoteCounts(suggestion.votes);
+								const voted = () => hasVoted(suggestion.votes);
+								const isOwn = () => suggestion.accountId === currentUserId();
 
-									return (
-										<div class="flex items-center justify-between p-3 border border-outline dark:border-outline-dark rounded-radius">
-											<div>
-												<Flex gap="xs" align="center">
-													<Badge variant="info" size="sm">
-														{getSuggestionTypeLabel(suggestion.type)}
-													</Badge>
-													<Text size="sm" weight="medium">
-														{getDescription(
-															suggestion.type,
-															suggestion.payload,
-														)}
-													</Text>
-												</Flex>
-												<Text size="xs" color="muted">
-													by {getDisplayName(suggestion.account)}
+								return (
+									<div class="flex items-center justify-between p-3 border border-outline dark:border-outline-dark rounded-radius">
+										<div>
+											<Flex gap="xs" align="center">
+												<Badge variant="info" size="sm">
+													{getSuggestionTypeLabel(suggestion.type)}
+												</Badge>
+												<Text size="sm" weight="medium">
+													{getDescription(suggestion.type, suggestion.payload)}
 												</Text>
-											</div>
-											<Flex gap="sm" align="center">
-												<Flex gap="xs">
-													<Badge variant="success" size="sm">
-														+{counts().approve}
-													</Badge>
-													<Badge variant="danger" size="sm">
-														-{counts().reject}
-													</Badge>
-												</Flex>
-												<Show when={isLoggedIn() && !isOwn() && !voted()}>
-													<Flex gap="xs">
-														<Button
-															size="sm"
-															variant="outline"
-															onClick={() =>
-																handleVote(suggestion.id, "approve")
-															}
-														>
-															Approve
-														</Button>
-														<Button
-															size="sm"
-															variant="outline"
-															onClick={() =>
-																handleVote(suggestion.id, "reject")
-															}
-														>
-															Reject
-														</Button>
-													</Flex>
-												</Show>
-												<Show when={voted()}>
-													<Text size="xs" color="muted">
-														Voted
-													</Text>
-												</Show>
-												<Show when={isOwn()}>
-													<Text size="xs" color="muted">
-														Your suggestion
-													</Text>
-												</Show>
 											</Flex>
+											<Text size="xs" color="muted">
+												by {getDisplayName(suggestion.account)}
+											</Text>
 										</div>
-									);
-								}}
-							</For>
-						</Stack>
-					</Show>
-				</Stack>
-			</Card>
+										<Flex gap="sm" align="center">
+											<Flex gap="xs">
+												<Badge variant="success" size="sm">
+													+{counts().approve}
+												</Badge>
+												<Badge variant="danger" size="sm">
+													-{counts().reject}
+												</Badge>
+											</Flex>
+											<Show when={isLoggedIn() && !isOwn() && !voted()}>
+												<Flex gap="xs">
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() => handleVote(suggestion.id, "approve")}
+													>
+														Approve
+													</Button>
+													<Button
+														size="sm"
+														variant="outline"
+														onClick={() => handleVote(suggestion.id, "reject")}
+													>
+														Reject
+													</Button>
+												</Flex>
+											</Show>
+											<Show when={voted()}>
+												<Text size="xs" color="muted">
+													Voted
+												</Text>
+											</Show>
+											<Show when={isOwn()}>
+												<Text size="xs" color="muted">
+													Your suggestion
+												</Text>
+											</Show>
+										</Flex>
+									</div>
+								);
+							}}
+						</For>
+					</Stack>
+				</Show>
+			</Stack>
 		</Stack>
 	);
 };
