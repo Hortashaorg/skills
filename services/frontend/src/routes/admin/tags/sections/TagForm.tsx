@@ -11,12 +11,10 @@ import {
 	TextFieldLabel,
 } from "@/components/ui/text-field";
 
-type TagWithPackages = Row["tags"] & {
-	packageTags: readonly Row["packageTags"][];
-};
+type Tag = Row["tags"];
 
 type Props = {
-	editingTag: TagWithPackages | null;
+	editingTag: Tag | null;
 	onSave: (data: { name: string; description?: string }) => Promise<void>;
 	onCancel: () => void;
 };

@@ -22,9 +22,7 @@ import { handleMutationError } from "@/lib/mutation-error";
 import { TagForm } from "./sections/TagForm";
 import { TagsList } from "./sections/TagsList";
 
-type TagWithPackages = Row["tags"] & {
-	packageTags: readonly Row["packageTags"][];
-};
+type Tag = Row["tags"];
 
 const TagsListSkeleton = () => (
 	<Card padding="lg">
@@ -55,17 +53,13 @@ export const AdminTags = () => {
 	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const [allTags, tagsResult] = useQuery(() => queries.tags.all());
+	const [allTags, tagsResult] = useQuery(() => queries.tags.list());
 	const isLoading = () => tagsResult().type !== "complete";
 
 	const [showForm, setShowForm] = createSignal(false);
-	const [editingTag, setEditingTag] = createSignal<TagWithPackages | null>(
-		null,
-	);
+	const [editingTag, setEditingTag] = createSignal<Tag | null>(null);
 	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
-	const [tagToDelete, setTagToDelete] = createSignal<TagWithPackages | null>(
-		null,
-	);
+	const [tagToDelete, setTagToDelete] = createSignal<Tag | null>(null);
 
 	const sortedTags = () => {
 		const tags = allTags() ?? [];
@@ -77,12 +71,12 @@ export const AdminTags = () => {
 		setShowForm(true);
 	};
 
-	const handleEdit = (tag: TagWithPackages) => {
+	const handleEdit = (tag: Tag) => {
 		setEditingTag(tag);
 		setShowForm(true);
 	};
 
-	const handleDeleteClick = (tag: TagWithPackages) => {
+	const handleDeleteClick = (tag: Tag) => {
 		setTagToDelete(tag);
 		setDeleteDialogOpen(true);
 	};
@@ -144,7 +138,7 @@ export const AdminTags = () => {
 
 	return (
 		<Layout>
-			<Container size="lg">
+			<Container size="md">
 				<Stack spacing="lg" class="py-8">
 					<AuthGuard hasAccess={isLoggedIn() && isAdmin()}>
 						<Flex justify="between" align="center">
@@ -156,6 +150,18 @@ export const AdminTags = () => {
 							</Show>
 						</Flex>
 
+						<Show when={!isLoading()} fallback={<TagsListSkeleton />}>
+							<TagsList
+								tags={sortedTags()}
+								onEdit={handleEdit}
+								onDelete={handleDeleteClick}
+							/>
+
+							<Text size="sm" color="muted">
+								{sortedTags().length} tag{sortedTags().length !== 1 ? "s" : ""}
+							</Text>
+						</Show>
+
 						<Show when={showForm()}>
 							<Card padding="lg">
 								<TagForm
@@ -165,19 +171,6 @@ export const AdminTags = () => {
 								/>
 							</Card>
 						</Show>
-
-						<Show when={!isLoading()} fallback={<TagsListSkeleton />}>
-							<TagsList
-								tags={sortedTags()}
-								onEdit={handleEdit}
-								onDelete={handleDeleteClick}
-							/>
-
-							<Text size="sm" color="muted">
-								{sortedTags().length} tag{sortedTags().length !== 1 ? "s" : ""}{" "}
-								total
-							</Text>
-						</Show>
 					</AuthGuard>
 				</Stack>
 			</Container>
@@ -186,7 +179,7 @@ export const AdminTags = () => {
 				open={deleteDialogOpen()}
 				onOpenChange={setDeleteDialogOpen}
 				title="Delete Tag"
-				description={`Delete tag "${tagToDelete()?.name}"? This will remove it from all packages.`}
+				description={`Are you sure you want to delete "${tagToDelete()?.name}"? This will remove it from all packages that use this tag.`}
 				confirmText="Delete"
 				variant="danger"
 				onConfirm={handleDeleteConfirm}
