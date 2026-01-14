@@ -26,6 +26,7 @@ import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { createPolledValue } from "@/hooks/createPolledValue";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { handleMutationError } from "@/lib/mutation-error";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,21 @@ export const Header = (props: HeaderProps) => {
 		if (!history?.length) return false;
 		return history[0]?.status === "pending";
 	});
+
+	const pendingFetchCreatedAt = createMemo(() => {
+		const history = fetchHistory();
+		if (!history?.length || history[0]?.status !== "pending") return null;
+		return history[0].createdAt;
+	});
+
+	// Queue position polling (REST endpoint, not real-time like Zero)
+	const queuePosition = createPolledValue<{ ahead: number }>(
+		() => {
+			const createdAt = pendingFetchCreatedAt();
+			return createdAt ? `/api/queue/ahead?before=${createdAt}` : null;
+		},
+		{ interval: 30_000 },
+	);
 
 	// Projects for add-to-project
 	const [projects] = useQuery(() => queries.projects.mine());
@@ -229,7 +245,12 @@ export const Header = (props: HeaderProps) => {
 										class="text-primary dark:text-primary-dark"
 									/>
 									<Text size="xs" color="muted">
-										Sync pending...
+										<Show
+											when={(queuePosition()?.ahead ?? 0) > 0}
+											fallback="Queued"
+										>
+											{queuePosition()?.ahead} in queue
+										</Show>
 									</Text>
 								</Flex>
 							}

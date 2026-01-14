@@ -11,7 +11,6 @@
 		"@package/database": "workspace:*",
 		"@package/instrumentation": "workspace:*",
 		"@types/node": "^25.0.8",
-		"ky": "^1.14.2",
-		"zod": "^4.3.5"
+		"ky": "^1.14.2"
 	}
 }
