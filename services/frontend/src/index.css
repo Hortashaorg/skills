@@ -14,7 +14,7 @@
 	--color-surface: oklch(0.985 0 0);
 	--color-surface-alt: oklch(0.92 0.004 286.32);
 	--color-on-surface: oklch(0.37 0.013 285.805);
-	--color-on-surface-muted: oklch(0.55 0.012 285.805);
+	--color-on-surface-muted: oklch(0.48 0.012 285.805);
 	--color-on-surface-subtle: oklch(0.6 0.012 285.805);
 	--color-on-surface-strong: oklch(0.21 0.006 285.885);
 	--color-primary: oklch(0.585 0.233 277.117);

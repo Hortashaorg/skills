@@ -18,6 +18,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
 import { buildPackageUrl } from "@/lib/url";
+import { ActionBar } from "./sections/ActionBar";
 import { ChannelSelector } from "./sections/ChannelSelector";
 import { CurateTab } from "./sections/CurateTab";
 import { Dependencies } from "./sections/Dependencies";
@@ -172,62 +173,77 @@ export const Package = () => {
 					>
 						{(p) => (
 							<>
-								{/* Package header - always visible */}
+								{/* Package header */}
 								<Header pkg={p} />
 
-								{/* Tab navigation */}
-								<Tabs.Root
-									value={tab()}
-									onChange={(value) => {
-										navigate(
-											value === "overview"
-												? baseUrl()
-												: `${baseUrl()}/${value}`,
-										);
-									}}
-								>
-									<Tabs.List>
-										<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
-										<Tabs.Trigger value="details">Details</Tabs.Trigger>
-										<Tabs.Trigger value="curate">Curate</Tabs.Trigger>
-									</Tabs.List>
-								</Tabs.Root>
+								{/* Action bar */}
+								<ActionBar pkg={p} />
 
-								{/* Tab content */}
-								<Switch>
-									<Match when={tab() === "overview"}>
-										<PackageTags packageId={p.id} />
-										<Show when={sortedChannels().length > 0}>
-											<ChannelSelector
-												channels={sortedChannels()}
-												selectedChannel={selectedChannel()}
-												onChannelChange={setSelectedChannelId}
-											/>
-										</Show>
-										<Show when={selectedChannel()}>
-											{(channel) => (
-												<Dependencies
-													channelId={channel().id}
-													registry={p.registry}
-												/>
-											)}
-										</Show>
-									</Match>
+								{/* Tabbed content card */}
+								<Card class="overflow-hidden">
+									<Tabs.Root
+										value={tab()}
+										onChange={(value) => {
+											navigate(
+												value === "overview"
+													? baseUrl()
+													: `${baseUrl()}/${value}`,
+											);
+										}}
+									>
+										<Tabs.List variant="contained">
+											<Tabs.Trigger value="overview" variant="contained">
+												Overview
+											</Tabs.Trigger>
+											<Tabs.Trigger value="details" variant="contained">
+												Details
+											</Tabs.Trigger>
+											<Tabs.Trigger value="curate" variant="contained">
+												Curate
+											</Tabs.Trigger>
+										</Tabs.List>
+									</Tabs.Root>
 
-									<Match when={tab() === "details"}>
-										<DetailsTab
-											packageId={p.id}
-											registry={p.registry}
-											channels={sortedChannels()}
-											selectedChannel={selectedChannel()}
-											onChannelChange={setSelectedChannelId}
-										/>
-									</Match>
+									{/* Tab content */}
+									<div class="p-4">
+										<Stack spacing="lg">
+											<Switch>
+												<Match when={tab() === "overview"}>
+													<PackageTags packageId={p.id} />
+													<Show when={sortedChannels().length > 0}>
+														<ChannelSelector
+															channels={sortedChannels()}
+															selectedChannel={selectedChannel()}
+															onChannelChange={setSelectedChannelId}
+														/>
+													</Show>
+													<Show when={selectedChannel()}>
+														{(channel) => (
+															<Dependencies
+																channelId={channel().id}
+																registry={p.registry}
+															/>
+														)}
+													</Show>
+												</Match>
 
-									<Match when={tab() === "curate"}>
-										<CurateTab packageId={p.id} />
-									</Match>
-								</Switch>
+												<Match when={tab() === "details"}>
+													<DetailsTab
+														packageId={p.id}
+														registry={p.registry}
+														channels={sortedChannels()}
+														selectedChannel={selectedChannel()}
+														onChannelChange={setSelectedChannelId}
+													/>
+												</Match>
+
+												<Match when={tab() === "curate"}>
+													<CurateTab packageId={p.id} />
+												</Match>
+											</Switch>
+										</Stack>
+									</div>
+								</Card>
 							</>
 						)}
 					</QueryBoundary>

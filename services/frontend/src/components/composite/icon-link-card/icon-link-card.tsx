@@ -57,9 +57,11 @@ export const IconLinkCard = (props: IconLinkCardProps) => {
 			<div class={iconWrapperVariants({ color: props.color })}>
 				<div class={iconVariants({ color: props.color })}>{props.icon}</div>
 			</div>
-			<div>
-				<Text weight="semibold">{props.title}</Text>
-				<Text size="sm" color="muted">
+			<div class="min-w-0">
+				<Text weight="semibold" class="truncate">
+					{props.title}
+				</Text>
+				<Text size="sm" color="muted" class="line-clamp-1">
 					{props.description}
 				</Text>
 			</div>

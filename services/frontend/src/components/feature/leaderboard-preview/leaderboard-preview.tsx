@@ -55,17 +55,18 @@ export const LeaderboardPreview = (props: LeaderboardPreviewProps) => {
 										"bg-brand/10 dark:bg-brand-dark/10": entry.isCurrentUser,
 									}}
 								>
-									<Flex gap="sm" align="center">
+									<Flex gap="sm" align="center" class="min-w-0">
 										<Text
 											size="sm"
 											weight={entry.rank <= 3 ? "semibold" : "normal"}
-											class="w-5"
+											class="w-5 shrink-0"
 										>
 											{entry.rank}.
 										</Text>
 										<Text
 											size="sm"
 											weight={entry.isCurrentUser ? "semibold" : "normal"}
+											class="truncate"
 										>
 											{entry.name}
 											{entry.isCurrentUser && " (you)"}

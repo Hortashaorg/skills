@@ -9,7 +9,7 @@ const meta = {
 	argTypes: {
 		variant: {
 			control: "select",
-			options: ["line", "pills"],
+			options: ["line", "pills", "contained"],
 			description: "Tab styling variant",
 		},
 	},
@@ -172,6 +172,52 @@ const disabledThemed = createThemedStories({
 export const DisabledLight = disabledThemed.Light;
 export const DisabledDark = disabledThemed.Dark;
 
+// Contained variant (tabs attached to card header)
+const containedBase: Story = {
+	render: () => (
+		<div class="rounded-radius border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark overflow-hidden">
+			<Tabs.Root defaultValue="tab1">
+				<Tabs.List variant="contained">
+					<Tabs.Trigger value="tab1" variant="contained">
+						Overview
+					</Tabs.Trigger>
+					<Tabs.Trigger value="tab2" variant="contained">
+						Details
+					</Tabs.Trigger>
+					<Tabs.Trigger value="tab3" variant="contained">
+						Settings
+					</Tabs.Trigger>
+				</Tabs.List>
+				<div class="p-4">
+					<Tabs.Content value="tab1">
+						<p class="text-on-surface dark:text-on-surface-dark">
+							Overview content within the card.
+						</p>
+					</Tabs.Content>
+					<Tabs.Content value="tab2">
+						<p class="text-on-surface dark:text-on-surface-dark">
+							Details content within the card.
+						</p>
+					</Tabs.Content>
+					<Tabs.Content value="tab3">
+						<p class="text-on-surface dark:text-on-surface-dark">
+							Settings content within the card.
+						</p>
+					</Tabs.Content>
+				</div>
+			</Tabs.Root>
+		</div>
+	),
+};
+
+const containedThemed = createThemedStories({
+	story: containedBase,
+	testMode: "both",
+});
+
+export const ContainedLight = containedThemed.Light;
+export const ContainedDark = containedThemed.Dark;
+
 // All variants showcase
 const allVariantsBase: Story = {
 	render: () => (
@@ -211,6 +257,31 @@ const allVariantsBase: Story = {
 						</Tabs.Trigger>
 					</Tabs.List>
 				</Tabs.Root>
+			</div>
+			<div>
+				<p class="text-on-surface-muted dark:text-on-surface-dark-muted text-sm mb-2">
+					Contained variant (for card headers):
+				</p>
+				<div class="rounded-radius border border-outline dark:border-outline-dark bg-surface dark:bg-surface-dark overflow-hidden">
+					<Tabs.Root defaultValue="tab1">
+						<Tabs.List variant="contained">
+							<Tabs.Trigger value="tab1" variant="contained">
+								Tab 1
+							</Tabs.Trigger>
+							<Tabs.Trigger value="tab2" variant="contained">
+								Tab 2
+							</Tabs.Trigger>
+							<Tabs.Trigger value="tab3" variant="contained">
+								Tab 3
+							</Tabs.Trigger>
+						</Tabs.List>
+						<div class="p-4">
+							<p class="text-on-surface dark:text-on-surface-dark text-sm">
+								Content area
+							</p>
+						</div>
+					</Tabs.Root>
+				</div>
 			</div>
 		</div>
 	),
