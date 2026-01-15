@@ -4,23 +4,47 @@
 
 ---
 
-## Sprint 10: Maintenance & Code Quality
+## Sprint 10: Ecosystems & Code Quality
 
-### Maintenance
+### Ecosystems Feature
+
+Ecosystems represent product/technology identities (React, AWS, TalosOS, Drizzle) - not always packages themselves, but containing related packages, plugins, adapters, CLI tools.
+
+#### Schema
+- [ ] `ecosystems` table (id, name, slug, description, longDescription, website, upvoteCount, createdAt, updatedAt)
+- [ ] `ecosystem_packages` junction (ecosystemId, packageId)
+- [ ] `ecosystem_upvotes` (ecosystemId, accountId)
+- [ ] `project_ecosystems` junction (projectId, ecosystemId)
+- [ ] Ecosystem suggestions (extend existing suggestion system)
+
+#### Backend
+- [ ] Queries: list, bySlug, search, byPackageId
+- [ ] Mutators: create, update, addPackage, removePackage, upvote
+
+#### Frontend - Browsing
+- [ ] `/ecosystems` listing page (search, upvotes, package count)
+- [ ] `/ecosystem/:slug` detail page
+  - Description and long description (about/overview)
+  - Associated packages grid
+  - Upvote button
+  - Learning resources / getting started section
+
+#### Frontend - Curation
+- [ ] Suggest new ecosystem (community)
+- [ ] Suggest package-ecosystem association
+- [ ] Admin: create/edit ecosystems directly
+
+#### Frontend - Projects
+- [ ] Add ecosystem to project (like adding packages)
+- [ ] Display ecosystems in project detail
+- [ ] Differentiate ecosystems vs packages in UI
+
+### Code Quality
 
 - [ ] Upgrade dependencies
-
-### Reusable Hooks
-
-- [ ] `createPackageTags` - Extract tag mapping logic (repeated in ResultsGrid 2x, Header, detail.tsx)
-
-### Reusable Utilities
-
+- [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
 - [ ] `lib/package-formatting.ts` - Extract status label/description logic
-
-### File Splitting
-
-- [ ] Split `routes/me/index.tsx` (430 lines) - Extract ProfileHeader, ProfileSettings, ProfileActions sections
+- [ ] Split `routes/me/index.tsx` (430 lines) into sections
 
 ---
 
