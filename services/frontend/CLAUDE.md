@@ -287,3 +287,41 @@ createEffect(() => setDoubled(count() * 2));
 // ✅ GOOD: Derive directly
 const doubled = () => count() * 2;
 ```
+
+## UX Considerations
+
+LLMs tend to focus on functionality over usability. Actively question these:
+
+**Mobile experience:**
+- Are touch targets large enough? (min 44px)
+- Does text/spacing need to be different on mobile vs desktop?
+- Is the mobile layout just a squished desktop, or properly adapted?
+
+**Grouping & hierarchy:**
+- Do related actions/info appear together?
+- Is it obvious what belongs to what?
+- Would a user know what to do next?
+
+**Intuitive flows:**
+- Would this confuse a first-time user?
+- Are there too many steps for a simple action?
+- Is important info visible without extra clicks?
+
+When in doubt about UX decisions, ask the user rather than guessing.
+
+## Component Discipline
+
+**Before writing new UI code:**
+1. Check if a component already exists in `components/ui/` or `components/composite/`
+2. If similar functionality exists, extend it rather than duplicating
+3. If you need variants, add to the existing component's CVA variants
+
+**After modifying components:**
+1. Update the component's stories to cover new states/variants
+2. Run `pnpm frontend test` to verify visual tests pass
+3. If props changed, check all usages still work
+
+**Warning signs you're doing it wrong:**
+- Copying JSX from an existing component instead of importing it
+- Adding one-off styles that duplicate what a component provides
+- Component props that are never exercised in stories

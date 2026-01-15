@@ -126,6 +126,16 @@ const buttonVariants = cva(
 					"dark:text-on-surface-dark",
 					"dark:focus-visible:outline-primary-dark",
 				],
+				ghost: [
+					"bg-transparent",
+					"border-transparent",
+					"text-primary",
+					"hover:underline",
+					"hover:opacity-100",
+					"focus-visible:outline-primary",
+					"dark:text-primary-dark",
+					"dark:focus-visible:outline-primary-dark",
+				],
 			},
 			size: {
 				sm: ["text-xs", "px-2", "py-1"],

@@ -23,7 +23,6 @@ import { CurateTab } from "./sections/CurateTab";
 import { Dependencies } from "./sections/Dependencies";
 import { DetailsTab } from "./sections/DetailsTab";
 import { Header } from "./sections/Header";
-import { PackageTags } from "./sections/PackageTags";
 
 type ReleaseChannel = Row["packageReleaseChannels"];
 
@@ -172,62 +171,73 @@ export const Package = () => {
 					>
 						{(p) => (
 							<>
-								{/* Package header - always visible */}
+								{/* Package header */}
 								<Header pkg={p} />
 
-								{/* Tab navigation */}
-								<Tabs.Root
-									value={tab()}
-									onChange={(value) => {
-										navigate(
-											value === "overview"
-												? baseUrl()
-												: `${baseUrl()}/${value}`,
-										);
-									}}
-								>
-									<Tabs.List>
-										<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
-										<Tabs.Trigger value="details">Details</Tabs.Trigger>
-										<Tabs.Trigger value="curate">Curate</Tabs.Trigger>
-									</Tabs.List>
-								</Tabs.Root>
+								{/* Tabbed content card */}
+								<Card class="overflow-hidden">
+									<Tabs.Root
+										value={tab()}
+										onChange={(value) => {
+											navigate(
+												value === "overview"
+													? baseUrl()
+													: `${baseUrl()}/${value}`,
+											);
+										}}
+									>
+										<Tabs.List variant="contained">
+											<Tabs.Trigger value="overview" variant="contained">
+												Overview
+											</Tabs.Trigger>
+											<Tabs.Trigger value="details" variant="contained">
+												Details
+											</Tabs.Trigger>
+											<Tabs.Trigger value="suggest" variant="contained">
+												Suggest
+											</Tabs.Trigger>
+										</Tabs.List>
+									</Tabs.Root>
 
-								{/* Tab content */}
-								<Switch>
-									<Match when={tab() === "overview"}>
-										<PackageTags packageId={p.id} />
-										<Show when={sortedChannels().length > 0}>
-											<ChannelSelector
-												channels={sortedChannels()}
-												selectedChannel={selectedChannel()}
-												onChannelChange={setSelectedChannelId}
-											/>
-										</Show>
-										<Show when={selectedChannel()}>
-											{(channel) => (
-												<Dependencies
-													channelId={channel().id}
-													registry={p.registry}
-												/>
-											)}
-										</Show>
-									</Match>
+									{/* Tab content */}
+									<div class="p-4">
+										<Stack spacing="lg">
+											<Switch>
+												<Match when={tab() === "overview"}>
+													<Show when={sortedChannels().length > 0}>
+														<ChannelSelector
+															channels={sortedChannels()}
+															selectedChannel={selectedChannel()}
+															onChannelChange={setSelectedChannelId}
+														/>
+													</Show>
+													<Show when={selectedChannel()}>
+														{(channel) => (
+															<Dependencies
+																channelId={channel().id}
+																registry={p.registry}
+															/>
+														)}
+													</Show>
+												</Match>
 
-									<Match when={tab() === "details"}>
-										<DetailsTab
-											packageId={p.id}
-											registry={p.registry}
-											channels={sortedChannels()}
-											selectedChannel={selectedChannel()}
-											onChannelChange={setSelectedChannelId}
-										/>
-									</Match>
+												<Match when={tab() === "details"}>
+													<DetailsTab
+														packageId={p.id}
+														registry={p.registry}
+														channels={sortedChannels()}
+														selectedChannel={selectedChannel()}
+														onChannelChange={setSelectedChannelId}
+													/>
+												</Match>
 
-									<Match when={tab() === "curate"}>
-										<CurateTab packageId={p.id} />
-									</Match>
-								</Switch>
+												<Match when={tab() === "suggest"}>
+													<CurateTab packageId={p.id} />
+												</Match>
+											</Switch>
+										</Stack>
+									</div>
+								</Card>
 							</>
 						)}
 					</QueryBoundary>

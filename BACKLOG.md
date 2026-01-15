@@ -4,16 +4,6 @@
 
 ---
 
-## Growth
-
-- [x] JSR registry adapter (Sprint 8)
-- [x] NuGet registry adapter (Sprint 8)
-- [x] Docker Hub registry adapter (Sprint 8)
-- [x] Homebrew registry adapter (Sprint 8)
-- [x] Arch Linux registry adapter (Sprint 8)
-
----
-
 ## Projects
 
 - [ ] Package.json import - upload and auto-create project with packages
@@ -38,35 +28,48 @@
 
 ---
 
+## Registries
+
+- [ ] ghcr.io (GitHub Container Registry) adapter - many cloud-native tools publish here (CloudNativePG, etc.)
+- [ ] homebrew-cask adapter - macOS GUI applications (Discord, VS Code, 1Password, etc.)
+- [ ] homebrew taps adapter - third-party formulas (fluxcd, argocd, etc.)
+- [ ] AUR (Arch User Repository) adapter - Arch community packages
+
+---
+
 ## Polish
 
-### UX
-- [ ] Data-driven Navbar navigation - replace hardcoded links with configurable items
-- [ ] Full mobile audit - layout fixes across all pages
-- [ ] Edge cases: Long text tooltips for truncated names/descriptions
 - [ ] Zero preloading on link hover
-
-### Performance
 - [ ] Query optimization audit
 
 ---
 
 ## Technical Debt
 
+### Large Files to Split
+- [ ] `routes/me/index.tsx` (430 lines) - Extract ProfileHeader, ProfileSettings, ProfileActions sections
+- [ ] `routes/home/sections/ResultsGrid.tsx` (388 lines) - Extract InfiniteScroller, skeleton logic
+- [ ] `routes/package/sections/Header.tsx` (382 lines) - Extract UpvoteSection, RequestSection, MetadataDisplay
+- [ ] `services/backend/index.ts` (320 lines) - Extract into routes/auth.ts, routes/query.ts, middleware/
+- [ ] `services/worker/db.ts` (387 lines) - Split by operation type (packages.ts, channels.ts)
+
+### Reusable Hooks to Extract
+- [ ] `createPackageTags` - Tag mapping logic repeated in ResultsGrid (2x), Header, detail.tsx
+- [ ] `createSearchResults` - Query orchestration + stabilization from home/index.tsx (70+ lines)
+- [ ] `useAuthCheck` - Auth check + redirect pattern repeated in 3+ files
+
+### Reusable Utilities to Extract
+- [ ] `lib/package-grouping.ts` - groupPackagesByTag from detail.tsx
+- [ ] `lib/package-formatting.ts` - Status label/description logic
+- [ ] `lib/search-items.ts` - Search item building from detail.tsx
+
+### Component Improvements
+- [ ] Create reusable Skeleton variants (ProfileSkeleton, GridSkeleton) - reduce duplication
+- [ ] Split large story files (Toast 380 lines, SearchInput 375 lines)
+
 ### Error Handling
 - [ ] Surface errors to users - 16+ places log errors without user feedback
 - [ ] Add error type system for worker/backend (retry-able vs permanent)
-
-### Testing
-- [ ] Unit tests for worker sync logic (process-fetch.ts, db.ts)
-- [ ] Unit tests for score calculation algorithm
-- [ ] Unit tests for backend auth token refresh
-
-### Type Safety
-- [ ] Fix unsafe type assertions (createUrlSignal, curation page casting)
-
-### Code Organization
-- [ ] Split large components: me/projects/detail.tsx (605 lines), navbar.tsx (455 lines)
 
 ### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)

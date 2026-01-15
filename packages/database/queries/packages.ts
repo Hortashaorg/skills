@@ -54,23 +54,23 @@ export const byIdWithTags = defineQuery(
 	},
 );
 
-// Exact match lookup for search - includes placeholders, optional registry
-export const exactMatch = defineQuery(
+// All exact matches across registries (for search results - shows all "node" packages)
+export const exactMatches = defineQuery(
 	z.object({
 		name: z.string(),
 		registry: z.enum(enums.registry).optional(),
 	}),
 	({ args }) => {
-		let q = zql.packages.where("name", args.name);
+		let q = zql.packages.where("name", "ILIKE", args.name);
 
 		if (args.registry) {
 			q = q.where("registry", args.registry);
 		}
 
 		return q
+			.orderBy("upvoteCount", "desc")
 			.related("upvotes")
-			.related("packageTags", (pt) => pt.related("tag"))
-			.one();
+			.related("packageTags", (pt) => pt.related("tag"));
 	},
 );
 
@@ -81,6 +81,7 @@ export const recent = defineQuery(
 		return zql.packages
 			.where("status", "active")
 			.orderBy("updatedAt", "desc")
+			.orderBy("id", "asc")
 			.limit(args.limit)
 			.related("upvotes")
 			.related("packageTags", (pt) => pt.related("tag"));
@@ -92,6 +93,7 @@ export const failed = defineQuery(() => {
 	return zql.packages
 		.where("status", "failed")
 		.orderBy("updatedAt", "desc")
+		.orderBy("id", "asc")
 		.limit(50);
 });
 

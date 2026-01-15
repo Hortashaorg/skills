@@ -1,34 +1,31 @@
-# Sprint 8 Tasks
+# Tasks
 
-> **Current Sprint:** [SPRINT-8.md](./SPRINT-8.md) - UI Polish & Profiles
-
----
-
-## Deleted User Display ✅
-
-- [x] Use getDisplayName() consistently across all components
-- [x] Update ProjectCard, ProjectDetail, CurateTab
-- [x] Update ReviewQueue, Backlog, Leaderboard, Landing
+> Current work and backlog. See [BACKLOG.md](./BACKLOG.md) for deferred items.
 
 ---
 
-## Multi-Registry Support ✅
+## Sprint 9: Tech Debt
 
-- [x] JSR adapter (cross-registry deps: jsr/npm)
-- [x] NuGet adapter (paginated responses, framework dep groups)
-- [x] Docker Hub adapter (named tags only, no deps)
-- [x] Homebrew adapter (runtime/build/optional deps)
-- [x] Arch Linux adapter (dedupe deps, filter .so provides)
-- [x] Registry dispatcher routing
-- [x] Updated skill documentation
+### Quick Wins
 
----
+- [x] Upgrade dependencies (zero, hono, pino, rolldown-vite, types)
+- [x] Split `webhook/index.ts` into separate handler files
+- [x] Split `me/projects/detail.tsx` into sections
+- [x] Split `navbar.tsx` into smaller components
+- [x] Fix `createUrlSignal` type assertion
+- [x] Dead code cleanup (unused exports, stale files)
 
-## Tech Debt Cleanup ✅
+### UI Fixes
 
-- [x] Consolidate inline icons (UserIcon, MenuIcon, CloseIcon → icon primitives)
-- [x] Centralize constants (limits, timeouts, batch sizes → lib/constants.ts)
-- [x] Extract reusable mutation error handler (console.error + toast pattern)
+- [ ] Text overflow in cards (truncate long names/descriptions)
+- [ ] Mobile horizontal scroll issues (content not fitting viewport)
+- [ ] Responsive breakpoint audit
+- [ ] Infinite scroll flicker (packages briefly appear/disappear during load)
+
+### Polish
+
+- [x] Data-driven Navbar navigation
+- [ ] Update CLAUDE.md docs if stale
 
 ---
 
@@ -39,6 +36,14 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 8: Multi-Registry Support
+
+- Deleted user display (getDisplayName across components)
+- 6 registry adapters: npm, jsr, nuget, dockerhub, homebrew, archlinux
+- Registry dispatcher routing
+- Tech debt: icon
+consolidation, constants, mutation error handler
 
 ### Sprint 7: Zitadel Webhooks
 

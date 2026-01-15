@@ -70,6 +70,36 @@ const isLoggedIn = zero().userID !== "anon";
 | `composite/` | Combined ui components | SearchInput |
 | `feature/` | Domain-specific | Navbar |
 
+## Validation with Zod
+
+Prefer Zod schemas over imperative validation. Declarative, self-documenting, caught by error boundaries:
+
+```tsx
+// ❌ BAD: Imperative validation - verbose, easy to miss cases
+if (!body.name || typeof body.name !== "string") {
+  return c.json({ error: "Name required" }, 400);
+}
+if (body.name.length > 100) {
+  return c.json({ error: "Name too long" }, 400);
+}
+if (!["npm", "jsr"].includes(body.registry)) {
+  return c.json({ error: "Invalid registry" }, 400);
+}
+// ... 50 more lines
+
+// ✅ GOOD: Declarative schema - clear, complete, maintainable
+const CreatePackageSchema = z.object({
+  name: z.string().min(1).max(100),
+  registry: z.enum(["npm", "jsr"]),
+  description: z.string().optional(),
+});
+
+// Parse once, get typed result or throw
+const data = CreatePackageSchema.parse(body);
+```
+
+Zod is already used for query/mutator args in `@package/database`. Use the same pattern for API endpoints, form validation, and any external input.
+
 ## Gotchas
 
 ### Always include `updatedAt` in mutations
@@ -134,3 +164,24 @@ const name = () => decodeURIComponent(params.name);
 - Registry adapters: Use `/registry-adapter` skill
 - Queries/Mutators: See `packages/database/CLAUDE.md`
 - After schema changes: `pnpm database zero` then `pnpm database migrate`
+
+## Before Finishing Work
+
+LLMs tend to focus on making code work, missing broader concerns:
+
+**Maintainability check:**
+- Will the next developer understand this without context?
+- Are there existing patterns in the codebase I should follow?
+- Did I extend existing abstractions or create parallel ones?
+
+**Completeness check:**
+- Are stories/tests updated for UI changes?
+- Did I check how this looks on mobile?
+- Are all new exports added to index files?
+
+**UX sanity check:**
+- Would this flow make sense to a new user?
+- Are related things grouped together?
+- Did I just implement what was asked, or consider if it's actually good?
+
+When uncertain about design/architecture decisions, ask rather than assume.

@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createThemedStories } from "@/components/story-helpers";
-import { Navbar, type NavbarNotification } from "./navbar";
+import { accountNavItems, mainNavItems } from "@/lib/navigation";
+import { Navbar } from "./navbar";
+import type { NavbarNotification } from "./types";
 
 const meta = {
 	title: "Feature/Navbar",
@@ -26,10 +28,6 @@ const meta = {
 		isLoggedIn: {
 			control: "boolean",
 			description: "Whether user is logged in",
-		},
-		isAdmin: {
-			control: "boolean",
-			description: "Whether user has admin role",
 		},
 		connectionState: {
 			control: "select",
@@ -75,6 +73,9 @@ const sampleNotifications: NavbarNotification[] = [
 ];
 
 const defaultArgs = {
+	navItems: mainNavItems,
+	accountNavItems: accountNavItems,
+	userRoles: [] as string[],
 	currentPath: "/packages",
 	connectionState: "connected" as const,
 	notifications: [] as NavbarNotification[],
@@ -90,7 +91,6 @@ const loggedOutBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: false,
-		isAdmin: false,
 	},
 };
 
@@ -107,7 +107,6 @@ const loggedInBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: true,
-		isAdmin: false,
 		notifications: sampleNotifications,
 		unreadCount: 2,
 	},
@@ -126,7 +125,7 @@ const adminBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: true,
-		isAdmin: true,
+		userRoles: ["admin"],
 		notifications: sampleNotifications,
 		unreadCount: 2,
 		currentPath: "/admin/requests",
@@ -146,7 +145,6 @@ const manyNotificationsBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: true,
-		isAdmin: false,
 		notifications: sampleNotifications,
 		unreadCount: 25,
 	},
@@ -165,7 +163,6 @@ const connectingBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: true,
-		isAdmin: false,
 		connectionState: "connecting",
 	},
 };
@@ -182,7 +179,6 @@ const disconnectedBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: true,
-		isAdmin: false,
 		connectionState: "disconnected",
 	},
 };
@@ -199,7 +195,6 @@ const errorBase: Story = {
 	args: {
 		...defaultArgs,
 		isLoggedIn: true,
-		isAdmin: false,
 		connectionState: "error",
 	},
 };

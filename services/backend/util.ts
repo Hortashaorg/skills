@@ -16,7 +16,7 @@ export async function getAuthContext(c: Context): Promise<AppContext> {
 	}
 
 	try {
-		const decoded = await verify(token, environment.AUTH_PRIVATE_KEY);
+		const decoded = await verify(token, environment.AUTH_PRIVATE_KEY, "HS256");
 		return {
 			userID: decoded.sub as string,
 			roles: (decoded.roles as string[]) ?? [],

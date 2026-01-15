@@ -1,61 +1,27 @@
-import {
-	mutators,
-	queries,
-	type Row,
-	useQuery,
-	useZero,
-} from "@package/database/client";
+import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { A, useNavigate, useParams } from "@solidjs/router";
-import { createMemo, createSignal, For, Show } from "solid-js";
+import { createMemo, createSignal, Show } from "solid-js";
 import {
 	SearchInput,
 	type SearchResultItem,
 } from "@/components/composite/search-input";
-import { PackageCard } from "@/components/feature/package-card";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
-import { PencilIcon } from "@/components/primitives/icon";
-import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { Textarea } from "@/components/primitives/textarea";
 import { AlertDialog } from "@/components/ui/alert-dialog";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { Layout } from "@/layout/Layout";
-import { getDisplayName } from "@/lib/account";
 import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
 import { handleMutationError } from "@/lib/mutation-error";
-import { buildPackageUrl } from "@/lib/url";
+import { PackageGrid } from "./sections/PackageGrid";
+import { ProjectDetailSkeleton } from "./sections/ProjectDetailSkeleton";
+import { ProjectEditForm } from "./sections/ProjectEditForm";
+import { ProjectHeader } from "./sections/ProjectHeader";
 
 const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
-
-type Package = Row["packages"] & {
-	upvotes?: readonly Row["packageUpvotes"][];
-};
-
-const ProjectDetailSkeleton = () => (
-	<Stack spacing="lg">
-		<Flex justify="between" align="center">
-			<Skeleton variant="text" width="200px" height="32px" />
-			<Skeleton variant="rectangular" width="80px" height="36px" />
-		</Flex>
-		<Skeleton variant="text" width="60%" />
-		<Card padding="lg">
-			<Stack spacing="md">
-				<Skeleton variant="text" width="120px" height="24px" />
-				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-					<Skeleton variant="rectangular" height="100px" />
-					<Skeleton variant="rectangular" height="100px" />
-					<Skeleton variant="rectangular" height="100px" />
-				</div>
-			</Stack>
-		</Card>
-	</Stack>
-);
 
 export const ProjectDetail = () => {
 	const params = useParams<{ id: string }>();
@@ -84,9 +50,9 @@ export const ProjectDetail = () => {
 		}),
 	);
 
-	// Exact match query for prioritization
-	const [exactMatch] = useQuery(() =>
-		queries.packages.exactMatch({
+	// Exact matches query - returns all packages with exact name across registries
+	const [exactMatchResults] = useQuery(() =>
+		queries.packages.exactMatches({
 			name: packageSearch().trim(),
 		}),
 	);
@@ -96,16 +62,16 @@ export const ProjectDetail = () => {
 		searchResultsStatus().type !== "complete" && packageSearch().length > 0;
 	const isOwner = () => {
 		const p = project();
-		return p && zero().userID !== "anon" && p.accountId === zero().userID;
+		return !!(p && zero().userID !== "anon" && p.accountId === zero().userID);
 	};
 
-	const packages = () => {
+	const packages = createMemo(() => {
 		const p = project();
 		if (!p) return [];
 		return p.projectPackages
 			.map((pp) => pp.package)
-			.filter((pkg): pkg is NonNullable<typeof pkg> => pkg != null);
-	};
+			.filter((pkg) => pkg != null);
+	});
 
 	const existingPackageIds = createMemo(
 		() => new Set(packages().map((p) => p.id)),
@@ -114,8 +80,9 @@ export const ProjectDetail = () => {
 	// Group packages by tag - packages with multiple tags appear in multiple groups
 	const packagesByTag = createMemo(() => {
 		const pkgs = packages();
-		const groups: Record<string, typeof pkgs> = {};
-		const uncategorized: typeof pkgs = [];
+		type Pkg = (typeof pkgs)[number];
+		const groups: Record<string, Pkg[]> = {};
+		const uncategorized: Pkg[] = [];
 
 		for (const pkg of pkgs) {
 			const tags = pkg.packageTags ?? [];
@@ -161,19 +128,20 @@ export const ProjectDetail = () => {
 		status?: string | null;
 	}) => {
 		if (pkg.status === "failed") return "failed";
-		if (pkg.status === "placeholder") return "pending";
 		return pkg.registry;
 	};
 
 	const packageSearchResults = createMemo((): SearchResultItem[] => {
 		const results = searchResults() ?? [];
 		const existing = existingPackageIds();
-		const exact = exactMatch();
+		const exactMatches = exactMatchResults() ?? [];
 		const searchTerm = packageSearch().trim();
 		const items: SearchResultItem[] = [];
+		const exactIds = new Set(exactMatches.map((p) => p.id));
 
-		// Add exact match first if not already in project
-		if (exact && !existing.has(exact.id)) {
+		// Add all exact matches first (sorted by upvotes from query)
+		for (const exact of exactMatches) {
+			if (existing.has(exact.id)) continue;
 			items.push({
 				id: exact.id,
 				primary: exact.name,
@@ -182,8 +150,8 @@ export const ProjectDetail = () => {
 			});
 		}
 
-		// Add "search on packages page" option when no exact match
-		if (!exact && searchTerm.length > 0) {
+		// Add "search on packages page" option when no exact matches
+		if (exactMatches.length === 0 && searchTerm.length > 0) {
 			items.push({
 				id: `${SEARCH_PACKAGES_PREFIX}${searchTerm}`,
 				primary: `Search "${searchTerm}" on Packages page`,
@@ -193,10 +161,10 @@ export const ProjectDetail = () => {
 			});
 		}
 
-		// Add rest of search results (excluding exact match to avoid duplication)
+		// Add rest of search results (excluding exact matches to avoid duplication)
 		for (const pkg of results) {
 			if (existing.has(pkg.id)) continue;
-			if (exact && pkg.id === exact.id) continue;
+			if (exactIds.has(pkg.id)) continue;
 			items.push({
 				id: pkg.id,
 				primary: pkg.name,
@@ -334,119 +302,23 @@ export const ProjectDetail = () => {
 									<Show
 										when={isEditing()}
 										fallback={
-											<Flex justify="between" align="start" gap="md">
-												<Stack spacing="xs" class="flex-1">
-													<Flex align="center" gap="sm">
-														<Heading level="h1">{p().name}</Heading>
-														<Show when={isOwner()}>
-															<button
-																type="button"
-																onClick={startEditing}
-																class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1"
-															>
-																<PencilIcon size="sm" title="Edit project" />
-															</button>
-														</Show>
-													</Flex>
-													<Show
-														when={p().description}
-														fallback={
-															<Show when={isOwner()}>
-																<button
-																	type="button"
-																	onClick={startEditing}
-																	class="text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition text-sm"
-																>
-																	+ Add description
-																</button>
-															</Show>
-														}
-													>
-														<Text color="muted">{p().description}</Text>
-													</Show>
-													<Text size="sm" color="muted">
-														Created by {getDisplayName(p().account)}
-													</Text>
-												</Stack>
-												<Show when={isOwner()}>
-													<Button
-														variant="danger"
-														size="sm"
-														onClick={() => setDeleteDialogOpen(true)}
-													>
-														Delete
-													</Button>
-												</Show>
-											</Flex>
+											<ProjectHeader
+												project={p()}
+												isOwner={isOwner()}
+												onEdit={startEditing}
+												onDelete={() => setDeleteDialogOpen(true)}
+											/>
 										}
 									>
-										<Card padding="lg">
-											<Stack spacing="md">
-												<Heading level="h2">Edit Project</Heading>
-												<div>
-													<Text
-														size="sm"
-														weight="medium"
-														class="mb-1 text-on-surface-strong dark:text-on-surface-dark-strong"
-													>
-														Name
-													</Text>
-													<Input
-														type="text"
-														value={editName()}
-														onInput={(e) => setEditName(e.currentTarget.value)}
-														onKeyDown={(e) => {
-															if (e.key === "Escape") cancelEditing();
-														}}
-														placeholder="Project name"
-														disabled={isSaving()}
-														autofocus
-													/>
-												</div>
-												<div>
-													<Text
-														size="sm"
-														weight="medium"
-														class="mb-1 text-on-surface-strong dark:text-on-surface-dark-strong"
-													>
-														Description{" "}
-														<span class="font-normal text-on-surface-muted dark:text-on-surface-dark-muted">
-															(optional)
-														</span>
-													</Text>
-													<Textarea
-														value={editDescription()}
-														onInput={(e) =>
-															setEditDescription(e.currentTarget.value)
-														}
-														onKeyDown={(e) => {
-															if (e.key === "Escape") cancelEditing();
-														}}
-														rows={3}
-														placeholder="Add a description..."
-														disabled={isSaving()}
-													/>
-												</div>
-												<Flex justify="end" gap="sm">
-													<Button
-														size="sm"
-														variant="secondary"
-														onClick={cancelEditing}
-														disabled={isSaving()}
-													>
-														Cancel
-													</Button>
-													<Button
-														size="sm"
-														variant="primary"
-														onClick={saveProject}
-														disabled={isSaving() || !editName().trim()}
-													>
-														{isSaving() ? "Saving..." : "Save Changes"}
-													</Button>
-												</Flex>
-											</Stack>
-										</Card>
+										<ProjectEditForm
+											name={editName()}
+											description={editDescription()}
+											isSaving={isSaving()}
+											onNameChange={setEditName}
+											onDescriptionChange={setEditDescription}
+											onSave={saveProject}
+											onCancel={cancelEditing}
+										/>
 									</Show>
 
 									<Stack spacing="md">
@@ -467,106 +339,12 @@ export const ProjectDetail = () => {
 											/>
 										</Show>
 
-										<Show
-											when={packages().length > 0}
-											fallback={
-												<Card padding="lg">
-													<Stack spacing="sm" align="center">
-														<Text color="muted">
-															No packages in this project yet.
-														</Text>
-														<Show
-															when={isOwner()}
-															fallback={
-																<Text size="sm" color="muted">
-																	The owner can add packages to this project.
-																</Text>
-															}
-														>
-															<Text size="sm" color="muted">
-																Use the search above to add packages.
-															</Text>
-														</Show>
-													</Stack>
-												</Card>
-											}
-										>
-											<Stack spacing="lg">
-												{/* Tagged sections */}
-												<For each={packagesByTag().sortedTags}>
-													{(tagName) => (
-														<Stack spacing="sm">
-															<Heading level="h3">{tagName}</Heading>
-															<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-																<For each={packagesByTag().groups[tagName]}>
-																	{(pkg) => {
-																		const upvote = createPackageUpvote(
-																			() => pkg as Package,
-																		);
-																		return (
-																			<PackageCard
-																				name={pkg.name}
-																				registry={pkg.registry}
-																				description={pkg.description}
-																				href={buildPackageUrl(
-																					pkg.registry,
-																					pkg.name,
-																				)}
-																				upvoteCount={upvote.upvoteCount()}
-																				isUpvoted={upvote.isUpvoted()}
-																				upvoteDisabled={upvote.isDisabled()}
-																				onUpvote={upvote.toggle}
-																				onRemove={
-																					isOwner()
-																						? () => setRemovePackageId(pkg.id)
-																						: undefined
-																				}
-																			/>
-																		);
-																	}}
-																</For>
-															</div>
-														</Stack>
-													)}
-												</For>
-
-												{/* Uncategorized section */}
-												<Show when={packagesByTag().uncategorized.length > 0}>
-													<Stack spacing="sm">
-														<Heading level="h3">Uncategorized</Heading>
-														<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-															<For each={packagesByTag().uncategorized}>
-																{(pkg) => {
-																	const upvote = createPackageUpvote(
-																		() => pkg as Package,
-																	);
-																	return (
-																		<PackageCard
-																			name={pkg.name}
-																			registry={pkg.registry}
-																			description={pkg.description}
-																			href={buildPackageUrl(
-																				pkg.registry,
-																				pkg.name,
-																			)}
-																			upvoteCount={upvote.upvoteCount()}
-																			isUpvoted={upvote.isUpvoted()}
-																			upvoteDisabled={upvote.isDisabled()}
-																			onUpvote={upvote.toggle}
-																			onRemove={
-																				isOwner()
-																					? () => setRemovePackageId(pkg.id)
-																					: undefined
-																			}
-																		/>
-																	);
-																}}
-															</For>
-														</div>
-													</Stack>
-												</Show>
-											</Stack>
-										</Show>
+										<PackageGrid
+											packages={packages()}
+											packagesByTag={packagesByTag()}
+											isOwner={isOwner()}
+											onRemove={setRemovePackageId}
+										/>
 									</Stack>
 								</>
 							)}

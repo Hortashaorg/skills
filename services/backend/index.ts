@@ -1,10 +1,13 @@
 import { serve } from "@hono/node-server";
-import { throwError } from "@package/common";
+import { zValidator } from "@hono/zod-validator";
+import { throwError, z } from "@package/common";
 import {
+	and,
 	count,
 	db,
 	dbSchema,
 	eq,
+	lt,
 	softDeleteAccountById,
 } from "@package/database/server";
 import { createLogger, getMeter } from "@package/instrumentation/utils";
@@ -258,6 +261,32 @@ app.get("/api/stats", async (c) => {
 		pendingFetches: pending?.count ?? 0,
 	});
 });
+
+const queueAheadSchema = z.object({
+	before: z.coerce.number(),
+});
+
+app.get(
+	"/api/queue/ahead",
+	zValidator("query", queueAheadSchema),
+	async (c) => {
+		const { before } = c.req.valid("query");
+
+		const [result] = await db
+			.select({ count: count() })
+			.from(dbSchema.packageFetches)
+			.where(
+				and(
+					eq(dbSchema.packageFetches.status, "pending"),
+					lt(dbSchema.packageFetches.createdAt, new Date(before)),
+				),
+			);
+
+		return c.json({
+			ahead: result?.count ?? 0,
+		});
+	},
+);
 
 app.get("/api/account/export", handleGdprExport);
 

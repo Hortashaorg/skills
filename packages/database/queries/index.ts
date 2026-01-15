@@ -23,7 +23,7 @@ export const queries = defineQueries({
 		byNameWithChannels: packagesQueries.byNameWithChannels,
 		byIdWithChannels: packagesQueries.byIdWithChannels,
 		byIdWithTags: packagesQueries.byIdWithTags,
-		exactMatch: packagesQueries.exactMatch,
+		exactMatches: packagesQueries.exactMatches,
 		recent: packagesQueries.recent,
 		search: packagesQueries.search,
 		failed: packagesQueries.failed,

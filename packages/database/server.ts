@@ -18,6 +18,8 @@ export {
 	inArray,
 	isNotNull,
 	isNull,
+	lt,
+	lte,
 	max,
 	or,
 	sql as sqlExpr,

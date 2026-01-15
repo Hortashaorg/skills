@@ -24,6 +24,7 @@ import {
 	type BreadcrumbSegmentResult,
 	getBreadcrumbs,
 } from "@/lib/breadcrumbs";
+import { accountNavItems, mainNavItems } from "@/lib/navigation";
 
 /**
  * Breadcrumb item that resolves tag name from Zero query.
@@ -116,7 +117,7 @@ export const Layout: ParentComponent = (props) => {
 
 	const unreadCount = () => unreadNotifications()?.length ?? 0;
 	const isAnonymous = () => zero().userID === "anon";
-	const isAdmin = () => getAuthData()?.roles?.includes("admin") ?? false;
+	const userRoles = () => getAuthData()?.roles ?? [];
 
 	const handleLogout = async () => {
 		await logout();
@@ -138,8 +139,10 @@ export const Layout: ParentComponent = (props) => {
 	return (
 		<div class="min-h-screen bg-surface dark:bg-surface-dark">
 			<Navbar
+				navItems={mainNavItems}
+				accountNavItems={accountNavItems}
+				userRoles={userRoles()}
 				isLoggedIn={!isAnonymous()}
-				isAdmin={isAdmin()}
 				currentPath={location.pathname}
 				connectionState={connectionState().name}
 				notifications={notifications() ?? []}

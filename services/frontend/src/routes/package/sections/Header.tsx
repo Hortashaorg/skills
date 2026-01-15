@@ -8,13 +8,15 @@ import {
 	useZero,
 } from "@package/database/client";
 import { A } from "@solidjs/router";
-import { createSignal, For, Show } from "solid-js";
+import { createMemo, createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import {
 	CheckIcon,
 	ChevronDownIcon,
+	ExternalLinkIcon,
 	PlusIcon,
+	SpinnerIcon,
 } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -24,6 +26,7 @@ import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { createPolledValue } from "@/hooks/createPolledValue";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { handleMutationError } from "@/lib/mutation-error";
 import { cn } from "@/lib/utils";
@@ -36,6 +39,15 @@ export interface HeaderProps {
 	pkg: Package;
 }
 
+const formatUrl = (url: string): string => {
+	try {
+		const parsed = new URL(url);
+		return parsed.host + (parsed.pathname !== "/" ? parsed.pathname : "");
+	} catch {
+		return url;
+	}
+};
+
 export const Header = (props: HeaderProps) => {
 	const zero = useZero();
 	const upvote = createPackageUpvote(() => props.pkg);
@@ -45,6 +57,46 @@ export const Header = (props: HeaderProps) => {
 	}));
 
 	const isLoggedIn = () => zero().userID !== "anon";
+
+	// Tags query
+	const [packageWithTags] = useQuery(() =>
+		queries.packages.byIdWithTags({ id: props.pkg.id }),
+	);
+	const [allTags] = useQuery(() => queries.tags.list());
+
+	const packageTags = createMemo(() => packageWithTags()?.packageTags ?? []);
+	const tagsById = createMemo(() => {
+		const all = allTags() ?? [];
+		return new Map(all.map((t) => [t.id, t]));
+	});
+
+	// Fetch history to check for pending sync
+	const [fetchHistory] = useQuery(() =>
+		queries.packageFetches.byPackageId({ packageId: props.pkg.id }),
+	);
+
+	const hasPendingFetch = createMemo(() => {
+		const history = fetchHistory();
+		if (!history?.length) return false;
+		return history[0]?.status === "pending";
+	});
+
+	const pendingFetchCreatedAt = createMemo(() => {
+		const history = fetchHistory();
+		if (!history?.length || history[0]?.status !== "pending") return null;
+		return history[0].createdAt;
+	});
+
+	// Queue position polling (REST endpoint, not real-time like Zero)
+	const queuePosition = createPolledValue<{ ahead: number }>(
+		() => {
+			const createdAt = pendingFetchCreatedAt();
+			return createdAt ? `/api/queue/ahead?before=${createdAt}` : null;
+		},
+		{ interval: 30_000 },
+	);
+
+	// Projects for add-to-project
 	const [projects] = useQuery(() => queries.projects.mine());
 	const [addingToProject, setAddingToProject] = createSignal<string | null>(
 		null,
@@ -62,7 +114,7 @@ export const Header = (props: HeaderProps) => {
 
 		setAddingToProject(projectId);
 		try {
-			await zero().mutate(
+			zero().mutate(
 				mutators.projectPackages.add({
 					projectId,
 					packageId: props.pkg.id,
@@ -78,31 +130,156 @@ export const Header = (props: HeaderProps) => {
 	return (
 		<Card padding="lg">
 			<Stack spacing="md">
-				<Flex justify="between" align="start">
+				{/* Title row with badge and upvote */}
+				<Flex gap="sm" align="center" wrap="wrap" class="min-w-0">
+					<Heading level="h1" class="min-w-0 truncate">
+						{props.pkg.name}
+					</Heading>
+					<Badge variant="secondary" size="sm" class="shrink-0">
+						{props.pkg.registry}
+					</Badge>
+					<div class="shrink-0 ml-auto">
+						<Show
+							when={isLoggedIn()}
+							fallback={
+								<button
+									type="button"
+									onClick={() => {
+										saveReturnUrl();
+										window.location.href = getAuthorizationUrl();
+									}}
+									class="text-sm text-primary dark:text-primary-dark hover:underline cursor-pointer"
+								>
+									Sign in to upvote
+								</button>
+							}
+						>
+							<UpvoteButton
+								count={upvote.upvoteCount()}
+								isUpvoted={upvote.isUpvoted()}
+								disabled={upvote.isDisabled()}
+								onClick={upvote.toggle}
+								size="md"
+							/>
+						</Show>
+					</div>
+				</Flex>
+
+				{/* Tags */}
+				<Show when={packageTags().length > 0}>
+					<Flex align="center" wrap="wrap" gap="sm">
+						<For each={packageTags()}>
+							{(pt) => (
+								<Badge variant="secondary" size="sm">
+									{tagsById().get(pt.tagId)?.name ?? "Unknown"}
+								</Badge>
+							)}
+						</For>
+					</Flex>
+				</Show>
+
+				{/* Description */}
+				<Show when={props.pkg.description}>
+					<Text color="muted" class="line-clamp-5 sm:line-clamp-3">
+						{props.pkg.description}
+					</Text>
+				</Show>
+
+				{/* Links section */}
+				<Show when={props.pkg.homepage || props.pkg.repository}>
 					<Stack spacing="xs">
-						<Flex gap="sm" align="center">
-							<Heading level="h1">{props.pkg.name}</Heading>
-							<Badge variant="secondary" size="sm">
-								{props.pkg.registry}
-							</Badge>
-						</Flex>
-						<Show when={props.pkg.description}>
-							<Text color="muted">{props.pkg.description}</Text>
+						<Show when={props.pkg.homepage}>
+							{(url) => (
+								<Flex gap="sm" align="center" class="min-w-0">
+									<Text size="sm" color="muted" class="shrink-0">
+										Homepage
+									</Text>
+									<a
+										href={url()}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
+									>
+										<span class="truncate">{formatUrl(url())}</span>
+										<ExternalLinkIcon size="xs" class="shrink-0" />
+									</a>
+								</Flex>
+							)}
+						</Show>
+						<Show when={props.pkg.repository}>
+							{(url) => (
+								<Flex gap="sm" align="center" class="min-w-0">
+									<Text size="sm" color="muted" class="shrink-0">
+										Repository
+									</Text>
+									<a
+										href={url()}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
+									>
+										<span class="truncate">{formatUrl(url())}</span>
+										<ExternalLinkIcon size="xs" class="shrink-0" />
+									</a>
+								</Flex>
+							)}
 						</Show>
 					</Stack>
-					<Flex gap="sm" align="center">
-						<UpvoteButton
-							count={upvote.upvoteCount()}
-							isUpvoted={upvote.isUpvoted()}
-							disabled={upvote.isDisabled()}
-							onClick={upvote.toggle}
-							size="md"
-						/>
+				</Show>
+
+				{/* Footer: Sync info + Actions */}
+				<Flex
+					gap="md"
+					align="center"
+					justify="between"
+					wrap="wrap"
+					class="pt-2 border-t border-outline dark:border-outline-dark"
+				>
+					<Flex gap="sm" align="center" class="min-w-0">
+						<Show
+							when={!hasPendingFetch()}
+							fallback={
+								<Flex gap="xs" align="center">
+									<SpinnerIcon
+										size="sm"
+										class="text-primary dark:text-primary-dark"
+									/>
+									<Text size="xs" color="muted">
+										<Show
+											when={(queuePosition()?.ahead ?? 0) > 0}
+											fallback="Queued"
+										>
+											{queuePosition()?.ahead} in queue
+										</Show>
+									</Text>
+								</Flex>
+							}
+						>
+							<Text size="xs" color="muted">
+								Synced {formatShortDate(props.pkg.lastFetchSuccess)}
+							</Text>
+							<Show when={!request.isDisabled()}>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => request.submit()}
+									disabled={request.isSubmitting()}
+								>
+									<Show when={request.isSubmitting()} fallback="Refresh">
+										<SpinnerIcon size="sm" class="mr-1" />
+										Syncing
+									</Show>
+								</Button>
+							</Show>
+						</Show>
+					</Flex>
+
+					<div class="shrink-0">
 						<Show when={isLoggedIn()}>
 							<Popover>
 								<Popover.Trigger
 									class={cn(
-										"inline-flex items-center gap-1.5 h-8 px-3 rounded-radius border",
+										"inline-flex items-center gap-1.5 h-8 px-3 rounded-radius border whitespace-nowrap",
 										"border-outline-strong dark:border-outline-dark-strong",
 										"bg-transparent text-on-surface dark:text-on-surface-dark",
 										"text-sm font-medium",
@@ -170,7 +347,7 @@ export const Header = (props: HeaderProps) => {
 																<Show when={isInProject()}>
 																	<CheckIcon
 																		size="sm"
-																		class="text-success flex-shrink-0"
+																		class="text-success shrink-0"
 																		title="Already in project"
 																	/>
 																</Show>
@@ -197,69 +374,7 @@ export const Header = (props: HeaderProps) => {
 								</Popover.Portal>
 							</Popover>
 						</Show>
-					</Flex>
-				</Flex>
-
-				{/* Links */}
-				<Flex gap="lg" wrap="wrap">
-					<Show when={props.pkg.homepage}>
-						{(url) => (
-							<a
-								href={url()}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-sm text-primary dark:text-primary-dark hover:underline"
-							>
-								Homepage
-							</a>
-						)}
-					</Show>
-					<Show when={props.pkg.repository}>
-						{(url) => (
-							<a
-								href={url()}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-sm text-primary dark:text-primary-dark hover:underline"
-							>
-								Repository
-							</a>
-						)}
-					</Show>
-				</Flex>
-
-				{/* Metadata */}
-				<Flex gap="sm" align="center">
-					<Text size="xs" color="muted">
-						Last updated: {formatShortDate(props.pkg.lastFetchSuccess)}
-					</Text>
-				</Flex>
-
-				{/* Update button */}
-				<Flex gap="sm" align="center">
-					<Show when={!request.isDisabled()}>
-						<Button
-							variant="outline"
-							onClick={() => request.submit()}
-							disabled={request.isSubmitting()}
-						>
-							<Show when={request.isSubmitting()} fallback="Request Update">
-								Requesting...
-							</Show>
-						</Button>
-					</Show>
-					<Show when={!isLoggedIn()}>
-						<button
-							type="button"
-							onClick={() => {
-								saveReturnUrl();
-								window.location.href = getAuthorizationUrl();
-							}}
-							class="text-sm text-primary dark:text-primary-dark hover:underline cursor-pointer"
-						>
-							Sign in to request updates
-						</button>
-					</Show>
+					</div>
 				</Flex>
 			</Stack>
 		</Card>

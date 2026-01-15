@@ -48,7 +48,7 @@ export interface ResultsGridProps {
 	hasActiveFilters?: boolean;
 	canLoadMore?: boolean;
 	onLoadMore?: () => void;
-	exactMatch?: Package;
+	exactMatches?: readonly Package[];
 	showAddCard?: boolean;
 	searchTerm?: string;
 	registry?: Registry;
@@ -106,14 +106,16 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 	const isLoggedIn = () => zero().userID !== "anon";
 
+	const hasExactMatches = () => (props.exactMatches?.length ?? 0) > 0;
+
 	const showEmptyState = () =>
 		!props.isLoading &&
 		props.packages.length === 0 &&
-		!props.exactMatch &&
+		!hasExactMatches() &&
 		!props.showAddCard;
 
 	const showResults = () =>
-		props.packages.length > 0 || props.exactMatch || props.showAddCard;
+		props.packages.length > 0 || hasExactMatches() || props.showAddCard;
 
 	// Stop auto-loading after limit, require manual "Load more"
 	const pastAutoLoadLimit = () =>
@@ -189,10 +191,12 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 			<Match when={showResults()}>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					{/* First card: exact match or add card */}
-					<Show when={props.exactMatch}>
-						{(pkg) => <ExactMatchCard pkg={pkg()} />}
-					</Show>
+					{/* Exact matches first (can be multiple across registries) */}
+					<For each={props.exactMatches}>
+						{(pkg) => <ExactMatchCard pkg={pkg} />}
+					</For>
+
+					{/* Add card if no exact matches found */}
 					<Show when={props.showAddCard ? props.searchTerm : undefined}>
 						{(term) => (
 							<AddPackageCard

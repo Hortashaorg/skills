@@ -1,5 +1,6 @@
 import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
+import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
 const slugify = (text: string): string =>
@@ -66,6 +67,13 @@ export const remove = defineMutator(
 			throw new Error("Admin access required");
 		}
 
+		// Delete all package-tag associations first
+		const packageTags = await tx.run(zql.packageTags.where("tagId", args.id));
+		for (const pt of packageTags) {
+			await tx.mutate.packageTags.delete({ id: pt.id });
+		}
+
+		// Then delete the tag
 		await tx.mutate.tags.delete({ id: args.id });
 	},
 );
