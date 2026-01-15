@@ -81,7 +81,6 @@ Think of it as a garden where both technology knowledge and the people cultivati
 - Community-curated ecosystem suggestions and package associations
 - Project-ecosystem linking (declare "I use Azure" not just individual packages)
 - Per-package leaderboards (recognize package experts)
-- New tag proposals (community-suggested tags)
 
 ## Technical Architecture
 
