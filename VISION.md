@@ -99,6 +99,25 @@ You don't need a community to get value. Create something useful, share the link
 - Project-ecosystem linking (declare "I use Azure" not just individual packages)
 - Per-package leaderboards (recognize package experts)
 
+### Phase 6: Comparisons & Decisions
+
+- Comparisons - community-curated "which X?" pages linking to packages and ecosystems
+- Decision records - document "why we chose X over Y" with concrete references
+- Voting on comparison items and decision quality
+
+### Phase 7: Discussions & Profiles
+
+- Rich text / markdown support for longer content
+- Comments on packages, ecosystems, projects, comparisons
+- Public user profiles with contribution history
+- Package expertise recognition ("Top React helper")
+
+### Phase 8: Following & Discovery
+
+- Follow packages/ecosystems for version and update notifications
+- Enhanced search with recommendations
+- "Similar to" and "used together with" suggestions
+
 ## Technical Architecture
 
 - **Frontend**: SolidJS + @rocicorp/zero for real-time sync
