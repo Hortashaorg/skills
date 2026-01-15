@@ -1,19 +1,36 @@
 # TechGarden Vision
 
-A place for engineers to learn, contribute, and grow - built around high-quality package data.
+A place for engineers to architect in public - built on concrete, linked technology data.
 
 ## Core Concept
 
-TechGarden is a community built around the technology ecosystem. Packages are the foundation - aggregated from npm, jsr, nuget, homebrew, archlinux, dockerhub, and more - but the real value is what grows on top: engineers learning together, curating knowledge, and building their presence through meaningful contributions.
+Technology discussions are abstract. "We chose Drizzle over Prisma" is just words until you click through and understand what those things actually are, what ecosystems they belong to, how they compare.
 
-Think of it as a garden where both technology knowledge and the people cultivating it can grow.
+TechGarden solves this by providing **foundational data** (packages and ecosystems) that everything else links to. When you mention a technology, you're not writing text - you're pointing at a real thing with real data.
 
-## For Engineers
+### Two-Layer Model
 
-- **Learn the ecosystem**: Understand how packages relate, what tools exist for different use cases, and how technologies fit together
-- **Contribute meaningfully**: Curate packages, help others in discussions, share your knowledge - work that matters beyond just code
+**Foundation (concrete, curated):**
+- **Packages** - aggregated from npm, jsr, nuget, homebrew, archlinux, dockerhub
+- **Ecosystems** - product/technology identities (React, AWS, TalosOS) containing related packages
+
+**Value layer (user-generated, links to foundation):**
+- **Projects** - your stack, linked to packages and ecosystems
+- **Comparisons** - "which ORM?" with concrete package references
+- **Decision records** - why you chose what you chose, linked to real entities
+- **Discussions** - grounded in specific packages, ecosystems, or projects
+
+Every artifact is shareable. Every mention is a link. The more people use it, the richer the connections become.
+
+## For Engineers Who Architect in Public
+
+- **Share your stack**: Create a project, link your packages and ecosystems, share the URL
+- **Document decisions**: "We chose @drizzle over @prisma because..." - concrete, clickable, always current
+- **Curate ecosystems**: "Here's everything in the @kubernetes ecosystem" - help others navigate complexity
+- **Compare options**: Build comparisons others can reference when making their own choices
 - **Build your presence**: Your contributions are visible. Become known for the technologies you understand deeply
-- **Explore projects**: Organize your own stack, see how others build theirs, discover new tools
+
+You don't need a community to get value. Create something useful, share the link. The platform grows through artifacts worth sharing.
 
 ## Key Features
 
@@ -93,10 +110,11 @@ Think of it as a garden where both technology knowledge and the people cultivati
 
 ## Design Principles
 
-- **Cultivate a learning culture**: Good engineers are open-minded, share opinions freely, ask questions comfortably, and discuss constructively without ego. Reward curiosity and helpfulness. No downvotes, no gatekeeping, no punishment mechanics.
-- **Content has context**: All discussions and contributions are anchored to packages, categories, or projects. No posting into the void. This keeps the platform focused and conversations relevant.
-- **Solo-first features**: Build things that work without needing other users first
-- **Data quality over quantity**: Curated and validated information
-- **Explore before optimizing**: Build features, see what's valuable, iterate
-- **Real-time collaboration**: Zero enables live updates across users
-- **Community features when there's a community**: Defer heavy engagement until there's critical mass
+- **Grounded in data**: Every mention links to a real entity. No abstract discussions - concrete references to packages, ecosystems, projects.
+- **Solo-first value**: Build things that work without needing other users. One person creates, shares a link, others benefit.
+- **Cultivate learning**: Good engineers are open-minded, share opinions freely, ask questions comfortably. No downvotes, no gatekeeping.
+- **Content has context**: All contributions are anchored to packages, ecosystems, or projects. No posting into the void.
+- **Data quality over quantity**: Curated and validated information.
+- **Explore before optimizing**: Build features, see what's valuable, iterate.
+- **Real-time collaboration**: Zero enables live updates across users.
+- **Community features when there's a community**: Defer heavy engagement until there's critical mass.
