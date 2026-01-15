@@ -39,7 +39,9 @@ export function createPolledValue<T>(
 
 	const fetchValue = async (path: string) => {
 		try {
-			const res = await fetch(`${getConfig().backendUrl}${path}`);
+			const res = await fetch(`${getConfig().backendUrl}${path}`, {
+				credentials: "include",
+			});
 			if (res.ok) {
 				const data = await res.json();
 				setValue(() => data);

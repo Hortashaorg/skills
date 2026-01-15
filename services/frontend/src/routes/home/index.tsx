@@ -123,6 +123,7 @@ export const Packages = () => {
 
 	// Track filter state for stabilization
 	const [lastFilterKey, setLastFilterKey] = createSignal("");
+	const [lastLimit, setLastLimit] = createSignal(PACKAGES_INITIAL_LIMIT);
 	const currentFilterKey = () =>
 		`${searchValue()}|${registryFilter()}|${selectedTagSlugs().join(",")}`;
 
@@ -164,6 +165,11 @@ export const Packages = () => {
 		const oldFilterKey = untrack(() => lastFilterKey());
 		const filtersChanged = filterKey !== oldFilterKey;
 
+		// Detect load-more action (limit increased without filter change)
+		const currentLimit = limit();
+		const prevLimit = untrack(() => lastLimit());
+		const isLoadMore = !filtersChanged && currentLimit > prevLimit;
+
 		let packages: Package[];
 		let exactMatches: Package[] = [];
 		let showAdd = false;
@@ -182,8 +188,9 @@ export const Packages = () => {
 		const loadMore = canLoadMore();
 		const oldPackages = untrack(() => stablePackages());
 
-		// Don't accept fewer packages when loading more
-		if (!filtersChanged && packages.length < oldPackages.length) {
+		// Only block shorter results during load-more (prevents flicker)
+		// During normal sync, accept deletions
+		if (isLoadMore && packages.length < oldPackages.length) {
 			return;
 		}
 
@@ -197,6 +204,7 @@ export const Packages = () => {
 			if (filtersChanged) {
 				setLastFilterKey(filterKey);
 			}
+			setLastLimit(currentLimit);
 		});
 	});
 
