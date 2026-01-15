@@ -112,9 +112,15 @@ You don't need a community to get value. Create something useful, share the link
 
 - **Grounded in data**: Every mention links to a real entity. No abstract discussions - concrete references to packages, ecosystems, projects.
 - **Solo-first value**: Build things that work without needing other users. One person creates, shares a link, others benefit.
-- **Cultivate learning**: Good engineers are open-minded, share opinions freely, ask questions comfortably. No downvotes, no gatekeeping.
+- **Non-hostile by design**: Prevent toxicity through system design, not moderation.
+  - No downvotes, no gatekeeping, no punishment mechanics
+  - Curators don't choose what to review - random presentation prevents targeting
+  - "Skip" option removes pressure to judge unfamiliar topics
+  - Democratic consensus through voting, not individual power users
+  - Gamify contribution to reward helpfulness, not criticism
+- **Cultivate learning**: Good engineers are open-minded, share opinions freely, ask questions comfortably.
 - **Content has context**: All contributions are anchored to packages, ecosystems, or projects. No posting into the void.
-- **Data quality over quantity**: Curated and validated information.
+- **Data quality over quantity**: Curated and validated information through democratic review.
 - **Explore before optimizing**: Build features, see what's valuable, iterate.
 - **Real-time collaboration**: Zero enables live updates across users.
 - **Community features when there's a community**: Defer heavy engagement until there's critical mass.
