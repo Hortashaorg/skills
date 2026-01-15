@@ -21,20 +21,19 @@ Think of it as a garden where both technology knowledge and the people cultivati
 
 - **Multi-source aggregation**: Fetch packages from npm, jsr, nuget, homebrew, archlinux, dockerhub, and other registries
 - **Rich metadata**: Version history, descriptions, dependencies, maintainers, download stats, publish dates
-- **Cross-registry linking**: Connect equivalent packages across sources (e.g., "hono" on npm = "@hono/hono" on jsr)
+- **Ecosystem context**: See which ecosystem a package belongs to and discover related packages across registries
 - **Dependency mapping**: Visualize and analyze package relationships
 
-### Tagging & Categories
+### Tagging & Ecosystems
 
 - **Community tagging**: Label packages with professional areas like "frontend", "backend", "tooling", "testing", "design"
-- **Package categories**: Group packages by use case (ORM, HTTP Client, State Management) for comparison and discussion
+- **Ecosystems**: Product/technology identities (React, AWS, Kubernetes, TalosOS) containing related packages, plugins, adapters, and tools - not always packages themselves
 - **Quality control**: Voting system for suggestions to ensure accuracy
-- **Multi-dimensional classification**: Packages can have tags AND belong to categories
+- **Multi-dimensional classification**: Packages can have tags AND belong to ecosystems
 
 ### Community & Engagement
 
-- **Contextual discussions**: All conversations are tied to packages, categories, or projects - no free-form posting. Keeps discussions relevant and purposeful.
-- **Follow what matters**: Follow packages or categories to get notified of new versions, discussions, or replies. Not social following - relevant updates only.
+- **Follow what matters**: Follow packages or ecosystems to get notified of new versions or updates. Not social following - relevant updates only.
 - **Per-package leaderboards**: "Top React helper", "Top Express expert" - recognition for helping others with specific technologies
 - **Contribution tracking**: Score users for curation work (tagging, voting, suggesting)
 - **Public profiles**: Showcase your projects, expertise areas, and contribution history
@@ -76,12 +75,12 @@ Think of it as a garden where both technology knowledge and the people cultivati
 - Registry adapter pattern for easy expansion
 - Cross-registry dependencies (jsr packages can depend on npm)
 
-### Phase 5: Categories & Discussion (Current)
+### Phase 5: Ecosystems (Current)
 
-- Package categories (compare packages within use cases)
-- Discussion/comments on packages and categories
+- Ecosystems (React, AWS, TalosOS) - product/technology identities containing related packages
+- Community-curated ecosystem suggestions and package associations
+- Project-ecosystem linking (declare "I use Azure" not just individual packages)
 - Per-package leaderboards (recognize package experts)
-- Cross-registry package linking
 - New tag proposals (community-suggested tags)
 
 ## Technical Architecture
