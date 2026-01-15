@@ -4,28 +4,23 @@
 
 ---
 
-## Sprint 9: Tech Debt
+## Sprint 10: Maintenance & Code Quality
 
-### Quick Wins
+### Maintenance
 
-- [x] Upgrade dependencies (zero, hono, pino, rolldown-vite, types)
-- [x] Split `webhook/index.ts` into separate handler files
-- [x] Split `me/projects/detail.tsx` into sections
-- [x] Split `navbar.tsx` into smaller components
-- [x] Fix `createUrlSignal` type assertion
-- [x] Dead code cleanup (unused exports, stale files)
+- [ ] Upgrade dependencies
 
-### UI Fixes
+### Reusable Hooks
 
-- [ ] Text overflow in cards (truncate long names/descriptions)
-- [ ] Mobile horizontal scroll issues (content not fitting viewport)
-- [ ] Responsive breakpoint audit
-- [ ] Infinite scroll flicker (packages briefly appear/disappear during load)
+- [ ] `createPackageTags` - Extract tag mapping logic (repeated in ResultsGrid 2x, Header, detail.tsx)
 
-### Polish
+### Reusable Utilities
 
-- [x] Data-driven Navbar navigation
-- [ ] Update CLAUDE.md docs if stale
+- [ ] `lib/package-formatting.ts` - Extract status label/description logic
+
+### File Splitting
+
+- [ ] Split `routes/me/index.tsx` (430 lines) - Extract ProfileHeader, ProfileSettings, ProfileActions sections
 
 ---
 
@@ -36,6 +31,16 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 9: Tech Debt & Polish
+
+- Dependency upgrades (zero, hono, pino, rolldown-vite, types)
+- Split webhook/index.ts, me/projects/detail.tsx, navbar.tsx
+- Data-driven Navbar with role-based filtering
+- Infinite scroll stabilization (no flicker, accepts deletions)
+- Multiple exact matches across registries in search
+- CLAUDE.md updates (UX considerations, component discipline, Zod validation)
+- Tech debt backlog audit
 
 ### Sprint 8: Multi-Registry Support
 
