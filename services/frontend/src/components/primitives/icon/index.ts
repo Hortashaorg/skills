@@ -9,6 +9,7 @@ export {
 	DocumentIcon,
 	ExternalLinkIcon,
 	FolderIcon,
+	GlobeIcon,
 	MenuIcon,
 	MoonIcon,
 	PackageIcon,

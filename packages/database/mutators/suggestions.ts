@@ -111,7 +111,9 @@ export const createCreateEcosystem = defineMutator(
 		for (const suggestion of existingPending) {
 			const payload = suggestion.payload as { slug?: string };
 			if (payload.slug === slug) {
-				throw new Error("A pending suggestion for this ecosystem already exists");
+				throw new Error(
+					"A pending suggestion for this ecosystem already exists",
+				);
 			}
 		}
 
@@ -145,7 +147,9 @@ export const createAddEcosystemPackage = defineMutator(
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to suggest adding a package to an ecosystem");
+			throw new Error(
+				"Must be logged in to suggest adding a package to an ecosystem",
+			);
 		}
 
 		// Validate ecosystem exists

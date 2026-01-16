@@ -10,6 +10,8 @@ import { loadConfig } from "./lib/config";
 import { AdminRequests } from "./routes/admin/requests";
 import { AdminTags } from "./routes/admin/tags";
 import { Curation } from "./routes/curation";
+import { Ecosystem } from "./routes/ecosystem";
+import { Ecosystems } from "./routes/ecosystems";
 import { Packages } from "./routes/home";
 import { Landing } from "./routes/landing";
 import { Profile } from "./routes/me";
@@ -38,6 +40,8 @@ loadConfig().then(() => {
 							<Route path="/" component={Landing} />
 							<Route path="/packages" component={Packages} />
 							<Route path="/package/:registry/:name/*tab" component={Package} />
+							<Route path="/ecosystems" component={Ecosystems} />
+							<Route path="/ecosystem/:slug" component={Ecosystem} />
 							<Route path="/me" component={Profile} />
 							<Route path="/me/notifications" component={Notifications} />
 							<Route path="/me/projects" component={Projects} />

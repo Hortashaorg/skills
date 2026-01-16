@@ -85,7 +85,12 @@ export const resolutionHandlers: Record<
 			"create_ecosystem",
 			suggestion.version,
 			suggestion.payload,
-		) as { name: string; slug: string; description?: string; website?: string } | null;
+		) as {
+			name: string;
+			slug: string;
+			description?: string;
+			website?: string;
+		} | null;
 		if (!payload) {
 			throw new Error("Invalid create_ecosystem payload");
 		}
