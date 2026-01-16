@@ -118,6 +118,13 @@ You don't need a community to get value. Create something useful, share the link
 - Enhanced search with recommendations
 - "Similar to" and "used together with" suggestions
 
+### Phase 9: Trust & Moderation
+
+- Audit log for ecosystem/curation changes (who did what, when)
+- Power user role for trusted contributors (frictionless contributions)
+- Promotion criteria based on contribution history
+- Moderation tools (review actions, revert changes, revoke privileges)
+
 ## Technical Architecture
 
 - **Frontend**: SolidJS + @rocicorp/zero for real-time sync

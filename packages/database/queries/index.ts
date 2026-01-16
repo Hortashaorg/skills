@@ -3,6 +3,7 @@ import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
 import * as contributionScoresQueries from "./contribution-scores.ts";
+import * as ecosystemsQueries from "./ecosystems.ts";
 import * as notificationsQueries from "./notifications.ts";
 import * as packageFetchesQueries from "./package-fetches.ts";
 import * as packageTagsQueries from "./package-tags.ts";
@@ -70,5 +71,12 @@ export const queries = defineQueries({
 	notifications: {
 		mine: notificationsQueries.mine,
 		unreadCount: notificationsQueries.unreadCount,
+	},
+	ecosystems: {
+		list: ecosystemsQueries.list,
+		bySlug: ecosystemsQueries.bySlug,
+		byId: ecosystemsQueries.byId,
+		search: ecosystemsQueries.search,
+		byPackageId: ecosystemsQueries.byPackageId,
 	},
 });

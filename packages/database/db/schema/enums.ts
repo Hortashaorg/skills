@@ -28,7 +28,11 @@ export const packageStatusEnum = pgEnum("package_status", [
 	"placeholder",
 ]);
 
-export const suggestionTypeEnum = pgEnum("suggestion_type", ["add_tag"]);
+export const suggestionTypeEnum = pgEnum("suggestion_type", [
+	"add_tag",
+	"create_ecosystem",
+	"add_ecosystem_package",
+]);
 
 export const suggestionStatusEnum = pgEnum("suggestion_status", [
 	"pending",
