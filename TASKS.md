@@ -30,9 +30,9 @@ Ecosystems represent product/technology identities (React, AWS, TalosOS, Drizzle
   - [ ] Learning resources / getting started section (future)
 
 #### Frontend - Curation
-- [ ] Suggest new ecosystem (community)
-- [ ] Suggest package-ecosystem association
-- [ ] Admin: create/edit ecosystems directly
+- [x] Suggest new ecosystem (community)
+- [x] Suggest package-ecosystem association
+- [ ] Admin: create/edit ecosystems directly (deferred - managed through suggestions)
 
 #### Frontend - Projects
 - [ ] Add ecosystem to project (like adding packages)

@@ -55,3 +55,25 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		.related("votes")
 		.related("package");
 });
+
+export const pendingForEcosystem = defineQuery(
+	z.object({ ecosystemId: z.string() }),
+	({ args }) => {
+		return zql.suggestions
+			.where("ecosystemId", args.ecosystemId)
+			.where("status", "pending")
+			.orderBy("createdAt", "desc")
+			.related("account")
+			.related("votes")
+			.related("package");
+	},
+);
+
+export const pendingCreateEcosystem = defineQuery(() => {
+	return zql.suggestions
+		.where("type", "create_ecosystem")
+		.where("status", "pending")
+		.orderBy("createdAt", "desc")
+		.related("account")
+		.related("votes");
+});

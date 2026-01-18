@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Layout } from "@/layout/Layout";
 import { buildPackageUrl } from "@/lib/url";
+import { SuggestPackage } from "./sections/SuggestPackage";
 
 const EcosystemSkeleton = () => (
 	<Stack spacing="lg">
@@ -62,6 +63,16 @@ export const Ecosystem = () => {
 	});
 
 	const hasUpvoted = () => !!userUpvote();
+
+	const existingPackageIds = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemPackages) return new Set<string>();
+		return new Set(
+			eco.ecosystemPackages
+				.map((ep) => ep.package?.id)
+				.filter(Boolean) as string[],
+		);
+	});
 
 	const handleUpvote = async () => {
 		const eco = ecosystem();
@@ -205,6 +216,11 @@ export const Ecosystem = () => {
 											</Show>
 										</Stack>
 									</Card>
+
+									<SuggestPackage
+										ecosystemId={eco().id}
+										existingPackageIds={existingPackageIds()}
+									/>
 								</>
 							)}
 						</Show>

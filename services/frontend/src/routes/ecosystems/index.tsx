@@ -9,6 +9,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
+import { SuggestEcosystem } from "./sections/SuggestEcosystem";
 
 export const Ecosystems = () => {
 	const [ecosystems, ecosystemsResult] = useQuery(() =>
@@ -89,6 +90,8 @@ export const Ecosystems = () => {
 							</Text>
 						</Show>
 					</Show>
+
+					<SuggestEcosystem />
 				</Stack>
 			</Container>
 		</Layout>

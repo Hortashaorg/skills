@@ -59,6 +59,8 @@ export const queries = defineQueries({
 	},
 	suggestions: {
 		pendingForPackage: suggestionsQueries.pendingForPackage,
+		pendingForEcosystem: suggestionsQueries.pendingForEcosystem,
+		pendingCreateEcosystem: suggestionsQueries.pendingCreateEcosystem,
 		pending: suggestionsQueries.pending,
 		pendingExcludingUser: suggestionsQueries.pendingExcludingUser,
 		byId: suggestionsQueries.byId,
