@@ -41,7 +41,7 @@ loadConfig().then(() => {
 							<Route path="/packages" component={Packages} />
 							<Route path="/package/:registry/:name/*tab" component={Package} />
 							<Route path="/ecosystems" component={Ecosystems} />
-							<Route path="/ecosystem/:slug" component={Ecosystem} />
+							<Route path="/ecosystem/:slug/*tab" component={Ecosystem} />
 							<Route path="/me" component={Profile} />
 							<Route path="/me/notifications" component={Notifications} />
 							<Route path="/me/projects" component={Projects} />
