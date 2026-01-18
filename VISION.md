@@ -10,17 +10,42 @@ TechGarden solves this by providing **foundational data** (packages and ecosyste
 
 ### Two-Layer Model
 
-**Foundation (concrete, curated):**
+TechGarden separates **foundational data** from **user-generated content**. This distinction is fundamental to how the platform works.
+
+**Foundation Layer (objective, community-curated):**
+
+Facts about the world that engineers need to reference. Curated collaboratively through democratic consensus - no single person owns this data, everyone helps maintain it.
+
 - **Packages** - aggregated from npm, jsr, nuget, homebrew, archlinux, dockerhub
 - **Ecosystems** - product/technology identities (React, AWS, TalosOS) containing related packages
+- **Standards** (future) - specifications like OpenAPI, GraphQL, JSON Schema
+- **Regulations** (future) - compliance requirements like GDPR, SOC2, HIPAA that affect technology choices
 
-**Value layer (user-generated, links to foundation):**
+Foundation data is:
+- **Objective** - facts, not opinions
+- **Collaboratively curated** - suggestions require community votes to be accepted
+- **Carefully maintained** - quality over quantity, accuracy matters
+- **Linked everywhere** - everything else references this layer
+
+**Value Layer (subjective, user-generated):**
+
+Content created by individuals that references foundation data. Personal expression anchored to concrete entities.
+
 - **Projects** - your stack, linked to packages and ecosystems
 - **Comparisons** - "which ORM?" with concrete package references
 - **Decision records** - why you chose what you chose, linked to real entities
 - **Discussions** - grounded in specific packages, ecosystems, or projects
+- **Articles/Guides** (future) - tutorials and explanations referencing real packages
+- **Job postings** (future) - roles requiring specific technologies
+- **Courses** (future) - learning paths through ecosystems
 
-Every artifact is shareable. Every mention is a link. The more people use it, the richer the connections become.
+Value layer content is:
+- **Subjective** - opinions, experiences, choices
+- **Individually owned** - you create and control your content
+- **Anchored to foundation** - always references concrete entities
+- **Shareable** - every artifact has a URL worth sharing
+
+The foundation makes the value layer meaningful. "We chose Drizzle" is just text. "We chose @drizzle from the @typescript ecosystem because..." is grounded, clickable, discoverable.
 
 ## For Engineers Who Architect in Public
 

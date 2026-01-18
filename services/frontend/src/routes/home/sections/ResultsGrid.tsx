@@ -363,12 +363,14 @@ const AddPackageCard = (props: AddPackageCardProps) => {
 								onChange={props.onRegistryChange}
 								aria-label="Select registry"
 								disabled={props.packageRequest.isSubmitting()}
+								size="sm"
 								class="w-auto"
 							/>
 						</Show>
 						<Button
 							variant="primary"
 							size="sm"
+							class="h-8"
 							onClick={() => props.packageRequest.submit()}
 							disabled={props.packageRequest.isSubmitting()}
 						>
