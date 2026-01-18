@@ -33,3 +33,25 @@ export const all = defineQuery(({ ctx }) => {
 export const listWithCounts = defineQuery(() => {
 	return zql.tags.related("packageTags");
 });
+
+// Public query with ecosystem counts for ecosystem tag filter
+export const listWithEcosystemCounts = defineQuery(() => {
+	return zql.tags.related("ecosystemTags");
+});
+
+// Search tags by name
+export const search = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		limit: z.number().default(10),
+	}),
+	({ args }) => {
+		let q = zql.tags;
+
+		if (args.query?.trim()) {
+			q = q.where("name", "ILIKE", `%${args.query.trim()}%`);
+		}
+
+		return q.orderBy("name", "asc").limit(args.limit);
+	},
+);

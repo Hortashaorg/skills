@@ -43,6 +43,8 @@ export const queries = defineQueries({
 		byId: tagsQueries.byId,
 		all: tagsQueries.all,
 		listWithCounts: tagsQueries.listWithCounts,
+		listWithEcosystemCounts: tagsQueries.listWithEcosystemCounts,
+		search: tagsQueries.search,
 	},
 	packageTags: {
 		byPackageId: packageTagsQueries.byPackageId,

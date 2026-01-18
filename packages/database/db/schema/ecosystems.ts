@@ -8,7 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { account } from "./account.ts";
-import { packages } from "./packages.ts";
+import { packages, tags } from "./packages.ts";
 import { projects } from "./projects.ts";
 
 export const ecosystems = pgTable(
@@ -78,5 +78,24 @@ export const projectEcosystems = pgTable(
 	(table) => [
 		unique().on(table.projectId, table.ecosystemId),
 		index("idx_project_ecosystems_project_id").on(table.projectId),
+	],
+);
+
+export const ecosystemTags = pgTable(
+	"ecosystem_tags",
+	{
+		id: uuid().primaryKey(),
+		ecosystemId: uuid()
+			.notNull()
+			.references(() => ecosystems.id),
+		tagId: uuid()
+			.notNull()
+			.references(() => tags.id),
+		createdAt: timestamp().notNull(),
+	},
+	(table) => [
+		unique().on(table.ecosystemId, table.tagId),
+		index("idx_ecosystem_tags_ecosystem_id").on(table.ecosystemId),
+		index("idx_ecosystem_tags_tag_id").on(table.tagId),
 	],
 );

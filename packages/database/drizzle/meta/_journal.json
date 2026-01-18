@@ -225,6 +225,13 @@
       "when": 1768586877455,
       "tag": "0031_wide_punisher",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1768734178077,
+      "tag": "0032_high_william_stryker",
+      "breakpoints": true
     }
   ]
 }

@@ -211,3 +211,73 @@ export const createAddEcosystemPackage = defineMutator(
 		});
 	},
 );
+
+export const createAddEcosystemTag = defineMutator(
+	z.object({
+		ecosystemId: z.string(),
+		tagId: z.string(),
+	}),
+	async ({ tx, args, ctx }) => {
+		if (ctx.userID === "anon") {
+			throw new Error(
+				"Must be logged in to suggest adding a tag to an ecosystem",
+			);
+		}
+
+		// Validate ecosystem exists
+		const ecosystem = await tx.run(
+			zql.ecosystems.one().where("id", "=", args.ecosystemId),
+		);
+		if (!ecosystem) {
+			throw new Error("Ecosystem not found");
+		}
+
+		// Validate tag exists
+		const tag = await tx.run(zql.tags.one().where("id", "=", args.tagId));
+		if (!tag) {
+			throw new Error("Tag not found");
+		}
+
+		// Check tag not already on ecosystem
+		const existingTag = await tx.run(
+			zql.ecosystemTags
+				.where("ecosystemId", args.ecosystemId)
+				.where("tagId", args.tagId)
+				.one(),
+		);
+		if (existingTag) {
+			throw new Error("This tag is already on this ecosystem");
+		}
+
+		// Check no duplicate pending suggestion
+		const existingPending = await tx.run(
+			zql.suggestions
+				.where("ecosystemId", args.ecosystemId)
+				.where("type", "add_ecosystem_tag")
+				.where("status", "pending"),
+		);
+
+		for (const suggestion of existingPending) {
+			const payload = suggestion.payload as { tagId?: string };
+			if (payload.tagId === args.tagId) {
+				throw new Error("A pending suggestion for this tag already exists");
+			}
+		}
+
+		const record = newRecord();
+
+		await tx.mutate.suggestions.insert({
+			id: record.id,
+			packageId: null,
+			ecosystemId: args.ecosystemId,
+			accountId: ctx.userID,
+			type: "add_ecosystem_tag",
+			version: 1,
+			payload: { tagId: args.tagId },
+			status: "pending",
+			createdAt: record.now,
+			updatedAt: record.now,
+			resolvedAt: null,
+		});
+	},
+);

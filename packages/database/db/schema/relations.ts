@@ -10,6 +10,7 @@ import {
 import {
 	ecosystemPackages,
 	ecosystems,
+	ecosystemTags,
 	ecosystemUpvotes,
 	projectEcosystems,
 } from "./ecosystems.ts";
@@ -60,6 +61,7 @@ export const packageFetchesRelations = relations(packageFetches, ({ one }) => ({
 
 export const tagsRelations = relations(tags, ({ many }) => ({
 	packageTags: many(packageTags),
+	ecosystemTags: many(ecosystemTags),
 }));
 
 export const packageTagsRelations = relations(packageTags, ({ one }) => ({
@@ -196,6 +198,7 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 
 export const ecosystemsRelations = relations(ecosystems, ({ many }) => ({
 	ecosystemPackages: many(ecosystemPackages),
+	ecosystemTags: many(ecosystemTags),
 	upvotes: many(ecosystemUpvotes),
 	projectEcosystems: many(projectEcosystems),
 	suggestions: many(suggestions),
@@ -214,6 +217,17 @@ export const ecosystemPackagesRelations = relations(
 		}),
 	}),
 );
+
+export const ecosystemTagsRelations = relations(ecosystemTags, ({ one }) => ({
+	ecosystem: one(ecosystems, {
+		fields: [ecosystemTags.ecosystemId],
+		references: [ecosystems.id],
+	}),
+	tag: one(tags, {
+		fields: [ecosystemTags.tagId],
+		references: [tags.id],
+	}),
+}));
 
 export const ecosystemUpvotesRelations = relations(
 	ecosystemUpvotes,

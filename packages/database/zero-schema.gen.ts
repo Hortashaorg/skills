@@ -197,6 +197,36 @@ const ecosystemPackagesTable = {
   primaryKey: ["id"],
   serverName: "ecosystem_packages",
 } as const;
+const ecosystemTagsTable = {
+  name: "ecosystemTags",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    ecosystemId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "ecosystem_id",
+    },
+    tagId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "tag_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "ecosystem_tags",
+} as const;
 const ecosystemUpvotesTable = {
   name: "ecosystemUpvotes",
   columns: {
@@ -745,7 +775,8 @@ const suggestionsTable = {
       customType: null as unknown as
         | "add_tag"
         | "create_ecosystem"
-        | "add_ecosystem_package",
+        | "add_ecosystem_package"
+        | "add_ecosystem_tag",
     },
     version: {
       type: "number",
@@ -951,6 +982,24 @@ const ecosystemPackagesRelationships = {
     },
   ],
 } as const;
+const ecosystemTagsRelationships = {
+  ecosystem: [
+    {
+      sourceField: ["ecosystemId"],
+      destField: ["id"],
+      destSchema: "ecosystems",
+      cardinality: "one",
+    },
+  ],
+  tag: [
+    {
+      sourceField: ["tagId"],
+      destField: ["id"],
+      destSchema: "tags",
+      cardinality: "one",
+    },
+  ],
+} as const;
 const ecosystemUpvotesRelationships = {
   ecosystem: [
     {
@@ -975,6 +1024,14 @@ const ecosystemsRelationships = {
       sourceField: ["id"],
       destField: ["ecosystemId"],
       destSchema: "ecosystemPackages",
+      cardinality: "many",
+    },
+  ],
+  ecosystemTags: [
+    {
+      sourceField: ["id"],
+      destField: ["ecosystemId"],
+      destSchema: "ecosystemTags",
       cardinality: "many",
     },
   ],
@@ -1266,6 +1323,14 @@ const tagsRelationships = {
       cardinality: "many",
     },
   ],
+  ecosystemTags: [
+    {
+      sourceField: ["id"],
+      destField: ["tagId"],
+      destSchema: "ecosystemTags",
+      cardinality: "many",
+    },
+  ],
 } as const;
 /**
  * The Zero schema object.
@@ -1278,6 +1343,7 @@ export const schema = {
     contributionEvents: contributionEventsTable,
     contributionScores: contributionScoresTable,
     ecosystemPackages: ecosystemPackagesTable,
+    ecosystemTags: ecosystemTagsTable,
     ecosystemUpvotes: ecosystemUpvotesTable,
     ecosystems: ecosystemsTable,
     notifications: notificationsTable,
@@ -1299,6 +1365,7 @@ export const schema = {
     contributionEvents: contributionEventsRelationships,
     contributionScores: contributionScoresRelationships,
     ecosystemPackages: ecosystemPackagesRelationships,
+    ecosystemTags: ecosystemTagsRelationships,
     ecosystemUpvotes: ecosystemUpvotesRelationships,
     ecosystems: ecosystemsRelationships,
     notifications: notificationsRelationships,
@@ -1358,6 +1425,13 @@ export type ContributionScore = Row["contributionScores"];
  * @deprecated Use Row["ecosystemPackages"] instead from "@rocicorp/zero".
  */
 export type EcosystemPackage = Row["ecosystemPackages"];
+/**
+ * Represents a row from the "ecosystemTags" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ *
+ * @deprecated Use Row["ecosystemTags"] instead from "@rocicorp/zero".
+ */
+export type EcosystemTag = Row["ecosystemTags"];
 /**
  * Represents a row from the "ecosystemUpvotes" table.
  * This type is auto-generated from your Drizzle schema definition.

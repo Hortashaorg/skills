@@ -108,12 +108,23 @@ export const Ecosystem = () => {
 	};
 
 	// Package suggestion dialog
-	const [dialogOpen, setDialogOpen] = createSignal(false);
-	const [searchQuery, setSearchQuery] = createSignal("");
+	const [packageDialogOpen, setPackageDialogOpen] = createSignal(false);
+	const [packageSearchQuery, setPackageSearchQuery] = createSignal("");
 
 	const [searchResults] = useQuery(() =>
 		queries.packages.search({
-			query: searchQuery() || undefined,
+			query: packageSearchQuery() || undefined,
+			limit: 10,
+		}),
+	);
+
+	// Tag suggestion dialog
+	const [tagDialogOpen, setTagDialogOpen] = createSignal(false);
+	const [tagSearchQuery, setTagSearchQuery] = createSignal("");
+
+	const [tagSearchResults] = useQuery(() =>
+		queries.tags.search({
+			query: tagSearchQuery() || undefined,
 			limit: 10,
 		}),
 	);
@@ -131,6 +142,41 @@ export const Ecosystem = () => {
 				.filter((s) => s.type === "add_ecosystem_package")
 				.map((s) => (s.payload as { packageId?: string })?.packageId)
 				.filter(Boolean) as string[],
+		);
+	});
+
+	const pendingTagIds = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return new Set(
+			suggestions
+				.filter((s) => s.type === "add_ecosystem_tag")
+				.map((s) => (s.payload as { tagId?: string })?.tagId)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	const existingTagIds = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemTags) return new Set<string>();
+		return new Set(eco.ecosystemTags.map((et) => et.tagId));
+	});
+
+	const tags = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemTags) return [];
+		return eco.ecosystemTags
+			.filter(
+				(et): et is typeof et & { tag: NonNullable<typeof et.tag> } => !!et.tag,
+			)
+			.map((et) => et.tag);
+	});
+
+	const availableTags = createMemo(() => {
+		const results = tagSearchResults() ?? [];
+		const existing = existingTagIds();
+		const pending = pendingTagIds();
+		return results.filter(
+			(tag) => !existing.has(tag.id) && !pending.has(tag.id),
 		);
 	});
 
@@ -155,10 +201,35 @@ export const Ecosystem = () => {
 					packageId,
 				}),
 			);
-			setSearchQuery("");
-			setDialogOpen(false);
+			setPackageSearchQuery("");
+			setPackageDialogOpen(false);
 			toast.success(
 				"Your package suggestion is now pending review.",
+				"Suggestion submitted",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to submit",
+			);
+		}
+	};
+
+	const handleSuggestTag = (tagId: string) => {
+		const eco = ecosystem();
+		if (!eco) return;
+
+		try {
+			zero().mutate(
+				mutators.suggestions.createAddEcosystemTag({
+					ecosystemId: eco.id,
+					tagId,
+				}),
+			);
+			setTagSearchQuery("");
+			setTagDialogOpen(false);
+			toast.success(
+				"Your tag suggestion is now pending review.",
 				"Suggestion submitted",
 			);
 		} catch (err) {
@@ -174,7 +245,15 @@ export const Ecosystem = () => {
 			toast.info("Sign in to suggest packages.", "Sign in required");
 			return;
 		}
-		setDialogOpen(true);
+		setPackageDialogOpen(true);
+	};
+
+	const handleAddTagClick = () => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest tags.", "Sign in required");
+			return;
+		}
+		setTagDialogOpen(true);
 	};
 
 	return (
@@ -223,6 +302,25 @@ export const Ecosystem = () => {
 														</a>
 													)}
 												</Show>
+												<Flex gap="xs" wrap="wrap" align="center">
+													<For each={tags()}>
+														{(tag) => (
+															<A href={`/?tag=${tag.slug}`}>
+																<Badge variant="secondary" size="sm">
+																	{tag.name}
+																</Badge>
+															</A>
+														)}
+													</For>
+													<button
+														type="button"
+														onClick={handleAddTagClick}
+														class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-accent hover:text-accent dark:border-outline-dark dark:hover:border-accent transition-colors"
+													>
+														<PlusIcon size="xs" />
+														<span>Add tag</span>
+													</button>
+												</Flex>
 											</Stack>
 
 											<Flex gap="sm" align="center">
@@ -367,20 +465,20 @@ export const Ecosystem = () => {
 			<Dialog
 				title="Suggest Package"
 				description="Search for a package to add to this ecosystem."
-				open={dialogOpen()}
-				onOpenChange={setDialogOpen}
+				open={packageDialogOpen()}
+				onOpenChange={setPackageDialogOpen}
 			>
 				<Stack spacing="md">
 					<TextField>
 						<TextFieldLabel>Search Packages</TextFieldLabel>
 						<TextFieldInput
 							placeholder="Search for a package..."
-							value={searchQuery()}
-							onInput={(e) => setSearchQuery(e.currentTarget.value)}
+							value={packageSearchQuery()}
+							onInput={(e) => setPackageSearchQuery(e.currentTarget.value)}
 						/>
 					</TextField>
 
-					<Show when={searchQuery().length > 0}>
+					<Show when={packageSearchQuery().length > 0}>
 						<Show
 							when={availablePackages().length > 0}
 							fallback={
@@ -424,8 +522,76 @@ export const Ecosystem = () => {
 							size="sm"
 							variant="outline"
 							onClick={() => {
-								setDialogOpen(false);
-								setSearchQuery("");
+								setPackageDialogOpen(false);
+								setPackageSearchQuery("");
+							}}
+						>
+							Cancel
+						</Button>
+					</Flex>
+					<Text size="xs" color="muted">
+						Suggestions need community votes to be approved.
+					</Text>
+				</Stack>
+			</Dialog>
+
+			<Dialog
+				title="Suggest Tag"
+				description="Search for a tag to add to this ecosystem."
+				open={tagDialogOpen()}
+				onOpenChange={setTagDialogOpen}
+			>
+				<Stack spacing="md">
+					<TextField>
+						<TextFieldLabel>Search Tags</TextFieldLabel>
+						<TextFieldInput
+							placeholder="Search for a tag..."
+							value={tagSearchQuery()}
+							onInput={(e) => setTagSearchQuery(e.currentTarget.value)}
+						/>
+					</TextField>
+
+					<Show when={tagSearchQuery().length > 0}>
+						<Show
+							when={availableTags().length > 0}
+							fallback={
+								<Text size="sm" color="muted">
+									No matching tags found (or already added/pending).
+								</Text>
+							}
+						>
+							<Stack spacing="xs" class="max-h-64 overflow-y-auto">
+								<For each={availableTags()}>
+									{(tag) => (
+										<button
+											type="button"
+											onClick={() => handleSuggestTag(tag.id)}
+											class="flex items-center justify-between p-2 border border-outline dark:border-outline-dark rounded-radius hover:bg-accent/5 text-left w-full"
+										>
+											<div>
+												<Text size="sm" weight="medium">
+													{tag.name}
+												</Text>
+												<Show when={tag.description}>
+													<Text size="xs" color="muted" class="line-clamp-1">
+														{tag.description}
+													</Text>
+												</Show>
+											</div>
+										</button>
+									)}
+								</For>
+							</Stack>
+						</Show>
+					</Show>
+
+					<Flex gap="sm" justify="end">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={() => {
+								setTagDialogOpen(false);
+								setTagSearchQuery("");
 							}}
 						>
 							Cancel

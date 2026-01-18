@@ -45,6 +45,7 @@ export const mutators = defineMutators({
 		createAddTag: suggestionsMutators.createAddTag,
 		createCreateEcosystem: suggestionsMutators.createCreateEcosystem,
 		createAddEcosystemPackage: suggestionsMutators.createAddEcosystemPackage,
+		createAddEcosystemTag: suggestionsMutators.createAddEcosystemTag,
 	},
 	suggestionVotes: {
 		vote: suggestionVotesMutators.vote,
@@ -69,6 +70,7 @@ export const mutators = defineMutators({
 		create: ecosystemUpvotesMutators.create,
 		remove: ecosystemUpvotesMutators.remove,
 	},
+	ecosystemTags: {},
 	projectEcosystems: {
 		add: projectEcosystemsMutators.add,
 		remove: projectEcosystemsMutators.remove,

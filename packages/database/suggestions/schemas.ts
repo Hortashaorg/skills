@@ -23,6 +23,9 @@ export const suggestionPayloads = {
 	add_ecosystem_package: {
 		1: z.object({ packageId: z.string() }),
 	},
+	add_ecosystem_tag: {
+		1: z.object({ tagId: z.string() }),
+	},
 } as const;
 
 /** Inferred payload types per suggestion type (latest version) */
@@ -33,12 +36,16 @@ export type CreateEcosystemPayload = z.infer<
 export type AddEcosystemPackagePayload = z.infer<
 	(typeof suggestionPayloads)["add_ecosystem_package"][1]
 >;
+export type AddEcosystemTagPayload = z.infer<
+	(typeof suggestionPayloads)["add_ecosystem_tag"][1]
+>;
 
 /** Current version per type (used when creating new suggestions) */
 export const currentPayloadVersion: Record<SuggestionType, number> = {
 	add_tag: 1,
 	create_ecosystem: 1,
 	add_ecosystem_package: 1,
+	add_ecosystem_tag: 1,
 };
 
 /** Get schema for a type+version (for validation and parsing) */

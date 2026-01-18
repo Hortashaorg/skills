@@ -40,6 +40,14 @@ export interface ResolutionContext {
 					createdAt: number;
 				}) => Promise<void>;
 			};
+			ecosystemTags: {
+				insert: (data: {
+					id: string;
+					ecosystemId: string;
+					tagId: string;
+					createdAt: number;
+				}) => Promise<void>;
+			};
 		};
 	};
 	suggestion: {
@@ -126,6 +134,28 @@ export const resolutionHandlers: Record<
 			id: record.id,
 			ecosystemId: suggestion.ecosystemId,
 			packageId: payload.packageId,
+			createdAt: record.now,
+		});
+	},
+
+	add_ecosystem_tag: async ({ tx, suggestion }) => {
+		const payload = parsePayload(
+			"add_ecosystem_tag",
+			suggestion.version,
+			suggestion.payload,
+		) as { tagId: string } | null;
+		if (!payload) {
+			throw new Error("Invalid add_ecosystem_tag payload");
+		}
+		if (!suggestion.ecosystemId) {
+			throw new Error("add_ecosystem_tag requires ecosystemId");
+		}
+
+		const record = newRecord();
+		await tx.mutate.ecosystemTags.insert({
+			id: record.id,
+			ecosystemId: suggestion.ecosystemId,
+			tagId: payload.tagId,
 			createdAt: record.now,
 		});
 	},

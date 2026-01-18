@@ -17,6 +17,7 @@ export const suggestionTypeMeta: Record<
 	add_tag: { label: "Add tag" },
 	create_ecosystem: { label: "Create ecosystem" },
 	add_ecosystem_package: { label: "Add to ecosystem" },
+	add_ecosystem_tag: { label: "Tag ecosystem" },
 };
 
 /** Get label for a suggestion type */
@@ -66,6 +67,12 @@ export function formatSuggestionDescription(
 		return packageName ?? "Unknown package";
 	}
 
+	if (type === "add_ecosystem_tag") {
+		const tagId = (payload as { tagId?: string })?.tagId;
+		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
+		return tagName ?? "Unknown tag";
+	}
+
 	return getSuggestionTypeLabel(type);
 }
 
@@ -90,6 +97,10 @@ export function formatSuggestionAction(
 
 	if (type === "add_ecosystem_package") {
 		return `Add package "${description}"`;
+	}
+
+	if (type === "add_ecosystem_tag") {
+		return `Add tag "${description}"`;
 	}
 
 	return description;
