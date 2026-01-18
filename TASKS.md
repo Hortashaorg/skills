@@ -11,23 +11,23 @@
 Ecosystems represent product/technology identities (React, AWS, TalosOS, Drizzle) - not always packages themselves, but containing related packages, plugins, adapters, CLI tools.
 
 #### Schema
-- [ ] `ecosystems` table (id, name, slug, description, longDescription, website, upvoteCount, createdAt, updatedAt)
-- [ ] `ecosystem_packages` junction (ecosystemId, packageId)
-- [ ] `ecosystem_upvotes` (ecosystemId, accountId)
-- [ ] `project_ecosystems` junction (projectId, ecosystemId)
-- [ ] Ecosystem suggestions (extend existing suggestion system)
+- [x] `ecosystems` table (id, name, slug, description, website, upvoteCount, createdAt, updatedAt)
+- [x] `ecosystem_packages` junction (ecosystemId, packageId)
+- [x] `ecosystem_upvotes` (ecosystemId, accountId)
+- [x] `project_ecosystems` junction (projectId, ecosystemId)
+- [x] Ecosystem suggestions (extend existing suggestion system)
 
 #### Backend
-- [ ] Queries: list, bySlug, search, byPackageId
-- [ ] Mutators: create, update, addPackage, removePackage, upvote
+- [x] Queries: list, bySlug, search, byPackageId
+- [x] Mutators: create, update, addPackage, removePackage (admin-only), upvote
 
 #### Frontend - Browsing
-- [ ] `/ecosystems` listing page (search, upvotes, package count)
-- [ ] `/ecosystem/:slug` detail page
-  - Description and long description (about/overview)
-  - Associated packages grid
-  - Upvote button
-  - Learning resources / getting started section
+- [x] `/ecosystems` listing page (upvotes, package count)
+- [x] `/ecosystem/:slug` detail page
+  - [x] Description and website link
+  - [x] Associated packages grid
+  - [x] Upvote button
+  - [ ] Learning resources / getting started section (future)
 
 #### Frontend - Curation
 - [ ] Suggest new ecosystem (community)

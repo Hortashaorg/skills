@@ -69,14 +69,14 @@ export const Ecosystem = () => {
 
 		const upvote = userUpvote();
 		if (upvote) {
-			await zero().mutate(
+			zero().mutate(
 				mutators.ecosystemUpvotes.remove({
 					id: upvote.id,
 					ecosystemId: eco.id,
 				}),
 			);
 		} else {
-			await zero().mutate(
+			zero().mutate(
 				mutators.ecosystemUpvotes.create({
 					ecosystemId: eco.id,
 				}),
