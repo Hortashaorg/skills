@@ -9,6 +9,7 @@ import {
 	on,
 	Show,
 } from "solid-js";
+import { ActionCard } from "@/components/composite/action-card";
 import {
 	EntityFilter,
 	type FilterOption,
@@ -18,6 +19,7 @@ import { EcosystemCard } from "@/components/feature/ecosystem-card";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
+import { PlusIcon } from "@/components/primitives/icon";
 import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -234,36 +236,28 @@ export const Ecosystems = () => {
 					<Show when={!isLoading() || showResults()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							{/* Suggest ecosystem card - always visible */}
-							<Card padding="md" class="flex flex-col justify-center">
-								<Stack spacing="sm">
-									<Text weight="medium">{suggestCardText()}</Text>
-									<Show
-										when={isLoggedIn()}
-										fallback={
-											<Button
-												variant="primary"
-												size="sm"
-												onClick={() => {
-													saveReturnUrl();
-													window.location.href = getAuthorizationUrl();
-												}}
-											>
-												Sign in to suggest
-											</Button>
-										}
-									>
-										<Button
-											variant="primary"
-											size="sm"
-											onClick={() =>
-												openSuggestDialog(searchTerm() || undefined)
-											}
-										>
-											Suggest ecosystem
-										</Button>
-									</Show>
-								</Stack>
-							</Card>
+							<ActionCard
+								icon={
+									<PlusIcon
+										size="sm"
+										class="text-primary dark:text-primary-dark"
+									/>
+								}
+								title={suggestCardText()}
+								description={
+									isLoggedIn()
+										? "Propose a new ecosystem"
+										: "Sign in to suggest"
+								}
+								onClick={() => {
+									if (isLoggedIn()) {
+										openSuggestDialog(searchTerm() || undefined);
+									} else {
+										saveReturnUrl();
+										window.location.href = getAuthorizationUrl();
+									}
+								}}
+							/>
 
 							{/* Pending suggestions - hide when filtering by tags */}
 							<Show when={!hasTagFilter()}>
@@ -290,7 +284,7 @@ export const Ecosystems = () => {
 
 							{/* Auto-load skeletons */}
 							<Show when={canLoadMore() && !scroll.pastAutoLoadLimit()}>
-								<Index each={Array(3)}>{() => <SkeletonCard />}</Index>
+								<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 							</Show>
 						</div>
 

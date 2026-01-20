@@ -114,7 +114,7 @@ export const BrowseProjects = () => {
 
 								{/* Auto-load skeletons */}
 								<Show when={canLoadMore() && !scroll.pastAutoLoadLimit()}>
-									<Index each={Array(3)}>{() => <ProjectCardSkeleton />}</Index>
+									<Index each={Array(6)}>{() => <ProjectCardSkeleton />}</Index>
 								</Show>
 							</div>
 

@@ -29,7 +29,7 @@ const resourceCardVariants = cva(
 		variants: {
 			status: {
 				default: [],
-				pending: ["border-dashed", "hover:bg-transparent"],
+				pending: ["border-dashed"],
 				failed: [],
 			},
 		},
@@ -84,15 +84,13 @@ export const ResourceCard = (props: ResourceCardProps) => {
 			class={cn(resourceCardVariants({ status: local.status }), local.class)}
 			{...others}
 		>
-			{/* Stretched link - covers entire card (not for pending) */}
-			<Show when={!isPending()}>
-				<A
-					href={local.href}
-					class="absolute inset-0"
-					aria-hidden="true"
-					tabIndex={-1}
-				/>
-			</Show>
+			{/* Stretched link - covers entire card */}
+			<A
+				href={local.href}
+				class="absolute inset-0"
+				aria-hidden="true"
+				tabIndex={-1}
+			/>
 
 			<div class="relative pointer-events-none flex flex-col h-full gap-1">
 				{/* Header */}
@@ -115,48 +113,41 @@ export const ResourceCard = (props: ResourceCardProps) => {
 							</Badge>
 						</Show>
 					</div>
-					<Show when={!isPending()}>
-						<Flex
-							gap="xs"
-							align="center"
-							class="pointer-events-auto"
-							data-upvote
-						>
-							<UpvoteButton
-								count={local.upvoteCount}
-								isUpvoted={local.isUpvoted}
-								disabled={local.upvoteDisabled}
-								onClick={local.onUpvote}
-							/>
-							<Show when={local.onRemove}>
-								<button
-									type="button"
-									onClick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										local.onRemove?.();
-									}}
-									class="p-1.5 rounded text-on-surface-muted dark:text-on-surface-dark-muted hover:text-danger dark:hover:text-danger hover:bg-danger/10 dark:hover:bg-danger/10 transition"
-									title="Remove"
+					<Flex gap="xs" align="center" class="pointer-events-auto" data-upvote>
+						<UpvoteButton
+							count={local.upvoteCount}
+							isUpvoted={local.isUpvoted}
+							disabled={local.upvoteDisabled}
+							onClick={local.onUpvote}
+						/>
+						<Show when={local.onRemove}>
+							<button
+								type="button"
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									local.onRemove?.();
+								}}
+								class="p-1.5 rounded text-on-surface-muted dark:text-on-surface-dark-muted hover:text-danger dark:hover:text-danger hover:bg-danger/10 dark:hover:bg-danger/10 transition"
+								title="Remove"
+							>
+								<svg
+									class="w-4 h-4"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
 								>
-									<svg
-										class="w-4 h-4"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<title>Remove</title>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M6 18L18 6M6 6l12 12"
-										/>
-									</svg>
-								</button>
-							</Show>
-						</Flex>
-					</Show>
+									<title>Remove</title>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</svg>
+							</button>
+						</Show>
+					</Flex>
 				</Flex>
 
 				{/* Description - grows to fill space */}
@@ -193,11 +184,6 @@ export const ResourceCard = (props: ResourceCardProps) => {
 						{/* Right side: Custom footer and status */}
 						<Flex gap="xs" align="center">
 							<Show when={local.footer}>{local.footer}</Show>
-							<Show when={isPending()}>
-								<Text size="xs" color="muted">
-									Awaiting approval
-								</Text>
-							</Show>
 							<Show when={isFailed()}>
 								<Badge variant="danger" size="sm">
 									{local.failureReason || "failed"}

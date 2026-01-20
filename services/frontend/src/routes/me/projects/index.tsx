@@ -128,7 +128,7 @@ export const Projects = () => {
 
 									{/* Auto-load skeletons */}
 									<Show when={canLoadMore() && !scroll.pastAutoLoadLimit()}>
-										<Index each={Array(3)}>
+										<Index each={Array(6)}>
 											{() => <ProjectCardSkeleton />}
 										</Index>
 									</Show>

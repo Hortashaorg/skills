@@ -10,13 +10,15 @@ import {
 	Show,
 	Switch,
 } from "solid-js";
+import { ActionCard } from "@/components/composite/action-card";
 import { PackageCard } from "@/components/feature/package-card";
 import { Flex } from "@/components/primitives/flex";
+import { PlusIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
-import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,6 +98,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 		null,
 	);
 	const [showBackToTop, setShowBackToTop] = createSignal(false);
+	const [registryDialogOpen, setRegistryDialogOpen] = createSignal(false);
 
 	const effectiveRegistry = (): Registry => props.registry ?? requestRegistry();
 
@@ -173,77 +176,139 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 	};
 
 	return (
-		<Switch>
-			<Match when={showEmptyState()}>
-				<EmptyState
-					icon={<SearchIcon />}
-					title="No packages found"
-					description="Try a different search term or adjust your filters."
-				/>
-			</Match>
+		<>
+			<Switch>
+				<Match when={showEmptyState()}>
+					<EmptyState
+						icon={<SearchIcon />}
+						title="No packages found"
+						description="Try a different search term or adjust your filters."
+					/>
+				</Match>
 
-			<Match when={props.isLoading && !showResults()}>
-				{/* Initial loading - show skeleton grid */}
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					<Index each={Array(SKELETON_COUNT)}>{() => <SkeletonCard />}</Index>
-				</div>
-			</Match>
+				<Match when={props.isLoading && !showResults()}>
+					{/* Initial loading - show skeleton grid */}
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+						<Index each={Array(SKELETON_COUNT)}>{() => <SkeletonCard />}</Index>
+					</div>
+				</Match>
 
-			<Match when={showResults()}>
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					{/* Exact matches first (can be multiple across registries) */}
-					<For each={props.exactMatches}>
-						{(pkg) => <ExactMatchCard pkg={pkg} />}
-					</For>
+				<Match when={showResults()}>
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+						{/* Exact matches first (can be multiple across registries) */}
+						<For each={props.exactMatches}>
+							{(pkg) => <ExactMatchCard pkg={pkg} />}
+						</For>
 
-					{/* Add card if no exact matches found */}
-					<Show when={props.showAddCard ? props.searchTerm : undefined}>
-						{(term) => (
-							<AddPackageCard
-								searchTerm={term()}
-								isLoggedIn={isLoggedIn()}
-								registry={props.registry}
-								requestRegistry={requestRegistry()}
-								onRegistryChange={setRequestRegistry}
-								packageRequest={packageRequest}
-								effectiveRegistry={effectiveRegistry()}
-							/>
-						)}
+						{/* Add card if no exact matches found */}
+						<Show when={props.showAddCard ? props.searchTerm : undefined}>
+							{(term) => (
+								<ActionCard
+									icon={
+										<PlusIcon
+											size="sm"
+											class="text-primary dark:text-primary-dark"
+										/>
+									}
+									title={`Add "${term()}"`}
+									description={
+										isLoggedIn()
+											? props.registry
+												? `Request from ${props.registry}`
+												: "Choose a registry"
+											: "Sign in to request"
+									}
+									onClick={() => {
+										if (!isLoggedIn()) {
+											saveReturnUrl();
+											window.location.href = getAuthorizationUrl();
+										} else if (props.registry) {
+											packageRequest.submit();
+										} else {
+											setRegistryDialogOpen(true);
+										}
+									}}
+									disabled={packageRequest.isSubmitting()}
+								/>
+							)}
+						</Show>
+
+						{/* Rest of the packages */}
+						<For each={props.packages}>
+							{(pkg) => <PackageCardWrapper pkg={pkg} />}
+						</For>
+
+						{/* Skeleton cards for auto-loading (before limit) */}
+						<Show when={props.canLoadMore && !pastAutoLoadLimit()}>
+							<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
+						</Show>
+					</div>
+
+					{/* Load more button after auto-load limit */}
+					<Show when={props.canLoadMore && pastAutoLoadLimit()}>
+						<div class="flex justify-center pt-4">
+							<Button variant="outline" onClick={props.onLoadMore}>
+								Load more packages
+							</Button>
+						</div>
 					</Show>
 
-					{/* Rest of the packages */}
-					<For each={props.packages}>
-						{(pkg) => <PackageCardWrapper pkg={pkg} />}
-					</For>
+					{/* Infinite scroll sentinel */}
+					<div ref={setSentinelRef} class="h-1" />
 
-					{/* Skeleton cards for auto-loading (before limit) */}
-					<Show when={props.canLoadMore && !pastAutoLoadLimit()}>
-						<Index each={Array(4)}>{() => <SkeletonCard />}</Index>
+					{/* Back to top button */}
+					<Show when={showBackToTop()}>
+						<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+							<Button variant="info" size="md" onClick={scrollToTop}>
+								↑ Back to top
+							</Button>
+						</div>
 					</Show>
-				</div>
+				</Match>
+			</Switch>
 
-				{/* Load more button after auto-load limit */}
-				<Show when={props.canLoadMore && pastAutoLoadLimit()}>
-					<div class="flex justify-center pt-4">
-						<Button variant="outline" onClick={props.onLoadMore}>
-							Load more packages
+			{/* Registry selection dialog */}
+			<Dialog
+				title="Request Package"
+				description={`Choose a registry to request "${props.searchTerm}" from.`}
+				open={registryDialogOpen()}
+				onOpenChange={setRegistryDialogOpen}
+			>
+				<Stack spacing="md">
+					<Select
+						options={REGISTRY_OPTIONS}
+						value={requestRegistry()}
+						onChange={setRequestRegistry}
+						aria-label="Select registry"
+						disabled={packageRequest.isSubmitting()}
+					/>
+					<Flex gap="sm" justify="end">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setRegistryDialogOpen(false)}
+							disabled={packageRequest.isSubmitting()}
+						>
+							Cancel
 						</Button>
-					</div>
-				</Show>
-
-				{/* Infinite scroll sentinel */}
-				<div ref={setSentinelRef} class="h-1" />
-
-				{/* Back to top button */}
-				<Show when={showBackToTop()}>
-					<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-						<Button variant="info" size="md" onClick={scrollToTop}>
-							↑ Back to top
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={() => {
+								packageRequest.submit();
+								setRegistryDialogOpen(false);
+							}}
+							disabled={packageRequest.isSubmitting()}
+						>
+							<Show when={packageRequest.isSubmitting()} fallback="Request">
+								<Spinner size="sm" srText="Requesting" />
+								<span class="ml-2">Requesting...</span>
+							</Show>
 						</Button>
-					</div>
-				</Show>
-			</Match>
-		</Switch>
+					</Flex>
+				</Stack>
+			</Dialog>
+		</>
 	);
 };
 
@@ -293,20 +358,10 @@ const ExactMatchCard = (props: { pkg: Package }) => {
 
 	return (
 		<div class="relative">
-			<div class="absolute -top-2 left-2 z-10 flex gap-1">
+			<div class="absolute -top-2 left-2 z-10">
 				<Badge variant="info" size="sm">
 					Exact match
 				</Badge>
-				<Show when={isPending()}>
-					<Badge variant="warning" size="sm">
-						Pending
-					</Badge>
-				</Show>
-				<Show when={isFailed()}>
-					<Badge variant="danger" size="sm">
-						Failed
-					</Badge>
-				</Show>
 			</div>
 			<PackageCard
 				name={props.pkg.name}
@@ -322,69 +377,5 @@ const ExactMatchCard = (props: { pkg: Package }) => {
 				failureReason={props.pkg.failureReason}
 			/>
 		</div>
-	);
-};
-
-interface AddPackageCardProps {
-	searchTerm: string;
-	isLoggedIn: boolean;
-	registry: Registry | undefined;
-	requestRegistry: Registry;
-	onRegistryChange: (registry: Registry) => void;
-	packageRequest: ReturnType<typeof createPackageRequest>;
-	effectiveRegistry: Registry;
-}
-
-const AddPackageCard = (props: AddPackageCardProps) => {
-	return (
-		<Card padding="md" class="flex flex-col justify-center min-h-30">
-			<Stack spacing="sm">
-				<Text weight="medium">Add "{props.searchTerm}"</Text>
-				<Show
-					when={props.isLoggedIn}
-					fallback={
-						<Button
-							variant="primary"
-							size="sm"
-							onClick={() => {
-								saveReturnUrl();
-								window.location.href = getAuthorizationUrl();
-							}}
-						>
-							Sign in to request
-						</Button>
-					}
-				>
-					<Flex gap="sm" align="center" wrap="wrap">
-						<Show when={!props.registry}>
-							<Select
-								options={REGISTRY_OPTIONS}
-								value={props.requestRegistry}
-								onChange={props.onRegistryChange}
-								aria-label="Select registry"
-								disabled={props.packageRequest.isSubmitting()}
-								size="sm"
-								class="w-auto"
-							/>
-						</Show>
-						<Button
-							variant="primary"
-							size="sm"
-							class="h-8"
-							onClick={() => props.packageRequest.submit()}
-							disabled={props.packageRequest.isSubmitting()}
-						>
-							<Show
-								when={props.packageRequest.isSubmitting()}
-								fallback={`Request from ${props.effectiveRegistry}`}
-							>
-								<Spinner size="sm" srText="Requesting" />
-								<span class="ml-2">Requesting...</span>
-							</Show>
-						</Button>
-					</Flex>
-				</Show>
-			</Stack>
-		</Card>
 	);
 };

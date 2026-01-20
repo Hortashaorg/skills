@@ -1,4 +1,5 @@
 import { For, Show } from "solid-js";
+import { ActionCard } from "@/components/composite/action-card";
 import { PackageCard } from "@/components/feature/package-card";
 import { Heading } from "@/components/primitives/heading";
 import { PlusIcon } from "@/components/primitives/icon";
@@ -48,26 +49,12 @@ const PackageGridItem = <T extends PackageWithUpvotes>(props: { pkg: T }) => {
 };
 
 const SuggestPackageCard = (props: { onClick: () => void }) => (
-	<button type="button" onClick={props.onClick} class="text-left h-full">
-		<Card
-			padding="md"
-			class="h-full border-dashed transition-colors hover:bg-surface-alt dark:hover:bg-surface-dark-alt hover:border-primary dark:hover:border-primary-dark"
-		>
-			<div class="flex items-center gap-3 h-full py-2">
-				<div class="rounded-full bg-primary/10 dark:bg-primary-dark/10 p-2">
-					<PlusIcon size="sm" class="text-primary dark:text-primary-dark" />
-				</div>
-				<Stack spacing="xs">
-					<Text weight="medium" color="muted">
-						Suggest Package
-					</Text>
-					<Text size="xs" color="muted">
-						Add a package to this ecosystem
-					</Text>
-				</Stack>
-			</div>
-		</Card>
-	</button>
+	<ActionCard
+		icon={<PlusIcon size="sm" class="text-primary dark:text-primary-dark" />}
+		title="Suggest Package"
+		description="Add a package to this ecosystem"
+		onClick={props.onClick}
+	/>
 );
 
 export const EcosystemPackages = <T extends PackageWithUpvotes>(

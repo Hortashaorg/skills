@@ -30,13 +30,6 @@ export const PackageCard = (props: PackageCardProps) => {
 	};
 
 	const footer = () => {
-		if (props.status === "placeholder") {
-			return (
-				<Badge variant="warning" size="sm">
-					not fetched
-				</Badge>
-			);
-		}
 		if (props.versionRange) {
 			return (
 				<Badge variant="secondary" size="sm">
