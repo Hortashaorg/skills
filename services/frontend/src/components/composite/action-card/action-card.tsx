@@ -37,7 +37,11 @@ export const ActionCard: Component<ActionCardProps> = (props) => {
 	return (
 		<button
 			type="button"
-			onClick={local.onClick}
+			onClick={(e) => {
+				// Blur before onClick to allow clean focus transfer to modals
+				e.currentTarget.blur();
+				local.onClick();
+			}}
 			disabled={local.disabled}
 			class={cn(
 				"text-left h-full w-full cursor-pointer",
