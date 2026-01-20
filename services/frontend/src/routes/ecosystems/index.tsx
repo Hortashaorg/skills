@@ -1,6 +1,10 @@
 import type { Row } from "@package/database/client";
 import { mutators, queries, useQuery, useZero } from "@package/database/client";
-import { createSignal, For, Show } from "solid-js";
+import { createMemo, createSignal, For, Show } from "solid-js";
+import {
+	EntityFilter,
+	type FilterOption,
+} from "@/components/composite/entity-filter";
 import { SEO } from "@/components/composite/seo";
 import { EcosystemCard } from "@/components/feature/ecosystem-card";
 import { Container } from "@/components/primitives/container";
@@ -25,7 +29,6 @@ import {
 } from "@/hooks/createUrlSignal";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
-import { EcosystemTagFilter } from "./sections/EcosystemTagFilter";
 
 type EcosystemTag = Row["ecosystemTags"] & {
 	tag?: Row["tags"];
@@ -54,6 +57,18 @@ export const Ecosystems = () => {
 	const [pendingSuggestions] = useQuery(() =>
 		queries.suggestions.pendingCreateEcosystem(),
 	);
+
+	// Tags for filter
+	const [tagsWithCounts] = useQuery(queries.tags.listWithEcosystemCounts);
+	const tagOptions = createMemo((): readonly FilterOption[] => {
+		const tags = tagsWithCounts();
+		if (!tags) return [];
+		return tags.map((tag) => ({
+			value: tag.slug,
+			label: tag.name,
+			count: tag.ecosystemTags?.length ?? 0,
+		}));
+	});
 
 	const isLoading = () => ecosystemsResult().type !== "complete";
 
@@ -146,9 +161,10 @@ export const Ecosystems = () => {
 					</Stack>
 
 					<Flex gap="sm" align="stretch">
-						<EcosystemTagFilter
-							selectedTagSlugs={selectedTagSlugs()}
-							onTagsChange={setSelectedTagSlugs}
+						<EntityFilter
+							options={tagOptions()}
+							selectedSlugs={selectedTagSlugs()}
+							onSelectionChange={setSelectedTagSlugs}
 						/>
 						<Input
 							type="text"

@@ -788,6 +788,11 @@ const suggestionsTable = {
       optional: false,
       customType: null as unknown as ReadonlyJSONValue,
     },
+    justification: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+    },
     status: {
       type: "string",
       optional: false,

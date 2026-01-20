@@ -19,7 +19,6 @@ import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
 import { buildPackageUrl } from "@/lib/url";
 import { ChannelSelector } from "./sections/ChannelSelector";
-import { CurateTab } from "./sections/CurateTab";
 import { Dependencies } from "./sections/Dependencies";
 import { DetailsTab } from "./sections/DetailsTab";
 import { Header } from "./sections/Header";
@@ -193,9 +192,6 @@ export const Package = () => {
 											<Tabs.Trigger value="details" variant="contained">
 												Details
 											</Tabs.Trigger>
-											<Tabs.Trigger value="suggest" variant="contained">
-												Suggest
-											</Tabs.Trigger>
 										</Tabs.List>
 									</Tabs.Root>
 
@@ -229,10 +225,6 @@ export const Package = () => {
 														selectedChannel={selectedChannel()}
 														onChannelChange={setSelectedChannelId}
 													/>
-												</Match>
-
-												<Match when={tab() === "suggest"}>
-													<CurateTab packageId={p.id} />
 												</Match>
 											</Switch>
 										</Stack>

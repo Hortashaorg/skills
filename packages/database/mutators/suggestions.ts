@@ -7,6 +7,7 @@ export const createAddTag = defineMutator(
 	z.object({
 		packageId: z.string(),
 		tagId: z.string(),
+		justification: z.string().max(500).optional(),
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
@@ -64,6 +65,7 @@ export const createAddTag = defineMutator(
 			type: "add_tag",
 			version: 1,
 			payload: { tagId: args.tagId },
+			justification: args.justification ?? null,
 			status: "pending",
 			createdAt: record.now,
 			updatedAt: record.now,
@@ -85,6 +87,7 @@ export const createCreateEcosystem = defineMutator(
 		name: z.string().min(1).max(100),
 		description: z.string().max(500).optional(),
 		website: z.string().url().optional(),
+		justification: z.string().max(500).optional(),
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
@@ -132,6 +135,7 @@ export const createCreateEcosystem = defineMutator(
 				description: args.description,
 				website: args.website,
 			},
+			justification: args.justification ?? null,
 			status: "pending",
 			createdAt: record.now,
 			updatedAt: record.now,
@@ -144,6 +148,7 @@ export const createAddEcosystemPackage = defineMutator(
 	z.object({
 		ecosystemId: z.string(),
 		packageId: z.string(),
+		justification: z.string().max(500).optional(),
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
@@ -204,6 +209,7 @@ export const createAddEcosystemPackage = defineMutator(
 			type: "add_ecosystem_package",
 			version: 1,
 			payload: { packageId: args.packageId },
+			justification: args.justification ?? null,
 			status: "pending",
 			createdAt: record.now,
 			updatedAt: record.now,
@@ -216,6 +222,7 @@ export const createAddEcosystemTag = defineMutator(
 	z.object({
 		ecosystemId: z.string(),
 		tagId: z.string(),
+		justification: z.string().max(500).optional(),
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
@@ -274,6 +281,7 @@ export const createAddEcosystemTag = defineMutator(
 			type: "add_ecosystem_tag",
 			version: 1,
 			payload: { tagId: args.tagId },
+			justification: args.justification ?? null,
 			status: "pending",
 			createdAt: record.now,
 			updatedAt: record.now,

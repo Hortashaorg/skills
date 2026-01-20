@@ -32,6 +32,7 @@ export const suggestions = pgTable(
 		type: suggestionTypeEnum().notNull(),
 		version: integer().notNull(),
 		payload: jsonb().notNull(),
+		justification: text(),
 		status: suggestionStatusEnum().notNull(),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),

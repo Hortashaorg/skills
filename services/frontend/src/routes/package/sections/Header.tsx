@@ -1,6 +1,7 @@
 import { Popover } from "@kobalte/core/popover";
 import { formatShortDate } from "@package/common";
 import {
+	getSuggestionTypeLabel,
 	mutators,
 	queries,
 	type Row,
@@ -9,6 +10,10 @@ import {
 } from "@package/database/client";
 import { A } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
+import {
+	type SuggestionItem,
+	SuggestionModal,
+} from "@/components/feature/suggestion-modal";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import {
@@ -23,10 +28,13 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { createPolledValue } from "@/hooks/createPolledValue";
+import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { handleMutationError } from "@/lib/mutation-error";
 import { cn } from "@/lib/utils";
@@ -127,6 +135,122 @@ export const Header = (props: HeaderProps) => {
 		}
 	};
 
+	// Tag suggestion modal state
+	const [tagModalOpen, setTagModalOpen] = createSignal(false);
+	const [selectedTagId, setSelectedTagId] = createSignal<string>();
+
+	// Pending tag suggestions for this package
+	const [pendingSuggestions] = useQuery(() =>
+		queries.suggestions.pendingForPackage({ packageId: props.pkg.id }),
+	);
+
+	// Tags that are already on the package
+	const existingTagIds = createMemo(() => {
+		return new Set(packageTags().map((pt) => pt.tagId));
+	});
+
+	// Tags pending suggestion (to exclude from picker)
+	const pendingTagIds = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return new Set(
+			suggestions
+				.filter((s) => s.type === "add_tag")
+				.map((s) => (s.payload as { tagId?: string })?.tagId)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	// Available tags for suggestion picker
+	const availableTags = createMemo(() => {
+		const all = allTags() ?? [];
+		const existing = existingTagIds();
+		const pending = pendingTagIds();
+		return all
+			.filter((t) => !existing.has(t.id) && !pending.has(t.id))
+			.sort((a, b) => a.name.localeCompare(b.name));
+	});
+
+	const tagOptions = createMemo(() =>
+		availableTags().map((t) => ({ value: t.id, label: t.name })),
+	);
+
+	// Format pending suggestions for modal
+	const tagSuggestions = createMemo((): SuggestionItem[] => {
+		const suggestions = pendingSuggestions() ?? [];
+		return suggestions
+			.filter((s) => s.type === "add_tag")
+			.map((s) => {
+				const tagId = (s.payload as { tagId?: string })?.tagId;
+				const tagName = tagId ? tagsById().get(tagId)?.name : undefined;
+				return {
+					id: s.id,
+					type: s.type,
+					typeLabel: getSuggestionTypeLabel(s.type),
+					description: tagName ?? "Unknown tag",
+					justification: s.justification,
+					authorName: getDisplayName(s.account),
+					authorId: s.accountId,
+					votes: s.votes ?? [],
+				};
+			});
+	});
+
+	const handleSuggestTag = (justification?: string) => {
+		const tagId = selectedTagId();
+		if (!tagId) return;
+
+		try {
+			zero().mutate(
+				mutators.suggestions.createAddTag({
+					packageId: props.pkg.id,
+					tagId,
+					justification,
+				}),
+			);
+			setSelectedTagId(undefined);
+			setTagModalOpen(false);
+			toast.success(
+				"Your tag suggestion is now pending review.",
+				"Suggestion submitted",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to submit",
+			);
+		}
+	};
+
+	const handleVote = (suggestionId: string, vote: "approve" | "reject") => {
+		try {
+			zero().mutate(mutators.suggestionVotes.vote({ suggestionId, vote }));
+			toast.success(
+				"Your vote has been recorded.",
+				vote === "approve" ? "Approved" : "Rejected",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to vote",
+			);
+		}
+	};
+
+	const handleAddTag = () => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest tags.", "Sign in required");
+			return;
+		}
+		setTagModalOpen(true);
+	};
+
+	const handleLogin = () => {
+		saveReturnUrl();
+		window.location.href = getAuthorizationUrl();
+	};
+
+	const currentUserId = () => (isLoggedIn() ? zero().userID : null);
+
 	return (
 		<Card padding="lg">
 			<Stack spacing="md">
@@ -166,17 +290,23 @@ export const Header = (props: HeaderProps) => {
 				</Flex>
 
 				{/* Tags */}
-				<Show when={packageTags().length > 0}>
-					<Flex align="center" wrap="wrap" gap="sm">
-						<For each={packageTags()}>
-							{(pt) => (
-								<Badge variant="secondary" size="sm">
-									{tagsById().get(pt.tagId)?.name ?? "Unknown"}
-								</Badge>
-							)}
-						</For>
-					</Flex>
-				</Show>
+				<Flex align="center" wrap="wrap" gap="sm">
+					<For each={packageTags()}>
+						{(pt) => (
+							<Badge variant="secondary" size="sm">
+								{tagsById().get(pt.tagId)?.name ?? "Unknown"}
+							</Badge>
+						)}
+					</For>
+					<button
+						type="button"
+						onClick={handleAddTag}
+						class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors"
+					>
+						<PlusIcon size="xs" />
+						<span>Add tag</span>
+					</button>
+				</Flex>
 
 				{/* Description */}
 				<Show when={props.pkg.description}>
@@ -377,6 +507,30 @@ export const Header = (props: HeaderProps) => {
 					</div>
 				</Flex>
 			</Stack>
+
+			<SuggestionModal
+				open={tagModalOpen()}
+				onOpenChange={setTagModalOpen}
+				title="Suggest Tags"
+				description="Help categorize this package by suggesting relevant tags."
+				isLoggedIn={isLoggedIn()}
+				onLoginClick={handleLogin}
+				currentUserId={currentUserId()}
+				pendingSuggestions={tagSuggestions()}
+				onVote={handleVote}
+				onSubmit={handleSuggestTag}
+				submitLabel="Suggest Tag"
+				isFormDisabled={!selectedTagId()}
+				formContent={
+					<Select
+						options={tagOptions()}
+						value={selectedTagId()}
+						onChange={setSelectedTagId}
+						placeholder="Select a tag..."
+						size="sm"
+					/>
+				}
+			/>
 		</Card>
 	);
 };

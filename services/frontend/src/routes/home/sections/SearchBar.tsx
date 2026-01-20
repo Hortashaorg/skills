@@ -1,13 +1,17 @@
+import {
+	EntityFilter,
+	type FilterOption,
+} from "@/components/composite/entity-filter";
 import { Flex } from "@/components/primitives/flex";
 import { Input } from "@/components/primitives/input";
 import { Select } from "@/components/ui/select";
 import { REGISTRY_FILTER_OPTIONS, type RegistryFilter } from "@/lib/registries";
-import { TagFilter } from "./TagFilter";
 
 export interface SearchBarProps {
 	searchValue: string;
 	registryFilter: RegistryFilter;
 	selectedTagSlugs: string[];
+	tagOptions: readonly FilterOption[];
 	onSearchChange: (value: string) => void;
 	onRegistryChange: (value: RegistryFilter) => void;
 	onTagsChange: (slugs: string[]) => void;
@@ -23,9 +27,10 @@ export const SearchBar = (props: SearchBarProps) => {
 				aria-label="Filter by registry"
 				class="w-auto"
 			/>
-			<TagFilter
-				selectedTagSlugs={props.selectedTagSlugs}
-				onTagsChange={props.onTagsChange}
+			<EntityFilter
+				options={props.tagOptions}
+				selectedSlugs={props.selectedTagSlugs}
+				onSelectionChange={props.onTagsChange}
 			/>
 			<Input
 				type="text"

@@ -1,28 +1,35 @@
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
-import { A, useNavigate, useParams } from "@solidjs/router";
-import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
+import {
+	getSuggestionTypeLabel,
+	mutators,
+	queries,
+	useQuery,
+	useZero,
+} from "@package/database/client";
+import { A, useParams } from "@solidjs/router";
+import { createMemo, createSignal, Show } from "solid-js";
 import { SEO } from "@/components/composite/seo";
+import {
+	type SuggestionItem,
+	SuggestionModal,
+} from "@/components/feature/suggestion-modal";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
-import { PlusIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dialog } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs } from "@/components/ui/tabs";
-import {
-	TextField,
-	TextFieldInput,
-	TextFieldLabel,
-} from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
 import { Layout } from "@/layout/Layout";
-import { buildPackageUrl } from "@/lib/url";
-import { CurateTab } from "./sections/CurateTab";
+import { getDisplayName } from "@/lib/account";
+import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { EcosystemHeader } from "./sections/EcosystemHeader";
+import {
+	EcosystemPackages,
+	groupPackagesByTag,
+} from "./sections/EcosystemPackages";
 
 const EcosystemSkeleton = () => (
 	<Stack spacing="lg">
@@ -35,29 +42,17 @@ const EcosystemSkeleton = () => (
 				<Skeleton variant="rectangular" width="100px" height="36px" />
 			</Flex>
 		</Stack>
-
-		<Card padding="lg">
-			<Stack spacing="md">
-				<Skeleton variant="text" width="120px" height="24px" />
-				<div class="grid gap-2 md:grid-cols-2">
-					<Skeleton variant="rectangular" height="60px" />
-					<Skeleton variant="rectangular" height="60px" />
-					<Skeleton variant="rectangular" height="60px" />
-					<Skeleton variant="rectangular" height="60px" />
-				</div>
-			</Stack>
-		</Card>
+		<Skeleton variant="rectangular" height="200px" />
 	</Stack>
 );
 
 export const Ecosystem = () => {
-	const params = useParams<{ slug: string; tab?: string }>();
-	const navigate = useNavigate();
-	const zero = useZero();
-
+	const params = useParams<{ slug: string }>();
 	const slug = () => decodeURIComponent(params.slug);
-	const tab = () => params.tab ?? "overview";
-	const baseUrl = () => `/ecosystem/${encodeURIComponent(slug())}`;
+
+	const zero = useZero();
+	const isLoggedIn = () => zero().userID !== "anon";
+	const currentUserId = () => (isLoggedIn() ? zero().userID : null);
 
 	const [ecosystemData, ecosystemResult] = useQuery(() =>
 		queries.ecosystems.bySlug({ slug: slug() }),
@@ -66,8 +61,7 @@ export const Ecosystem = () => {
 	const isLoading = () => ecosystemResult().type !== "complete";
 	const ecosystem = createMemo(() => ecosystemData()?.[0] ?? null);
 
-	const isLoggedIn = () => zero().userID !== "anon";
-
+	// Upvote logic
 	const userUpvote = createMemo(() => {
 		const eco = ecosystem();
 		if (!eco?.upvotes) return null;
@@ -75,16 +69,6 @@ export const Ecosystem = () => {
 	});
 
 	const hasUpvoted = () => !!userUpvote();
-
-	const existingPackageIds = createMemo(() => {
-		const eco = ecosystem();
-		if (!eco?.ecosystemPackages) return new Set<string>();
-		return new Set(
-			eco.ecosystemPackages
-				.map((ep) => ep.package?.id)
-				.filter(Boolean) as string[],
-		);
-	});
 
 	const handleUpvote = () => {
 		const eco = ecosystem();
@@ -107,42 +91,48 @@ export const Ecosystem = () => {
 		}
 	};
 
-	// Package suggestion dialog
-	const [packageDialogOpen, setPackageDialogOpen] = createSignal(false);
-	const [packageSearchQuery, setPackageSearchQuery] = createSignal("");
+	// Tags
+	const tags = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemTags) return [];
+		return eco.ecosystemTags
+			.filter(
+				(et): et is typeof et & { tag: NonNullable<typeof et.tag> } => !!et.tag,
+			)
+			.map((et) => ({ name: et.tag.name, slug: et.tag.slug }));
+	});
 
-	const [searchResults] = useQuery(() =>
-		queries.packages.search({
-			query: packageSearchQuery() || undefined,
-			limit: 10,
-		}),
-	);
+	// Packages grouped by tag
+	const packages = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemPackages) return [];
+		return eco.ecosystemPackages
+			.map((ep) => ep.package)
+			.filter((pkg) => pkg != null);
+	});
 
-	// Tag suggestion dialog
-	const [tagDialogOpen, setTagDialogOpen] = createSignal(false);
-	const [tagSearchQuery, setTagSearchQuery] = createSignal("");
+	const packagesByTag = createMemo(() => groupPackagesByTag(packages()));
 
-	const [tagSearchResults] = useQuery(() =>
-		queries.tags.search({
-			query: tagSearchQuery() || undefined,
-			limit: 10,
-		}),
-	);
-
+	// Pending suggestions
 	const [pendingSuggestions] = useQuery(() => {
 		const eco = ecosystem();
 		if (!eco) return null;
 		return queries.suggestions.pendingForEcosystem({ ecosystemId: eco.id });
 	});
 
-	const pendingPackageIds = createMemo(() => {
-		const suggestions = pendingSuggestions() ?? [];
-		return new Set(
-			suggestions
-				.filter((s) => s.type === "add_ecosystem_package")
-				.map((s) => (s.payload as { packageId?: string })?.packageId)
-				.filter(Boolean) as string[],
-		);
+	// All tags for picker
+	const [allTags] = useQuery(() => queries.tags.list());
+
+	const tagsById = createMemo(() => {
+		const all = allTags() ?? [];
+		return new Map(all.map((t) => [t.id, t]));
+	});
+
+	// Available tags (not already on ecosystem, not pending)
+	const existingTagIds = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemTags) return new Set<string>();
+		return new Set(eco.ecosystemTags.map((et) => et.tagId));
 	});
 
 	const pendingTagIds = createMemo(() => {
@@ -155,79 +145,58 @@ export const Ecosystem = () => {
 		);
 	});
 
-	const existingTagIds = createMemo(() => {
-		const eco = ecosystem();
-		if (!eco?.ecosystemTags) return new Set<string>();
-		return new Set(eco.ecosystemTags.map((et) => et.tagId));
-	});
-
-	const tags = createMemo(() => {
-		const eco = ecosystem();
-		if (!eco?.ecosystemTags) return [];
-		return eco.ecosystemTags
-			.filter(
-				(et): et is typeof et & { tag: NonNullable<typeof et.tag> } => !!et.tag,
-			)
-			.map((et) => et.tag);
-	});
-
 	const availableTags = createMemo(() => {
-		const results = tagSearchResults() ?? [];
+		const all = allTags() ?? [];
 		const existing = existingTagIds();
 		const pending = pendingTagIds();
-		return results.filter(
-			(tag) => !existing.has(tag.id) && !pending.has(tag.id),
-		);
+		return all
+			.filter((t) => !existing.has(t.id) && !pending.has(t.id))
+			.sort((a, b) => a.name.localeCompare(b.name));
 	});
 
-	const availablePackages = createMemo(() => {
-		const results = searchResults() ?? [];
-		const existing = existingPackageIds();
-		const pending = pendingPackageIds();
+	const tagOptions = createMemo(() =>
+		availableTags().map((t) => ({ value: t.id, label: t.name })),
+	);
 
-		return results.filter(
-			(pkg) => !existing.has(pkg.id) && !pending.has(pkg.id),
-		);
+	// Tag suggestion modal
+	const [tagModalOpen, setTagModalOpen] = createSignal(false);
+	const [selectedTagId, setSelectedTagId] = createSignal<string>();
+
+	const tagSuggestions = createMemo((): SuggestionItem[] => {
+		const suggestions = pendingSuggestions() ?? [];
+		return suggestions
+			.filter((s) => s.type === "add_ecosystem_tag")
+			.map((s) => {
+				const tagId = (s.payload as { tagId?: string })?.tagId;
+				const tagName = tagId ? tagsById().get(tagId)?.name : undefined;
+				return {
+					id: s.id,
+					type: s.type,
+					typeLabel: getSuggestionTypeLabel(s.type),
+					description: tagName ?? "Unknown tag",
+					justification: s.justification,
+					authorName: getDisplayName(s.account),
+					authorId: s.accountId,
+					votes: s.votes ?? [],
+				};
+			});
 	});
 
-	const handleSuggestPackage = (packageId: string) => {
+	const handleSuggestTag = (justification?: string) => {
 		const eco = ecosystem();
-		if (!eco) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.createAddEcosystemPackage({
-					ecosystemId: eco.id,
-					packageId,
-				}),
-			);
-			setPackageSearchQuery("");
-			setPackageDialogOpen(false);
-			toast.success(
-				"Your package suggestion is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		}
-	};
-
-	const handleSuggestTag = (tagId: string) => {
-		const eco = ecosystem();
-		if (!eco) return;
+		const tagId = selectedTagId();
+		if (!eco || !tagId) return;
 
 		try {
 			zero().mutate(
 				mutators.suggestions.createAddEcosystemTag({
 					ecosystemId: eco.id,
 					tagId,
+					justification,
 				}),
 			);
-			setTagSearchQuery("");
-			setTagDialogOpen(false);
+			setSelectedTagId(undefined);
+			setTagModalOpen(false);
 			toast.success(
 				"Your tag suggestion is now pending review.",
 				"Suggestion submitted",
@@ -240,20 +209,134 @@ export const Ecosystem = () => {
 		}
 	};
 
-	const handleAddPackageClick = () => {
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest packages.", "Sign in required");
-			return;
+	// Package suggestion modal
+	const [packageModalOpen, setPackageModalOpen] = createSignal(false);
+	const [packageSearchQuery, setPackageSearchQuery] = createSignal("");
+
+	const [searchResults] = useQuery(() =>
+		queries.packages.search({
+			query: packageSearchQuery() || undefined,
+			limit: 10,
+		}),
+	);
+
+	const existingPackageIds = createMemo(() => {
+		const eco = ecosystem();
+		if (!eco?.ecosystemPackages) return new Set<string>();
+		return new Set(
+			eco.ecosystemPackages
+				.map((ep) => ep.package?.id)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	const pendingPackageIds = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return new Set(
+			suggestions
+				.filter((s) => s.type === "add_ecosystem_package")
+				.map((s) => (s.payload as { packageId?: string })?.packageId)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	const availablePackages = createMemo(() => {
+		const results = searchResults() ?? [];
+		const existing = existingPackageIds();
+		const pending = pendingPackageIds();
+		return results.filter(
+			(pkg) => !existing.has(pkg.id) && !pending.has(pkg.id),
+		);
+	});
+
+	const packageOptions = createMemo(() =>
+		availablePackages().map((p) => ({
+			value: p.id,
+			label: `${p.name} (${p.registry})`,
+		})),
+	);
+
+	const [selectedPackageId, setSelectedPackageId] = createSignal<string>();
+
+	const packageSuggestions = createMemo((): SuggestionItem[] => {
+		const suggestions = pendingSuggestions() ?? [];
+		return suggestions
+			.filter((s) => s.type === "add_ecosystem_package")
+			.map((s) => ({
+				id: s.id,
+				type: s.type,
+				typeLabel: getSuggestionTypeLabel(s.type),
+				description: s.package?.name ?? "Unknown package",
+				justification: s.justification,
+				authorName: getDisplayName(s.account),
+				authorId: s.accountId,
+				votes: s.votes ?? [],
+			}));
+	});
+
+	const handleSuggestPackage = (justification?: string) => {
+		const eco = ecosystem();
+		const packageId = selectedPackageId();
+		if (!eco || !packageId) return;
+
+		try {
+			zero().mutate(
+				mutators.suggestions.createAddEcosystemPackage({
+					ecosystemId: eco.id,
+					packageId,
+					justification,
+				}),
+			);
+			setSelectedPackageId(undefined);
+			setPackageSearchQuery("");
+			setPackageModalOpen(false);
+			toast.success(
+				"Your package suggestion is now pending review.",
+				"Suggestion submitted",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to submit",
+			);
 		}
-		setPackageDialogOpen(true);
 	};
 
-	const handleAddTagClick = () => {
+	// Vote handler
+	const handleVote = (suggestionId: string, vote: "approve" | "reject") => {
+		try {
+			zero().mutate(mutators.suggestionVotes.vote({ suggestionId, vote }));
+			toast.success(
+				"Your vote has been recorded.",
+				vote === "approve" ? "Approved" : "Rejected",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to vote",
+			);
+		}
+	};
+
+	const handleLogin = () => {
+		saveReturnUrl();
+		window.location.href = getAuthorizationUrl();
+	};
+
+	const handleAddTag = () => {
 		if (!isLoggedIn()) {
 			toast.info("Sign in to suggest tags.", "Sign in required");
 			return;
 		}
-		setTagDialogOpen(true);
+		setTagModalOpen(true);
+	};
+
+	const handleAddPackage = () => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest packages.", "Sign in required");
+			return;
+		}
+		setPackageModalOpen(true);
 	};
 
 	return (
@@ -265,7 +348,7 @@ export const Ecosystem = () => {
 					"Explore this technology ecosystem and its related packages."
 				}
 			/>
-			<Container size="md">
+			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
 					<Show when={!isLoading()} fallback={<EcosystemSkeleton />}>
 						<Show
@@ -273,7 +356,10 @@ export const Ecosystem = () => {
 							fallback={
 								<Card padding="lg">
 									<Stack spacing="md" align="center">
-										<Text color="muted">Ecosystem not found.</Text>
+										<Heading level="h2">Ecosystem not found</Heading>
+										<Text color="muted">
+											This ecosystem doesn't exist or has been deleted.
+										</Text>
 										<A href="/ecosystems">
 											<Button variant="outline">Browse Ecosystems</Button>
 										</A>
@@ -283,178 +369,31 @@ export const Ecosystem = () => {
 						>
 							{(eco) => (
 								<>
+									<EcosystemHeader
+										name={eco().name}
+										description={eco().description}
+										website={eco().website}
+										tags={tags()}
+										upvoteCount={eco().upvoteCount}
+										hasUpvoted={hasUpvoted()}
+										isLoggedIn={isLoggedIn()}
+										onUpvote={handleUpvote}
+										onAddTag={handleAddTag}
+									/>
+
 									<Stack spacing="md">
-										<Flex justify="between" align="start" wrap="wrap" gap="md">
-											<Stack spacing="xs">
-												<Heading level="h1">{eco().name}</Heading>
-												<Show when={eco().description}>
-													<Text color="muted">{eco().description}</Text>
-												</Show>
-												<Show when={eco().website} keyed>
-													{(website) => (
-														<a
-															href={website}
-															target="_blank"
-															rel="noopener noreferrer"
-															class="text-sm text-accent hover:underline"
-														>
-															{website}
-														</a>
-													)}
-												</Show>
-												<Flex gap="xs" wrap="wrap" align="center">
-													<For each={tags()}>
-														{(tag) => (
-															<A href={`/?tag=${tag.slug}`}>
-																<Badge variant="secondary" size="sm">
-																	{tag.name}
-																</Badge>
-															</A>
-														)}
-													</For>
-													<button
-														type="button"
-														onClick={handleAddTagClick}
-														class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-accent hover:text-accent dark:border-outline-dark dark:hover:border-accent transition-colors"
-													>
-														<PlusIcon size="xs" />
-														<span>Add tag</span>
-													</button>
-												</Flex>
-											</Stack>
-
-											<Flex gap="sm" align="center">
-												<Text size="sm" color="muted">
-													{eco().upvoteCount} upvotes
-												</Text>
-												<Show when={isLoggedIn()}>
-													<Button
-														variant={hasUpvoted() ? "primary" : "outline"}
-														size="sm"
-														onClick={handleUpvote}
-													>
-														{hasUpvoted() ? "Upvoted" : "Upvote"}
-													</Button>
-												</Show>
-											</Flex>
+										<Flex justify="between" align="center">
+											<Heading level="h2">
+												Packages ({packages().length})
+											</Heading>
 										</Flex>
+
+										<EcosystemPackages
+											packages={packages()}
+											packagesByTag={packagesByTag()}
+											onSuggestPackage={handleAddPackage}
+										/>
 									</Stack>
-
-									<Card class="overflow-hidden">
-										<Tabs.Root
-											value={tab()}
-											onChange={(value) => {
-												navigate(
-													value === "overview"
-														? baseUrl()
-														: `${baseUrl()}/${value}`,
-												);
-											}}
-										>
-											<Tabs.List variant="contained">
-												<Tabs.Trigger value="overview" variant="contained">
-													Packages
-												</Tabs.Trigger>
-												<Tabs.Trigger value="suggest" variant="contained">
-													Suggest
-												</Tabs.Trigger>
-											</Tabs.List>
-										</Tabs.Root>
-
-										<div class="p-4">
-											<Switch>
-												<Match when={tab() === "overview"}>
-													<div class="grid gap-2 md:grid-cols-2">
-														<For each={eco().ecosystemPackages}>
-															{(ep) => (
-																<Show when={ep.package}>
-																	{(pkg) => (
-																		<A
-																			href={buildPackageUrl(
-																				pkg().registry,
-																				pkg().name,
-																			)}
-																		>
-																			<Card
-																				padding="sm"
-																				class="transition-colors hover:bg-accent/5"
-																			>
-																				<Flex justify="between" align="center">
-																					<Stack spacing="xs">
-																						<Text weight="medium">
-																							{pkg().name}
-																						</Text>
-																						<Badge
-																							variant="secondary"
-																							size="sm"
-																						>
-																							{pkg().registry}
-																						</Badge>
-																					</Stack>
-																					<Show when={pkg().latestVersion}>
-																						<Text size="xs" color="muted">
-																							{pkg().latestVersion}
-																						</Text>
-																					</Show>
-																				</Flex>
-																			</Card>
-																		</A>
-																	)}
-																</Show>
-															)}
-														</For>
-
-														{/* Suggest package action card */}
-														<button
-															type="button"
-															onClick={handleAddPackageClick}
-															class="text-left"
-														>
-															<Card
-																padding="sm"
-																class="h-full border-dashed transition-colors hover:bg-accent/5 hover:border-accent"
-															>
-																<Flex
-																	align="center"
-																	gap="sm"
-																	class="h-full py-2"
-																>
-																	<div class="rounded-full bg-accent/10 p-2">
-																		<PlusIcon size="sm" class="text-accent" />
-																	</div>
-																	<Stack spacing="xs">
-																		<Text weight="medium" color="muted">
-																			Suggest Package
-																		</Text>
-																		<Text size="xs" color="muted">
-																			Add a package to this ecosystem
-																		</Text>
-																	</Stack>
-																</Flex>
-															</Card>
-														</button>
-													</div>
-
-													<Show
-														when={(eco().ecosystemPackages?.length ?? 0) === 0}
-													>
-														<Text
-															size="sm"
-															color="muted"
-															class="text-center mt-4"
-														>
-															No packages in this ecosystem yet. Be the first to
-															suggest one!
-														</Text>
-													</Show>
-												</Match>
-
-												<Match when={tab() === "suggest"}>
-													<CurateTab ecosystemId={eco().id} />
-												</Match>
-											</Switch>
-										</div>
-									</Card>
 								</>
 							)}
 						</Show>
@@ -462,146 +401,64 @@ export const Ecosystem = () => {
 				</Stack>
 			</Container>
 
-			<Dialog
-				title="Suggest Package"
-				description="Search for a package to add to this ecosystem."
-				open={packageDialogOpen()}
-				onOpenChange={setPackageDialogOpen}
-			>
-				<Stack spacing="md">
-					<TextField>
-						<TextFieldLabel>Search Packages</TextFieldLabel>
-						<TextFieldInput
-							placeholder="Search for a package..."
+			<SuggestionModal
+				open={tagModalOpen()}
+				onOpenChange={setTagModalOpen}
+				title="Suggest Tags"
+				description="Help categorize this ecosystem by suggesting relevant tags."
+				isLoggedIn={isLoggedIn()}
+				onLoginClick={handleLogin}
+				currentUserId={currentUserId()}
+				pendingSuggestions={tagSuggestions()}
+				onVote={handleVote}
+				onSubmit={handleSuggestTag}
+				submitLabel="Suggest Tag"
+				isFormDisabled={!selectedTagId()}
+				formContent={
+					<Select
+						options={tagOptions()}
+						value={selectedTagId()}
+						onChange={setSelectedTagId}
+						placeholder="Select a tag..."
+						size="sm"
+					/>
+				}
+			/>
+
+			<SuggestionModal
+				open={packageModalOpen()}
+				onOpenChange={setPackageModalOpen}
+				title="Suggest Packages"
+				description="Help grow this ecosystem by suggesting relevant packages."
+				isLoggedIn={isLoggedIn()}
+				onLoginClick={handleLogin}
+				currentUserId={currentUserId()}
+				pendingSuggestions={packageSuggestions()}
+				onVote={handleVote}
+				onSubmit={handleSuggestPackage}
+				submitLabel="Suggest Package"
+				isFormDisabled={!selectedPackageId()}
+				formContent={
+					<Stack spacing="sm">
+						<input
+							type="text"
 							value={packageSearchQuery()}
 							onInput={(e) => setPackageSearchQuery(e.currentTarget.value)}
+							placeholder="Search packages..."
+							class="flex h-10 w-full rounded-radius border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark"
 						/>
-					</TextField>
-
-					<Show when={packageSearchQuery().length > 0}>
-						<Show
-							when={availablePackages().length > 0}
-							fallback={
-								<Text size="sm" color="muted">
-									No matching packages found (or already added/pending).
-								</Text>
-							}
-						>
-							<Stack spacing="xs" class="max-h-64 overflow-y-auto">
-								<For each={availablePackages()}>
-									{(pkg) => (
-										<button
-											type="button"
-											onClick={() => handleSuggestPackage(pkg.id)}
-											class="flex items-center justify-between p-2 border border-outline dark:border-outline-dark rounded-radius hover:bg-accent/5 text-left w-full"
-										>
-											<div>
-												<Flex gap="xs" align="center">
-													<Text size="sm" weight="medium">
-														{pkg.name}
-													</Text>
-													<Badge variant="secondary" size="sm">
-														{pkg.registry}
-													</Badge>
-												</Flex>
-												<Show when={pkg.description}>
-													<Text size="xs" color="muted" class="line-clamp-1">
-														{pkg.description}
-													</Text>
-												</Show>
-											</div>
-										</button>
-									)}
-								</For>
-							</Stack>
+						<Show when={packageSearchQuery().length > 0}>
+							<Select
+								options={packageOptions()}
+								value={selectedPackageId()}
+								onChange={setSelectedPackageId}
+								placeholder="Select a package..."
+								size="sm"
+							/>
 						</Show>
-					</Show>
-
-					<Flex gap="sm" justify="end">
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={() => {
-								setPackageDialogOpen(false);
-								setPackageSearchQuery("");
-							}}
-						>
-							Cancel
-						</Button>
-					</Flex>
-					<Text size="xs" color="muted">
-						Suggestions need community votes to be approved.
-					</Text>
-				</Stack>
-			</Dialog>
-
-			<Dialog
-				title="Suggest Tag"
-				description="Search for a tag to add to this ecosystem."
-				open={tagDialogOpen()}
-				onOpenChange={setTagDialogOpen}
-			>
-				<Stack spacing="md">
-					<TextField>
-						<TextFieldLabel>Search Tags</TextFieldLabel>
-						<TextFieldInput
-							placeholder="Search for a tag..."
-							value={tagSearchQuery()}
-							onInput={(e) => setTagSearchQuery(e.currentTarget.value)}
-						/>
-					</TextField>
-
-					<Show when={tagSearchQuery().length > 0}>
-						<Show
-							when={availableTags().length > 0}
-							fallback={
-								<Text size="sm" color="muted">
-									No matching tags found (or already added/pending).
-								</Text>
-							}
-						>
-							<Stack spacing="xs" class="max-h-64 overflow-y-auto">
-								<For each={availableTags()}>
-									{(tag) => (
-										<button
-											type="button"
-											onClick={() => handleSuggestTag(tag.id)}
-											class="flex items-center justify-between p-2 border border-outline dark:border-outline-dark rounded-radius hover:bg-accent/5 text-left w-full"
-										>
-											<div>
-												<Text size="sm" weight="medium">
-													{tag.name}
-												</Text>
-												<Show when={tag.description}>
-													<Text size="xs" color="muted" class="line-clamp-1">
-														{tag.description}
-													</Text>
-												</Show>
-											</div>
-										</button>
-									)}
-								</For>
-							</Stack>
-						</Show>
-					</Show>
-
-					<Flex gap="sm" justify="end">
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={() => {
-								setTagDialogOpen(false);
-								setTagSearchQuery("");
-							}}
-						>
-							Cancel
-						</Button>
-					</Flex>
-					<Text size="xs" color="muted">
-						Suggestions need community votes to be approved.
-					</Text>
-				</Stack>
-			</Dialog>
+					</Stack>
+				}
+			/>
 		</Layout>
 	);
 };
