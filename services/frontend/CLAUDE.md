@@ -13,7 +13,7 @@ routes/
 │   └── sections/
 │       ├── SearchBar.tsx   # PascalCase components
 │       ├── ResultsGrid.tsx
-│       └── TagFilter.tsx
+│       └── EntityFilter.tsx
 └── package/
     ├── index.tsx
     └── sections/           # UI sections of the page
@@ -97,7 +97,7 @@ const isLoading = () =>
 components/
 ├── primitives/   # Layout: Flex, Stack, Text, Container
 ├── ui/           # Interactive: Button, Card, Badge, Select, Tabs
-├── composite/    # Combined: SearchInput, IconButton
+├── composite/    # Combined: SearchInput, ActionCard, EntityFilter
 └── feature/      # Domain-specific: (rare)
 ```
 
@@ -167,6 +167,29 @@ import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 
 const upvote = createPackageUpvote(() => pkg);
 // upvote.isUpvoted(), upvote.upvoteCount(), upvote.isDisabled(), upvote.toggle()
+```
+
+**Infinite scroll hook:**
+```tsx
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+
+const scroll = useInfiniteScroll({
+  initialLimit: 24,
+  loadMoreCount: 24,
+  autoLoadLimit: 240,
+});
+
+// Use with queries
+const [items] = useQuery(() => queries.items.list({ limit: scroll.limit() }));
+
+// Check if more available
+const canLoadMore = () => scroll.canLoadMore(items()?.length ?? 0);
+
+// Render sentinel and controls
+<div ref={scroll.setSentinelRef} class="h-1" />
+<Show when={scroll.showBackToTop()}>
+  <Button onClick={scroll.scrollToTop}>↑ Back to top</Button>
+</Show>
 ```
 
 ## Common Patterns
