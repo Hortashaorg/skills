@@ -17,6 +17,7 @@ export interface EcosystemCardProps {
 	tags?: readonly ResourceTag[];
 	packageCount?: number;
 	isPending?: boolean;
+	onRemove?: () => void;
 }
 
 export const EcosystemCard = (props: EcosystemCardProps) => {
@@ -42,6 +43,7 @@ export const EcosystemCard = (props: EcosystemCardProps) => {
 			isUpvoted={props.isUpvoted}
 			upvoteDisabled={props.upvoteDisabled}
 			onUpvote={props.onUpvote}
+			onRemove={props.onRemove}
 			status={props.isPending ? "pending" : "default"}
 			footer={footer()}
 		/>

@@ -19,6 +19,13 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 					.related("upvotes"),
 			),
 		)
+		.related("projectEcosystems", (pe) =>
+			pe.related("ecosystem", (eco) =>
+				eco
+					.related("ecosystemTags", (et) => et.related("tag"))
+					.related("upvotes"),
+			),
+		)
 		.related("account")
 		.one();
 });

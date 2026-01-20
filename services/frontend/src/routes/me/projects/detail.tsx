@@ -6,22 +6,24 @@ import {
 	type SearchResultItem,
 } from "@/components/composite/search-input";
 import { Container } from "@/components/primitives/container";
-import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Tabs } from "@/components/ui/tabs";
 import { Layout } from "@/layout/Layout";
 import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
 import { handleMutationError } from "@/lib/mutation-error";
+import { EcosystemGrid } from "./sections/EcosystemGrid";
 import { PackageGrid } from "./sections/PackageGrid";
 import { ProjectDetailSkeleton } from "./sections/ProjectDetailSkeleton";
 import { ProjectEditForm } from "./sections/ProjectEditForm";
 import { ProjectHeader } from "./sections/ProjectHeader";
 
 const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
+const SEARCH_ECOSYSTEMS_PREFIX = "SEARCH_ECOSYSTEMS:";
 
 export const ProjectDetail = () => {
 	const params = useParams<{ id: string }>();
@@ -41,6 +43,13 @@ export const ProjectDetail = () => {
 	const [removePackageId, setRemovePackageId] = createSignal<string | null>(
 		null,
 	);
+	const [removeEcosystemId, setRemoveEcosystemId] = createSignal<string | null>(
+		null,
+	);
+	const [activeTab, setActiveTab] = createSignal<"packages" | "ecosystems">(
+		"packages",
+	);
+	const [ecosystemSearch, setEcosystemSearch] = createSignal("");
 
 	// Search for packages to add
 	const [searchResults, searchResultsStatus] = useQuery(() =>
@@ -57,9 +66,20 @@ export const ProjectDetail = () => {
 		}),
 	);
 
+	// Search for ecosystems to add
+	const [ecosystemSearchResults, ecosystemSearchResultsStatus] = useQuery(() =>
+		queries.ecosystems.search({
+			query: ecosystemSearch() || undefined,
+			limit: 20,
+		}),
+	);
+
 	const isLoading = () => projectResult().type !== "complete";
 	const isSearching = () =>
 		searchResultsStatus().type !== "complete" && packageSearch().length > 0;
+	const isSearchingEcosystems = () =>
+		ecosystemSearchResultsStatus().type !== "complete" &&
+		ecosystemSearch().length > 0;
 	const isOwner = () => {
 		const p = project();
 		return !!(p && zero().userID !== "anon" && p.accountId === zero().userID);
@@ -107,6 +127,80 @@ export const ProjectDetail = () => {
 		);
 
 		return { groups, sortedTags, uncategorized };
+	});
+
+	// Ecosystems
+	const ecosystems = createMemo(() => {
+		const p = project();
+		if (!p) return [];
+		return (p.projectEcosystems ?? [])
+			.map((pe) => pe.ecosystem)
+			.filter((eco) => eco != null);
+	});
+
+	const existingEcosystemIds = createMemo(
+		() => new Set(ecosystems().map((e) => e.id)),
+	);
+
+	// Group ecosystems by tag
+	const ecosystemsByTag = createMemo(() => {
+		const ecos = ecosystems();
+		type Eco = (typeof ecos)[number];
+		const groups: Record<string, Eco[]> = {};
+		const uncategorized: Eco[] = [];
+
+		for (const eco of ecos) {
+			const tags = eco.ecosystemTags ?? [];
+			if (tags.length === 0) {
+				uncategorized.push(eco);
+			} else {
+				for (const et of tags) {
+					const tagName = et.tag?.name;
+					if (tagName) {
+						if (!groups[tagName]) {
+							groups[tagName] = [];
+						}
+						groups[tagName].push(eco);
+					}
+				}
+			}
+		}
+
+		const sortedTags = Object.keys(groups).sort((a, b) =>
+			a.toLowerCase().localeCompare(b.toLowerCase()),
+		);
+
+		return { groups, sortedTags, uncategorized };
+	});
+
+	const ecosystemSearchResultsFiltered = createMemo((): SearchResultItem[] => {
+		const results = ecosystemSearchResults() ?? [];
+		const existing = existingEcosystemIds();
+		const searchTerm = ecosystemSearch().trim();
+		const items: SearchResultItem[] = [];
+
+		for (const eco of results) {
+			if (existing.has(eco.id)) continue;
+			items.push({
+				id: eco.id,
+				primary: eco.name,
+				secondary: eco.description ?? undefined,
+				label: "ecosystem",
+			});
+		}
+
+		// Add "search on ecosystems page" option when no results
+		if (items.length === 0 && searchTerm.length > 0) {
+			items.push({
+				id: `${SEARCH_ECOSYSTEMS_PREFIX}${searchTerm}`,
+				primary: `Search "${searchTerm}" on Ecosystems page`,
+				secondary: "Browse all ecosystems there",
+				label: "→",
+				isAction: true,
+			});
+		}
+
+		return items;
 	});
 
 	const getPackageSecondary = (pkg: {
@@ -202,6 +296,32 @@ export const ProjectDetail = () => {
 			});
 	};
 
+	const handleAddEcosystem = (item: SearchResultItem) => {
+		// Navigate to ecosystems page with search term
+		if (item.id.startsWith(SEARCH_ECOSYSTEMS_PREFIX)) {
+			const searchTerm = item.id.slice(SEARCH_ECOSYSTEMS_PREFIX.length);
+			navigate(`/ecosystems?q=${encodeURIComponent(searchTerm)}`);
+			return;
+		}
+
+		const p = project();
+		if (!p) return;
+
+		zero()
+			.mutate(
+				mutators.projectEcosystems.add({
+					projectId: p.id,
+					ecosystemId: item.id,
+				}),
+			)
+			.client.then(() => {
+				setEcosystemSearch("");
+			})
+			.catch((err) => {
+				handleMutationError(err, "add ecosystem");
+			});
+	};
+
 	const startEditing = () => {
 		const p = project();
 		if (p) {
@@ -259,6 +379,29 @@ export const ProjectDetail = () => {
 			handleMutationError(err, "remove package");
 		}
 		setRemovePackageId(null);
+	};
+
+	const confirmRemoveEcosystem = async () => {
+		const p = project();
+		const ecosystemId = removeEcosystemId();
+		if (!p || !ecosystemId) return;
+
+		const projectEcosystem = (p.projectEcosystems ?? []).find(
+			(pe) => pe.ecosystemId === ecosystemId,
+		);
+		if (!projectEcosystem) return;
+
+		try {
+			await zero().mutate(
+				mutators.projectEcosystems.remove({
+					id: projectEcosystem.id,
+					projectId: p.id,
+				}),
+			).client;
+		} catch (err) {
+			handleMutationError(err, "remove ecosystem");
+		}
+		setRemoveEcosystemId(null);
 	};
 
 	const confirmDelete = async () => {
@@ -321,31 +464,68 @@ export const ProjectDetail = () => {
 										/>
 									</Show>
 
-									<Stack spacing="md">
-										<Flex justify="between" align="center">
-											<Heading level="h2">
-												Packages ({packages().length})
-											</Heading>
-										</Flex>
+									<Card class="overflow-hidden">
+										<Tabs.Root
+											value={activeTab()}
+											onChange={(v) =>
+												setActiveTab(v as "packages" | "ecosystems")
+											}
+										>
+											<Tabs.List variant="contained">
+												<Tabs.Trigger value="packages" variant="contained">
+													Packages ({packages().length})
+												</Tabs.Trigger>
+												<Tabs.Trigger value="ecosystems" variant="contained">
+													Ecosystems ({ecosystems().length})
+												</Tabs.Trigger>
+											</Tabs.List>
+										</Tabs.Root>
 
-										<Show when={isOwner()}>
-											<SearchInput
-												value={packageSearch()}
-												onValueChange={setPackageSearch}
-												results={packageSearchResults()}
-												isLoading={isSearching()}
-												onSelect={handleAddPackage}
-												placeholder="Search packages to add..."
-											/>
-										</Show>
-
-										<PackageGrid
-											packages={packages()}
-											packagesByTag={packagesByTag()}
-											isOwner={isOwner()}
-											onRemove={setRemovePackageId}
-										/>
-									</Stack>
+										<div class="p-4">
+											<Show
+												when={activeTab() === "packages"}
+												fallback={
+													<Stack spacing="md">
+														<Show when={isOwner()}>
+															<SearchInput
+																value={ecosystemSearch()}
+																onValueChange={setEcosystemSearch}
+																results={ecosystemSearchResultsFiltered()}
+																isLoading={isSearchingEcosystems()}
+																onSelect={handleAddEcosystem}
+																placeholder="Search ecosystems to add..."
+															/>
+														</Show>
+														<EcosystemGrid
+															ecosystems={ecosystems()}
+															ecosystemsByTag={ecosystemsByTag()}
+															isOwner={isOwner()}
+															onRemove={setRemoveEcosystemId}
+														/>
+													</Stack>
+												}
+											>
+												<Stack spacing="md">
+													<Show when={isOwner()}>
+														<SearchInput
+															value={packageSearch()}
+															onValueChange={setPackageSearch}
+															results={packageSearchResults()}
+															isLoading={isSearching()}
+															onSelect={handleAddPackage}
+															placeholder="Search packages to add..."
+														/>
+													</Show>
+													<PackageGrid
+														packages={packages()}
+														packagesByTag={packagesByTag()}
+														isOwner={isOwner()}
+														onRemove={setRemovePackageId}
+													/>
+												</Stack>
+											</Show>
+										</div>
+									</Card>
 								</>
 							)}
 						</Show>
@@ -375,6 +555,19 @@ export const ProjectDetail = () => {
 				confirmText="Remove"
 				variant="danger"
 				onConfirm={confirmRemovePackage}
+			/>
+
+			{/* Remove Ecosystem Dialog */}
+			<AlertDialog
+				open={removeEcosystemId() !== null}
+				onOpenChange={(open) => {
+					if (!open) setRemoveEcosystemId(null);
+				}}
+				title="Remove Ecosystem"
+				description="Remove this ecosystem from the project?"
+				confirmText="Remove"
+				variant="danger"
+				onConfirm={confirmRemoveEcosystem}
 			/>
 		</Layout>
 	);

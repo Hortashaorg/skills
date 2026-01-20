@@ -35,38 +35,38 @@ Ecosystems represent product/technology identities (React, AWS, TalosOS, Drizzle
 - [ ] Admin: create/edit ecosystems directly (deferred - managed through suggestions)
 
 #### Frontend - Projects
-- [ ] Add ecosystem to project (like adding packages)
-- [ ] Display ecosystems in project detail
-- [ ] Differentiate ecosystems vs packages in UI
+- [x] Add ecosystem to project (like adding packages)
+- [x] Display ecosystems in project detail
+- [x] Differentiate ecosystems vs packages in UI (tabs)
 
 ### Unified Entity Architecture
 
 Consistent UX patterns for foundation (packages, ecosystems, tags) vs value (projects) layer associations.
 
 #### Phase 0: Schema Update
-- [ ] Add `justification` field to suggestions table
-- [ ] Update suggestion mutators to accept justification param
+- [x] Add `justification` field to suggestions table
+- [x] Update suggestion mutators to accept justification param
 
 #### Phase 1: Foundation Components
-- [ ] `EntityFilter` - Unified tag filter (replaces TagFilter + EcosystemTagFilter)
-- [ ] `EditableField` - Pencil icon wrapper for suggestible content
+- [x] `EntityFilter` - Unified tag filter (replaces TagFilter + EcosystemTagFilter)
+- [x] `EditableField` - Pencil icon wrapper for suggestible content
 
 #### Phase 2: EntityPicker
-- [ ] `EntityPicker` component with inline/dialog modes
-- [ ] Unified search in projects (finds packages + ecosystems)
-- [ ] `EcosystemGrid` for projects page
+- [x] `EntityPicker` component with inline/dialog modes
+- [x] Unified search in projects (separate tabs for packages + ecosystems)
+- [x] `EcosystemGrid` for projects page
 
 #### Phase 3: SuggestionModal
-- [ ] `SuggestionModal` - View pending + create suggestions with justification
-- [ ] Remove CurateTab pattern from package/ecosystem pages
-- [ ] Add EditableField + SuggestionModal to package/ecosystem detail pages
+- [x] `SuggestionModal` - View pending + create suggestions with justification
+- [x] Remove CurateTab pattern from package/ecosystem pages
+- [x] Add EditableField + SuggestionModal to package/ecosystem detail pages
 
 #### Phase 4: Ecosystem Page Redesign
-- [ ] Header: name, description (editable), website, upvote, "+ Add to project"
-- [ ] Packages grouped by tags (like project page)
-- [ ] "Suggest package" opens SuggestionModal
+- [x] Header: name, description (editable), website, upvote, "+ Add to project"
+- [x] Packages grouped by tags (like project page)
+- [x] "Suggest package" opens SuggestionModal
 
-#### Phase 5: Entity Registry
+#### Phase 5: Entity Registry (deferred)
 - [ ] Entity type system in `packages/database/entities/`
 - [ ] Document pattern for adding new foundation types
 
