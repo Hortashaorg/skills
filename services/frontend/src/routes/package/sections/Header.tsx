@@ -105,7 +105,7 @@ export const Header = (props: HeaderProps) => {
 	);
 
 	// Projects for add-to-project
-	const [projects] = useQuery(() => queries.projects.mine());
+	const [projects] = useQuery(() => queries.projects.mine({}));
 	const [addingToProject, setAddingToProject] = createSignal<string | null>(
 		null,
 	);

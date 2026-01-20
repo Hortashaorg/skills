@@ -1,6 +1,14 @@
 import type { Row } from "@package/database/client";
 import { mutators, queries, useQuery, useZero } from "@package/database/client";
-import { createMemo, createSignal, For, Show } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	Index,
+	on,
+	Show,
+} from "solid-js";
 import {
 	EntityFilter,
 	type FilterOption,
@@ -16,6 +24,7 @@ import { Text } from "@/components/primitives/text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	TextField,
 	TextFieldInput,
@@ -27,8 +36,14 @@ import {
 	createUrlArraySignal,
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import {
+	ECOSYSTEMS_AUTO_LOAD_LIMIT,
+	ECOSYSTEMS_INITIAL_LIMIT,
+	ECOSYSTEMS_LOAD_MORE_COUNT,
+} from "@/lib/constants";
 
 type EcosystemTag = Row["ecosystemTags"] & {
 	tag?: Row["tags"];
@@ -40,6 +55,22 @@ type Ecosystem = Row["ecosystems"] & {
 	ecosystemTags?: readonly EcosystemTag[];
 };
 
+const SkeletonCard = () => (
+	<Card padding="md" class="h-full">
+		<div class="flex flex-col h-full gap-2">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center gap-2">
+					<Skeleton width="120px" height="20px" />
+					<Skeleton width="40px" height="20px" />
+				</div>
+				<Skeleton width="50px" height="28px" variant="rectangular" />
+			</div>
+			<Skeleton width="100%" height="16px" />
+			<Skeleton width="75%" height="16px" />
+		</div>
+	</Card>
+);
+
 export const Ecosystems = () => {
 	const zero = useZero();
 	const isLoggedIn = () => zero().userID !== "anon";
@@ -48,10 +79,21 @@ export const Ecosystems = () => {
 	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
 	const searchTerm = () => searchValue().trim();
 
+	// Infinite scroll state
+	const scroll = useInfiniteScroll({
+		initialLimit: ECOSYSTEMS_INITIAL_LIMIT,
+		loadMoreCount: ECOSYSTEMS_LOAD_MORE_COUNT,
+		autoLoadLimit: ECOSYSTEMS_AUTO_LOAD_LIMIT,
+	});
+
+	// Reset limit when filters change
+	createEffect(on([searchValue, selectedTagSlugs], () => scroll.resetLimit()));
+
 	const [ecosystems, ecosystemsResult] = useQuery(() =>
 		queries.ecosystems.search({
 			query: searchTerm() || undefined,
 			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
+			limit: scroll.limit(),
 		}),
 	);
 	const [pendingSuggestions] = useQuery(() =>
@@ -71,6 +113,8 @@ export const Ecosystems = () => {
 	});
 
 	const isLoading = () => ecosystemsResult().type !== "complete";
+	const ecosystemCount = () => ecosystems()?.length ?? 0;
+	const canLoadMore = () => scroll.canLoadMore(ecosystemCount());
 
 	const pendingEcosystems = () =>
 		(pendingSuggestions() ?? [])
@@ -143,13 +187,16 @@ export const Ecosystems = () => {
 		setDialogOpen(true);
 	};
 
+	const showResults = () =>
+		ecosystemCount() > 0 || pendingEcosystems().length > 0;
+
 	return (
 		<Layout>
 			<SEO
 				title="Ecosystems"
 				description="Explore technology ecosystems like React, AWS, Kubernetes and discover their related packages."
 			/>
-			<Container size="md">
+			<Container size="lg">
 				<Stack spacing="xl" class="py-8">
 					<Stack spacing="sm" align="center">
 						<Heading level="h1" class="text-center">
@@ -176,11 +223,16 @@ export const Ecosystems = () => {
 						/>
 					</Flex>
 
-					<Show
-						when={!isLoading()}
-						fallback={<Text color="muted">Loading ecosystems...</Text>}
-					>
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					{/* Initial loading skeleton */}
+					<Show when={isLoading() && !showResults()}>
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+							<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
+						</div>
+					</Show>
+
+					{/* Results */}
+					<Show when={!isLoading() || showResults()}>
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							{/* Suggest ecosystem card - always visible */}
 							<Card padding="md" class="flex flex-col justify-center">
 								<Stack spacing="sm">
@@ -235,12 +287,32 @@ export const Ecosystems = () => {
 							<For each={ecosystems()}>
 								{(ecosystem) => <EcosystemCardWrapper ecosystem={ecosystem} />}
 							</For>
+
+							{/* Auto-load skeletons */}
+							<Show when={canLoadMore() && !scroll.pastAutoLoadLimit()}>
+								<Index each={Array(3)}>{() => <SkeletonCard />}</Index>
+							</Show>
 						</div>
 
-						<Show when={(ecosystems()?.length ?? 0) > 0}>
-							<Text size="sm" color="muted" class="text-center">
-								Showing {ecosystems()?.length} ecosystems
-							</Text>
+						{/* Manual load more button */}
+						<Show when={canLoadMore() && scroll.pastAutoLoadLimit()}>
+							<div class="flex justify-center pt-4">
+								<Button variant="outline" onClick={scroll.loadMore}>
+									Load more ecosystems
+								</Button>
+							</div>
+						</Show>
+
+						{/* Sentinel for intersection observer */}
+						<div ref={scroll.setSentinelRef} class="h-1" />
+
+						{/* Back to top button */}
+						<Show when={scroll.showBackToTop()}>
+							<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+								<Button variant="info" size="md" onClick={scroll.scrollToTop}>
+									↑ Back to top
+								</Button>
+							</div>
 						</Show>
 					</Show>
 				</Stack>

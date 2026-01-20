@@ -255,7 +255,7 @@ export const Packages = () => {
 				title="Browse Packages"
 				description="Search and discover npm packages. Request packages, view details, and track dependencies."
 			/>
-			<Container size="md">
+			<Container size="lg">
 				<Stack spacing="xl" class="py-8">
 					<Stack spacing="sm" align="center">
 						<Heading level="h1" class="text-center">

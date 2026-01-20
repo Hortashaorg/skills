@@ -184,13 +184,13 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 
 			<Match when={props.isLoading && !showResults()}>
 				{/* Initial loading - show skeleton grid */}
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					<Index each={Array(SKELETON_COUNT)}>{() => <SkeletonCard />}</Index>
 				</div>
 			</Match>
 
 			<Match when={showResults()}>
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					{/* Exact matches first (can be multiple across registries) */}
 					<For each={props.exactMatches}>
 						{(pkg) => <ExactMatchCard pkg={pkg} />}
