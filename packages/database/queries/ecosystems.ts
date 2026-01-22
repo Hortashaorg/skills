@@ -17,7 +17,13 @@ export const bySlug = defineQuery(
 		return zql.ecosystems
 			.where("slug", args.slug)
 			.related("upvotes")
-			.related("ecosystemPackages", (ep) => ep.related("package"))
+			.related("ecosystemPackages", (ep) =>
+				ep.related("package", (pkg) =>
+					pkg
+						.related("packageTags", (pt) => pt.related("tag"))
+						.related("upvotes"),
+				),
+			)
 			.related("ecosystemTags", (et) => et.related("tag"));
 	},
 );
@@ -26,7 +32,13 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.ecosystems
 		.where("id", args.id)
 		.related("upvotes")
-		.related("ecosystemPackages", (ep) => ep.related("package"))
+		.related("ecosystemPackages", (ep) =>
+			ep.related("package", (pkg) =>
+				pkg
+					.related("packageTags", (pt) => pt.related("tag"))
+					.related("upvotes"),
+			),
+		)
 		.related("ecosystemTags", (et) => et.related("tag"));
 });
 
