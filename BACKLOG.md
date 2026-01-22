@@ -49,6 +49,8 @@ Enable community discussions and comments across the platform.
 - [ ] Package categories (ORM, HTTP Client, etc.) - compare packages within use cases, upvote ranking, discussion
 - [ ] Follow packages/categories - notifications for new versions, discussions, replies
 - [ ] Contextual discussions - comments on packages, categories, projects (no free-form posting)
+- [ ] Profile suggestion history - view approved/rejected suggestions by whom
+- [ ] Ecosystem learning resources / getting started section
 
 ---
 

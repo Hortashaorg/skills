@@ -4,103 +4,20 @@
 
 ---
 
-## Sprint 10: Ecosystems & Code Quality
+## Sprint 11: Tech Debt
 
-### Ecosystems Feature
+Dedicated sprint for code quality, refactoring, and dependency maintenance.
 
-Ecosystems represent product/technology identities (React, AWS, TalosOS, Drizzle) - not always packages themselves, but containing related packages, plugins, adapters, CLI tools.
-
-#### Schema
-- [x] `ecosystems` table (id, name, slug, description, website, upvoteCount, createdAt, updatedAt)
-- [x] `ecosystem_packages` junction (ecosystemId, packageId)
-- [x] `ecosystem_upvotes` (ecosystemId, accountId)
-- [x] `project_ecosystems` junction (projectId, ecosystemId)
-- [x] Ecosystem suggestions (extend existing suggestion system)
-
-#### Backend
-- [x] Queries: list, bySlug, search, byPackageId
-- [x] Mutators: create, update, addPackage, removePackage (admin-only), upvote
-
-#### Frontend - Browsing
-- [x] `/ecosystems` listing page (upvotes, package count)
-- [x] `/ecosystem/:slug` detail page
-  - [x] Description and website link
-  - [x] Associated packages grid
-  - [x] Upvote button
-  - [ ] Learning resources / getting started section (future)
-
-#### Frontend - Curation
-- [x] Suggest new ecosystem (community)
-- [x] Suggest package-ecosystem association
-
-#### Frontend - Projects
-- [x] Add ecosystem to project (like adding packages)
-- [x] Display ecosystems in project detail
-- [x] Differentiate ecosystems vs packages in UI (tabs)
-
-### Unified Entity Architecture
-
-Consistent UX patterns for foundation (packages, ecosystems, tags) vs value (projects) layer associations.
-
-#### Phase 0: Schema Update
-- [x] Add `justification` field to suggestions table
-- [x] Update suggestion mutators to accept justification param
-
-#### Phase 1: Foundation Components
-- [x] `EntityFilter` - Unified tag filter (replaces TagFilter + EcosystemTagFilter)
-- [x] `EditableField` - Pencil icon wrapper for suggestible content
-
-#### Phase 2: EntityPicker
-- [x] `EntityPicker` component with inline/dialog modes
-- [x] Unified search in projects (separate tabs for packages + ecosystems)
-- [x] `EcosystemGrid` for projects page
-
-#### Phase 3: SuggestionModal
-- [x] `SuggestionModal` - View pending + create suggestions with justification
-- [x] Remove CurateTab pattern from package/ecosystem pages
-- [x] Add EditableField + SuggestionModal to package/ecosystem detail pages
-
-#### Phase 4: Ecosystem Page Redesign
-- [x] Header: name, description (editable), website, upvote, "+ Add to project"
-- [x] Packages grouped by tags (like project page)
-- [x] "Suggest package" opens SuggestionModal
-
-### UI Consistency: Packages vs Ecosystems vs Projects
-
-Align detail page layouts for visual consistency across entity types.
-
-#### Design Decisions (Resolved)
-- **Container:** `lg` (wide) for all detail pages
-- **Header:** Bare (no card wrapper) for cleaner look
-- **Upvote:** Icon+count style (UpvoteButton component) everywhere
-- **Badge:** Registry badge for packages only, none for ecosystems
-- **Tags:** Below description + links (supplementary info)
-- **Links:** "Homepage: <url>" format with visible URL
-- **Actions:** "Add to project" dropdown for both packages and ecosystems
-
-#### Layout Implementation
-- [x] Package page: Remove card wrapper from header, change container to `lg`
-- [x] Ecosystem page: Use UpvoteButton, add "Add to project", format website as "Homepage: <url>", move tags below links
-
-#### Missing Features (Future)
-- [x] Add ecosystem to project from ecosystem page (like packages "Add to project")
-- [x] Remove tags from packages via suggestion system
-- [x] Remove tags from ecosystems via suggestion system
-- [x] Fix ecosystem tags display - was missing packageTags relation in query
-
-### Admin & Curation
-
-- [x] Auto-approve admin suggestions: Admin/power user suggestions apply immediately
-  - Still recorded as suggestion for audit trail
-  - Enables trusted users to curate without approval workflow
-  - Roles: "admin" and "curator" (via Zitadel JWT)
-- [ ] Profile suggestion history for review (approved/rejected by whom)
-
-### Code Quality
-
+### Dependencies
 - [ ] Upgrade dependencies
+
+### Hooks to Extract
 - [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
+
+### Utilities to Extract
 - [ ] `lib/package-formatting.ts` - Extract status label/description logic
+
+### Files to Split
 - [ ] Split `routes/me/index.tsx` (430 lines) into sections
 
 ---
@@ -112,6 +29,17 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 10: Ecosystems & Code Quality
+
+- Ecosystems feature: schema, queries, mutators, browsing, curation, projects integration
+- Unified Entity Architecture: EntityFilter, EditableField, EntityPicker, SuggestionModal
+- Ecosystem page redesign with packages grouped by tags
+- UI consistency across package/ecosystem/project detail pages
+- Auto-approve suggestions for admin/curator roles (power user pattern)
+- Tag removal via suggestion system (packages + ecosystems)
+- Tag removal confirmation modal with justification
+- Fix aria-hidden warnings (Select portal, dialog focus)
 
 ### Sprint 9: Tech Debt & Polish
 
