@@ -4,21 +4,87 @@
 
 ---
 
-## Sprint 11: Tech Debt
+## Sprint 11: Tech Debt & DX
 
-Dedicated sprint for code quality, refactoring, and dependency maintenance.
+Dedicated sprint for code quality, developer experience, and polish.
 
-### Dependencies
-- [x] Upgrade dependencies
+### Component Accessibility
+- [ ] Audit components for aria-hidden warnings - document patterns that cause issues
+- [ ] Consider preventive patterns (blur on close, portal usage guidelines)
 
-### Hooks to Extract
+### Suggestion System Improvements
+
+#### Bugs
+- [ ] Auto-approved suggestions show "pending review" toast - should say "applied" or similar
+- [ ] Verify approval voting process still works correctly
+
+#### UX
+- [ ] Show justification in curation voting UI (may be missing or outdated)
+- [ ] Add "contributor" role that skips review (between user and curator)
+
+#### Architecture
+- [ ] Reduce suggestion boilerplate - analyze moving parts:
+  - Schema (payload type, validation)
+  - Mutator (create suggestion)
+  - Resolution handler (apply when approved)
+  - Display (type label, formatting)
+  - Frontend (modal, form, voting)
+- [ ] Document or codegen pattern for adding new suggestion types
+
+### Signed-Out UX Cleanup
+- [ ] Hide "Add tag" button when signed out (don't show disabled with "sign in")
+- [ ] Audit "sign in to..." patterns - reduce redundant CTAs, keep only essential ones
+
+### Extract Reusable Hooks
+
+Repeated patterns identified across multiple files:
+
+- [ ] `useConfirmationDialog<T>()` - Modal state + data + handlers (repeated 5+ times)
+  - Currently: manual signals for open, data, justification in each component
+  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx
+
+- [ ] `useEntityTagSuggestions()` - Tag suggestion + voting logic (~200 LOC duplicated)
+  - Query pending suggestions, filter existing/pending/available tags, format options
+  - Files: package/Header.tsx (140-244), ecosystem/index.tsx (96-341)
+
+- [ ] `groupByTags<T>()` utility - Group entities by their tags
+  - Identical grouping logic in projects/detail.tsx and EcosystemPackages.tsx
+  - Returns { groups, sortedTags, uncategorized }
+
+### Extract Reusable Components
+
+- [ ] `AddToProjectPopover` - Entity → project linking (~80 LOC duplicated)
+  - Query user projects, check if entity in project, handle mutation
+  - Files: package/Header.tsx (356-452), EcosystemHeader.tsx (64-114)
+
+- [ ] Centralize skeleton components - Currently inline in each page
+  - ProfileSkeleton, ProjectCardSkeleton, EcosystemSkeleton, PackageDetailSkeleton
+  - Move to `components/ui/skeleton/` or create variants
+
+### Standardize Patterns
+
+- [ ] Modal state management - Use ID-based pattern consistently
+  - Current: Mix of boolean signals vs ID-based (null = closed)
+  - Standardize on: `const [removeId, setRemoveId] = createSignal<string | null>(null)`
+
+- [ ] Loading state checks - Consider `useQueryLoading()` helper or use `QueryBoundary` more
+
+### Split Large Components (Priority Order)
+
+| File | Lines | Action |
+|------|-------|--------|
+| `package/sections/Header.tsx` | 656 | Split: Header + TagManager + ProjectPopover |
+| `me/projects/detail.tsx` | 574 | Extract grouping hooks + modal manager |
+| `ecosystem/index.tsx` | 568 | Extract suggestion modal patterns |
+| `home/sections/ResultsGrid.tsx` | 381 | Extract request dialog, improve scroll |
+| `me/index.tsx` | 430 | Split into sections |
+
+### Code Quality (Original Items)
 - [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
-
-### Utilities to Extract
 - [ ] `lib/package-formatting.ts` - Extract status label/description logic
 
-### Files to Split
-- [ ] Split `routes/me/index.tsx` (430 lines) into sections
+### Dependencies
+- [ ] Upgrade dependencies (recurring)
 
 ---
 
@@ -40,6 +106,7 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 - Tag removal via suggestion system (packages + ecosystems)
 - Tag removal confirmation modal with justification
 - Fix aria-hidden warnings (Select portal, dialog focus)
+- Dependency upgrades
 
 ### Sprint 9: Tech Debt & Polish
 
