@@ -169,6 +169,15 @@ export const updateWithQuery = defineMutator(
 );
 ```
 
+**Zero mutations are fire-and-forget:** Client-side `zero.mutate.*` calls are NOT promises. They apply locally immediately and sync in background:
+```tsx
+// ❌ WRONG: await has no effect
+await zero.mutate.packages.upvote({ packageId });
+
+// ✅ CORRECT: mutations are synchronous, no await needed
+zero.mutate.packages.upvote({ packageId });
+```
+
 **Cross-table mutations:** To mutate table B from table A's mutator, register table B in mutators/index.ts (even with empty `{}`):
 ```tsx
 export const mutators = defineMutators({
@@ -237,6 +246,7 @@ export const channelDependencies = pgTable("channel_dependencies", {
 - Regular tables: Always include `updatedAt` in mutations
 - Join tables: Only `createdAt`, deleted not updated
 - Immutable tables: Only `createdAt`, never update these records
+- Upvote tables: Only `createdAt`, never update parent entity's `updatedAt` (upvotes shouldn't affect "Recently updated" lists)
 
 ## After Changes
 

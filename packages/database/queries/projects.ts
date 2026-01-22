@@ -2,12 +2,25 @@ import { z } from "@package/common";
 import { defineQuery } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
 
-export const mine = defineQuery(({ ctx }) => {
-	return zql.projects
-		.where("accountId", ctx.userID)
-		.orderBy("updatedAt", "desc")
-		.related("projectPackages", (pp) => pp.related("package"));
-});
+export const mine = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		limit: z.number().default(50),
+	}),
+	({ ctx, args }) => {
+		let q = zql.projects.where("accountId", ctx.userID);
+
+		if (args.query?.trim()) {
+			q = q.where("name", "ILIKE", `%${args.query.trim()}%`);
+		}
+
+		return q
+			.orderBy("updatedAt", "desc")
+			.limit(args.limit)
+			.related("projectPackages", (pp) => pp.related("package"))
+			.related("projectEcosystems", (pe) => pe.related("ecosystem"));
+	},
+);
 
 export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.projects
@@ -19,14 +32,33 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 					.related("upvotes"),
 			),
 		)
+		.related("projectEcosystems", (pe) =>
+			pe.related("ecosystem", (eco) =>
+				eco
+					.related("ecosystemTags", (et) => et.related("tag"))
+					.related("upvotes"),
+			),
+		)
 		.related("account")
 		.one();
 });
 
-export const list = defineQuery(() => {
-	return zql.projects
-		.orderBy("updatedAt", "desc")
-		.limit(50)
-		.related("account")
-		.related("projectPackages");
-});
+export const list = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		limit: z.number().default(50),
+	}),
+	({ args }) => {
+		let q = zql.projects;
+
+		if (args.query?.trim()) {
+			q = q.where("name", "ILIKE", `%${args.query.trim()}%`);
+		}
+
+		return q
+			.orderBy("updatedAt", "desc")
+			.limit(args.limit)
+			.related("account")
+			.related("projectPackages");
+	},
+);

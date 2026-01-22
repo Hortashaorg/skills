@@ -1,8 +1,19 @@
 // Pagination & Loading
-export const PACKAGES_INITIAL_LIMIT = 20;
-export const PACKAGES_LOAD_MORE_COUNT = 20;
-export const PACKAGES_AUTO_LOAD_LIMIT = 200;
+// Values must be divisible by 6 (works for both 2-column and 3-column grids)
+export const PACKAGES_INITIAL_LIMIT = 24;
+export const PACKAGES_LOAD_MORE_COUNT = 24;
+export const PACKAGES_AUTO_LOAD_LIMIT = 240;
 export const PACKAGE_SEARCH_LIMIT = 10;
+
+// Ecosystems pagination (same as packages for consistency)
+export const ECOSYSTEMS_INITIAL_LIMIT = 24;
+export const ECOSYSTEMS_LOAD_MORE_COUNT = 24;
+export const ECOSYSTEMS_AUTO_LOAD_LIMIT = 240;
+
+// Projects pagination
+export const PROJECTS_INITIAL_LIMIT = 24;
+export const PROJECTS_LOAD_MORE_COUNT = 24;
+export const PROJECTS_AUTO_LOAD_LIMIT = 240;
 
 // Leaderboard
 export const LEADERBOARD_LIMIT = 50;

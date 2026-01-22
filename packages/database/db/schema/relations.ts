@@ -8,6 +8,13 @@ import {
 	suggestionVotes,
 } from "./curation.ts";
 import {
+	ecosystemPackages,
+	ecosystems,
+	ecosystemTags,
+	ecosystemUpvotes,
+	projectEcosystems,
+} from "./ecosystems.ts";
+import {
 	channelDependencies,
 	packageFetches,
 	packageReleaseChannels,
@@ -21,6 +28,7 @@ import { projectPackages, projects } from "./projects.ts";
 export const accountRelations = relations(account, ({ many, one }) => ({
 	projects: many(projects),
 	upvotes: many(packageUpvotes),
+	ecosystemUpvotes: many(ecosystemUpvotes),
 	suggestions: many(suggestions),
 	suggestionVotes: many(suggestionVotes),
 	contributionEvents: many(contributionEvents),
@@ -40,6 +48,7 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 	fetches: many(packageFetches),
 	upvotes: many(packageUpvotes),
 	projectPackages: many(projectPackages),
+	ecosystemPackages: many(ecosystemPackages),
 	suggestions: many(suggestions),
 }));
 
@@ -52,6 +61,7 @@ export const packageFetchesRelations = relations(packageFetches, ({ one }) => ({
 
 export const tagsRelations = relations(tags, ({ many }) => ({
 	packageTags: many(packageTags),
+	ecosystemTags: many(ecosystemTags),
 }));
 
 export const packageTagsRelations = relations(packageTags, ({ one }) => ({
@@ -108,6 +118,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 		references: [account.id],
 	}),
 	projectPackages: many(projectPackages),
+	projectEcosystems: many(projectEcosystems),
 }));
 
 export const projectPackagesRelations = relations(
@@ -128,6 +139,10 @@ export const suggestionsRelations = relations(suggestions, ({ one, many }) => ({
 	package: one(packages, {
 		fields: [suggestions.packageId],
 		references: [packages.id],
+	}),
+	ecosystem: one(ecosystems, {
+		fields: [suggestions.ecosystemId],
+		references: [ecosystems.id],
 	}),
 	account: one(account, {
 		fields: [suggestions.accountId],
@@ -180,3 +195,64 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 		references: [account.id],
 	}),
 }));
+
+export const ecosystemsRelations = relations(ecosystems, ({ many }) => ({
+	ecosystemPackages: many(ecosystemPackages),
+	ecosystemTags: many(ecosystemTags),
+	upvotes: many(ecosystemUpvotes),
+	projectEcosystems: many(projectEcosystems),
+	suggestions: many(suggestions),
+}));
+
+export const ecosystemPackagesRelations = relations(
+	ecosystemPackages,
+	({ one }) => ({
+		ecosystem: one(ecosystems, {
+			fields: [ecosystemPackages.ecosystemId],
+			references: [ecosystems.id],
+		}),
+		package: one(packages, {
+			fields: [ecosystemPackages.packageId],
+			references: [packages.id],
+		}),
+	}),
+);
+
+export const ecosystemTagsRelations = relations(ecosystemTags, ({ one }) => ({
+	ecosystem: one(ecosystems, {
+		fields: [ecosystemTags.ecosystemId],
+		references: [ecosystems.id],
+	}),
+	tag: one(tags, {
+		fields: [ecosystemTags.tagId],
+		references: [tags.id],
+	}),
+}));
+
+export const ecosystemUpvotesRelations = relations(
+	ecosystemUpvotes,
+	({ one }) => ({
+		ecosystem: one(ecosystems, {
+			fields: [ecosystemUpvotes.ecosystemId],
+			references: [ecosystems.id],
+		}),
+		account: one(account, {
+			fields: [ecosystemUpvotes.accountId],
+			references: [account.id],
+		}),
+	}),
+);
+
+export const projectEcosystemsRelations = relations(
+	projectEcosystems,
+	({ one }) => ({
+		project: one(projects, {
+			fields: [projectEcosystems.projectId],
+			references: [projects.id],
+		}),
+		ecosystem: one(ecosystems, {
+			fields: [projectEcosystems.ecosystemId],
+			references: [ecosystems.id],
+		}),
+	}),
+);

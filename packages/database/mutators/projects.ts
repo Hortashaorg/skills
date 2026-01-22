@@ -45,7 +45,9 @@ export const update = defineMutator(
 		await tx.mutate.projects.update({
 			id: args.id,
 			...(args.name !== undefined && { name: args.name }),
-			...(args.description !== undefined && { description: args.description }),
+			...(args.description !== undefined && {
+				description: args.description.trim() || null,
+			}),
 			updatedAt: now(),
 		});
 	},

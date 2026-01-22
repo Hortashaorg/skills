@@ -1,5 +1,13 @@
 import { queries, useQuery } from "@package/database/client";
-import { batch, createEffect, createSignal, on, untrack } from "solid-js";
+import {
+	batch,
+	createEffect,
+	createMemo,
+	createSignal,
+	on,
+	untrack,
+} from "solid-js";
+import type { FilterOption } from "@/components/composite/entity-filter";
 import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
@@ -44,6 +52,18 @@ export const Packages = () => {
 
 	const effectiveRegistry = (): Registry | undefined =>
 		registryFilter() !== "all" ? (registryFilter() as Registry) : undefined;
+
+	// Tags for filter
+	const [tagsWithCounts] = useQuery(queries.tags.listWithCounts);
+	const tagOptions = createMemo((): readonly FilterOption[] => {
+		const tags = tagsWithCounts();
+		if (!tags) return [];
+		return tags.map((tag) => ({
+			value: tag.slug,
+			label: tag.name,
+			count: tag.packageTags?.length ?? 0,
+		}));
+	});
 
 	// Recent packages when no filters
 	const [recentPackages, recentResult] = useQuery(() =>
@@ -235,7 +255,7 @@ export const Packages = () => {
 				title="Browse Packages"
 				description="Search and discover npm packages. Request packages, view details, and track dependencies."
 			/>
-			<Container size="md">
+			<Container size="lg">
 				<Stack spacing="xl" class="py-8">
 					<Stack spacing="sm" align="center">
 						<Heading level="h1" class="text-center">
@@ -250,6 +270,7 @@ export const Packages = () => {
 						searchValue={searchValue()}
 						registryFilter={registryFilter()}
 						selectedTagSlugs={selectedTagSlugs()}
+						tagOptions={tagOptions()}
 						onSearchChange={setSearchValue}
 						onRegistryChange={setRegistryFilter}
 						onTagsChange={setSelectedTagSlugs}

@@ -102,10 +102,19 @@ Zod is already used for query/mutator args in `@package/database`. Use the same 
 
 ## Gotchas
 
-### Always include `updatedAt` in mutations
+### Zero mutations are fire-and-forget (no await)
+```tsx
+zero.mutate.packages.upvote({ packageId }); // ✅ applies locally, syncs in background
+await zero.mutate.packages.upvote({ packageId }); // ❌ await does nothing, mutations aren't promises
+```
+
+### Always include `updatedAt` in mutations (except upvotes)
 ```tsx
 await tx.mutate.table.update({ id, name, updatedAt: Date.now() }); // ✅
 await tx.mutate.table.update({ id, name }); // ❌ won't sync
+
+// Exception: upvote tables should NOT update parent entity's updatedAt
+// This prevents "Recently updated" lists from jumping when users upvote
 ```
 
 ### Always `credentials: "include"` for auth

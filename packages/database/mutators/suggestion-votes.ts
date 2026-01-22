@@ -127,8 +127,8 @@ export const vote = defineMutator(
 						: "Suggestion rejected",
 				message:
 					resolvedStatus === "approved"
-						? "Your tag suggestion was approved and applied."
-						: "Your tag suggestion was rejected by the community.",
+						? "Your suggestion was approved and applied."
+						: "Your suggestion was rejected by the community.",
 				read: false,
 				relatedId: args.suggestionId,
 				createdAt: notificationRecord.now,

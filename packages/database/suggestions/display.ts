@@ -15,6 +15,11 @@ export const suggestionTypeMeta: Record<
 	}
 > = {
 	add_tag: { label: "Add tag" },
+	remove_tag: { label: "Remove tag" },
+	create_ecosystem: { label: "Create ecosystem" },
+	add_ecosystem_package: { label: "Add to ecosystem" },
+	add_ecosystem_tag: { label: "Tag ecosystem" },
+	remove_ecosystem_tag: { label: "Remove tag" },
 };
 
 /** Get label for a suggestion type */
@@ -28,6 +33,8 @@ export function getSuggestionTypeLabel(type: string): string {
 /** Context for formatting suggestion descriptions */
 interface SuggestionContext {
 	tags?: Map<string, { name: string }>;
+	packages?: Map<string, { name: string }>;
+	ecosystems?: Map<string, { name: string }>;
 }
 
 /**
@@ -43,7 +50,26 @@ export function formatSuggestionDescription(
 	payload: unknown,
 	context: SuggestionContext,
 ): string {
-	if (type === "add_tag") {
+	if (type === "add_tag" || type === "remove_tag") {
+		const tagId = (payload as { tagId?: string })?.tagId;
+		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
+		return tagName ?? "Unknown tag";
+	}
+
+	if (type === "create_ecosystem") {
+		const name = (payload as { name?: string })?.name;
+		return name ?? "Unknown ecosystem";
+	}
+
+	if (type === "add_ecosystem_package") {
+		const packageId = (payload as { packageId?: string })?.packageId;
+		const packageName = packageId
+			? context.packages?.get(packageId)?.name
+			: undefined;
+		return packageName ?? "Unknown package";
+	}
+
+	if (type === "add_ecosystem_tag" || type === "remove_ecosystem_tag") {
 		const tagId = (payload as { tagId?: string })?.tagId;
 		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
 		return tagName ?? "Unknown tag";
@@ -65,6 +91,26 @@ export function formatSuggestionAction(
 
 	if (type === "add_tag") {
 		return `Add tag "${description}"`;
+	}
+
+	if (type === "remove_tag") {
+		return `Remove tag "${description}"`;
+	}
+
+	if (type === "create_ecosystem") {
+		return `Create ecosystem "${description}"`;
+	}
+
+	if (type === "add_ecosystem_package") {
+		return `Add package "${description}"`;
+	}
+
+	if (type === "add_ecosystem_tag") {
+		return `Add tag "${description}"`;
+	}
+
+	if (type === "remove_ecosystem_tag") {
+		return `Remove tag "${description}"`;
 	}
 
 	return description;

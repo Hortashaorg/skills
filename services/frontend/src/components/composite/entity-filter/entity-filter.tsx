@@ -1,48 +1,48 @@
 import { Popover } from "@kobalte/core/popover";
-import { queries, useQuery } from "@package/database/client";
 import { createMemo, For, Show } from "solid-js";
 import { CheckIcon, ChevronDownIcon } from "@/components/primitives/icon";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export interface TagFilterProps {
-	selectedTagSlugs: string[];
-	onTagsChange: (slugs: string[]) => void;
+export interface FilterOption {
+	value: string;
+	label: string;
+	count: number;
 }
 
-export const TagFilter = (props: TagFilterProps) => {
-	const [tags] = useQuery(queries.tags.listWithCounts);
+export interface EntityFilterProps {
+	label?: string;
+	options: readonly FilterOption[];
+	selectedSlugs: string[];
+	onSelectionChange: (slugs: string[]) => void;
+}
 
-	const tagOptions = createMemo(() => {
-		return (tags() || [])
-			.map((tag) => ({
-				value: tag.slug,
-				label: tag.name,
-				count: tag.packageTags?.length ?? 0,
-			}))
+export const EntityFilter = (props: EntityFilterProps) => {
+	const sortedOptions = createMemo(() =>
+		[...props.options]
 			.filter((t) => t.count > 0)
-			.sort((a, b) => b.count - a.count);
-	});
+			.sort((a, b) => b.count - a.count),
+	);
 
 	const selectedLabels = createMemo(() => {
-		const selected = props.selectedTagSlugs;
-		const options = tagOptions();
+		const selected = props.selectedSlugs;
+		const options = sortedOptions();
 		return options
 			.filter((t) => selected.includes(t.value))
 			.map((t) => t.label);
 	});
 
-	const toggleTag = (slug: string) => {
-		const current = props.selectedTagSlugs;
+	const toggleOption = (slug: string) => {
+		const current = props.selectedSlugs;
 		if (current.includes(slug)) {
-			props.onTagsChange(current.filter((s) => s !== slug));
+			props.onSelectionChange(current.filter((s) => s !== slug));
 		} else {
-			props.onTagsChange([...current, slug]);
+			props.onSelectionChange([...current, slug]);
 		}
 	};
 
 	const clearAll = () => {
-		props.onTagsChange([]);
+		props.onSelectionChange([]);
 	};
 
 	return (
@@ -61,7 +61,7 @@ export const TagFilter = (props: TagFilterProps) => {
 				)}
 			>
 				<span class="text-on-surface-subtle dark:text-on-surface-dark-subtle">
-					Tags
+					{props.label ?? "Tags"}
 				</span>
 				<Show when={selectedLabels().length > 0}>
 					<Badge size="sm" variant="secondary">
@@ -84,14 +84,14 @@ export const TagFilter = (props: TagFilterProps) => {
 					)}
 				>
 					<Show
-						when={tagOptions().length > 0}
+						when={sortedOptions().length > 0}
 						fallback={
 							<div class="px-3 py-2 text-sm text-on-surface-muted dark:text-on-surface-dark-muted">
 								No tags available
 							</div>
 						}
 					>
-						<Show when={props.selectedTagSlugs.length > 0}>
+						<Show when={props.selectedSlugs.length > 0}>
 							<button
 								type="button"
 								onClick={clearAll}
@@ -105,14 +105,14 @@ export const TagFilter = (props: TagFilterProps) => {
 							</button>
 							<div class="h-px bg-outline dark:bg-outline-dark my-1" />
 						</Show>
-						<For each={tagOptions()}>
-							{(tag) => {
+						<For each={sortedOptions()}>
+							{(option) => {
 								const isSelected = () =>
-									props.selectedTagSlugs.includes(tag.value);
+									props.selectedSlugs.includes(option.value);
 								return (
 									<button
 										type="button"
-										onClick={() => toggleTag(tag.value)}
+										onClick={() => toggleOption(option.value)}
 										class={cn(
 											"w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded-sm",
 											"text-on-surface dark:text-on-surface-dark",
@@ -137,9 +137,9 @@ export const TagFilter = (props: TagFilterProps) => {
 												/>
 											</Show>
 										</span>
-										<span class="flex-1">{tag.label}</span>
+										<span class="flex-1">{option.label}</span>
 										<span class="text-on-surface-muted dark:text-on-surface-dark-muted">
-											{tag.count}
+											{option.count}
 										</span>
 									</button>
 								);

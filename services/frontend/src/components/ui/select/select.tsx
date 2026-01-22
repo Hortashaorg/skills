@@ -56,9 +56,8 @@ const selectContentVariants = cva([
 	"ui-expanded:animate-in",
 	"ui-expanded:fade-in-0",
 	"ui-expanded:zoom-in-95",
-	"ui-closed:animate-out",
-	"ui-closed:fade-out-0",
-	"ui-closed:zoom-out-95",
+	// Exit animation removed to prevent aria-hidden warning when Select
+	// is inside a Dialog - the listbox retains focus during close animation
 ]);
 
 const selectItemVariants = cva([
@@ -185,11 +184,9 @@ export function Select<T extends string>(props: SelectProps<T>) {
 					<ChevronDownIcon size="sm" />
 				</SelectPrimitive.Icon>
 			</SelectPrimitive.Trigger>
-			<SelectPrimitive.Portal>
-				<SelectPrimitive.Content class={cn(selectContentVariants())}>
-					<SelectPrimitive.Listbox class="max-h-60 overflow-auto p-1" />
-				</SelectPrimitive.Content>
-			</SelectPrimitive.Portal>
+			<SelectPrimitive.Content class={cn(selectContentVariants())}>
+				<SelectPrimitive.Listbox class="max-h-60 overflow-auto p-1" />
+			</SelectPrimitive.Content>
 		</SelectPrimitive>
 	);
 }

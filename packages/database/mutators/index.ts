@@ -1,9 +1,13 @@
 import { defineMutators } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountMutators from "./account.ts";
+import * as ecosystemPackagesMutators from "./ecosystem-packages.ts";
+import * as ecosystemUpvotesMutators from "./ecosystem-upvotes.ts";
+import * as ecosystemsMutators from "./ecosystems.ts";
 import * as notificationsMutators from "./notifications.ts";
 import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packagesMutators from "./packages.ts";
+import * as projectEcosystemsMutators from "./project-ecosystems.ts";
 import * as projectPackagesMutators from "./project-packages.ts";
 import * as projectsMutators from "./projects.ts";
 import * as suggestionVotesMutators from "./suggestion-votes.ts";
@@ -39,6 +43,11 @@ export const mutators = defineMutators({
 	},
 	suggestions: {
 		createAddTag: suggestionsMutators.createAddTag,
+		createRemoveTag: suggestionsMutators.createRemoveTag,
+		createCreateEcosystem: suggestionsMutators.createCreateEcosystem,
+		createAddEcosystemPackage: suggestionsMutators.createAddEcosystemPackage,
+		createAddEcosystemTag: suggestionsMutators.createAddEcosystemTag,
+		createRemoveEcosystemTag: suggestionsMutators.createRemoveEcosystemTag,
 	},
 	suggestionVotes: {
 		vote: suggestionVotesMutators.vote,
@@ -49,5 +58,23 @@ export const mutators = defineMutators({
 		markRead: notificationsMutators.markRead,
 		markUnread: notificationsMutators.markUnread,
 		markAllRead: notificationsMutators.markAllRead,
+	},
+	ecosystems: {
+		create: ecosystemsMutators.create,
+		update: ecosystemsMutators.update,
+		remove: ecosystemsMutators.remove,
+	},
+	ecosystemPackages: {
+		add: ecosystemPackagesMutators.add,
+		remove: ecosystemPackagesMutators.remove,
+	},
+	ecosystemUpvotes: {
+		create: ecosystemUpvotesMutators.create,
+		remove: ecosystemUpvotesMutators.remove,
+	},
+	ecosystemTags: {},
+	projectEcosystems: {
+		add: projectEcosystemsMutators.add,
+		remove: projectEcosystemsMutators.remove,
 	},
 });

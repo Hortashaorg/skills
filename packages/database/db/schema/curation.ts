@@ -10,6 +10,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { account } from "./account.ts";
+import { ecosystems } from "./ecosystems.ts";
 import {
 	contributionEventTypeEnum,
 	notificationTypeEnum,
@@ -23,15 +24,15 @@ export const suggestions = pgTable(
 	"suggestions",
 	{
 		id: uuid().primaryKey(),
-		packageId: uuid()
-			.notNull()
-			.references(() => packages.id),
+		packageId: uuid().references(() => packages.id),
+		ecosystemId: uuid().references(() => ecosystems.id),
 		accountId: uuid()
 			.notNull()
 			.references(() => account.id),
 		type: suggestionTypeEnum().notNull(),
 		version: integer().notNull(),
 		payload: jsonb().notNull(),
+		justification: text(),
 		status: suggestionStatusEnum().notNull(),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
@@ -39,6 +40,7 @@ export const suggestions = pgTable(
 	},
 	(table) => [
 		index("idx_suggestions_package_id").on(table.packageId),
+		index("idx_suggestions_ecosystem_id").on(table.ecosystemId),
 		index("idx_suggestions_status").on(table.status),
 		index("idx_suggestions_account_id").on(table.accountId),
 	],

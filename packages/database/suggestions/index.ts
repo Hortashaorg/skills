@@ -15,6 +15,8 @@ export {
 	getSuggestionTypeLabel,
 	suggestionTypeMeta,
 } from "./display.ts";
+// Power user helpers
+export { isPowerUser, type PowerUserRole } from "./power-user.ts";
 // Resolution handlers (backend only)
 export {
 	type ResolutionContext,

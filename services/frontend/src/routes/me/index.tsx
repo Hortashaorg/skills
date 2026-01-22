@@ -73,7 +73,7 @@ export const Profile = () => {
 	});
 
 	const [accounts, accountResult] = useQuery(() => queries.account.myAccount());
-	const [projects] = useQuery(() => queries.projects.mine());
+	const [projects] = useQuery(() => queries.projects.mine({}));
 
 	const account = () => accounts()?.[0];
 	const isLoading = () => accountResult().type !== "complete";
