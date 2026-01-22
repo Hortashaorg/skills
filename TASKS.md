@@ -6,91 +6,161 @@
 
 ## Sprint 11: Tech Debt & DX
 
-Dedicated sprint for code quality, developer experience, and polish.
+Dedicated sprint for code quality, developer experience, and consistency.
 
-### Component Accessibility
-- [ ] Audit components for aria-hidden warnings - document patterns that cause issues
-- [ ] Consider preventive patterns (blur on close, portal usage guidelines)
+### Tier 1: High Impact, Low Effort
 
-### Suggestion System Improvements
+#### Consolidate Duplicate Code
+- [ ] Merge `createPackageUpvote` + `createEcosystemUpvote` into generic `useUpvote(entityType, entity)`
+  - Files: `hooks/createPackageUpvote.ts`, `hooks/createEcosystemUpvote.ts`
+  - ~100 LOC duplication removed
 
-#### Bugs
-- [ ] Auto-approved suggestions show "pending review" toast - should say "applied" or similar
-- [ ] Verify approval voting process still works correctly
+#### Fix Critical UX Bugs
+- [ ] Add user feedback when auth fails in `app-provider.tsx` (currently silent)
+  - Lines 48-62: login and refresh failures log to console but show nothing to user
+  - Add toast or banner: "Sign in failed. Please try again."
+- [ ] Auto-approved suggestions show "pending review" toast - should say "applied"
 
-#### UX
-- [ ] Show justification in curation voting UI (may be missing or outdated)
-- [ ] Add "contributor" role that skips review (between user and curator)
+#### Standardize Error Handling
+- [ ] Replace direct `toast.error()` calls with `handleMutationError()`
+  - Files: `package/Header.tsx`, `ecosystem/index.tsx`, `curation/index.tsx`
+  - Ensures consistent logging + error extraction
 
-#### Architecture
-- [ ] Reduce suggestion boilerplate - analyze moving parts:
-  - Schema (payload type, validation)
-  - Mutator (create suggestion)
-  - Resolution handler (apply when approved)
-  - Display (type label, formatting)
-  - Frontend (modal, form, voting)
-- [ ] Document or codegen pattern for adding new suggestion types
+#### Documentation Gaps
+- [ ] Add hooks catalog to `services/frontend/CLAUDE.md`
+  - Document: `createUrlSignal`, `createUrlStringSignal`, `createUrlArraySignal`
+  - Document: `useInfiniteScroll`, `createPolledValue`, `useDarkMode`
+- [ ] Create `services/backend/CLAUDE.md` - API patterns, auth flow, middleware
+- [ ] Create `services/webhook/CLAUDE.md` - Zitadel integration, event handlers
 
-### Signed-Out UX Cleanup
-- [ ] Hide "Add tag" button when signed out (don't show disabled with "sign in")
-- [ ] Audit "sign in to..." patterns - reduce redundant CTAs, keep only essential ones
+---
 
-### Extract Reusable Hooks
+### Tier 2: Medium Impact, Medium Effort
 
-Repeated patterns identified across multiple files:
+#### Extract Reusable Hooks
 
-- [ ] `useConfirmationDialog<T>()` - Modal state + data + handlers (repeated 5+ times)
+- [ ] `useModalState()` - Modal open/close + optional data (repeated 5+ times)
+  ```tsx
+  const modal = useModalState<string>(); // { isOpen, data, open, close }
+  ```
+  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx, admin/tags
+
+- [ ] `useConfirmationDialog<T>()` - Modal state + justification + handlers
   - Currently: manual signals for open, data, justification in each component
-  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx
 
 - [ ] `useEntityTagSuggestions()` - Tag suggestion + voting logic (~200 LOC duplicated)
-  - Query pending suggestions, filter existing/pending/available tags, format options
+  - Query pending, filter existing/pending/available, format options
   - Files: package/Header.tsx (140-244), ecosystem/index.tsx (96-341)
 
 - [ ] `groupByTags<T>()` utility - Group entities by their tags
-  - Identical grouping logic in projects/detail.tsx and EcosystemPackages.tsx
+  - Identical logic in projects/detail.tsx and EcosystemPackages.tsx
   - Returns { groups, sortedTags, uncategorized }
 
-### Extract Reusable Components
+#### Extract Reusable Components
 
 - [ ] `AddToProjectPopover` - Entity → project linking (~80 LOC duplicated)
-  - Query user projects, check if entity in project, handle mutation
+  - Query user projects, check membership, handle mutation
   - Files: package/Header.tsx (356-452), EcosystemHeader.tsx (64-114)
 
-- [ ] Centralize skeleton components - Currently inline in each page
+- [ ] Centralize skeleton components
   - ProfileSkeleton, ProjectCardSkeleton, EcosystemSkeleton, PackageDetailSkeleton
   - Move to `components/ui/skeleton/` or create variants
 
-### Standardize Patterns
-
-- [ ] Modal state management - Use ID-based pattern consistently
-  - Current: Mix of boolean signals vs ID-based (null = closed)
-  - Standardize on: `const [removeId, setRemoveId] = createSignal<string | null>(null)`
-
-- [ ] Loading state checks - Consider `useQueryLoading()` helper or use `QueryBoundary` more
-
-### Split Large Components (Priority Order)
+#### Split Large Files
 
 | File | Lines | Action |
 |------|-------|--------|
-| `package/sections/Header.tsx` | 656 | Split: Header + TagManager + ProjectPopover |
-| `me/projects/detail.tsx` | 574 | Extract grouping hooks + modal manager |
-| `ecosystem/index.tsx` | 568 | Extract suggestion modal patterns |
-| `home/sections/ResultsGrid.tsx` | 381 | Extract request dialog, improve scroll |
-| `me/index.tsx` | 430 | Split into sections |
+| `package/sections/Header.tsx` | 656 | Split: Header + TagManager + PackageActions |
+| `me/projects/detail.tsx` | 574 | Extract grouping hooks + modal state |
+| `ecosystem/index.tsx` | 568 | Extract state management to hooks |
+| `me/index.tsx` | 430 | Extract ProfileForm section |
+| `home/sections/ResultsGrid.tsx` | 381 | Extract request dialog logic |
 
-### Code Quality (Original Items)
+#### Testing Gaps
+- [ ] Add Dialog component stories (`ui/dialog/dialog.stories.tsx`)
+- [ ] Add interaction tests for EntityPicker, SearchInput keyboard nav
+- [ ] Configure Chromatic for visual regression (addon installed, not configured)
+
+---
+
+### Tier 3: Polish & Consistency
+
+#### Component Consistency
+- [ ] Extract "Add tag" button as Button variant (currently raw HTML with inline styles)
+  - Pattern: `<Button variant="outline" size="xs" class="rounded-full border-dashed">`
+- [ ] Standardize SearchInput usage across all list pages
+  - Packages: uses SearchInput ✓
+  - Ecosystems: uses plain Input ✗
+  - Projects: uses plain Input ✗
+- [ ] Reduce Button variant count from 10 to 7-8 (consider compound patterns)
+
+#### State Pattern Standardization
+- [ ] Modal state: Use ID-based pattern consistently
+  - Standardize: `const [removeId, setRemoveId] = createSignal<string | null>(null)`
+  - Current: Mix of boolean + separate data signal
+- [ ] Form errors: Show inline only (not toast + inline double feedback)
+
+#### Accessibility
+- [ ] Audit components for aria-hidden warnings - document patterns
+- [ ] Document preventive patterns (blur on close, portal usage guidelines)
+
+#### Suggestion System
+- [ ] Verify approval voting process still works correctly
+- [ ] Show justification in curation voting UI
+- [ ] Consider "contributor" role that skips review (between user and curator)
+
+#### Signed-Out UX
+- [ ] Hide "Add tag" button when signed out (don't show disabled)
+- [ ] Audit "sign in to..." patterns - reduce redundant CTAs
+
+#### Code Quality
 - [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
 - [ ] `lib/package-formatting.ts` - Extract status label/description logic
 
-### Dependencies
-- [ ] Upgrade dependencies (recurring)
+---
+
+### Not Needed (Based on Review)
+
+~~Suggestion system architecture overhaul~~ - The backend is well-designed (537 LOC but handles complex multi-step transactions correctly). Focus on frontend patterns (hooks, modals) instead.
 
 ---
 
 ## Backlog
 
 See [BACKLOG.md](./BACKLOG.md) for full list.
+
+---
+
+## Codebase Review Summary (Sprint 11 Context)
+
+### Scores by Area
+
+| Area | Score | Status |
+|------|-------|--------|
+| Component Library | 8.5/10 | Excellent CVA consistency, clear tiers |
+| State Patterns | 6.5/10 | Inconsistent modal/form patterns |
+| Data Layer | 8.5/10 | Strong Zod coverage, good type flow |
+| Documentation | 7/10 | Gaps in backend/webhook/hooks |
+| Error Handling | 7/10 | Centralized utility exists, not always used |
+| File Organization | 9/10 | Clear structure, some large files |
+| Testing | 7.5/10 | 73% story coverage, no backend tests |
+| UX Patterns | 8.5/10 | Consistent cards, upvotes, modals |
+
+### Key Findings
+
+**Strengths:**
+- ResourceCard → PackageCard/EcosystemCard hierarchy is clean
+- Upvote, tags, add-to-project flows identical across entities
+- No circular dependencies, clear module boundaries
+- 40/55 components have Storybook stories (73%)
+- All Zod validation in place for queries/mutators
+
+**Issues:**
+- 2 duplicate hooks (upvote logic)
+- Auth failures silent (no user feedback)
+- 2 error handling patterns in use
+- 5 files over 400 lines need splitting
+- 7+ hooks undocumented
 
 ---
 
@@ -123,8 +193,7 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 - Deleted user display (getDisplayName across components)
 - 6 registry adapters: npm, jsr, nuget, dockerhub, homebrew, archlinux
 - Registry dispatcher routing
-- Tech debt: icon
-consolidation, constants, mutation error handler
+- Tech debt: icon consolidation, constants, mutation error handler
 
 ### Sprint 7: Zitadel Webhooks
 
