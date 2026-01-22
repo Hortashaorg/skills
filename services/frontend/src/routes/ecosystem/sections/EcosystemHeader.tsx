@@ -254,7 +254,8 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 			<Flex gap="xs" wrap="wrap" align="center">
 				<For each={props.tags}>
 					{(tag) => {
-						const isPendingRemoval = () => props.pendingRemoveTagIds.has(tag.id);
+						const isPendingRemoval = () =>
+							props.pendingRemoveTagIds.has(tag.id);
 						return (
 							<Badge
 								variant="secondary"
@@ -276,6 +277,7 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 										onClick={(e) => {
 											e.stopPropagation();
 											e.preventDefault();
+											e.currentTarget.blur();
 											props.onRemoveTag(tag.id);
 										}}
 										disabled={isPendingRemoval()}

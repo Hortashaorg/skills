@@ -15,7 +15,5 @@ export type PowerUserRole = (typeof POWER_USER_ROLES)[number];
  */
 export function isPowerUser(roles: readonly string[] | undefined): boolean {
 	if (!roles || roles.length === 0) return false;
-	return roles.some((role) =>
-		POWER_USER_ROLES.includes(role as PowerUserRole),
-	);
+	return roles.some((role) => POWER_USER_ROLES.includes(role as PowerUserRole));
 }

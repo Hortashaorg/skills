@@ -26,8 +26,10 @@ import {
 } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Textarea } from "@/components/primitives/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
@@ -138,6 +140,11 @@ export const Header = (props: HeaderProps) => {
 	// Tag suggestion modal state
 	const [tagModalOpen, setTagModalOpen] = createSignal(false);
 	const [selectedTagId, setSelectedTagId] = createSignal<string>();
+
+	// Remove tag modal state
+	const [removeTagModalOpen, setRemoveTagModalOpen] = createSignal(false);
+	const [removeTagId, setRemoveTagId] = createSignal<string | null>(null);
+	const [removeTagJustification, setRemoveTagJustification] = createSignal("");
 
 	// Pending tag suggestions for this package
 	const [pendingSuggestions] = useQuery(() =>
@@ -269,13 +276,26 @@ export const Header = (props: HeaderProps) => {
 			return;
 		}
 
+		setRemoveTagId(tagId);
+		setRemoveTagJustification("");
+		setRemoveTagModalOpen(true);
+	};
+
+	const handleConfirmRemoveTag = () => {
+		const tagId = removeTagId();
+		if (!tagId) return;
+
 		try {
 			zero().mutate(
 				mutators.suggestions.createRemoveTag({
 					packageId: props.pkg.id,
 					tagId,
+					justification: removeTagJustification() || undefined,
 				}),
 			);
+			setRemoveTagModalOpen(false);
+			setRemoveTagId(null);
+			setRemoveTagJustification("");
 			toast.success(
 				"Your suggestion to remove this tag is now pending review.",
 				"Suggestion submitted",
@@ -287,6 +307,11 @@ export const Header = (props: HeaderProps) => {
 			);
 		}
 	};
+
+	const removeTagName = createMemo(() => {
+		const tagId = removeTagId();
+		return tagId ? (tagsById().get(tagId)?.name ?? "Unknown") : "";
+	});
 
 	const handleLogin = () => {
 		saveReturnUrl();
@@ -499,6 +524,7 @@ export const Header = (props: HeaderProps) => {
 										type="button"
 										onClick={(e) => {
 											e.stopPropagation();
+											e.currentTarget.blur();
 											handleRemoveTag(pt.tagId);
 										}}
 										disabled={isPendingRemoval()}
@@ -596,6 +622,35 @@ export const Header = (props: HeaderProps) => {
 					/>
 				}
 			/>
+
+			<Dialog
+				open={removeTagModalOpen()}
+				onOpenChange={setRemoveTagModalOpen}
+				title="Remove Tag"
+				description={`Are you sure you want to suggest removing the "${removeTagName()}" tag?`}
+			>
+				<Stack spacing="md">
+					<Textarea
+						value={removeTagJustification()}
+						onInput={(e) => setRemoveTagJustification(e.currentTarget.value)}
+						placeholder="Why should this tag be removed? (optional)"
+						rows={3}
+						size="sm"
+					/>
+					<Flex gap="sm" justify="end">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setRemoveTagModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button variant="danger" size="sm" onClick={handleConfirmRemoveTag}>
+							Submit Suggestion
+						</Button>
+					</Flex>
+				</Stack>
+			</Dialog>
 		</Stack>
 	);
 };

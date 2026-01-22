@@ -17,8 +17,10 @@ import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Textarea } from "@/components/primitives/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
@@ -171,6 +173,16 @@ export const Ecosystem = () => {
 	// Tag suggestion modal
 	const [tagModalOpen, setTagModalOpen] = createSignal(false);
 	const [selectedTagId, setSelectedTagId] = createSignal<string>();
+
+	// Remove tag modal
+	const [removeTagModalOpen, setRemoveTagModalOpen] = createSignal(false);
+	const [removeTagId, setRemoveTagId] = createSignal<string | null>(null);
+	const [removeTagJustification, setRemoveTagJustification] = createSignal("");
+
+	const removeTagName = createMemo(() => {
+		const tagId = removeTagId();
+		return tagId ? (tagsById().get(tagId)?.name ?? "Unknown") : "";
+	});
 
 	const tagSuggestions = createMemo((): SuggestionItem[] => {
 		const suggestions = pendingSuggestions() ?? [];
@@ -358,13 +370,27 @@ export const Ecosystem = () => {
 			return;
 		}
 
+		setRemoveTagId(tagId);
+		setRemoveTagJustification("");
+		setRemoveTagModalOpen(true);
+	};
+
+	const handleConfirmRemoveTag = () => {
+		const eco = ecosystem();
+		const tagId = removeTagId();
+		if (!eco || !tagId) return;
+
 		try {
 			zero().mutate(
 				mutators.suggestions.createRemoveEcosystemTag({
 					ecosystemId: eco.id,
 					tagId,
+					justification: removeTagJustification() || undefined,
 				}),
 			);
+			setRemoveTagModalOpen(false);
+			setRemoveTagId(null);
+			setRemoveTagJustification("");
 			toast.success(
 				"Your suggestion to remove this tag is now pending review.",
 				"Suggestion submitted",
@@ -508,6 +534,35 @@ export const Ecosystem = () => {
 					</Stack>
 				}
 			/>
+
+			<Dialog
+				open={removeTagModalOpen()}
+				onOpenChange={setRemoveTagModalOpen}
+				title="Remove Tag"
+				description={`Are you sure you want to suggest removing the "${removeTagName()}" tag?`}
+			>
+				<Stack spacing="md">
+					<Textarea
+						value={removeTagJustification()}
+						onInput={(e) => setRemoveTagJustification(e.currentTarget.value)}
+						placeholder="Why should this tag be removed? (optional)"
+						rows={3}
+						size="sm"
+					/>
+					<Flex gap="sm" justify="end">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setRemoveTagModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button variant="danger" size="sm" onClick={handleConfirmRemoveTag}>
+							Submit Suggestion
+						</Button>
+					</Flex>
+				</Stack>
+			</Dialog>
 		</Layout>
 	);
 };
