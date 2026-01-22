@@ -36,7 +36,6 @@ Content created by individuals that references foundation data. Personal express
 - **Decision records** - why you chose what you chose, linked to real entities
 - **Discussions** - grounded in specific packages, ecosystems, or projects
 - **Articles/Guides** (future) - tutorials and explanations referencing real packages
-- **Job postings** (future) - roles requiring specific technologies
 - **Courses** (future) - learning paths through ecosystems
 
 Value layer content is:

@@ -6,96 +6,123 @@
 
 ## Product
 
-What we're building and for whom.
+### Technical
 
-**Core offering:**
-- (Define the product/service)
+TechGarden is a platform for engineers to share technology decisions with grounded, linked data.
 
-**Target users:**
-- (Primary audience)
-- (Secondary audience)
+**Foundation layer** (community-curated):
+- Packages from npm, jsr, nuget, dockerhub, homebrew, archlinux
+- Ecosystems (React, AWS, Kubernetes) - product identities containing related packages
+- Future: Standards (OpenAPI, GraphQL), Regulations (GDPR, SOC2, HIPAA)
 
-**Value proposition:**
-- (Why users choose us)
+**Value layer** (user-generated, links to foundation):
+- Projects - your stack linked to packages/ecosystems
+- Comparisons - concrete package references instead of abstract discussions
+- Future: Decision records, discussions
 
-**Differentiators:**
-- (What sets us apart)
+### Summary
+
+A curated database of software packages and technologies, with tools for developers to document what they use and why. Community helps organize the data. Users create content that links back to verified information.
+
+Technology discussions are often abstract. Linking to real entities makes them concrete.
 
 ---
 
 ## Market
 
-Understanding the landscape.
+**Similar products:**
+- Libraries.io - package discovery and dependencies
+- StackShare - team stacks and comparisons
+- Openbase - package reviews
 
-**Market size:**
-- (TAM/SAM/SOM if known)
+**Difference:**
+Broader foundation (ecosystems, standards, regulations - not just packages) with community curation. Value layer builds on this.
 
-**Competitors:**
-- (Direct competitors)
-- (Indirect/adjacent)
-
-**Trends:**
-- (Relevant market trends)
-
-**Positioning:**
-- (Where we fit)
+**Uncertainty:**
+Still exploring which features provide the most value. Foundation is solid - question is which value-layer features matter most.
 
 ---
 
 ## Strategy
 
-How we win.
+**Growth:**
+- Organic through content, SEO, word-of-mouth
+- Side project alongside full-time work
+- Focus on artifacts worth sharing
 
-**Go-to-market:**
-- (Launch approach)
-- (Growth channels)
-
-**Pricing model:**
-- (Free tier? Paid plans? Enterprise?)
+**Monetization:**
+- Free for developers
+- B2B options as platform grows:
+  - Data licensing for technology insights
+  - Private instances for company-internal use
+- Staying flexible until value becomes clear
 
 **Milestones:**
-- (Key goals and targets)
-
-**Risks:**
-- (What could go wrong)
+- Foundation layer with curation tools ✓
+- Find which value-layer features resonate (current)
+- Grow to where B2B interest emerges
 
 ---
 
 ## Finance
 
-Money in, money out.
+### Technical
 
-**Revenue streams:**
-- (How we make money)
+Self-hosted infrastructure:
+- 3x mini PCs (64GB RAM, 4TB NVMe) running Kubernetes at home
+- Costs: electricity, R2 backup (~$0), GitHub org, Claude, domains
+- No cloud dependency
 
-**Costs:**
-- (Major expenses: infra, tools, etc.)
+### Summary
 
-**Funding:**
-- (Bootstrapped? Seeking investment?)
+Infrastructure paid for. Monthly costs minimal. No investors, no burn rate.
 
-**Runway:**
-- (How long can we operate)
+Bootstrapped and sustainable at current scale.
 
 ---
 
 ## Team
 
-Who's building this.
-
 **Current:**
-- (Team members and roles)
+- Solo founder (developer), building alongside employment
 
-**Needed:**
-- (Gaps to fill)
+**Available:**
+- UX help (not involved yet)
 
-**Culture:**
-- (How we work)
+**Looking for:**
+- Feedback on the product
+- Early users
+- People to exchange ideas with
+
+**Approach:**
+- Passion project
+- Open source mindset
+- Building in public
 
 ---
 
-## Notes
+## Risks
 
-Space for ongoing thoughts, learnings, and pivots.
+**What could go wrong:**
+- Building features nobody uses - mitigated by staying flexible
+- Not enough users for network effects - mitigated by solo-first design
+- Well-funded competition - mitigated by no burn rate and niche focus
 
--
+**If it doesn't work out:**
+- Solid portfolio project
+- Reusable code and patterns
+- Experience gained
+
+**If it works:**
+- Platform with B2B revenue
+- Useful resource for developers
+
+---
+
+## Current Focus
+
+**Product:** Building value-layer features. The foundation (packages, ecosystems, curation) is functional. Now exploring what creates enough value to attract first users.
+
+Candidates: comparisons, decision records, richer project features.
+
+**Network:** Getting out there. Finding sparring partners or mutually beneficial relationships with others building things. Learning from people ahead, helping people behind.
