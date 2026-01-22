@@ -26,12 +26,34 @@ Dedicated sprint for code quality, developer experience, and consistency.
   - Files: `package/Header.tsx`, `ecosystem/index.tsx`, `curation/index.tsx`
   - Ensures consistent logging + error extraction
 
-#### Documentation Gaps
-- [ ] Add hooks catalog to `services/frontend/CLAUDE.md`
-  - Document: `createUrlSignal`, `createUrlStringSignal`, `createUrlArraySignal`
-  - Document: `useInfiniteScroll`, `createPolledValue`, `useDarkMode`
-- [ ] Create `services/backend/CLAUDE.md` - API patterns, auth flow, middleware
-- [ ] Create `services/webhook/CLAUDE.md` - Zitadel integration, event handlers
+#### Documentation Updates
+
+Keep docs compact - no repetition across files. Each file documents only its scope.
+
+- [ ] Update `services/frontend/CLAUDE.md` - Add hooks section:
+  - `createUrlSignal(key, parse, serialize)` - URL param ↔ signal sync
+  - `createUrlStringSignal(key)` / `createUrlArraySignal(key)` - String/array shortcuts
+  - `useInfiniteScroll({ initialLimit, loadMoreCount })` - Pagination + sentinel
+  - `createPolledValue(fetcher, interval)` - Poll non-Zero endpoints
+  - `createPackageUpvote/createEcosystemUpvote` - Upvote state (until merged)
+  - Note: `PACKAGES_*_LIMIT` constants must be divisible by 6 (grid columns)
+
+- [ ] Create `services/backend/CLAUDE.md`:
+  - Hono app structure (routes in index.ts)
+  - Auth middleware: `getAuthContext(c)` returns `{ userId, roles }`
+  - Token refresh endpoint: `/auth/refresh` with httpOnly cookie
+  - GDPR export endpoint pattern
+  - OpenTelemetry: counters, histograms already instrumented
+
+- [ ] Create `services/webhook/CLAUDE.md`:
+  - Zitadel webhook events: `user.removed`, `externalidp.added`
+  - Handler pattern: `handlers/events.ts`, `handlers/actions.ts`
+  - Zitadel API client: `zitadel-api.ts` for management API calls
+  - Soft-delete vs hard-delete account handling
+
+- [ ] Update root `README.md`:
+  - Add `pnpm database generate` to commands (currently missing)
+  - Keep setup minimal - link to CLAUDE.md for details
 
 ---
 
