@@ -347,7 +347,7 @@ export const ProjectDetail = () => {
 				mutators.projects.update({
 					id: p.id,
 					name: editName().trim(),
-					description: editDescription().trim() || undefined,
+					description: editDescription(),
 				}),
 			).client;
 			setIsEditing(false);
