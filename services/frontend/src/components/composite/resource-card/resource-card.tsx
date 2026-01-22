@@ -85,7 +85,12 @@ export const ResourceCard = (props: ResourceCardProps) => {
 			{...others}
 		>
 			{/* Stretched link - covers entire card, tabIndex -1 removes from tab order */}
-			<A href={local.href} class="absolute inset-0" tabIndex={-1} />
+			<A
+				href={local.href}
+				class="absolute inset-0"
+				tabIndex={-1}
+				aria-label={`View ${local.name}`}
+			/>
 
 			<div class="relative pointer-events-none flex flex-col h-full gap-1">
 				{/* Header */}

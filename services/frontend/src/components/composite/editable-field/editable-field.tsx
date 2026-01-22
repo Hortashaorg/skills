@@ -32,7 +32,9 @@ export const EditableField = (props: EditableFieldProps) => {
 					"transition-opacity cursor-pointer",
 					"disabled:opacity-50 disabled:cursor-not-allowed",
 				)}
-				title={props.disabled ? "Login to suggest changes" : "Suggest changes"}
+				aria-label={
+					props.disabled ? "Login to suggest changes" : "Suggest changes"
+				}
 			>
 				<PencilIcon size="xs" />
 			</button>
