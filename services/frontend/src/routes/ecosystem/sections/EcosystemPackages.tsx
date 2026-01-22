@@ -93,6 +93,11 @@ export const EcosystemPackages = <T extends PackageWithUpvotes>(
 					</Show>
 				}
 			>
+				{/* Suggest Package card at the top */}
+				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					<SuggestPackageCard onClick={props.onSuggestPackage} />
+				</div>
+
 				<For each={props.packagesByTag.sortedTags}>
 					{(tagName) => (
 						<Stack spacing="sm">
@@ -113,15 +118,6 @@ export const EcosystemPackages = <T extends PackageWithUpvotes>(
 							<For each={props.packagesByTag.uncategorized}>
 								{(pkg) => <PackageGridItem pkg={pkg} />}
 							</For>
-							<SuggestPackageCard onClick={props.onSuggestPackage} />
-						</div>
-					</Stack>
-				</Show>
-
-				<Show when={props.packagesByTag.uncategorized.length === 0}>
-					<Stack spacing="sm">
-						<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-							<SuggestPackageCard onClick={props.onSuggestPackage} />
 						</div>
 					</Stack>
 				</Show>

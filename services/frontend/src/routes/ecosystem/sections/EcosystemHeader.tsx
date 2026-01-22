@@ -212,14 +212,14 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 				<Show
 					when={props.onEditDescription}
 					fallback={
-						<Text color="muted" class="max-w-prose">
+						<Text color="muted" class="line-clamp-5 sm:line-clamp-3">
 							{props.description}
 						</Text>
 					}
 				>
 					{(onEdit) => (
 						<EditableField onEdit={onEdit()}>
-							<Text color="muted" class="max-w-prose">
+							<Text color="muted" class="line-clamp-5 sm:line-clamp-3">
 								{props.description}
 							</Text>
 						</EditableField>
