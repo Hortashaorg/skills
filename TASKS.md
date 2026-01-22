@@ -69,23 +69,21 @@ Consistent UX patterns for foundation (packages, ecosystems, tags) vs value (pro
 
 Align detail page layouts for visual consistency across entity types.
 
-#### Design Decision Required
-- [ ] Audit package/ecosystem/project detail pages and document target layout
-  - Tags position (header vs footer)
-  - Card wrapping pattern (when to use cards)
-  - Container width (narrow vs wide)
-  - Upvote button position and style
-  - Website/link display format
+#### Design Decisions (Resolved)
+- **Container:** `lg` (wide) for all detail pages
+- **Header:** Bare (no card wrapper) for cleaner look
+- **Upvote:** Icon+count style (UpvoteButton component) everywhere
+- **Badge:** Registry badge for packages only, none for ecosystems
+- **Tags:** Below description + links (supplementary info)
+- **Links:** "Homepage: <url>" format with visible URL
+- **Actions:** "Add to project" dropdown for both packages and ecosystems
 
-#### Layout Implementation (after design decision)
-- [ ] Tags position: Packages show under header, ecosystems under link
-- [ ] Links/website: Displayed differently between packages and ecosystems
-- [ ] Card usage: Packages wrap content in cards, ecosystems don't
-- [ ] Container width: Packages narrower than ecosystems
-- [ ] Upvote button: Styling/position varies
+#### Layout Implementation
+- [x] Package page: Remove card wrapper from header, change container to `lg`
+- [x] Ecosystem page: Use UpvoteButton, add "Add to project", format website as "Homepage: <url>", move tags below links
 
-#### Missing Features
-- [ ] Add ecosystem to project from ecosystem page (like packages "Add to project")
+#### Missing Features (Future)
+- [x] Add ecosystem to project from ecosystem page (like packages "Add to project")
 - [ ] Remove tags from packages (currently only add via suggestions)
 - [ ] Remove tags from ecosystems (currently only add via suggestions)
 - [ ] Fix ecosystem tags display - React tagged "frontend" shows under "Other" (tags not loading?)

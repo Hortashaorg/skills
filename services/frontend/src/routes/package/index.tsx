@@ -143,7 +143,7 @@ export const Package = () => {
 					`View details, dependencies, and versions for ${packageName()} on ${registry()}.`
 				}
 			/>
-			<Container size="md">
+			<Container size="lg">
 				<Stack spacing="lg" class="py-8">
 					<QueryBoundary
 						data={pkg()}

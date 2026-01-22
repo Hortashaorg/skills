@@ -17,7 +17,8 @@ export const mine = defineQuery(
 		return q
 			.orderBy("updatedAt", "desc")
 			.limit(args.limit)
-			.related("projectPackages", (pp) => pp.related("package"));
+			.related("projectPackages", (pp) => pp.related("package"))
+			.related("projectEcosystems", (pe) => pe.related("ecosystem"));
 	},
 );
 

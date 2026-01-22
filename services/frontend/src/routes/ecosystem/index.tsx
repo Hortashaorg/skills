@@ -370,6 +370,7 @@ export const Ecosystem = () => {
 							{(eco) => (
 								<>
 									<EcosystemHeader
+										ecosystemId={eco().id}
 										name={eco().name}
 										description={eco().description}
 										website={eco().website}
