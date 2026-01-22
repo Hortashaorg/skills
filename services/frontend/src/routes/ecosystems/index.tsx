@@ -88,8 +88,16 @@ export const Ecosystems = () => {
 		autoLoadLimit: ECOSYSTEMS_AUTO_LOAD_LIMIT,
 	});
 
-	// Reset limit when filters change
-	createEffect(on([searchValue, selectedTagSlugs], () => scroll.resetLimit()));
+	// Track if we've ever completed loading - prevents flicker on re-sync
+	const [hasLoadedOnce, setHasLoadedOnce] = createSignal(false);
+
+	// Reset limit and loading state when filters change
+	createEffect(
+		on([searchValue, selectedTagSlugs], () => {
+			scroll.resetLimit();
+			setHasLoadedOnce(false);
+		}),
+	);
 
 	const [ecosystems, ecosystemsResult] = useQuery(() =>
 		queries.ecosystems.search({
@@ -117,6 +125,13 @@ export const Ecosystems = () => {
 	const isLoading = () => ecosystemsResult().type !== "complete";
 	const ecosystemCount = () => ecosystems()?.length ?? 0;
 	const canLoadMore = () => scroll.canLoadMore(ecosystemCount());
+
+	// Set loaded once when query completes
+	createEffect(() => {
+		if (!isLoading()) {
+			setHasLoadedOnce(true);
+		}
+	});
 
 	const pendingEcosystems = () =>
 		(pendingSuggestions() ?? [])
@@ -189,9 +204,6 @@ export const Ecosystems = () => {
 		setDialogOpen(true);
 	};
 
-	const showResults = () =>
-		ecosystemCount() > 0 || pendingEcosystems().length > 0;
-
 	return (
 		<Layout>
 			<SEO
@@ -225,15 +237,15 @@ export const Ecosystems = () => {
 						/>
 					</Flex>
 
-					{/* Initial loading skeleton */}
-					<Show when={isLoading() && !showResults()}>
+					{/* Initial loading skeleton - only show if never loaded */}
+					<Show when={isLoading() && !hasLoadedOnce()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 						</div>
 					</Show>
 
-					{/* Results */}
-					<Show when={!isLoading() || showResults()}>
+					{/* Results - show once we've loaded at least once */}
+					<Show when={hasLoadedOnce()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							{/* Suggest ecosystem card - always visible */}
 							<ActionCard
