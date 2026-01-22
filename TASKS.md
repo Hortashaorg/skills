@@ -86,7 +86,7 @@ Align detail page layouts for visual consistency across entity types.
 - [x] Add ecosystem to project from ecosystem page (like packages "Add to project")
 - [ ] Remove tags from packages (currently only add via suggestions)
 - [ ] Remove tags from ecosystems (currently only add via suggestions)
-- [ ] Fix ecosystem tags display - React tagged "frontend" shows under "Other" (tags not loading?)
+- [x] Fix ecosystem tags display - was missing packageTags relation in query
 
 ### Admin & Curation
 
