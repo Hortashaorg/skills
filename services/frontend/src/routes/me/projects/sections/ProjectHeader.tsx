@@ -28,7 +28,7 @@ export const ProjectHeader = (props: ProjectHeaderProps) => {
 						<button
 							type="button"
 							onClick={props.onEdit}
-							class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1"
+							class="text-on-surface-muted hover:text-on-surface dark:text-on-surface-dark-muted dark:hover:text-on-surface-dark transition p-1 cursor-pointer"
 						>
 							<PencilIcon size="sm" title="Edit project" />
 						</button>
@@ -37,15 +37,9 @@ export const ProjectHeader = (props: ProjectHeaderProps) => {
 				<Show
 					when={props.project.description}
 					fallback={
-						<Show when={props.isOwner}>
-							<button
-								type="button"
-								onClick={props.onEdit}
-								class="text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark transition text-sm"
-							>
-								+ Add description
-							</button>
-						</Show>
+						<Text color="muted" class="italic">
+							No description
+						</Text>
 					}
 				>
 					<Text color="muted">{props.project.description}</Text>
