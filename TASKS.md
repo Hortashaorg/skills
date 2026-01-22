@@ -84,17 +84,17 @@ Align detail page layouts for visual consistency across entity types.
 
 #### Missing Features (Future)
 - [x] Add ecosystem to project from ecosystem page (like packages "Add to project")
-- [ ] Remove tags from packages (currently only add via suggestions)
-- [ ] Remove tags from ecosystems (currently only add via suggestions)
+- [x] Remove tags from packages via suggestion system
+- [x] Remove tags from ecosystems via suggestion system
 - [x] Fix ecosystem tags display - was missing packageTags relation in query
 
 ### Admin & Curation
 
-- [ ] Auto-approve admin suggestions: Admin/power user suggestions apply immediately
+- [x] Auto-approve admin suggestions: Admin/power user suggestions apply immediately
   - Still recorded as suggestion for audit trail
   - Enables trusted users to curate without approval workflow
-  - Profile suggestion history for review (approved/rejected by whom)
-- [ ] Power user role for trusted curators (future)
+  - Roles: "admin" and "curator" (via Zitadel JWT)
+- [ ] Profile suggestion history for review (approved/rejected by whom)
 
 ### Code Quality
 

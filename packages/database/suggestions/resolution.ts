@@ -6,50 +6,13 @@
 
 import type { SuggestionType } from "../db/types.ts";
 import { newRecord } from "../mutators/helpers.ts";
+import { zql } from "../zero-schema.gen.ts";
 import { parsePayload } from "./schemas.ts";
 
 /** Context passed to resolution handlers */
 export interface ResolutionContext {
-	tx: {
-		mutate: {
-			packageTags: {
-				insert: (data: {
-					id: string;
-					packageId: string;
-					tagId: string;
-					createdAt: number;
-				}) => Promise<void>;
-			};
-			ecosystems: {
-				insert: (data: {
-					id: string;
-					name: string;
-					slug: string;
-					description: string | null;
-					website: string | null;
-					upvoteCount: number;
-					createdAt: number;
-					updatedAt: number;
-				}) => Promise<void>;
-			};
-			ecosystemPackages: {
-				insert: (data: {
-					id: string;
-					ecosystemId: string;
-					packageId: string;
-					createdAt: number;
-				}) => Promise<void>;
-			};
-			ecosystemTags: {
-				insert: (data: {
-					id: string;
-					ecosystemId: string;
-					tagId: string;
-					createdAt: number;
-				}) => Promise<void>;
-			};
-		};
-	};
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	tx: any;
 	suggestion: {
 		id: string;
 		packageId: string | null;
@@ -86,6 +49,31 @@ export const resolutionHandlers: Record<
 			tagId: payload.tagId,
 			createdAt: record.now,
 		});
+	},
+
+	remove_tag: async ({ tx, suggestion }) => {
+		const payload = parsePayload(
+			"remove_tag",
+			suggestion.version,
+			suggestion.payload,
+		) as { tagId: string } | null;
+		if (!payload) {
+			throw new Error("Invalid remove_tag payload");
+		}
+		if (!suggestion.packageId) {
+			throw new Error("remove_tag requires packageId");
+		}
+
+		const existing = (await tx.run(
+			zql.packageTags
+				.where("packageId", suggestion.packageId)
+				.where("tagId", payload.tagId)
+				.one(),
+		)) as { id: string } | undefined;
+
+		if (existing) {
+			await tx.mutate.packageTags.delete({ id: existing.id });
+		}
 	},
 
 	create_ecosystem: async ({ tx, suggestion }) => {
@@ -158,6 +146,31 @@ export const resolutionHandlers: Record<
 			tagId: payload.tagId,
 			createdAt: record.now,
 		});
+	},
+
+	remove_ecosystem_tag: async ({ tx, suggestion }) => {
+		const payload = parsePayload(
+			"remove_ecosystem_tag",
+			suggestion.version,
+			suggestion.payload,
+		) as { tagId: string } | null;
+		if (!payload) {
+			throw new Error("Invalid remove_ecosystem_tag payload");
+		}
+		if (!suggestion.ecosystemId) {
+			throw new Error("remove_ecosystem_tag requires ecosystemId");
+		}
+
+		const existing = (await tx.run(
+			zql.ecosystemTags
+				.where("ecosystemId", suggestion.ecosystemId)
+				.where("tagId", payload.tagId)
+				.one(),
+		)) as { id: string } | undefined;
+
+		if (existing) {
+			await tx.mutate.ecosystemTags.delete({ id: existing.id });
+		}
 	},
 };
 

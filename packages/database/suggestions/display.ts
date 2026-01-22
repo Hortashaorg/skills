@@ -15,9 +15,11 @@ export const suggestionTypeMeta: Record<
 	}
 > = {
 	add_tag: { label: "Add tag" },
+	remove_tag: { label: "Remove tag" },
 	create_ecosystem: { label: "Create ecosystem" },
 	add_ecosystem_package: { label: "Add to ecosystem" },
 	add_ecosystem_tag: { label: "Tag ecosystem" },
+	remove_ecosystem_tag: { label: "Remove tag" },
 };
 
 /** Get label for a suggestion type */
@@ -48,7 +50,7 @@ export function formatSuggestionDescription(
 	payload: unknown,
 	context: SuggestionContext,
 ): string {
-	if (type === "add_tag") {
+	if (type === "add_tag" || type === "remove_tag") {
 		const tagId = (payload as { tagId?: string })?.tagId;
 		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
 		return tagName ?? "Unknown tag";
@@ -67,7 +69,7 @@ export function formatSuggestionDescription(
 		return packageName ?? "Unknown package";
 	}
 
-	if (type === "add_ecosystem_tag") {
+	if (type === "add_ecosystem_tag" || type === "remove_ecosystem_tag") {
 		const tagId = (payload as { tagId?: string })?.tagId;
 		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
 		return tagName ?? "Unknown tag";
@@ -91,6 +93,10 @@ export function formatSuggestionAction(
 		return `Add tag "${description}"`;
 	}
 
+	if (type === "remove_tag") {
+		return `Remove tag "${description}"`;
+	}
+
 	if (type === "create_ecosystem") {
 		return `Create ecosystem "${description}"`;
 	}
@@ -101,6 +107,10 @@ export function formatSuggestionAction(
 
 	if (type === "add_ecosystem_tag") {
 		return `Add tag "${description}"`;
+	}
+
+	if (type === "remove_ecosystem_tag") {
+		return `Remove tag "${description}"`;
 	}
 
 	return description;

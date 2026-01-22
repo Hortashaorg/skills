@@ -22,6 +22,7 @@ import {
 	ExternalLinkIcon,
 	PlusIcon,
 	SpinnerIcon,
+	XIcon,
 } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -243,6 +244,50 @@ export const Header = (props: HeaderProps) => {
 		setTagModalOpen(true);
 	};
 
+	// Tags pending removal suggestion
+	const pendingRemoveTagIds = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return new Set(
+			suggestions
+				.filter((s) => s.type === "remove_tag")
+				.map((s) => (s.payload as { tagId?: string })?.tagId)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	const handleRemoveTag = (tagId: string) => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest tag removal.", "Sign in required");
+			return;
+		}
+
+		if (pendingRemoveTagIds().has(tagId)) {
+			toast.info(
+				"A suggestion to remove this tag is already pending.",
+				"Already pending",
+			);
+			return;
+		}
+
+		try {
+			zero().mutate(
+				mutators.suggestions.createRemoveTag({
+					packageId: props.pkg.id,
+					tagId,
+				}),
+			);
+			toast.success(
+				"Your suggestion to remove this tag is now pending review.",
+				"Suggestion submitted",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to submit",
+			);
+		}
+	};
+
 	const handleLogin = () => {
 		saveReturnUrl();
 		window.location.href = getAuthorizationUrl();
@@ -436,11 +481,40 @@ export const Header = (props: HeaderProps) => {
 			{/* Tags */}
 			<Flex align="center" wrap="wrap" gap="sm">
 				<For each={packageTags()}>
-					{(pt) => (
-						<Badge variant="secondary" size="sm">
-							{tagsById().get(pt.tagId)?.name ?? "Unknown"}
-						</Badge>
-					)}
+					{(pt) => {
+						const tagName = () => tagsById().get(pt.tagId)?.name ?? "Unknown";
+						const isPendingRemoval = () => pendingRemoveTagIds().has(pt.tagId);
+						return (
+							<Badge
+								variant="secondary"
+								size="sm"
+								class={cn(
+									"inline-flex items-center gap-1 pr-1",
+									isPendingRemoval() && "opacity-50",
+								)}
+							>
+								<span>{tagName()}</span>
+								<Show when={isLoggedIn()}>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											handleRemoveTag(pt.tagId);
+										}}
+										disabled={isPendingRemoval()}
+										class="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+										title={
+											isPendingRemoval()
+												? "Removal pending"
+												: "Suggest removing this tag"
+										}
+									>
+										<XIcon size="xs" />
+									</button>
+								</Show>
+							</Badge>
+						);
+					}}
 				</For>
 				<button
 					type="button"

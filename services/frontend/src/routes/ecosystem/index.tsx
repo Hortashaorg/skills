@@ -99,7 +99,7 @@ export const Ecosystem = () => {
 			.filter(
 				(et): et is typeof et & { tag: NonNullable<typeof et.tag> } => !!et.tag,
 			)
-			.map((et) => ({ name: et.tag.name, slug: et.tag.slug }));
+			.map((et) => ({ id: et.tagId, name: et.tag.name, slug: et.tag.slug }));
 	});
 
 	// Packages grouped by tag
@@ -140,6 +140,16 @@ export const Ecosystem = () => {
 		return new Set(
 			suggestions
 				.filter((s) => s.type === "add_ecosystem_tag")
+				.map((s) => (s.payload as { tagId?: string })?.tagId)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	const pendingRemoveTagIds = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return new Set(
+			suggestions
+				.filter((s) => s.type === "remove_ecosystem_tag")
 				.map((s) => (s.payload as { tagId?: string })?.tagId)
 				.filter(Boolean) as string[],
 		);
@@ -331,6 +341,42 @@ export const Ecosystem = () => {
 		setTagModalOpen(true);
 	};
 
+	const handleRemoveTag = (tagId: string) => {
+		const eco = ecosystem();
+		if (!eco) return;
+
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest tag removal.", "Sign in required");
+			return;
+		}
+
+		if (pendingRemoveTagIds().has(tagId)) {
+			toast.info(
+				"A suggestion to remove this tag is already pending.",
+				"Already pending",
+			);
+			return;
+		}
+
+		try {
+			zero().mutate(
+				mutators.suggestions.createRemoveEcosystemTag({
+					ecosystemId: eco.id,
+					tagId,
+				}),
+			);
+			toast.success(
+				"Your suggestion to remove this tag is now pending review.",
+				"Suggestion submitted",
+			);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Unknown error",
+				"Failed to submit",
+			);
+		}
+	};
+
 	const handleAddPackage = () => {
 		if (!isLoggedIn()) {
 			toast.info("Sign in to suggest packages.", "Sign in required");
@@ -375,11 +421,13 @@ export const Ecosystem = () => {
 										description={eco().description}
 										website={eco().website}
 										tags={tags()}
+										pendingRemoveTagIds={pendingRemoveTagIds()}
 										upvoteCount={eco().upvoteCount}
 										hasUpvoted={hasUpvoted()}
 										isLoggedIn={isLoggedIn()}
 										onUpvote={handleUpvote}
 										onAddTag={handleAddTag}
+										onRemoveTag={handleRemoveTag}
 									/>
 
 									<Stack spacing="md">

@@ -58,10 +58,20 @@ export const Dialog = (props: DialogProps) => {
 		"class",
 	]);
 
+	const handleOpenChange = (open: boolean) => {
+		if (!open) {
+			// Blur any focused element before closing to prevent aria-hidden warning
+			// This happens when a Select listbox is open inside the dialog
+			const activeElement = document.activeElement as HTMLElement | null;
+			activeElement?.blur?.();
+		}
+		local.onOpenChange?.(open);
+	};
+
 	return (
 		<DialogPrimitive
 			open={local.open}
-			onOpenChange={local.onOpenChange}
+			onOpenChange={handleOpenChange}
 			{...others}
 		>
 			<DialogPrimitive.Portal>

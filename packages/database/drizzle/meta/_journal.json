@@ -239,6 +239,13 @@
       "when": 1768934277401,
       "tag": "0033_lush_omega_flight",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1769105077048,
+      "tag": "0034_fresh_bastion",
+      "breakpoints": true
     }
   ]
 }

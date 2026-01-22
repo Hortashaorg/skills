@@ -88,6 +88,15 @@ export const AlertDialog = (props: AlertDialogProps) => {
 		local.onOpenChange?.(false);
 	};
 
+	const handleOpenChange = (open: boolean) => {
+		if (!open) {
+			// Blur any focused element before closing to prevent aria-hidden warning
+			const activeElement = document.activeElement as HTMLElement | null;
+			activeElement?.blur?.();
+		}
+		local.onOpenChange?.(open);
+	};
+
 	const handleOpenAutoFocus = (e: Event) => {
 		e.preventDefault();
 		cancelButtonRef?.focus();
@@ -96,7 +105,7 @@ export const AlertDialog = (props: AlertDialogProps) => {
 	return (
 		<AlertDialogPrimitive
 			open={local.open}
-			onOpenChange={local.onOpenChange}
+			onOpenChange={handleOpenChange}
 			{...others}
 		>
 			<AlertDialogPrimitive.Portal>

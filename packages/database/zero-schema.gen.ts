@@ -774,9 +774,11 @@ const suggestionsTable = {
       optional: false,
       customType: null as unknown as
         | "add_tag"
+        | "remove_tag"
         | "create_ecosystem"
         | "add_ecosystem_package"
-        | "add_ecosystem_tag",
+        | "add_ecosystem_tag"
+        | "remove_ecosystem_tag",
     },
     version: {
       type: "number",

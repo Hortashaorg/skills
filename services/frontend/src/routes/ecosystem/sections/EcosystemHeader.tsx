@@ -10,6 +10,7 @@ import {
 	ChevronDownIcon,
 	ExternalLinkIcon,
 	PlusIcon,
+	XIcon,
 } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
@@ -24,12 +25,14 @@ export interface EcosystemHeaderProps {
 	name: string;
 	description?: string | null;
 	website?: string | null;
-	tags: readonly { name: string; slug: string }[];
+	tags: readonly { id: string; name: string; slug: string }[];
+	pendingRemoveTagIds: ReadonlySet<string>;
 	upvoteCount: number;
 	hasUpvoted: boolean;
 	isLoggedIn: boolean;
 	onUpvote: () => void;
 	onAddTag: () => void;
+	onRemoveTag: (tagId: string) => void;
 	onEditDescription?: () => void;
 }
 
@@ -250,13 +253,45 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 			{/* Tags */}
 			<Flex gap="xs" wrap="wrap" align="center">
 				<For each={props.tags}>
-					{(tag) => (
-						<A href={`/ecosystems?tags=${tag.slug}`}>
-							<Badge variant="secondary" size="sm">
-								{tag.name}
+					{(tag) => {
+						const isPendingRemoval = () => props.pendingRemoveTagIds.has(tag.id);
+						return (
+							<Badge
+								variant="secondary"
+								size="sm"
+								class={cn(
+									"inline-flex items-center gap-1 pr-1",
+									isPendingRemoval() && "opacity-50",
+								)}
+							>
+								<A
+									href={`/ecosystems?tags=${tag.slug}`}
+									class="hover:underline"
+								>
+									{tag.name}
+								</A>
+								<Show when={props.isLoggedIn}>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											e.preventDefault();
+											props.onRemoveTag(tag.id);
+										}}
+										disabled={isPendingRemoval()}
+										class="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+										title={
+											isPendingRemoval()
+												? "Removal pending"
+												: "Suggest removing this tag"
+										}
+									>
+										<XIcon size="xs" />
+									</button>
+								</Show>
 							</Badge>
-						</A>
-					)}
+						);
+					}}
 				</For>
 				<button
 					type="button"

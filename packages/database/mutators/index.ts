@@ -43,9 +43,11 @@ export const mutators = defineMutators({
 	},
 	suggestions: {
 		createAddTag: suggestionsMutators.createAddTag,
+		createRemoveTag: suggestionsMutators.createRemoveTag,
 		createCreateEcosystem: suggestionsMutators.createCreateEcosystem,
 		createAddEcosystemPackage: suggestionsMutators.createAddEcosystemPackage,
 		createAddEcosystemTag: suggestionsMutators.createAddEcosystemTag,
+		createRemoveEcosystemTag: suggestionsMutators.createRemoveEcosystemTag,
 	},
 	suggestionVotes: {
 		vote: suggestionVotesMutators.vote,
