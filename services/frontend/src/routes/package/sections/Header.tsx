@@ -252,7 +252,7 @@ export const Header = (props: HeaderProps) => {
 
 	return (
 		<Stack spacing="md">
-			{/* Title row with badge and upvote */}
+			{/* Title row with badge, upvote and add to project */}
 			<Flex gap="sm" align="center" wrap="wrap" class="min-w-0">
 				<Heading level="h1" class="min-w-0 truncate">
 					{props.pkg.name}
@@ -260,7 +260,7 @@ export const Header = (props: HeaderProps) => {
 				<Badge variant="secondary" size="sm" class="shrink-0">
 					{props.pkg.registry}
 				</Badge>
-				<div class="shrink-0 ml-auto">
+				<div class="shrink-0 ml-auto flex items-center gap-2">
 					<Show
 						when={isLoggedIn()}
 						fallback={
@@ -283,127 +283,6 @@ export const Header = (props: HeaderProps) => {
 							onClick={upvote.toggle}
 							size="md"
 						/>
-					</Show>
-				</div>
-			</Flex>
-
-			{/* Description */}
-			<Show when={props.pkg.description}>
-				<Text color="muted" class="line-clamp-5 sm:line-clamp-3">
-					{props.pkg.description}
-				</Text>
-			</Show>
-
-			{/* Links section */}
-			<Show when={props.pkg.homepage || props.pkg.repository}>
-				<Stack spacing="xs">
-					<Show when={props.pkg.homepage}>
-						{(url) => (
-							<Flex gap="sm" align="center" class="min-w-0">
-								<Text size="sm" color="muted" class="shrink-0">
-									Homepage
-								</Text>
-								<a
-									href={url()}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
-								>
-									<span class="truncate">{formatUrl(url())}</span>
-									<ExternalLinkIcon size="xs" class="shrink-0" />
-								</a>
-							</Flex>
-						)}
-					</Show>
-					<Show when={props.pkg.repository}>
-						{(url) => (
-							<Flex gap="sm" align="center" class="min-w-0">
-								<Text size="sm" color="muted" class="shrink-0">
-									Repository
-								</Text>
-								<a
-									href={url()}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
-								>
-									<span class="truncate">{formatUrl(url())}</span>
-									<ExternalLinkIcon size="xs" class="shrink-0" />
-								</a>
-							</Flex>
-						)}
-					</Show>
-				</Stack>
-			</Show>
-
-			{/* Tags */}
-			<Flex align="center" wrap="wrap" gap="sm">
-				<For each={packageTags()}>
-					{(pt) => (
-						<Badge variant="secondary" size="sm">
-							{tagsById().get(pt.tagId)?.name ?? "Unknown"}
-						</Badge>
-					)}
-				</For>
-				<button
-					type="button"
-					onClick={handleAddTag}
-					class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors"
-				>
-					<PlusIcon size="xs" />
-					<span>Add tag</span>
-				</button>
-			</Flex>
-
-			{/* Footer: Sync info + Actions */}
-			<Flex
-				gap="md"
-				align="center"
-				justify="between"
-				wrap="wrap"
-				class="pt-2 border-t border-outline dark:border-outline-dark"
-			>
-				<Flex gap="sm" align="center" class="min-w-0">
-					<Show
-						when={!hasPendingFetch()}
-						fallback={
-							<Flex gap="xs" align="center">
-								<SpinnerIcon
-									size="sm"
-									class="text-primary dark:text-primary-dark"
-								/>
-								<Text size="xs" color="muted">
-									<Show
-										when={(queuePosition()?.ahead ?? 0) > 0}
-										fallback="Queued"
-									>
-										{queuePosition()?.ahead} in queue
-									</Show>
-								</Text>
-							</Flex>
-						}
-					>
-						<Text size="xs" color="muted">
-							Synced {formatShortDate(props.pkg.lastFetchSuccess)}
-						</Text>
-						<Show when={!request.isDisabled()}>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => request.submit()}
-								disabled={request.isSubmitting()}
-							>
-								<Show when={request.isSubmitting()} fallback="Refresh">
-									<SpinnerIcon size="sm" class="mr-1" />
-									Syncing
-								</Show>
-							</Button>
-						</Show>
-					</Show>
-				</Flex>
-
-				<div class="shrink-0">
-					<Show when={isLoggedIn()}>
 						<Popover>
 							<Popover.Trigger
 								class={cn(
@@ -503,6 +382,119 @@ export const Header = (props: HeaderProps) => {
 						</Popover>
 					</Show>
 				</div>
+			</Flex>
+
+			{/* Description */}
+			<Show when={props.pkg.description}>
+				<Text color="muted" class="line-clamp-5 sm:line-clamp-3">
+					{props.pkg.description}
+				</Text>
+			</Show>
+
+			{/* Links section */}
+			<Show when={props.pkg.homepage || props.pkg.repository}>
+				<Stack spacing="xs">
+					<Show when={props.pkg.homepage}>
+						{(url) => (
+							<Flex gap="sm" align="center" class="min-w-0">
+								<Text size="sm" color="muted" class="shrink-0">
+									Homepage
+								</Text>
+								<a
+									href={url()}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
+								>
+									<span class="truncate">{formatUrl(url())}</span>
+									<ExternalLinkIcon size="xs" class="shrink-0" />
+								</a>
+							</Flex>
+						)}
+					</Show>
+					<Show when={props.pkg.repository}>
+						{(url) => (
+							<Flex gap="sm" align="center" class="min-w-0">
+								<Text size="sm" color="muted" class="shrink-0">
+									Repository
+								</Text>
+								<a
+									href={url()}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
+								>
+									<span class="truncate">{formatUrl(url())}</span>
+									<ExternalLinkIcon size="xs" class="shrink-0" />
+								</a>
+							</Flex>
+						)}
+					</Show>
+				</Stack>
+			</Show>
+
+			{/* Tags */}
+			<Flex align="center" wrap="wrap" gap="sm">
+				<For each={packageTags()}>
+					{(pt) => (
+						<Badge variant="secondary" size="sm">
+							{tagsById().get(pt.tagId)?.name ?? "Unknown"}
+						</Badge>
+					)}
+				</For>
+				<button
+					type="button"
+					onClick={handleAddTag}
+					class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors"
+				>
+					<PlusIcon size="xs" />
+					<span>Add tag</span>
+				</button>
+			</Flex>
+
+			{/* Footer: Sync info */}
+			<Flex
+				gap="sm"
+				align="center"
+				wrap="wrap"
+				class="pt-2 border-t border-outline dark:border-outline-dark"
+			>
+				<Show
+					when={!hasPendingFetch()}
+					fallback={
+						<Flex gap="xs" align="center">
+							<SpinnerIcon
+								size="sm"
+								class="text-primary dark:text-primary-dark"
+							/>
+							<Text size="xs" color="muted">
+								<Show
+									when={(queuePosition()?.ahead ?? 0) > 0}
+									fallback="Queued"
+								>
+									{queuePosition()?.ahead} in queue
+								</Show>
+							</Text>
+						</Flex>
+					}
+				>
+					<Text size="xs" color="muted">
+						Synced {formatShortDate(props.pkg.lastFetchSuccess)}
+					</Text>
+					<Show when={!request.isDisabled()}>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => request.submit()}
+							disabled={request.isSubmitting()}
+						>
+							<Show when={request.isSubmitting()} fallback="Refresh">
+								<SpinnerIcon size="sm" class="mr-1" />
+								Syncing
+							</Show>
+						</Button>
+					</Show>
+				</Show>
 			</Flex>
 			<SuggestionModal
 				open={tagModalOpen()}
