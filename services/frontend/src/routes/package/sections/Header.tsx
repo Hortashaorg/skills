@@ -444,8 +444,11 @@ export const Header = (props: HeaderProps) => {
 				</For>
 				<button
 					type="button"
-					onClick={handleAddTag}
-					class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors"
+					onClick={(e) => {
+						e.currentTarget.blur();
+						handleAddTag();
+					}}
+					class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors cursor-pointer"
 				>
 					<PlusIcon size="xs" />
 					<span>Add tag</span>
