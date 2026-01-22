@@ -9,7 +9,7 @@
 Dedicated sprint for code quality, refactoring, and dependency maintenance.
 
 ### Dependencies
-- [ ] Upgrade dependencies
+- [x] Upgrade dependencies
 
 ### Hooks to Extract
 - [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
