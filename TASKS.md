@@ -35,88 +35,72 @@ Dedicated sprint for code quality, developer experience, and consistency.
 
 ---
 
-### Tier 2: Medium Impact, Medium Effort
+### Tier 2: Quick Wins (High Value, Low Effort)
 
-#### Extract Reusable Hooks
+#### Extract Shared Components
 
-- [ ] `useModalState()` - Modal open/close + optional data (repeated 5+ times)
-  ```tsx
-  const modal = useModalState<string>(); // { isOpen, data, open, close }
-  ```
-  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx, admin/tags
+- [ ] `AddToProjectPopover` - Entity → project linking (~170 LOC duplicated)
+  - Near-identical: query, membership check, mutation, full popover UI
+  - Files: `package/Header.tsx`, `EcosystemHeader.tsx`
 
-- [ ] `useConfirmationDialog<T>()` - Modal state + justification + handlers
-  - Currently: manual signals for open, data, justification in each component
+- [ ] `SkeletonCard` - Grid card loading state (~30 LOC duplicated)
+  - Byte-for-byte identical in `ResultsGrid.tsx` and `ecosystems/index.tsx`
+  - Also: `ProjectCardSkeleton` duplicated in `projects/index.tsx` and `me/projects/index.tsx`
 
-- [ ] `useEntityTagSuggestions()` - Tag suggestion + voting logic (~200 LOC duplicated)
-  - Query pending, filter existing/pending/available, format options
-  - Files: package/Header.tsx, ecosystem/index.tsx
-  - Note: `useSuggestionSubmit` handles submission; query/filter logic still duplicated
+#### Extract Shared Utilities
 
-- [ ] `groupByTags<T>()` utility - Group entities by their tags
-  - Identical logic in projects/detail.tsx and EcosystemPackages.tsx
-  - Returns { groups, sortedTags, uncategorized }
+- [ ] `groupByTags<T>()` - Move to `lib/group-by-tags.ts`
+  - Already extracted in `EcosystemPackages.tsx`, inline twice in `projects/detail.tsx`
+  - ~60 LOC, 95% identical
 
-#### Extract Reusable Components
+- [ ] `handleVote()` - Extract to `hooks/useVoteHandler.ts`
+  - Identical in `Header.tsx` and `ecosystem/index.tsx` (~16 LOC)
 
-- [ ] `AddToProjectPopover` - Entity → project linking (~80 LOC duplicated)
-  - Query user projects, check membership, handle mutation
-  - Files: package/Header.tsx (356-452), EcosystemHeader.tsx (64-114)
+#### Stories
 
-- [ ] Centralize skeleton components
-  - ProfileSkeleton, ProjectCardSkeleton, EcosystemSkeleton, PackageDetailSkeleton
-  - Move to `components/ui/skeleton/` or create variants
-
-#### Split Large Files
-
-| File | Lines | Action |
-|------|-------|--------|
-| `package/sections/Header.tsx` | 632 | Split: Header + TagManager + PackageActions |
-| `me/projects/detail.tsx` | 574 | Extract grouping hooks + modal state |
-| `ecosystem/index.tsx` | 531 | Extract state management to hooks |
-| `me/index.tsx` | 430 | Extract ProfileForm section |
-| `home/sections/ResultsGrid.tsx` | 381 | Extract request dialog logic |
-
-#### Testing Gaps
 - [ ] Add Dialog component stories (`ui/dialog/dialog.stories.tsx`)
-- [ ] Add interaction tests for EntityPicker, SearchInput keyboard nav
-- [ ] Configure Chromatic for visual regression (addon installed, not configured)
+  - Used across app, zero visual coverage
+  - Copy pattern from AlertDialog stories
 
 ---
 
-### Tier 3: Polish & Consistency
+### Tier 3: Medium Effort Improvements
 
-#### Component Consistency
-- [ ] Extract "Add tag" button as Button variant (currently raw HTML with inline styles)
-  - Pattern: `<Button variant="outline" size="xs" class="rounded-full border-dashed">`
-- [ ] Standardize SearchInput usage across all list pages
-  - Packages: uses SearchInput ✓
-  - Ecosystems: uses plain Input ✗
-  - Projects: uses plain Input ✗
-- [ ] Reduce Button variant count from 10 to 7-8 (consider compound patterns)
+#### Extract Reusable Hooks
 
-#### State Pattern Standardization
-- [ ] Modal state: Use ID-based pattern consistently
-  - Standardize: `const [removeId, setRemoveId] = createSignal<string | null>(null)`
-  - Current: Mix of boolean + separate data signal
-- [ ] Form errors: Show inline only (not toast + inline double feedback)
+- [ ] `useModalState<T>()` - Consolidate 14 boolean + ID signal patterns
+  ```tsx
+  const modal = useModalState<{ tagId: string }>();
+  // modal.isOpen(), modal.data(), modal.open(data), modal.close()
+  ```
+  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx, admin/tags
 
-#### Accessibility
-- [ ] Audit components for aria-hidden warnings - document patterns
-- [ ] Document preventive patterns (blur on close, portal usage guidelines)
+- [ ] `useSuggestionFilters()` - Tag suggestion query/filter logic (~65 LOC)
+  - `availableTags`, `pendingTagIds`, `pendingRemoveTagIds`, `tagOptions`
+  - 100% identical in `Header.tsx` and `ecosystem/index.tsx`
+  - Note: Complex typing, defer if not touching these files
 
-#### Suggestion System
-- [ ] Verify approval voting process still works correctly
-- [ ] Show justification in curation voting UI
-- [ ] Consider "contributor" role that skips review (between user and curator)
+#### File Splitting (Lower Priority)
 
-#### Signed-Out UX
-- [ ] Hide "Add tag" button when signed out (don't show disabled)
-- [ ] Audit "sign in to..." patterns - reduce redundant CTAs
+Files are large but manageable after hook extractions:
 
-#### Code Quality
-- [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
-- [ ] `lib/package-formatting.ts` - Extract status label/description logic
+| File | Lines | Notes |
+|------|-------|-------|
+| `package/sections/Header.tsx` | 632 | Will shrink with AddToProjectPopover extraction |
+| `me/projects/detail.tsx` | 574 | Will shrink with groupByTags extraction |
+| `ecosystem/index.tsx` | 531 | Will shrink with useSuggestionFilters extraction |
+
+---
+
+### Deferred (Not Worth Effort Now)
+
+Investigated and determined low value:
+
+- ~~SearchInput vs Input consistency~~ - Plain Input is appropriate for simple search-on-type
+- ~~Button variant reduction~~ - Not causing problems
+- ~~Hide "Add tag" when signed out~~ - Current toast pattern is acceptable
+- ~~`useConfirmationDialog`~~ - Covered by `useModalState`
+- ~~Reduce sign-in CTAs~~ - Contextually appropriate, just inconsistent implementation
 
 ---
 
@@ -161,12 +145,12 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 | Area | Score | Status |
 |------|-------|--------|
 | Component Library | 8.5/10 | Excellent CVA consistency, clear tiers |
-| State Patterns | 6.5/10 | Inconsistent modal/form patterns |
-| Data Layer | 8.5/10 | Strong Zod coverage, good type flow |
-| Documentation | 7/10 | Gaps in backend/webhook/hooks |
-| Error Handling | 7/10 | Centralized utility exists, not always used |
+| State Patterns | 7/10 | Some modal pattern duplication remains |
+| Data Layer | 9/10 | Strong Zod coverage, suggestion types self-contained |
+| Documentation | 8.5/10 | Backend/webhook/hooks now documented |
+| Error Handling | 8.5/10 | `handleMutationError` used consistently |
 | File Organization | 9/10 | Clear structure, some large files |
-| Testing | 7.5/10 | 73% story coverage, no backend tests |
+| Testing | 7.5/10 | 73% story coverage, Dialog missing |
 | UX Patterns | 8.5/10 | Consistent cards, upvotes, modals |
 
 ### Key Findings
@@ -177,13 +161,13 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 - No circular dependencies, clear module boundaries
 - 40/55 components have Storybook stories (73%)
 - All Zod validation in place for queries/mutators
+- Suggestion system is now extensible with colocated logic
 
-**Issues:**
-- 2 duplicate hooks (upvote logic)
-- Auth failures silent (no user feedback)
-- 2 error handling patterns in use
-- 5 files over 400 lines need splitting
-- 7+ hooks undocumented
+**Remaining Issues:**
+- ~170 LOC duplicated in AddToProjectPopover
+- ~60 LOC duplicated in groupByTags
+- Dialog component has no stories
+- 14 modal state signals could use shared hook
 
 ---
 
