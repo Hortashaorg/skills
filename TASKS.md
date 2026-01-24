@@ -57,11 +57,6 @@ Net result: ~386 LOC removed through consolidation
   - Refactored: `admin/tags/index.tsx`, `me/projects/detail.tsx`
   - Remaining files can adopt as touched
 
-- [ ] ~~`useSuggestionFilters()`~~ - **Deferred** (not worth effort)
-  - ~35 LOC duplicated across 2 files only
-  - Entity-specific differences (suggestion types, data sources) make clean abstraction awkward
-  - Low future replication - only packages and ecosystems have tag suggestions
-
 #### File Sizes (Post Tier 2)
 
 | File | Lines | Notes |
@@ -76,6 +71,7 @@ Net result: ~386 LOC removed through consolidation
 
 Investigated and determined low value:
 
+- ~~`useSuggestionFilters()`~~ - ~35 LOC duplicated across 2 files only
 - ~~SearchInput vs Input consistency~~ - Plain Input is appropriate for simple search-on-type
 - ~~Button variant reduction~~ - Not causing problems
 - ~~Hide "Add tag" when signed out~~ - Current toast pattern is acceptable
