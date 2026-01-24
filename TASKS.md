@@ -8,52 +8,30 @@
 
 Dedicated sprint for code quality, developer experience, and consistency.
 
-### Tier 1: High Impact, Low Effort
+### Tier 1: High Impact, Low Effort ✅
 
-#### Consolidate Duplicate Code
-- [ ] Merge `createPackageUpvote` + `createEcosystemUpvote` into generic `useUpvote(entityType, entity)`
-  - Files: `hooks/createPackageUpvote.ts`, `hooks/createEcosystemUpvote.ts`
-  - ~100 LOC duplication removed
+#### Consolidate Duplicate Code ✅
+- [x] Merge `createPackageUpvote` + `createEcosystemUpvote` into generic `createUpvote(entity, type)`
+  - Created `hooks/createUpvote.ts` with shared logic
+  - Wrappers remain for type-safe usage
+  - ~100 LOC reduction
 
-#### Fix Critical UX Bugs
-- [ ] Add user feedback when auth fails in `app-provider.tsx` (currently silent)
-  - Lines 48-62: login and refresh failures log to console but show nothing to user
-  - Add toast or banner: "Sign in failed. Please try again."
-- [ ] Auto-approved suggestions show "pending review" toast - should say "applied"
+#### Fix Critical UX Bugs ✅
+- [x] Add user feedback when auth fails in `app-provider.tsx`
+  - Toast on login failure: "Sign in failed. Please try again."
+  - Toast on refresh failure: "Session expired. Please sign in again."
+- [x] Auto-approved suggestions show correct toast
+  - Power users see "Applied" instead of "pending review"
 
-#### Standardize Error Handling
-- [ ] Replace direct `toast.error()` calls with `handleMutationError()`
-  - Files: `package/Header.tsx`, `ecosystem/index.tsx`, `curation/index.tsx`
-  - Ensures consistent logging + error extraction
+#### Standardize Error Handling ✅
+- [x] Replace direct `toast.error()` calls with `handleMutationError()`
+  - Updated: `package/Header.tsx`, `ecosystem/index.tsx`, `ecosystems/index.tsx`, `curation/index.tsx`
 
-#### Documentation Updates
-
-Keep docs compact - no repetition across files. Each file documents only its scope.
-
-- [ ] Update `services/frontend/CLAUDE.md` - Add hooks section:
-  - `createUrlSignal(key, parse, serialize)` - URL param ↔ signal sync
-  - `createUrlStringSignal(key)` / `createUrlArraySignal(key)` - String/array shortcuts
-  - `useInfiniteScroll({ initialLimit, loadMoreCount })` - Pagination + sentinel
-  - `createPolledValue(fetcher, interval)` - Poll non-Zero endpoints
-  - `createPackageUpvote/createEcosystemUpvote` - Upvote state (until merged)
-  - Note: `PACKAGES_*_LIMIT` constants must be divisible by 6 (grid columns)
-
-- [ ] Create `services/backend/CLAUDE.md`:
-  - Hono app structure (routes in index.ts)
-  - Auth middleware: `getAuthContext(c)` returns `{ userId, roles }`
-  - Token refresh endpoint: `/auth/refresh` with httpOnly cookie
-  - GDPR export endpoint pattern
-  - OpenTelemetry: counters, histograms already instrumented
-
-- [ ] Create `services/webhook/CLAUDE.md`:
-  - Zitadel webhook events: `user.removed`, `externalidp.added`
-  - Handler pattern: `handlers/events.ts`, `handlers/actions.ts`
-  - Zitadel API client: `zitadel-api.ts` for management API calls
-  - Soft-delete vs hard-delete account handling
-
-- [ ] Update root `README.md`:
-  - Add `pnpm database generate` to commands (currently missing)
-  - Keep setup minimal - link to CLAUDE.md for details
+#### Documentation Updates ✅
+- [x] Update `services/frontend/CLAUDE.md` - Added Hook Reference section
+- [x] Create `services/backend/CLAUDE.md` - Endpoints, auth flow, patterns
+- [x] Create `services/webhook/CLAUDE.md` - Events, actions, Zitadel API
+- [x] `README.md` already had database commands (no change needed)
 
 ---
 
@@ -151,6 +129,14 @@ Keep docs compact - no repetition across files. Each file documents only its sco
 - Validation: entity existence, duplicates, pending suggestion checks
 - Adding new suggestion type now requires only: enum + type file + registry export + frontend form
 - Net result: -74 lines while adding validation and improving extensibility
+
+#### Tier 1: High Impact, Low Effort
+- Consolidated upvote hooks into generic `createUpvote()` with type-safe wrappers (~100 LOC reduced)
+- Added auth failure toasts (login and refresh failures now visible to users)
+- Fixed auto-approve toast (power users see "Applied" not "pending review")
+- Standardized error handling with `handleMutationError()` across all mutations
+- Created `services/backend/CLAUDE.md` and `services/webhook/CLAUDE.md`
+- Added Hook Reference section to `services/frontend/CLAUDE.md`
 
 ---
 
