@@ -174,17 +174,30 @@ const name = () => decodeURIComponent(params.name);
 - Queries/Mutators: See `packages/database/CLAUDE.md`
 - After schema changes: `pnpm database zero` then `pnpm database migrate`
 
+## Before Starting Work
+
+**Study existing implementations first.** The codebase has grown - patterns exist for most problems:
+
+1. **Search for similar code** - Before implementing, find 2-3 examples of similar functionality
+2. **Understand the pattern** - How did existing code solve this? What abstractions exist?
+3. **Extend, don't reinvent** - Use existing hooks, utilities, and components rather than creating parallel ones
+
+Example: Need to add a popover that fetches data?
+- Search for existing popovers → find `AddToProjectPopover`
+- See the pattern: presentational component + `useAddToProject` hook
+- Follow the same pattern for your new feature
+
 ## Before Finishing Work
 
 LLMs tend to focus on making code work, missing broader concerns:
 
 **Maintainability check:**
 - Will the next developer understand this without context?
-- Are there existing patterns in the codebase I should follow?
+- Did I follow existing patterns, or create something new that doesn't fit?
 - Did I extend existing abstractions or create parallel ones?
 
 **Completeness check:**
-- Are stories/tests updated for UI changes?
+- Are stories/tests updated for UI changes? Run `pnpm frontend test`
 - Did I check how this looks on mobile?
 - Are all new exports added to index files?
 

@@ -91,17 +91,18 @@ const isLoading = () =>
 - `QueryBoundary` = Primary data with empty state handling (package detail, search results)
 - `<Show>` = Multiple queries feeding one UI, no distinct empty state needed
 
-## Component Tiers
+## Components
 
-```
-components/
-├── primitives/   # Layout: Flex, Stack, Text, Container
-├── ui/           # Interactive: Button, Card, Badge, Select, Tabs
-├── composite/    # Combined: SearchInput, ActionCard, EntityFilter
-└── feature/      # Domain-specific: (rare)
-```
+**CRITICAL: Components are purely presentational.**
+- ✅ Accept props, render UI, emit events via callbacks
+- ✅ Stories render with mock data (no Zero/auth needed)
+- ❌ NO imports from `@package/database` - move to hooks
 
-Import pattern: `import { Button } from "@/components/ui/button"`
+Pattern: `useHook` (data/logic) + `Component` (presentation)
+```tsx
+const addToProject = useAddToProject(() => ({ entityType: "package", entityId }));
+<AddToProjectPopover projects={addToProject.projects()} onAdd={addToProject.onAdd} />
+```
 
 ## Icons
 
@@ -161,37 +162,6 @@ hooks/         # Reusable business logic (uses Zero, auth, mutators)
 - `lib/` = Pure functions, no dependencies on Zero/auth/context
 - `hooks/` = Factory functions that use `useZero()`, mutators, or other app context
 
-**Example hook usage:**
-```tsx
-import { createPackageUpvote } from "@/hooks/createPackageUpvote";
-
-const upvote = createPackageUpvote(() => pkg);
-// upvote.isUpvoted(), upvote.upvoteCount(), upvote.isDisabled(), upvote.toggle()
-```
-
-**Infinite scroll hook:**
-```tsx
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-
-const scroll = useInfiniteScroll({
-  initialLimit: 24,
-  loadMoreCount: 24,
-  autoLoadLimit: 240,
-});
-
-// Use with queries
-const [items] = useQuery(() => queries.items.list({ limit: scroll.limit() }));
-
-// Check if more available
-const canLoadMore = () => scroll.canLoadMore(items()?.length ?? 0);
-
-// Render sentinel and controls
-<div ref={scroll.setSentinelRef} class="h-1" />
-<Show when={scroll.showBackToTop()}>
-  <Button onClick={scroll.scrollToTop}>↑ Back to top</Button>
-</Show>
-```
-
 ## Hook Reference
 
 | Hook | Purpose |
@@ -207,52 +177,10 @@ const canLoadMore = () => scroll.canLoadMore(items()?.length ?? 0);
 | `createPackageRequest(options)` | Submit package request with loading |
 | `createPolledValue(fetcher, interval)` | Poll REST endpoint periodically |
 | `useSuggestionSubmit(options)` | Submit suggestions with auto toast |
-
-**Suggestion submit hook:**
-```tsx
-import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
-
-const { submit } = useSuggestionSubmit({
-  type: "add_tag",
-  entityId: { packageId: pkg.id },
-  getPayload: () => ({ tagId: selectedTagId() }),
-  onSuccess: () => setModalOpen(false),
-});
-
-// Call submit with optional justification
-submit(justification);
-```
-
-Automatically handles: mutation, power user detection, appropriate toast message, error handling.
-
-**Infinite scroll options:**
-- `initialLimit` - Starting page size
-- `loadMoreCount` - Items per load-more
-- `autoLoadLimit` - Max items before manual load required
-
-**Note:** `PACKAGES_*_LIMIT` constants must be divisible by 6 (grid columns).
+| `useVote()` | Vote on suggestions (approve/reject) |
+| `useAddToProject(options)` | Add entity to project (for popover) |
 
 ## Common Patterns
-
-**Package URLs:**
-```tsx
-import { buildPackageUrl } from "@/lib/url";
-
-href={buildPackageUrl(registry, name)}
-href={buildPackageUrl(registry, name, version)} // with version param
-
-// Reading params
-const params = useParams<{ registry: string; name: string }>();
-const name = () => decodeURIComponent(params.name);
-```
-
-**Check auth state:**
-```tsx
-const zero = useZero();
-if (zero().userID === "anon") {
-  // Not logged in
-}
-```
 
 **Readonly props from Zero:**
 ```tsx
@@ -262,129 +190,48 @@ interface Props {
 }
 ```
 
-## SolidJS Reactivity
-
-### Signals Must Be Called in Reactive Contexts
+## SolidJS Reactivity Gotchas
 
 ```tsx
-// ❌ BAD: Accessed outside reactive context - runs once, never updates
-const name = signal();
+// ❌ Accessed outside reactive context - won't update
 const greeting = `Hello ${name()}`;
-
-// ✅ GOOD: Wrap in function or memo
+// ✅ Wrap in function
 const greeting = () => `Hello ${name()}`;
-const greeting = createMemo(() => `Hello ${name()}`);
-```
 
-### Route Params Need Reactive Accessors
-
-```tsx
-const params = useParams<{ id: string }>();
-
-// ❌ BAD: Won't update on navigation
+// ❌ Route params - won't update on navigation
 const id = params.id;
-
-// ✅ GOOD: Create reactive accessor
+// ✅ Create accessor
 const id = () => params.id;
-```
 
-### Effect Dependencies with `on()`
-
-When using `on()` to control effect dependencies, list ALL reactive values used inside:
-
-```tsx
-// ❌ BAD: Uses sortedVersions() but doesn't track it
-createEffect(
-  on([pkg, urlVersion], ([p, urlV]) => {
-    const versions = sortedVersions(); // Not tracked!
-  })
-);
-
-// ✅ GOOD: All dependencies explicit
-createEffect(
-  on([pkg, urlVersion, sortedVersions], ([p, urlV, versions]) => {
-    // versions is now tracked
-  })
-);
-```
-
-### Use Signals for State in Effects
-
-```tsx
-// ❌ BAD: Plain variable in effect - breaks reactivity model
-let lastKey = "";
-createEffect(() => {
-  if (key() !== lastKey) {
-    lastKey = key();
-  }
-});
-
-// ✅ GOOD: Use signal for state
-const [lastKey, setLastKey] = createSignal("");
-createEffect(() => {
-  if (key() !== lastKey()) {
-    setLastKey(key());
-  }
-});
-```
-
-### Prefer Derived Signals Over Memos
-
-```tsx
-// For simple derivations - no caching overhead
-const doubled = () => count() * 2;
-
-// Use createMemo only for expensive computations or multiple subscribers
-const filtered = createMemo(() =>
-  items().filter(expensiveCheck)
-);
-```
-
-### Don't Use Effects for Derived State
-
-```tsx
-// ❌ BAD: Effect to sync derived state
-const [doubled, setDoubled] = createSignal(0);
+// ❌ Effect to sync derived state
 createEffect(() => setDoubled(count() * 2));
-
-// ✅ GOOD: Derive directly
+// ✅ Derive directly
 const doubled = () => count() * 2;
 ```
 
 ## UX Considerations
 
-LLMs tend to focus on functionality over usability. Actively question these:
+- Mobile: Touch targets min 44px, adapt layout (don't just squish)
+- Grouping: Related actions together, obvious hierarchy
+- Flows: First-time user friendly, minimal steps, important info visible
 
-**Mobile experience:**
-- Are touch targets large enough? (min 44px)
-- Does text/spacing need to be different on mobile vs desktop?
-- Is the mobile layout just a squished desktop, or properly adapted?
-
-**Grouping & hierarchy:**
-- Do related actions/info appear together?
-- Is it obvious what belongs to what?
-- Would a user know what to do next?
-
-**Intuitive flows:**
-- Would this confuse a first-time user?
-- Are there too many steps for a simple action?
-- Is important info visible without extra clicks?
-
-When in doubt about UX decisions, ask the user rather than guessing.
+When in doubt about UX decisions, ask the user.
 
 ## Component Discipline
 
-**Before writing new UI code:**
-1. Check if a component already exists in `components/ui/` or `components/composite/`
-2. If similar functionality exists, extend it rather than duplicating
-3. If you need variants, add to the existing component's CVA variants
+**Before writing any component code:**
+1. **Study existing implementations first** - Read 2-3 similar components to understand patterns
+2. Check if a component already exists in `components/ui/` or `components/composite/`
+3. If similar functionality exists, extend it rather than duplicating
+4. If you need variants, add to the existing component's CVA variants
 
-**After modifying components:**
-1. Update the component's stories to cover new states/variants
-2. Run `pnpm frontend test` to verify visual tests pass
+**After creating/modifying components:**
+1. Stories are REQUIRED - every component needs `{name}.stories.tsx`
+2. Run `pnpm frontend test` to verify all visual tests pass (MANDATORY)
 3. If props changed, check all usages still work
 
 **Warning signs you're doing it wrong:**
+- Component imports from `@package/database` - move to a hook
+- Stories fail or don't exist - component is incomplete
 - Copying JSX from an existing component instead of importing it
 - Adding one-off styles that duplicate what a component provides
-- Component props that are never exercised in stories
