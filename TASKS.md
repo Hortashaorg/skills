@@ -50,7 +50,8 @@ Dedicated sprint for code quality, developer experience, and consistency.
 
 - [ ] `useEntityTagSuggestions()` - Tag suggestion + voting logic (~200 LOC duplicated)
   - Query pending, filter existing/pending/available, format options
-  - Files: package/Header.tsx (140-244), ecosystem/index.tsx (96-341)
+  - Files: package/Header.tsx, ecosystem/index.tsx
+  - Note: `useSuggestionSubmit` handles submission; query/filter logic still duplicated
 
 - [ ] `groupByTags<T>()` utility - Group entities by their tags
   - Identical logic in projects/detail.tsx and EcosystemPackages.tsx
@@ -70,9 +71,9 @@ Dedicated sprint for code quality, developer experience, and consistency.
 
 | File | Lines | Action |
 |------|-------|--------|
-| `package/sections/Header.tsx` | 656 | Split: Header + TagManager + PackageActions |
+| `package/sections/Header.tsx` | 632 | Split: Header + TagManager + PackageActions |
 | `me/projects/detail.tsx` | 574 | Extract grouping hooks + modal state |
-| `ecosystem/index.tsx` | 568 | Extract state management to hooks |
+| `ecosystem/index.tsx` | 531 | Extract state management to hooks |
 | `me/index.tsx` | 430 | Extract ProfileForm section |
 | `home/sections/ResultsGrid.tsx` | 381 | Extract request dialog logic |
 
@@ -124,11 +125,18 @@ Dedicated sprint for code quality, developer experience, and consistency.
 #### Suggestion System Architecture Overhaul
 - Consolidated 6 separate mutators into 1 generic `create` mutator
 - Created self-contained type definitions in `suggestions/types/` (~50 lines each)
-- Each type file contains: versioned schema, display formatting, resolve logic, validation
+- Each type file contains: versioned schema, display formatting, resolve logic, validation, toast messages
 - Typed payloads - methods receive already-parsed data (no redundant parsing)
 - Validation: entity existence, duplicates, pending suggestion checks
 - Adding new suggestion type now requires only: enum + type file + registry export + frontend form
 - Net result: -74 lines while adding validation and improving extensibility
+
+#### Suggestion Submit Hook (Frontend DX)
+- Created `useSuggestionSubmit` hook - handles mutation, power user detection, toast, error handling
+- Colocated `toastMessages` with type definitions (single source of truth)
+- Refactored 6 handlers across 3 pages: ~20 lines → ~8 lines each
+- Developers can't forget power user handling - it's automatic
+- Net result: ~30 lines reduced, consistent toast behavior guaranteed
 
 #### Tier 1: High Impact, Low Effort
 - Consolidated upvote hooks into generic `createUpvote()` with type-safe wrappers (~100 LOC reduced)
