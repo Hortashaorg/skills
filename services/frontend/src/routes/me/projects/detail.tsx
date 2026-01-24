@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { Layout } from "@/layout/Layout";
 import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
+import { groupByTags } from "@/lib/group-by-tags";
 import { handleMutationError } from "@/lib/mutation-error";
 import { EcosystemGrid } from "./sections/EcosystemGrid";
 import { PackageGrid } from "./sections/PackageGrid";
@@ -98,36 +99,9 @@ export const ProjectDetail = () => {
 	);
 
 	// Group packages by tag - packages with multiple tags appear in multiple groups
-	const packagesByTag = createMemo(() => {
-		const pkgs = packages();
-		type Pkg = (typeof pkgs)[number];
-		const groups: Record<string, Pkg[]> = {};
-		const uncategorized: Pkg[] = [];
-
-		for (const pkg of pkgs) {
-			const tags = pkg.packageTags ?? [];
-			if (tags.length === 0) {
-				uncategorized.push(pkg);
-			} else {
-				for (const pt of tags) {
-					const tagName = pt.tag?.name;
-					if (tagName) {
-						if (!groups[tagName]) {
-							groups[tagName] = [];
-						}
-						groups[tagName].push(pkg);
-					}
-				}
-			}
-		}
-
-		// Sort tag names alphabetically
-		const sortedTags = Object.keys(groups).sort((a, b) =>
-			a.toLowerCase().localeCompare(b.toLowerCase()),
-		);
-
-		return { groups, sortedTags, uncategorized };
-	});
+	const packagesByTag = createMemo(() =>
+		groupByTags(packages(), (pkg) => pkg.packageTags),
+	);
 
 	// Ecosystems
 	const ecosystems = createMemo(() => {
@@ -143,35 +117,9 @@ export const ProjectDetail = () => {
 	);
 
 	// Group ecosystems by tag
-	const ecosystemsByTag = createMemo(() => {
-		const ecos = ecosystems();
-		type Eco = (typeof ecos)[number];
-		const groups: Record<string, Eco[]> = {};
-		const uncategorized: Eco[] = [];
-
-		for (const eco of ecos) {
-			const tags = eco.ecosystemTags ?? [];
-			if (tags.length === 0) {
-				uncategorized.push(eco);
-			} else {
-				for (const et of tags) {
-					const tagName = et.tag?.name;
-					if (tagName) {
-						if (!groups[tagName]) {
-							groups[tagName] = [];
-						}
-						groups[tagName].push(eco);
-					}
-				}
-			}
-		}
-
-		const sortedTags = Object.keys(groups).sort((a, b) =>
-			a.toLowerCase().localeCompare(b.toLowerCase()),
-		);
-
-		return { groups, sortedTags, uncategorized };
-	});
+	const ecosystemsByTag = createMemo(() =>
+		groupByTags(ecosystems(), (eco) => eco.ecosystemTags),
+	);
 
 	const ecosystemSearchResultsFiltered = createMemo((): SearchResultItem[] => {
 		const results = ecosystemSearchResults() ?? [];

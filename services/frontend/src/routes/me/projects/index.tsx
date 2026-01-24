@@ -10,7 +10,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { createUrlStringSignal } from "@/hooks/createUrlSignal";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { Layout } from "@/layout/Layout";
@@ -20,16 +20,6 @@ import {
 	PROJECTS_LOAD_MORE_COUNT,
 } from "@/lib/constants";
 import { ProjectCard } from "./sections/ProjectCard";
-
-const ProjectCardSkeleton = () => (
-	<Card padding="md">
-		<Stack spacing="sm">
-			<Skeleton variant="text" width="60%" />
-			<Skeleton variant="text" width="80%" />
-			<Skeleton variant="text" width="40%" />
-		</Stack>
-	</Card>
-);
 
 export const Projects = () => {
 	const zero = useZero();
@@ -96,7 +86,7 @@ export const Projects = () => {
 						{/* Initial loading skeleton */}
 						<Show when={isLoading() && projectCount() === 0}>
 							<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-								<Index each={Array(6)}>{() => <ProjectCardSkeleton />}</Index>
+								<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 							</div>
 						</Show>
 
@@ -128,9 +118,7 @@ export const Projects = () => {
 
 									{/* Auto-load skeletons */}
 									<Show when={canLoadMore() && !scroll.pastAutoLoadLimit()}>
-										<Index each={Array(6)}>
-											{() => <ProjectCardSkeleton />}
-										</Index>
+										<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 									</Show>
 								</div>
 

@@ -24,11 +24,12 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
+import { useAddToProject } from "@/hooks/useAddToProject";
 import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
+import { useVote } from "@/hooks/useVote";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
-import { handleMutationError } from "@/lib/mutation-error";
 import { EcosystemHeader } from "./sections/EcosystemHeader";
 import {
 	EcosystemPackages,
@@ -94,6 +95,12 @@ export const Ecosystem = () => {
 			);
 		}
 	};
+
+	// Add to project
+	const addToProject = useAddToProject(() => ({
+		entityType: "ecosystem",
+		entityId: ecosystem()?.id ?? "",
+	}));
 
 	// Tags
 	const tags = createMemo(() => {
@@ -302,18 +309,7 @@ export const Ecosystem = () => {
 		submitAddPackage(justification);
 	};
 
-	// Vote handler
-	const handleVote = (suggestionId: string, vote: "approve" | "reject") => {
-		try {
-			zero().mutate(mutators.suggestionVotes.vote({ suggestionId, vote }));
-			toast.success(
-				"Your vote has been recorded.",
-				vote === "approve" ? "Approved" : "Rejected",
-			);
-		} catch (err) {
-			handleMutationError(err, "vote", { useErrorMessage: true });
-		}
-	};
+	const { vote: handleVote } = useVote();
 
 	const handleLogin = () => {
 		saveReturnUrl();
@@ -417,6 +413,10 @@ export const Ecosystem = () => {
 										onUpvote={handleUpvote}
 										onAddTag={handleAddTag}
 										onRemoveTag={handleRemoveTag}
+										projects={addToProject.projects()}
+										isInProject={addToProject.isInProject}
+										onAddToProject={addToProject.onAdd}
+										addingToProjectId={addToProject.addingToProjectId()}
 									/>
 
 									<Stack spacing="md">
