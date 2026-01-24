@@ -52,17 +52,15 @@ Net result: ~386 LOC removed through consolidation
 
 #### Extract Reusable Hooks
 
-- [ ] `useModalState<T>()` - Consolidate 14 boolean + ID signal patterns
-  ```tsx
-  const modal = useModalState<{ tagId: string }>();
-  // modal.isOpen(), modal.data(), modal.open(data), modal.close()
-  ```
-  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx, admin/tags
+- [x] `useModalState<T>()` - Consolidated modal open/close + data patterns
+  - Created `hooks/useModalState.ts`
+  - Refactored: `admin/tags/index.tsx`, `me/projects/detail.tsx`
+  - Remaining files can adopt as touched
 
-- [ ] `useSuggestionFilters()` - Tag suggestion query/filter logic (~65 LOC)
-  - `availableTags`, `pendingTagIds`, `pendingRemoveTagIds`, `tagOptions`
-  - 100% identical in `Header.tsx` and `ecosystem/index.tsx`
-  - Note: Complex typing, defer if not touching these files
+- [ ] ~~`useSuggestionFilters()`~~ - **Deferred** (not worth effort)
+  - ~35 LOC duplicated across 2 files only
+  - Entity-specific differences (suggestion types, data sources) make clean abstraction awkward
+  - Low future replication - only packages and ecosystems have tag suggestions
 
 #### File Sizes (Post Tier 2)
 
