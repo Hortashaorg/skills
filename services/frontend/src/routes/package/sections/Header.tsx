@@ -2,6 +2,7 @@ import { Popover } from "@kobalte/core/popover";
 import { formatShortDate } from "@package/common";
 import {
 	getSuggestionTypeLabel,
+	isPowerUser,
 	mutators,
 	queries,
 	type Row,
@@ -33,6 +34,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
+import { getAuthData } from "@/context/app-provider";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { createPolledValue } from "@/hooks/createPolledValue";
@@ -217,15 +219,17 @@ export const Header = (props: HeaderProps) => {
 			);
 			setSelectedTagId(undefined);
 			setTagModalOpen(false);
-			toast.success(
-				"Your tag suggestion is now pending review.",
-				"Suggestion submitted",
-			);
+			const roles = getAuthData()?.roles ?? [];
+			if (isPowerUser(roles)) {
+				toast.success("Tag has been applied.", "Applied");
+			} else {
+				toast.success(
+					"Your tag suggestion is now pending review.",
+					"Suggestion submitted",
+				);
+			}
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
+			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
 		}
 	};
 
@@ -237,10 +241,7 @@ export const Header = (props: HeaderProps) => {
 				vote === "approve" ? "Approved" : "Rejected",
 			);
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to vote",
-			);
+			handleMutationError(err, "vote", { useErrorMessage: true });
 		}
 	};
 
@@ -298,15 +299,17 @@ export const Header = (props: HeaderProps) => {
 			setRemoveTagModalOpen(false);
 			setRemoveTagId(null);
 			setRemoveTagJustification("");
-			toast.success(
-				"Your suggestion to remove this tag is now pending review.",
-				"Suggestion submitted",
-			);
+			const roles = getAuthData()?.roles ?? [];
+			if (isPowerUser(roles)) {
+				toast.success("Tag has been removed.", "Applied");
+			} else {
+				toast.success(
+					"Your suggestion to remove this tag is now pending review.",
+					"Suggestion submitted",
+				);
+			}
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
+			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
 		}
 	};
 

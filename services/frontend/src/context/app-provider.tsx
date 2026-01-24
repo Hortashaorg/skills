@@ -1,5 +1,6 @@
 import { mutators, schema, ZeroProvider } from "@package/database/client";
 import { createSignal, onMount, type ParentComponent, Show } from "solid-js";
+import { toast } from "@/components/ui/toast";
 import { getAndClearReturnUrl } from "@/lib/auth-url";
 import { getConfig } from "@/lib/config";
 import { authApi } from "./auth/auth-api";
@@ -47,6 +48,7 @@ export const AppProvider: ParentComponent = (props) => {
 				}
 			} catch (error) {
 				console.error("Login with code failed:", error);
+				toast.error("Sign in failed. Please try again.");
 			} finally {
 				setAuthLoading(false);
 			}
@@ -58,6 +60,7 @@ export const AppProvider: ParentComponent = (props) => {
 				}
 			} catch (error) {
 				console.error("Token refresh failed:", error);
+				toast.error("Session expired. Please sign in again.");
 			} finally {
 				setAuthLoading(false);
 			}

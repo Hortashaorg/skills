@@ -192,6 +192,28 @@ const canLoadMore = () => scroll.canLoadMore(items()?.length ?? 0);
 </Show>
 ```
 
+## Hook Reference
+
+| Hook | Purpose |
+|------|---------|
+| `createUrlSignal(key, parse, serialize)` | Sync signal with URL query param |
+| `createUrlStringSignal(key)` | URL param as string signal |
+| `createUrlArraySignal(key)` | URL param as string array signal |
+| `useInfiniteScroll(options)` | Pagination with auto-load sentinel |
+| `useDarkMode()` | Theme toggle with localStorage |
+| `createUpvote(entity, type)` | Generic upvote state and toggle |
+| `createPackageUpvote(pkg)` | Package upvote (wrapper) |
+| `createEcosystemUpvote(ecosystem)` | Ecosystem upvote (wrapper) |
+| `createPackageRequest(options)` | Submit package request with loading |
+| `createPolledValue(fetcher, interval)` | Poll REST endpoint periodically |
+
+**Infinite scroll options:**
+- `initialLimit` - Starting page size
+- `loadMoreCount` - Items per load-more
+- `autoLoadLimit` - Max items before manual load required
+
+**Note:** `PACKAGES_*_LIMIT` constants must be divisible by 6 (grid columns).
+
 ## Common Patterns
 
 **Package URLs:**

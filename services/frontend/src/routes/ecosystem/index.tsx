@@ -1,5 +1,6 @@
 import {
 	getSuggestionTypeLabel,
+	isPowerUser,
 	mutators,
 	queries,
 	useQuery,
@@ -24,9 +25,11 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
+import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { handleMutationError } from "@/lib/mutation-error";
 import { EcosystemHeader } from "./sections/EcosystemHeader";
 import {
 	EcosystemPackages,
@@ -220,15 +223,17 @@ export const Ecosystem = () => {
 			);
 			setSelectedTagId(undefined);
 			setTagModalOpen(false);
-			toast.success(
-				"Your tag suggestion is now pending review.",
-				"Suggestion submitted",
-			);
+			const roles = getAuthData()?.roles ?? [];
+			if (isPowerUser(roles)) {
+				toast.success("Tag has been applied.", "Applied");
+			} else {
+				toast.success(
+					"Your tag suggestion is now pending review.",
+					"Suggestion submitted",
+				);
+			}
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
+			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
 		}
 	};
 
@@ -314,15 +319,17 @@ export const Ecosystem = () => {
 			setSelectedPackageId(undefined);
 			setPackageSearchQuery("");
 			setPackageModalOpen(false);
-			toast.success(
-				"Your package suggestion is now pending review.",
-				"Suggestion submitted",
-			);
+			const roles = getAuthData()?.roles ?? [];
+			if (isPowerUser(roles)) {
+				toast.success("Package has been added.", "Applied");
+			} else {
+				toast.success(
+					"Your package suggestion is now pending review.",
+					"Suggestion submitted",
+				);
+			}
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
+			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
 		}
 	};
 
@@ -335,10 +342,7 @@ export const Ecosystem = () => {
 				vote === "approve" ? "Approved" : "Rejected",
 			);
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to vote",
-			);
+			handleMutationError(err, "vote", { useErrorMessage: true });
 		}
 	};
 
@@ -394,15 +398,17 @@ export const Ecosystem = () => {
 			setRemoveTagModalOpen(false);
 			setRemoveTagId(null);
 			setRemoveTagJustification("");
-			toast.success(
-				"Your suggestion to remove this tag is now pending review.",
-				"Suggestion submitted",
-			);
+			const roles = getAuthData()?.roles ?? [];
+			if (isPowerUser(roles)) {
+				toast.success("Tag has been removed.", "Applied");
+			} else {
+				toast.success(
+					"Your suggestion to remove this tag is now pending review.",
+					"Suggestion submitted",
+				);
+			}
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
+			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
 		}
 	};
 

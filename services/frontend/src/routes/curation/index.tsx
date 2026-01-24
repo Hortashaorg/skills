@@ -17,6 +17,7 @@ import { Text } from "@/components/primitives/text";
 import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
+import { handleMutationError } from "@/lib/mutation-error";
 import { Backlog, type BacklogSuggestion } from "./sections/Backlog";
 import { Leaderboard } from "./sections/Leaderboard";
 import { PointsInfo } from "./sections/PointsInfo";
@@ -193,7 +194,7 @@ export const Curation = () => {
 		const res = await write.client;
 
 		if (res.type === "error") {
-			toast.error(res.error.message, "Failed to vote");
+			handleMutationError(res.error, "vote", { useErrorMessage: true });
 			return;
 		}
 

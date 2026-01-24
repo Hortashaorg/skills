@@ -1,5 +1,11 @@
 import type { Row } from "@package/database/client";
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import {
+	isPowerUser,
+	mutators,
+	queries,
+	useQuery,
+	useZero,
+} from "@package/database/client";
 import {
 	createEffect,
 	createMemo,
@@ -33,6 +39,7 @@ import {
 	TextFieldLabel,
 } from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
+import { getAuthData } from "@/context/app-provider";
 import { createEcosystemUpvote } from "@/hooks/createEcosystemUpvote";
 import {
 	createUrlArraySignal,
@@ -46,6 +53,7 @@ import {
 	ECOSYSTEMS_INITIAL_LIMIT,
 	ECOSYSTEMS_LOAD_MORE_COUNT,
 } from "@/lib/constants";
+import { handleMutationError } from "@/lib/mutation-error";
 
 type EcosystemTag = Row["ecosystemTags"] & {
 	tag?: Row["tags"];
@@ -186,15 +194,17 @@ export const Ecosystems = () => {
 			setDescription("");
 			setWebsite("");
 			setDialogOpen(false);
-			toast.success(
-				"Your ecosystem suggestion is now pending review.",
-				"Suggestion submitted",
-			);
+			const roles = getAuthData()?.roles ?? [];
+			if (isPowerUser(roles)) {
+				toast.success("Ecosystem has been created.", "Applied");
+			} else {
+				toast.success(
+					"Your ecosystem suggestion is now pending review.",
+					"Suggestion submitted",
+				);
+			}
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
+			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
 		} finally {
 			setIsSubmitting(false);
 		}

@@ -19,10 +19,11 @@ export type {
 export { enums } from "./db/types.ts";
 export { mutators } from "./mutators/index.ts";
 export { queries } from "./queries/index.ts";
-// Suggestion display helpers (frontend-safe)
+// Suggestion helpers (frontend-safe)
 export {
 	formatSuggestionAction,
 	formatSuggestionDescription,
 	getSuggestionTypeLabel,
 } from "./suggestions/display.ts";
+export { isPowerUser } from "./suggestions/power-user.ts";
 export { schema } from "./zero-schema.gen.ts";
