@@ -35,32 +35,16 @@ Dedicated sprint for code quality, developer experience, and consistency.
 
 ---
 
-### Tier 2: Quick Wins (High Value, Low Effort)
+### Tier 2: Quick Wins ✅
 
-#### Extract Shared Components
+- [x] `SkeletonCard` - Shared loading card component for grids
+- [x] `groupByTags<T>()` - Extracted to `lib/group-by-tags.ts`
+- [x] `useVote()` - Extracted to `hooks/useVote.ts`
+- [x] `useAddToProject()` + `AddToProjectPopover` - Hook + presentational component pattern
+- [x] Dialog stories - Visual tests for Dialog component
+- [x] CLAUDE.md updates - Emphasize presentational components, study existing patterns first
 
-- [ ] `AddToProjectPopover` - Entity → project linking (~170 LOC duplicated)
-  - Near-identical: query, membership check, mutation, full popover UI
-  - Files: `package/Header.tsx`, `EcosystemHeader.tsx`
-
-- [ ] `SkeletonCard` - Grid card loading state (~30 LOC duplicated)
-  - Byte-for-byte identical in `ResultsGrid.tsx` and `ecosystems/index.tsx`
-  - Also: `ProjectCardSkeleton` duplicated in `projects/index.tsx` and `me/projects/index.tsx`
-
-#### Extract Shared Utilities
-
-- [ ] `groupByTags<T>()` - Move to `lib/group-by-tags.ts`
-  - Already extracted in `EcosystemPackages.tsx`, inline twice in `projects/detail.tsx`
-  - ~60 LOC, 95% identical
-
-- [ ] `handleVote()` - Extract to `hooks/useVoteHandler.ts`
-  - Identical in `Header.tsx` and `ecosystem/index.tsx` (~16 LOC)
-
-#### Stories
-
-- [ ] Add Dialog component stories (`ui/dialog/dialog.stories.tsx`)
-  - Used across app, zero visual coverage
-  - Copy pattern from AlertDialog stories
+Net result: ~386 LOC removed through consolidation
 
 ---
 
@@ -80,15 +64,13 @@ Dedicated sprint for code quality, developer experience, and consistency.
   - 100% identical in `Header.tsx` and `ecosystem/index.tsx`
   - Note: Complex typing, defer if not touching these files
 
-#### File Splitting (Lower Priority)
-
-Files are large but manageable after hook extractions:
+#### File Sizes (Post Tier 2)
 
 | File | Lines | Notes |
 |------|-------|-------|
-| `package/sections/Header.tsx` | 632 | Will shrink with AddToProjectPopover extraction |
-| `me/projects/detail.tsx` | 574 | Will shrink with groupByTags extraction |
-| `ecosystem/index.tsx` | 531 | Will shrink with useSuggestionFilters extraction |
+| `package/sections/Header.tsx` | ~500 | Reduced with AddToProjectPopover extraction |
+| `me/projects/detail.tsx` | ~510 | Reduced with groupByTags extraction |
+| `ecosystem/index.tsx` | ~540 | Could shrink with useSuggestionFilters |
 
 ---
 
@@ -130,6 +112,14 @@ Investigated and determined low value:
 - Created `services/backend/CLAUDE.md` and `services/webhook/CLAUDE.md`
 - Added Hook Reference section to `services/frontend/CLAUDE.md`
 
+#### Tier 2: Quick Wins
+- `SkeletonCard` component for consistent grid loading states
+- `groupByTags<T>()` utility extracted to `lib/group-by-tags.ts`
+- `useVote()` hook for suggestion voting
+- `useAddToProject()` hook + presentational `AddToProjectPopover` (enforced hook+component pattern)
+- Dialog stories for visual test coverage
+- CLAUDE.md trimmed (417→237 lines) with emphasis on studying existing patterns
+
 ---
 
 ## Backlog
@@ -144,13 +134,13 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 
 | Area | Score | Status |
 |------|-------|--------|
-| Component Library | 8.5/10 | Excellent CVA consistency, clear tiers |
-| State Patterns | 7/10 | Some modal pattern duplication remains |
+| Component Library | 9/10 | Excellent CVA consistency, presentational pattern enforced |
+| State Patterns | 7.5/10 | Hook extraction good, modal pattern duplication remains |
 | Data Layer | 9/10 | Strong Zod coverage, suggestion types self-contained |
-| Documentation | 8.5/10 | Backend/webhook/hooks now documented |
+| Documentation | 9/10 | Concise, pattern-focused, study-existing-first guidance |
 | Error Handling | 8.5/10 | `handleMutationError` used consistently |
-| File Organization | 9/10 | Clear structure, some large files |
-| Testing | 7.5/10 | 73% story coverage, Dialog missing |
+| File Organization | 9/10 | Clear structure, consolidated utilities |
+| Testing | 8/10 | 497 Storybook tests, Dialog now covered |
 | UX Patterns | 8.5/10 | Consistent cards, upvotes, modals |
 
 ### Key Findings
@@ -164,10 +154,8 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 - Suggestion system is now extensible with colocated logic
 
 **Remaining Issues:**
-- ~170 LOC duplicated in AddToProjectPopover
-- ~60 LOC duplicated in groupByTags
-- Dialog component has no stories
-- 14 modal state signals could use shared hook
+- 14 modal state signals could use shared `useModalState` hook
+- `useSuggestionFilters()` extraction deferred (complex typing)
 
 ---
 
