@@ -208,9 +208,10 @@ export const Header = (props: HeaderProps) => {
 
 		try {
 			zero().mutate(
-				mutators.suggestions.createAddTag({
+				mutators.suggestions.create({
+					type: "add_tag",
 					packageId: props.pkg.id,
-					tagId,
+					payload: { tagId },
 					justification,
 				}),
 			);
@@ -287,9 +288,10 @@ export const Header = (props: HeaderProps) => {
 
 		try {
 			zero().mutate(
-				mutators.suggestions.createRemoveTag({
+				mutators.suggestions.create({
+					type: "remove_tag",
 					packageId: props.pkg.id,
-					tagId,
+					payload: { tagId },
 					justification: removeTagJustification() || undefined,
 				}),
 			);

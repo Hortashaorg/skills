@@ -15,6 +15,7 @@ import { buildPackageUrl } from "@/lib/url";
 export interface ReviewQueueSuggestion {
 	id: string;
 	type: string;
+	version: number;
 	payload: unknown;
 	accountId: string;
 	account?: { name: string | null; deletedAt?: Date | number | null } | null;
@@ -34,7 +35,7 @@ interface ReviewQueueProps {
 	hasVoted: Accessor<boolean>;
 	voteCounts: Accessor<{ approve: number; reject: number }>;
 	isSkipped: Accessor<boolean>;
-	formatAction: (type: string, payload: unknown) => string;
+	formatAction: (type: string, payload: unknown, version: number) => string;
 	onVote: (vote: "approve" | "reject") => void;
 	onSkip: () => void;
 }
@@ -102,6 +103,7 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 										{props.formatAction(
 											suggestion().type,
 											suggestion().payload,
+											suggestion().version,
 										)}
 									</Text>
 									<Flex gap="xs" align="center">

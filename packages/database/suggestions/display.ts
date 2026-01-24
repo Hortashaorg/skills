@@ -1,117 +1,49 @@
 /**
  * Display helpers for suggestion types.
- *
- * These are safe to use in frontend code.
+ * Safe to use in frontend code.
  */
 
 import type { SuggestionType } from "../db/types.ts";
+import type { FormatContext } from "./types/definition.ts";
+import {
+	formatAction,
+	formatDescription,
+	getSuggestionTypeLabel,
+	suggestionTypes,
+} from "./types/index.ts";
+
+export { getSuggestionTypeLabel };
+export type { FormatContext };
 
 /** Type metadata for display */
-export const suggestionTypeMeta: Record<
-	SuggestionType,
-	{
-		/** Badge/label text */
-		label: string;
-	}
-> = {
-	add_tag: { label: "Add tag" },
-	remove_tag: { label: "Remove tag" },
-	create_ecosystem: { label: "Create ecosystem" },
-	add_ecosystem_package: { label: "Add to ecosystem" },
-	add_ecosystem_tag: { label: "Tag ecosystem" },
-	remove_ecosystem_tag: { label: "Remove tag" },
-};
-
-/** Get label for a suggestion type */
-export function getSuggestionTypeLabel(type: string): string {
-	return (
-		suggestionTypeMeta[type as SuggestionType]?.label ??
-		type.replaceAll("_", " ")
-	);
-}
-
-/** Context for formatting suggestion descriptions */
-interface SuggestionContext {
-	tags?: Map<string, { name: string }>;
-	packages?: Map<string, { name: string }>;
-	ecosystems?: Map<string, { name: string }>;
-}
+export const suggestionTypeMeta: Record<SuggestionType, { label: string }> =
+	Object.fromEntries(
+		Object.entries(suggestionTypes).map(([key, def]) => [
+			key,
+			{ label: def.label },
+		]),
+	) as Record<SuggestionType, { label: string }>;
 
 /**
- * Format a human-readable description for a suggestion.
- *
- * @param type - Suggestion type (e.g., "add_tag")
- * @param payload - The suggestion payload
- * @param context - Lookup maps for resolving IDs to names
- * @returns Formatted description string
+ * Format suggestion description with version support.
  */
 export function formatSuggestionDescription(
 	type: string,
 	payload: unknown,
-	context: SuggestionContext,
+	version: number,
+	ctx: FormatContext,
 ): string {
-	if (type === "add_tag" || type === "remove_tag") {
-		const tagId = (payload as { tagId?: string })?.tagId;
-		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
-		return tagName ?? "Unknown tag";
-	}
-
-	if (type === "create_ecosystem") {
-		const name = (payload as { name?: string })?.name;
-		return name ?? "Unknown ecosystem";
-	}
-
-	if (type === "add_ecosystem_package") {
-		const packageId = (payload as { packageId?: string })?.packageId;
-		const packageName = packageId
-			? context.packages?.get(packageId)?.name
-			: undefined;
-		return packageName ?? "Unknown package";
-	}
-
-	if (type === "add_ecosystem_tag" || type === "remove_ecosystem_tag") {
-		const tagId = (payload as { tagId?: string })?.tagId;
-		const tagName = tagId ? context.tags?.get(tagId)?.name : undefined;
-		return tagName ?? "Unknown tag";
-	}
-
-	return getSuggestionTypeLabel(type);
+	return formatDescription(type, payload, version, ctx);
 }
 
 /**
- * Format a full suggestion action description.
- * Example: 'Add tag "react"'
+ * Format suggestion action with version support.
  */
 export function formatSuggestionAction(
 	type: string,
 	payload: unknown,
-	context: SuggestionContext,
+	version: number,
+	ctx: FormatContext,
 ): string {
-	const description = formatSuggestionDescription(type, payload, context);
-
-	if (type === "add_tag") {
-		return `Add tag "${description}"`;
-	}
-
-	if (type === "remove_tag") {
-		return `Remove tag "${description}"`;
-	}
-
-	if (type === "create_ecosystem") {
-		return `Create ecosystem "${description}"`;
-	}
-
-	if (type === "add_ecosystem_package") {
-		return `Add package "${description}"`;
-	}
-
-	if (type === "add_ecosystem_tag") {
-		return `Add tag "${description}"`;
-	}
-
-	if (type === "remove_ecosystem_tag") {
-		return `Remove tag "${description}"`;
-	}
-
-	return description;
+	return formatAction(type, payload, version, ctx);
 }

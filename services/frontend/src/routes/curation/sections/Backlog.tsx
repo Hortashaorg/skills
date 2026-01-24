@@ -12,6 +12,7 @@ import { getDisplayName } from "@/lib/account";
 export interface BacklogSuggestion {
 	id: string;
 	type: string;
+	version: number;
 	payload: unknown;
 	accountId: string;
 	account?: { name: string | null; deletedAt?: Date | number | null } | null;
@@ -22,7 +23,11 @@ export interface BacklogSuggestion {
 interface BacklogProps {
 	suggestions: Accessor<readonly BacklogSuggestion[] | undefined>;
 	currentSuggestionId: Accessor<string | undefined>;
-	formatDescription: (type: string, payload: unknown) => string;
+	formatDescription: (
+		type: string,
+		payload: unknown,
+		version: number,
+	) => string;
 	onSelect: (id: string) => void;
 }
 
@@ -70,6 +75,7 @@ export const Backlog = (props: BacklogProps) => {
 														{props.formatDescription(
 															suggestion.type,
 															suggestion.payload,
+															suggestion.version,
 														)}
 													</Text>
 													<Text size="xs" color="muted">

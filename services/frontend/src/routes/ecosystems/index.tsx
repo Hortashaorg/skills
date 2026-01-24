@@ -173,10 +173,13 @@ export const Ecosystems = () => {
 		setIsSubmitting(true);
 		try {
 			zero().mutate(
-				mutators.suggestions.createCreateEcosystem({
-					name: ecosystemName,
-					description: description().trim() || undefined,
-					website: website().trim() || undefined,
+				mutators.suggestions.create({
+					type: "create_ecosystem",
+					payload: {
+						name: ecosystemName,
+						description: description().trim() || undefined,
+						website: website().trim() || undefined,
+					},
 				}),
 			);
 			setName("");

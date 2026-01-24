@@ -248,6 +248,73 @@ export const channelDependencies = pgTable("channel_dependencies", {
 - Immutable tables: Only `createdAt`, never update these records
 - Upvote tables: Only `createdAt`, never update parent entity's `updatedAt` (upvotes shouldn't affect "Recently updated" lists)
 
+## Suggestion Types (`suggestions/types/`)
+
+Each suggestion type is a self-contained ~30-line definition with:
+- Versioned Zod schemas for payload validation
+- Display formatting (receives typed payload)
+- Resolution logic (mutation when approved)
+
+**Adding a new suggestion type:**
+
+1. Add enum value to `db/schema/enums.ts`:
+```tsx
+export const suggestionTypeEnum = pgEnum("suggestion_type", [
+  // ...existing
+  "my_new_type",
+]);
+```
+
+2. Create type definition in `suggestions/types/my-new-type.ts`:
+```tsx
+import { z } from "@package/common";
+import { newRecord } from "../../mutators/helpers.ts";
+import { defineSuggestionType } from "./definition.ts";
+
+const schema = z.object({ someField: z.string() });
+
+export const myNewType = defineSuggestionType({
+  type: "my_new_type",
+  label: "My new type",
+  schemas: { 1: schema },  // Versioned for future evolution
+  currentVersion: 1,
+
+  // Receives typed payload - no parsing needed
+  formatDescription: (payload, ctx) => payload.someField,
+  formatAction: (payload) => `Do something with "${payload.someField}"`,
+
+  // ids has packageId and ecosystemId
+  resolve: async (tx, payload, ids) => {
+    if (!ids.packageId) throw new Error("my_new_type requires packageId");
+    const record = newRecord();
+    await tx.mutate.someTable.insert({
+      id: record.id,
+      field: payload.someField,
+      createdAt: record.now,
+    });
+  },
+});
+```
+
+3. Export from `suggestions/types/index.ts`:
+```tsx
+import { myNewType } from "./my-new-type.ts";
+
+export const suggestionTypes = {
+  // ...existing
+  my_new_type: myNewType,
+} as const;
+```
+
+4. Create frontend form calling `zero.mutate.suggestions.create({ type: "my_new_type", packageId, payload: { someField } })`
+
+**Evolving a schema:** Add new version to `schemas` object, update `currentVersion`. Old suggestions use their stored version for parsing/resolution.
+
+**Key patterns:**
+- Schema can use `.transform()` to derive fields (e.g., `create_ecosystem` generates slug from name)
+- Methods receive already-parsed typed payloads - no safeParse boilerplate
+- Display formatting is colocated with the type - frontend just calls `formatSuggestionAction(type, payload, ctx)`
+
 ## After Changes
 
 | Change | Commands |

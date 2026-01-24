@@ -168,11 +168,15 @@ export const Curation = () => {
 	};
 
 	// Helper to format suggestion descriptions using shared helpers
-	const getDescription = (type: string, payload: unknown): string =>
-		formatSuggestionDescription(type, payload, { tags: tagsById() });
+	const getDescription = (
+		type: string,
+		payload: unknown,
+		version: number,
+	): string =>
+		formatSuggestionDescription(type, payload, version, { tags: tagsById() });
 
-	const getAction = (type: string, payload: unknown): string =>
-		formatSuggestionAction(type, payload, { tags: tagsById() });
+	const getAction = (type: string, payload: unknown, version: number): string =>
+		formatSuggestionAction(type, payload, version, { tags: tagsById() });
 
 	// Cast vote
 	const handleVote = async (voteType: "approve" | "reject") => {

@@ -211,9 +211,10 @@ export const Ecosystem = () => {
 
 		try {
 			zero().mutate(
-				mutators.suggestions.createAddEcosystemTag({
+				mutators.suggestions.create({
+					type: "add_ecosystem_tag",
 					ecosystemId: eco.id,
-					tagId,
+					payload: { tagId },
 					justification,
 				}),
 			);
@@ -303,9 +304,10 @@ export const Ecosystem = () => {
 
 		try {
 			zero().mutate(
-				mutators.suggestions.createAddEcosystemPackage({
+				mutators.suggestions.create({
+					type: "add_ecosystem_package",
 					ecosystemId: eco.id,
-					packageId,
+					payload: { packageId },
 					justification,
 				}),
 			);
@@ -382,9 +384,10 @@ export const Ecosystem = () => {
 
 		try {
 			zero().mutate(
-				mutators.suggestions.createRemoveEcosystemTag({
+				mutators.suggestions.create({
+					type: "remove_ecosystem_tag",
 					ecosystemId: eco.id,
-					tagId,
+					payload: { tagId },
 					justification: removeTagJustification() || undefined,
 				}),
 			);
