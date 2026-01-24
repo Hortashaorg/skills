@@ -179,6 +179,7 @@ hooks/         # Reusable business logic (uses Zero, auth, mutators)
 | `useSuggestionSubmit(options)` | Submit suggestions with auto toast |
 | `useVote()` | Vote on suggestions (approve/reject) |
 | `useAddToProject(options)` | Add entity to project (for popover) |
+| `useModalState<T>()` | Modal open/close + optional data |
 
 ## Common Patterns
 

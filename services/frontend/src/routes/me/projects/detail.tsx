@@ -13,6 +13,7 @@ import { AlertDialog } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
+import { useModalState } from "@/hooks/useModalState";
 import { Layout } from "@/layout/Layout";
 import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
 import { groupByTags } from "@/lib/group-by-tags";
@@ -40,13 +41,9 @@ export const ProjectDetail = () => {
 	const [editDescription, setEditDescription] = createSignal("");
 	const [isSaving, setIsSaving] = createSignal(false);
 	const [packageSearch, setPackageSearch] = createSignal("");
-	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
-	const [removePackageId, setRemovePackageId] = createSignal<string | null>(
-		null,
-	);
-	const [removeEcosystemId, setRemoveEcosystemId] = createSignal<string | null>(
-		null,
-	);
+	const deleteModal = useModalState();
+	const removePackageModal = useModalState<string>();
+	const removeEcosystemModal = useModalState<string>();
 	const [activeTab, setActiveTab] = createSignal<"packages" | "ecosystems">(
 		"packages",
 	);
@@ -308,7 +305,7 @@ export const ProjectDetail = () => {
 
 	const confirmRemovePackage = async () => {
 		const p = project();
-		const packageId = removePackageId();
+		const packageId = removePackageModal.data();
 		if (!p || !packageId) return;
 
 		const projectPackage = p.projectPackages.find(
@@ -326,12 +323,12 @@ export const ProjectDetail = () => {
 		} catch (err) {
 			handleMutationError(err, "remove package");
 		}
-		setRemovePackageId(null);
+		removePackageModal.close();
 	};
 
 	const confirmRemoveEcosystem = async () => {
 		const p = project();
-		const ecosystemId = removeEcosystemId();
+		const ecosystemId = removeEcosystemModal.data();
 		if (!p || !ecosystemId) return;
 
 		const projectEcosystem = (p.projectEcosystems ?? []).find(
@@ -349,7 +346,7 @@ export const ProjectDetail = () => {
 		} catch (err) {
 			handleMutationError(err, "remove ecosystem");
 		}
-		setRemoveEcosystemId(null);
+		removeEcosystemModal.close();
 	};
 
 	const confirmDelete = async () => {
@@ -397,7 +394,7 @@ export const ProjectDetail = () => {
 												project={p()}
 												isOwner={isOwner()}
 												onEdit={startEditing}
-												onDelete={() => setDeleteDialogOpen(true)}
+												onDelete={() => deleteModal.open()}
 											/>
 										}
 									>
@@ -448,7 +445,7 @@ export const ProjectDetail = () => {
 															ecosystems={ecosystems()}
 															ecosystemsByTag={ecosystemsByTag()}
 															isOwner={isOwner()}
-															onRemove={setRemoveEcosystemId}
+															onRemove={removeEcosystemModal.open}
 														/>
 													</Stack>
 												}
@@ -468,7 +465,7 @@ export const ProjectDetail = () => {
 														packages={packages()}
 														packagesByTag={packagesByTag()}
 														isOwner={isOwner()}
-														onRemove={setRemovePackageId}
+														onRemove={removePackageModal.open}
 													/>
 												</Stack>
 											</Show>
@@ -483,8 +480,8 @@ export const ProjectDetail = () => {
 
 			{/* Delete Project Dialog */}
 			<AlertDialog
-				open={deleteDialogOpen()}
-				onOpenChange={setDeleteDialogOpen}
+				open={deleteModal.isOpen()}
+				onOpenChange={(open) => !open && deleteModal.close()}
 				title="Delete Project"
 				description={`Delete "${project()?.name}"? This cannot be undone.`}
 				confirmText="Delete"
@@ -494,10 +491,8 @@ export const ProjectDetail = () => {
 
 			{/* Remove Package Dialog */}
 			<AlertDialog
-				open={removePackageId() !== null}
-				onOpenChange={(open) => {
-					if (!open) setRemovePackageId(null);
-				}}
+				open={removePackageModal.isOpen()}
+				onOpenChange={(open) => !open && removePackageModal.close()}
 				title="Remove Package"
 				description="Remove this package from the project?"
 				confirmText="Remove"
@@ -507,10 +502,8 @@ export const ProjectDetail = () => {
 
 			{/* Remove Ecosystem Dialog */}
 			<AlertDialog
-				open={removeEcosystemId() !== null}
-				onOpenChange={(open) => {
-					if (!open) setRemoveEcosystemId(null);
-				}}
+				open={removeEcosystemModal.isOpen()}
+				onOpenChange={(open) => !open && removeEcosystemModal.close()}
 				title="Remove Ecosystem"
 				description="Remove this ecosystem from the project?"
 				confirmText="Remove"
