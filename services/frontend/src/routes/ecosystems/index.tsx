@@ -1,11 +1,5 @@
 import type { Row } from "@package/database/client";
-import {
-	isPowerUser,
-	mutators,
-	queries,
-	useQuery,
-	useZero,
-} from "@package/database/client";
+import { queries, useQuery, useZero } from "@package/database/client";
 import {
 	createEffect,
 	createMemo,
@@ -39,13 +33,13 @@ import {
 	TextFieldLabel,
 } from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
-import { getAuthData } from "@/context/app-provider";
 import { createEcosystemUpvote } from "@/hooks/createEcosystemUpvote";
 import {
 	createUrlArraySignal,
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import {
@@ -53,7 +47,6 @@ import {
 	ECOSYSTEMS_INITIAL_LIMIT,
 	ECOSYSTEMS_LOAD_MORE_COUNT,
 } from "@/lib/constants";
-import { handleMutationError } from "@/lib/mutation-error";
 
 type EcosystemTag = Row["ecosystemTags"] & {
 	tag?: Row["tags"];
@@ -169,45 +162,28 @@ export const Ecosystems = () => {
 	const [name, setName] = createSignal("");
 	const [description, setDescription] = createSignal("");
 	const [website, setWebsite] = createSignal("");
-	const [isSubmitting, setIsSubmitting] = createSignal(false);
 
-	const handleSubmit = () => {
-		const ecosystemName = name().trim();
-		if (!ecosystemName) {
-			toast.error("Please enter an ecosystem name.", "Missing name");
-			return;
-		}
-
-		setIsSubmitting(true);
-		try {
-			zero().mutate(
-				mutators.suggestions.create({
-					type: "create_ecosystem",
-					payload: {
-						name: ecosystemName,
-						description: description().trim() || undefined,
-						website: website().trim() || undefined,
-					},
-				}),
-			);
+	const { submit: submitCreateEcosystem } = useSuggestionSubmit({
+		type: "create_ecosystem",
+		getPayload: () => ({
+			name: name().trim(),
+			description: description().trim() || undefined,
+			website: website().trim() || undefined,
+		}),
+		onSuccess: () => {
 			setName("");
 			setDescription("");
 			setWebsite("");
 			setDialogOpen(false);
-			const roles = getAuthData()?.roles ?? [];
-			if (isPowerUser(roles)) {
-				toast.success("Ecosystem has been created.", "Applied");
-			} else {
-				toast.success(
-					"Your ecosystem suggestion is now pending review.",
-					"Suggestion submitted",
-				);
-			}
-		} catch (err) {
-			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
-		} finally {
-			setIsSubmitting(false);
+		},
+	});
+
+	const handleSubmit = () => {
+		if (!name().trim()) {
+			toast.error("Please enter an ecosystem name.", "Missing name");
+			return;
 		}
+		submitCreateEcosystem();
 	};
 
 	const openSuggestDialog = (prefillName?: string) => {
@@ -381,9 +357,9 @@ export const Ecosystems = () => {
 							size="sm"
 							variant="primary"
 							onClick={handleSubmit}
-							disabled={!name().trim() || isSubmitting()}
+							disabled={!name().trim()}
 						>
-							{isSubmitting() ? "Submitting..." : "Submit"}
+							Submit
 						</Button>
 					</Flex>
 					<Text size="xs" color="muted">

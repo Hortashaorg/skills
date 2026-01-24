@@ -9,6 +9,10 @@ export const removeTag = defineSuggestionType({
 	label: "Remove tag",
 	schemas: { 1: schema },
 	currentVersion: 1,
+	toastMessages: {
+		applied: "Tag has been removed.",
+		pending: "Your tag removal suggestion is now pending review.",
+	},
 
 	formatDescription: (payload, ctx) =>
 		ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag",

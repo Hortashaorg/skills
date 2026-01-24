@@ -10,6 +10,10 @@ export const addEcosystemTag = defineSuggestionType({
 	label: "Add tag",
 	schemas: { 1: schema },
 	currentVersion: 1,
+	toastMessages: {
+		applied: "Tag has been applied.",
+		pending: "Your tag suggestion is now pending review.",
+	},
 
 	formatDescription: (payload, ctx) =>
 		ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag",

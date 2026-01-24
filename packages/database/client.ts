@@ -1,4 +1,4 @@
-export type { Row } from "@rocicorp/zero";
+export type { ReadonlyJSONObject, Row } from "@rocicorp/zero";
 export {
 	useConnectionState,
 	useQuery,
@@ -26,4 +26,5 @@ export {
 	getSuggestionTypeLabel,
 } from "./suggestions/display.ts";
 export { isPowerUser } from "./suggestions/power-user.ts";
+export { getSuggestionToastMessages } from "./suggestions/types/index.ts";
 export { schema } from "./zero-schema.gen.ts";

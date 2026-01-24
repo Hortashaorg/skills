@@ -20,6 +20,7 @@ export {
 	type ResolveIds,
 	type SuggestionTransaction,
 	type SuggestionTypeDefinition,
+	type ToastMessages,
 } from "./definition.ts";
 
 import type { FormatContext, SuggestionTypeDefinition } from "./definition.ts";
@@ -107,4 +108,18 @@ export function formatAction(
 	const parsed = schema.safeParse(payload);
 	if (!parsed.success) return typeDef.label;
 	return typeDef.formatAction(parsed.data, ctx);
+}
+
+/** Get toast messages for a suggestion type */
+export function getSuggestionToastMessages(type: string): {
+	applied: string;
+	pending: string;
+} {
+	const typeDef = getSuggestionType(type);
+	return (
+		typeDef?.toastMessages ?? {
+			applied: "Change has been applied.",
+			pending: "Your suggestion is now pending review.",
+		}
+	);
 }

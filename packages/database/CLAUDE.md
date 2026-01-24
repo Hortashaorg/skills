@@ -254,6 +254,7 @@ Each suggestion type is a self-contained ~30-line definition with:
 - Versioned Zod schemas for payload validation
 - Display formatting (receives typed payload)
 - Resolution logic (mutation when approved)
+- Toast messages for frontend feedback
 
 **Adding a new suggestion type:**
 
@@ -279,11 +280,14 @@ export const myNewType = defineSuggestionType({
   schemas: { 1: schema },  // Versioned for future evolution
   currentVersion: 1,
 
-  // Receives typed payload - no parsing needed
+  toastMessages: {
+    applied: "Change has been applied.",
+    pending: "Your suggestion is now pending review.",
+  },
+
   formatDescription: (payload, ctx) => payload.someField,
   formatAction: (payload) => `Do something with "${payload.someField}"`,
 
-  // ids has packageId and ecosystemId
   resolve: async (tx, payload, ids) => {
     if (!ids.packageId) throw new Error("my_new_type requires packageId");
     const record = newRecord();
@@ -306,7 +310,7 @@ export const suggestionTypes = {
 } as const;
 ```
 
-4. Create frontend form calling `zero.mutate.suggestions.create({ type: "my_new_type", packageId, payload: { someField } })`
+4. Use `useSuggestionSubmit` hook in frontend (see `services/frontend/CLAUDE.md`)
 
 **Evolving a schema:** Add new version to `schemas` object, update `currentVersion`. Old suggestions use their stored version for parsing/resolution.
 

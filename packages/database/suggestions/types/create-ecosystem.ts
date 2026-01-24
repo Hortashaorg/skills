@@ -24,6 +24,10 @@ export const createEcosystem = defineSuggestionType({
 	label: "Create ecosystem",
 	schemas: { 1: schema },
 	currentVersion: 1,
+	toastMessages: {
+		applied: "Ecosystem has been created.",
+		pending: "Your ecosystem suggestion is now pending review.",
+	},
 
 	formatDescription: (payload) => payload.name,
 

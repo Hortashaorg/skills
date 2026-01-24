@@ -2,7 +2,6 @@ import { Popover } from "@kobalte/core/popover";
 import { formatShortDate } from "@package/common";
 import {
 	getSuggestionTypeLabel,
-	isPowerUser,
 	mutators,
 	queries,
 	type Row,
@@ -34,10 +33,10 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { UpvoteButton } from "@/components/ui/upvote-button";
-import { getAuthData } from "@/context/app-provider";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { createPolledValue } from "@/hooks/createPolledValue";
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { handleMutationError } from "@/lib/mutation-error";
@@ -204,33 +203,19 @@ export const Header = (props: HeaderProps) => {
 			});
 	});
 
-	const handleSuggestTag = (justification?: string) => {
-		const tagId = selectedTagId();
-		if (!tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.create({
-					type: "add_tag",
-					packageId: props.pkg.id,
-					payload: { tagId },
-					justification,
-				}),
-			);
+	const { submit: submitAddTag } = useSuggestionSubmit({
+		type: "add_tag",
+		entityId: { packageId: props.pkg.id },
+		getPayload: () => ({ tagId: selectedTagId() }),
+		onSuccess: () => {
 			setSelectedTagId(undefined);
 			setTagModalOpen(false);
-			const roles = getAuthData()?.roles ?? [];
-			if (isPowerUser(roles)) {
-				toast.success("Tag has been applied.", "Applied");
-			} else {
-				toast.success(
-					"Your tag suggestion is now pending review.",
-					"Suggestion submitted",
-				);
-			}
-		} catch (err) {
-			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
-		}
+		},
+	});
+
+	const handleSuggestTag = (justification?: string) => {
+		if (!selectedTagId()) return;
+		submitAddTag(justification);
 	};
 
 	const handleVote = (suggestionId: string, vote: "approve" | "reject") => {
@@ -283,34 +268,20 @@ export const Header = (props: HeaderProps) => {
 		setRemoveTagModalOpen(true);
 	};
 
-	const handleConfirmRemoveTag = () => {
-		const tagId = removeTagId();
-		if (!tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.create({
-					type: "remove_tag",
-					packageId: props.pkg.id,
-					payload: { tagId },
-					justification: removeTagJustification() || undefined,
-				}),
-			);
+	const { submit: submitRemoveTag } = useSuggestionSubmit({
+		type: "remove_tag",
+		entityId: { packageId: props.pkg.id },
+		getPayload: () => ({ tagId: removeTagId() }),
+		onSuccess: () => {
 			setRemoveTagModalOpen(false);
 			setRemoveTagId(null);
 			setRemoveTagJustification("");
-			const roles = getAuthData()?.roles ?? [];
-			if (isPowerUser(roles)) {
-				toast.success("Tag has been removed.", "Applied");
-			} else {
-				toast.success(
-					"Your suggestion to remove this tag is now pending review.",
-					"Suggestion submitted",
-				);
-			}
-		} catch (err) {
-			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
-		}
+		},
+	});
+
+	const handleConfirmRemoveTag = () => {
+		if (!removeTagId()) return;
+		submitRemoveTag(removeTagJustification() || undefined);
 	};
 
 	const removeTagName = createMemo(() => {

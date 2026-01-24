@@ -30,6 +30,11 @@ export interface ValidateContext {
 	userId: string;
 }
 
+export interface ToastMessages {
+	applied: string;
+	pending: string;
+}
+
 /**
  * Suggestion type definition.
  * TPayload is the parsed payload type - methods receive already-validated data.
@@ -43,6 +48,9 @@ export interface SuggestionTypeDefinition<TPayload> {
 
 	/** Current version for new suggestions */
 	currentVersion: number;
+
+	/** Toast messages for frontend feedback */
+	toastMessages: ToastMessages;
 
 	/** Format short description (e.g., "TypeScript") */
 	formatDescription: (payload: TPayload, ctx: FormatContext) => string;

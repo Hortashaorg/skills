@@ -10,6 +10,10 @@ export const addEcosystemPackage = defineSuggestionType({
 	label: "Add package",
 	schemas: { 1: schema },
 	currentVersion: 1,
+	toastMessages: {
+		applied: "Package has been added.",
+		pending: "Your package suggestion is now pending review.",
+	},
 
 	formatDescription: (payload, ctx) =>
 		ctx.packages?.get(payload.packageId)?.name ?? "Unknown package",

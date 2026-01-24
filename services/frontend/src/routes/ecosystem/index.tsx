@@ -1,6 +1,5 @@
 import {
 	getSuggestionTypeLabel,
-	isPowerUser,
 	mutators,
 	queries,
 	useQuery,
@@ -25,7 +24,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
-import { getAuthData } from "@/context/app-provider";
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
@@ -207,34 +206,19 @@ export const Ecosystem = () => {
 			});
 	});
 
-	const handleSuggestTag = (justification?: string) => {
-		const eco = ecosystem();
-		const tagId = selectedTagId();
-		if (!eco || !tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.create({
-					type: "add_ecosystem_tag",
-					ecosystemId: eco.id,
-					payload: { tagId },
-					justification,
-				}),
-			);
+	const { submit: submitAddTag } = useSuggestionSubmit({
+		type: "add_ecosystem_tag",
+		entityId: { ecosystemId: ecosystem()?.id },
+		getPayload: () => ({ tagId: selectedTagId() }),
+		onSuccess: () => {
 			setSelectedTagId(undefined);
 			setTagModalOpen(false);
-			const roles = getAuthData()?.roles ?? [];
-			if (isPowerUser(roles)) {
-				toast.success("Tag has been applied.", "Applied");
-			} else {
-				toast.success(
-					"Your tag suggestion is now pending review.",
-					"Suggestion submitted",
-				);
-			}
-		} catch (err) {
-			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
-		}
+		},
+	});
+
+	const handleSuggestTag = (justification?: string) => {
+		if (!ecosystem() || !selectedTagId()) return;
+		submitAddTag(justification);
 	};
 
 	// Package suggestion modal
@@ -302,35 +286,20 @@ export const Ecosystem = () => {
 			}));
 	});
 
-	const handleSuggestPackage = (justification?: string) => {
-		const eco = ecosystem();
-		const packageId = selectedPackageId();
-		if (!eco || !packageId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.create({
-					type: "add_ecosystem_package",
-					ecosystemId: eco.id,
-					payload: { packageId },
-					justification,
-				}),
-			);
+	const { submit: submitAddPackage } = useSuggestionSubmit({
+		type: "add_ecosystem_package",
+		entityId: { ecosystemId: ecosystem()?.id },
+		getPayload: () => ({ packageId: selectedPackageId() }),
+		onSuccess: () => {
 			setSelectedPackageId(undefined);
 			setPackageSearchQuery("");
 			setPackageModalOpen(false);
-			const roles = getAuthData()?.roles ?? [];
-			if (isPowerUser(roles)) {
-				toast.success("Package has been added.", "Applied");
-			} else {
-				toast.success(
-					"Your package suggestion is now pending review.",
-					"Suggestion submitted",
-				);
-			}
-		} catch (err) {
-			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
-		}
+		},
+	});
+
+	const handleSuggestPackage = (justification?: string) => {
+		if (!ecosystem() || !selectedPackageId()) return;
+		submitAddPackage(justification);
 	};
 
 	// Vote handler
@@ -381,35 +350,20 @@ export const Ecosystem = () => {
 		setRemoveTagModalOpen(true);
 	};
 
-	const handleConfirmRemoveTag = () => {
-		const eco = ecosystem();
-		const tagId = removeTagId();
-		if (!eco || !tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.create({
-					type: "remove_ecosystem_tag",
-					ecosystemId: eco.id,
-					payload: { tagId },
-					justification: removeTagJustification() || undefined,
-				}),
-			);
+	const { submit: submitRemoveTag } = useSuggestionSubmit({
+		type: "remove_ecosystem_tag",
+		entityId: { ecosystemId: ecosystem()?.id },
+		getPayload: () => ({ tagId: removeTagId() }),
+		onSuccess: () => {
 			setRemoveTagModalOpen(false);
 			setRemoveTagId(null);
 			setRemoveTagJustification("");
-			const roles = getAuthData()?.roles ?? [];
-			if (isPowerUser(roles)) {
-				toast.success("Tag has been removed.", "Applied");
-			} else {
-				toast.success(
-					"Your suggestion to remove this tag is now pending review.",
-					"Suggestion submitted",
-				);
-			}
-		} catch (err) {
-			handleMutationError(err, "submit suggestion", { useErrorMessage: true });
-		}
+		},
+	});
+
+	const handleConfirmRemoveTag = () => {
+		if (!ecosystem() || !removeTagId()) return;
+		submitRemoveTag(removeTagJustification() || undefined);
 	};
 
 	const handleAddPackage = () => {

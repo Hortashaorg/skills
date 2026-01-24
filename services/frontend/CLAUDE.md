@@ -206,6 +206,24 @@ const canLoadMore = () => scroll.canLoadMore(items()?.length ?? 0);
 | `createEcosystemUpvote(ecosystem)` | Ecosystem upvote (wrapper) |
 | `createPackageRequest(options)` | Submit package request with loading |
 | `createPolledValue(fetcher, interval)` | Poll REST endpoint periodically |
+| `useSuggestionSubmit(options)` | Submit suggestions with auto toast |
+
+**Suggestion submit hook:**
+```tsx
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
+
+const { submit } = useSuggestionSubmit({
+  type: "add_tag",
+  entityId: { packageId: pkg.id },
+  getPayload: () => ({ tagId: selectedTagId() }),
+  onSuccess: () => setModalOpen(false),
+});
+
+// Call submit with optional justification
+submit(justification);
+```
+
+Automatically handles: mutation, power user detection, appropriate toast message, error handling.
 
 **Infinite scroll options:**
 - `initialLimit` - Starting page size
