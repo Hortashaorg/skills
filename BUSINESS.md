@@ -16,7 +16,7 @@
 "Same reason people use comparison sites instead of visiting ten different shops. The information exists, this just saves you the legwork."
 
 **"How do you make money?"**
-"It doesn't make money yet, and it doesn't cost anything to run either. Right now I'm focused on making it useful. If enough developers use it, there are obvious ways to monetize later - but that's not the priority."
+"It doesn't make money yet, and it doesn't cost anything to run either. Right now I'm focused on making it useful. If enough developers use it, there are options to explore - selling data access to companies, private instances for businesses - but nothing is guaranteed. It will always be free for individual developers."
 
 ---
 
