@@ -141,9 +141,16 @@ Keep docs compact - no repetition across files. Each file documents only its sco
 
 ---
 
-### Not Needed (Based on Review)
+### Completed (Sprint 11)
 
-~~Suggestion system architecture overhaul~~ - The backend is well-designed (537 LOC but handles complex multi-step transactions correctly). Focus on frontend patterns (hooks, modals) instead.
+#### Suggestion System Architecture Overhaul
+- Consolidated 6 separate mutators into 1 generic `create` mutator
+- Created self-contained type definitions in `suggestions/types/` (~50 lines each)
+- Each type file contains: versioned schema, display formatting, resolve logic, validation
+- Typed payloads - methods receive already-parsed data (no redundant parsing)
+- Validation: entity existence, duplicates, pending suggestion checks
+- Adding new suggestion type now requires only: enum + type file + registry export + frontend form
+- Net result: -74 lines while adding validation and improving extensibility
 
 ---
 
