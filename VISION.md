@@ -74,15 +74,16 @@ You don't need a community to get value. Create something useful, share the link
 
 ### Community & Engagement
 
-- **Follow what matters**: Follow packages or ecosystems to get notified of new versions or updates. Not social following - relevant updates only.
-- **Per-package leaderboards**: "Top React helper", "Top Express expert" - recognition for helping others with specific technologies
+- **Grounded discussions**: Comment on packages, ecosystems, projects - always anchored to real entities
+- **Public profiles**: Showcase your projects, decisions, and contribution history
 - **Contribution tracking**: Score users for curation work (tagging, voting, suggesting)
-- **Public profiles**: Showcase your projects, expertise areas, and contribution history
+- **Follow what matters**: Follow packages or ecosystems for version and update notifications
 
-### Project Discovery
+### Projects & Decisions
 
 - **Public by default**: Projects are shared - show off your stack, discover what others are building
-- **Tech stack exploration**: See what packages others are using together, find projects using specific packages
+- **Decision history**: Document why you added or removed packages - your reasoning preserved
+- **Stack evolution**: See how projects change over time, not just current state
 - **Import your stack**: Upload package.json to instantly visualize and categorize your existing projects
 
 ## Phases
@@ -116,33 +117,54 @@ You don't need a community to get value. Create something useful, share the link
 - Registry adapter pattern for easy expansion
 - Cross-registry dependencies (jsr packages can depend on npm)
 
-### Phase 5: Ecosystems (Current)
+### Phase 5: Ecosystems ✅
 
 - Ecosystems (React, AWS, TalosOS) - product/technology identities containing related packages
 - Community-curated ecosystem suggestions and package associations
 - Project-ecosystem linking (declare "I use Azure" not just individual packages)
-- Per-package leaderboards (recognize package experts)
 
-### Phase 6: Comparisons & Decisions
+### Phase 6: Projects & Decision History (Current)
+
+Projects become more than a stack list - they tell the story of your technology decisions.
+
+- **Decision records**: Document why you added or removed each package
+- **Change history**: Timeline of stack evolution with reasoning
+- **Shareable narratives**: "Here's my stack AND how it evolved"
+- **Import with context**: Add packages from package.json, annotate decisions later
+
+### Phase 7: Discussions & Commentary
+
+Foster grounded technical discussion anchored to real entities.
+
+- **Markdown editor**: GitHub-flavored markdown for rich content
+- **Entity references**: @mention packages, ecosystems, projects inline - clickable links
+- **Threaded replies**: Respond to specific comments, build conversations
+- **Contextual placement**: Comments on packages, ecosystems, projects, decisions
+- **Notifications**: Get notified when someone replies to your comments
+
+### Phase 8: User Profiles
+
+Click on any name to see who's behind the contribution.
+
+- **Profile pages**: Activity feed, projects, contribution history
+- **Expertise signals**: Technologies you've contributed to most
+- **Public presence**: Your projects, decisions, and discussions in one place
+- **Discoverability**: Find people by the technologies they work with
+
+### Phase 9: Comparisons
 
 - Comparisons - community-curated "which X?" pages linking to packages and ecosystems
-- Decision records - document "why we chose X over Y" with concrete references
-- Voting on comparison items and decision quality
+- Voting on comparison items and quality
+- Link to decision records showing real-world choices
 
-### Phase 7: Discussions & Profiles
-
-- Rich text / markdown support for longer content
-- Comments on packages, ecosystems, projects, comparisons
-- Public user profiles with contribution history
-- Package expertise recognition ("Top React helper")
-
-### Phase 8: Following & Discovery
+### Phase 10: Following & Discovery
 
 - Follow packages/ecosystems for version and update notifications
 - Enhanced search with recommendations
 - "Similar to" and "used together with" suggestions
+- Per-package leaderboards (recognize package experts)
 
-### Phase 9: Trust & Moderation
+### Phase 11: Trust & Moderation
 
 - Audit log for ecosystem/curation changes (who did what, when)
 - Power user role for trusted contributors (frictionless contributions)
