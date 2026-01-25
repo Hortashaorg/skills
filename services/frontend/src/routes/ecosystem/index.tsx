@@ -7,6 +7,7 @@ import {
 } from "@package/database/client";
 import { A, useParams } from "@solidjs/router";
 import { createMemo, createSignal, Show } from "solid-js";
+import { SearchInput } from "@/components/composite/search-input";
 import { SEO } from "@/components/composite/seo";
 import {
 	type SuggestionItem,
@@ -232,12 +233,15 @@ export const Ecosystem = () => {
 	const [packageModalOpen, setPackageModalOpen] = createSignal(false);
 	const [packageSearchQuery, setPackageSearchQuery] = createSignal("");
 
-	const [searchResults] = useQuery(() =>
+	const [searchResults, searchResultsResult] = useQuery(() =>
 		queries.packages.search({
 			query: packageSearchQuery() || undefined,
 			limit: 10,
 		}),
 	);
+	const isSearching = () =>
+		packageSearchQuery().length > 0 &&
+		searchResultsResult().type !== "complete";
 
 	const existingPackageIds = createMemo(() => {
 		const eco = ecosystem();
@@ -268,10 +272,12 @@ export const Ecosystem = () => {
 		);
 	});
 
-	const packageOptions = createMemo(() =>
+	const packagePickerItems = createMemo(() =>
 		availablePackages().map((p) => ({
-			value: p.id,
-			label: `${p.name} (${p.registry})`,
+			id: p.id,
+			primary: p.name,
+			secondary: p.description ?? undefined,
+			label: p.registry,
 		})),
 	);
 
@@ -477,24 +483,16 @@ export const Ecosystem = () => {
 				submitLabel="Suggest Package"
 				isFormDisabled={!selectedPackageId()}
 				formContent={
-					<Stack spacing="sm">
-						<input
-							type="text"
-							value={packageSearchQuery()}
-							onInput={(e) => setPackageSearchQuery(e.currentTarget.value)}
-							placeholder="Search packages..."
-							class="flex h-10 w-full rounded-radius border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark"
-						/>
-						<Show when={packageSearchQuery().length > 0}>
-							<Select
-								options={packageOptions()}
-								value={selectedPackageId()}
-								onChange={setSelectedPackageId}
-								placeholder="Select a package..."
-								size="sm"
-							/>
-						</Show>
-					</Stack>
+					<SearchInput
+						value={packageSearchQuery()}
+						onValueChange={setPackageSearchQuery}
+						results={packagePickerItems()}
+						isLoading={isSearching()}
+						onSelect={(item) => setSelectedPackageId(item.id)}
+						onClear={() => setSelectedPackageId(undefined)}
+						placeholder="Search packages..."
+						noResultsMessage="No matching packages found"
+					/>
 				}
 			/>
 
