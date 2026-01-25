@@ -4,115 +4,59 @@
 
 ---
 
-## Sprint 11: Tech Debt & DX
+## Sprint 12: Projects & Curation Expansion
 
-Dedicated sprint for code quality, developer experience, and consistency.
+Focus: Projects become decision journals, expand suggestion coverage.
 
-### Tier 1: High Impact, Low Effort ✅
+### Projects Rework
 
-#### Consolidate Duplicate Code ✅
-- [x] Merge `createPackageUpvote` + `createEcosystemUpvote` into generic `createUpvote(entity, type)`
-  - Created `hooks/createUpvote.ts` with shared logic
-  - Wrappers remain for type-safe usage
-  - ~100 LOC reduction
+Transform projects from stack lists into decision records.
 
-#### Fix Critical UX Bugs ✅
-- [x] Add user feedback when auth fails in `app-provider.tsx`
-  - Toast on login failure: "Sign in failed. Please try again."
-  - Toast on refresh failure: "Session expired. Please sign in again."
-- [x] Auto-approved suggestions show correct toast
-  - Power users see "Applied" instead of "pending review"
+#### Schema Changes
+- [ ] Add `reason` field to `projectPackages` table (nullable text)
+- [ ] Add `reason` field to `projectEcosystems` table (nullable text)
+- [ ] Add `removedAt` timestamp to track removal history
+- [ ] Consider `projectHistory` table for timeline view
 
-#### Standardize Error Handling ✅
-- [x] Replace direct `toast.error()` calls with `handleMutationError()`
-  - Updated: `package/Header.tsx`, `ecosystem/index.tsx`, `ecosystems/index.tsx`, `curation/index.tsx`
+#### UI Updates
+- [ ] Add reason input when adding package/ecosystem to project
+- [ ] Show reasons on project detail page (expandable per item)
+- [ ] Add "Edit reason" inline functionality
+- [ ] Timeline view showing add/remove history with reasons
 
-#### Documentation Updates ✅
-- [x] Update `services/frontend/CLAUDE.md` - Added Hook Reference section
-- [x] Create `services/backend/CLAUDE.md` - Endpoints, auth flow, patterns
-- [x] Create `services/webhook/CLAUDE.md` - Events, actions, Zitadel API
-- [x] `README.md` already had database commands (no change needed)
+#### Import Enhancement
+- [ ] When importing from package.json, allow bulk reason annotation
+- [ ] "Annotate later" flow - import first, add reasons over time
 
 ---
 
-### Tier 2: Quick Wins ✅
+### Suggestion Type Expansion
 
-- [x] `SkeletonCard` - Shared loading card component for grids
-- [x] `groupByTags<T>()` - Extracted to `lib/group-by-tags.ts`
-- [x] `useVote()` - Extracted to `hooks/useVote.ts`
-- [x] `useAddToProject()` + `AddToProjectPopover` - Hook + presentational component pattern
-- [x] Dialog stories - Visual tests for Dialog component
-- [x] CLAUDE.md updates - Emphasize presentational components, study existing patterns first
+Current types: `add_tag`, `remove_tag`, `create_ecosystem`, `add_ecosystem_package`, `add_ecosystem_tag`, `remove_ecosystem_tag`
 
-Net result: ~386 LOC removed through consolidation
+#### High Priority
+- [ ] `remove_ecosystem_package` - Remove package from ecosystem
+  - Mirror of `add_ecosystem_package`
+  - Needs confirmation modal with justification
 
----
+#### Medium Priority
+- [ ] `edit_ecosystem_description` - Suggest description changes
+  - Show diff in curation UI
+  - Payload: `{ description: string }`
 
-### Tier 3: Medium Effort Improvements
-
-#### Extract Reusable Hooks
-
-- [x] `useModalState<T>()` - Consolidated modal open/close + data patterns
-  - Created `hooks/useModalState.ts`
-  - Refactored: `admin/tags/index.tsx`, `me/projects/detail.tsx`
-  - Remaining files can adopt as touched
-
-#### File Sizes (Post Tier 2)
-
-| File | Lines | Notes |
-|------|-------|-------|
-| `package/sections/Header.tsx` | ~500 | Reduced with AddToProjectPopover extraction |
-| `me/projects/detail.tsx` | ~510 | Reduced with groupByTags extraction |
-| `ecosystem/index.tsx` | ~540 | Could shrink with useSuggestionFilters |
+#### Consider Later
+- [ ] `edit_ecosystem_website` - Suggest website URL changes
+- [ ] `merge_ecosystems` - Suggest combining duplicate ecosystems (complex)
 
 ---
 
-### Deferred (Not Worth Effort Now)
+### Quick Fixes (From Sprint 11)
 
-Investigated and determined low value:
-
-- ~~`useSuggestionFilters()`~~ - ~35 LOC duplicated across 2 files only
-- ~~SearchInput vs Input consistency~~ - Plain Input is appropriate for simple search-on-type
-- ~~Button variant reduction~~ - Not causing problems
-- ~~Hide "Add tag" when signed out~~ - Current toast pattern is acceptable
-- ~~`useConfirmationDialog`~~ - Covered by `useModalState`
-- ~~Reduce sign-in CTAs~~ - Contextually appropriate, just inconsistent implementation
-
----
-
-### Completed (Sprint 11)
-
-#### Suggestion System Architecture Overhaul
-- Consolidated 6 separate mutators into 1 generic `create` mutator
-- Created self-contained type definitions in `suggestions/types/` (~50 lines each)
-- Each type file contains: versioned schema, display formatting, resolve logic, validation, toast messages
-- Typed payloads - methods receive already-parsed data (no redundant parsing)
-- Validation: entity existence, duplicates, pending suggestion checks
-- Adding new suggestion type now requires only: enum + type file + registry export + frontend form
-- Net result: -74 lines while adding validation and improving extensibility
-
-#### Suggestion Submit Hook (Frontend DX)
-- Created `useSuggestionSubmit` hook - handles mutation, power user detection, toast, error handling
-- Colocated `toastMessages` with type definitions (single source of truth)
-- Refactored 6 handlers across 3 pages: ~20 lines → ~8 lines each
-- Developers can't forget power user handling - it's automatic
-- Net result: ~30 lines reduced, consistent toast behavior guaranteed
-
-#### Tier 1: High Impact, Low Effort
-- Consolidated upvote hooks into generic `createUpvote()` with type-safe wrappers (~100 LOC reduced)
-- Added auth failure toasts (login and refresh failures now visible to users)
-- Fixed auto-approve toast (power users see "Applied" not "pending review")
-- Standardized error handling with `handleMutationError()` across all mutations
-- Created `services/backend/CLAUDE.md` and `services/webhook/CLAUDE.md`
-- Added Hook Reference section to `services/frontend/CLAUDE.md`
-
-#### Tier 2: Quick Wins
-- `SkeletonCard` component for consistent grid loading states
-- `groupByTags<T>()` utility extracted to `lib/group-by-tags.ts`
-- `useVote()` hook for suggestion voting
-- `useAddToProject()` hook + presentational `AddToProjectPopover` (enforced hook+component pattern)
-- Dialog stories for visual test coverage
-- CLAUDE.md trimmed (417→237 lines) with emphasis on studying existing patterns
+Completed during sprint prep:
+- [x] Badge component: polymorphic `as` prop, `outline` and `subtle` variants
+- [x] Ecosystem suggest package: Use SearchInput for consistent UX
+- [x] Hide "+ Add tag" for logged-out users (reduce noise)
+- [x] Remove "Sign in to upvote" text (upvote count still visible)
 
 ---
 
@@ -122,38 +66,17 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 
 ---
 
-## Codebase Review Summary (Sprint 11 Context)
-
-### Scores by Area
-
-| Area | Score | Status |
-|------|-------|--------|
-| Component Library | 9/10 | Excellent CVA consistency, presentational pattern enforced |
-| State Patterns | 7.5/10 | Hook extraction good, modal pattern duplication remains |
-| Data Layer | 9/10 | Strong Zod coverage, suggestion types self-contained |
-| Documentation | 9/10 | Concise, pattern-focused, study-existing-first guidance |
-| Error Handling | 8.5/10 | `handleMutationError` used consistently |
-| File Organization | 9/10 | Clear structure, consolidated utilities |
-| Testing | 8/10 | 497 Storybook tests, Dialog now covered |
-| UX Patterns | 8.5/10 | Consistent cards, upvotes, modals |
-
-### Key Findings
-
-**Strengths:**
-- ResourceCard → PackageCard/EcosystemCard hierarchy is clean
-- Upvote, tags, add-to-project flows identical across entities
-- No circular dependencies, clear module boundaries
-- 40/55 components have Storybook stories (73%)
-- All Zod validation in place for queries/mutators
-- Suggestion system is now extensible with colocated logic
-
-**Remaining Issues:**
-- 14 modal state signals could use shared `useModalState` hook
-- `useSuggestionFilters()` extraction deferred (complex typing)
-
----
-
 ## Completed (Previous Sprints)
+
+### Sprint 11: Tech Debt & DX
+
+- Suggestion system architecture overhaul (6 mutators → 1 generic, extensible type definitions)
+- `useSuggestionSubmit` hook with power user detection
+- Consolidated hooks: `createUpvote()`, `useModalState<T>()`, `useVote()`, `useAddToProject()`
+- Shared components: `SkeletonCard`, `AddToProjectPopover`
+- Utilities: `groupByTags<T>()`, `handleMutationError()`
+- Documentation: backend/webhook CLAUDE.md, Hook Reference section
+- Badge polymorphic rendering, ecosystem SearchInput UX, reduced sign-in noise
 
 ### Sprint 10: Ecosystems & Code Quality
 
