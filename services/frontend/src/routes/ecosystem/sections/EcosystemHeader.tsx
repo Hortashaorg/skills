@@ -16,7 +16,6 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { UpvoteButton } from "@/components/ui/upvote-button";
-import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import { cn } from "@/lib/utils";
 
 export interface EcosystemHeaderProps {
@@ -57,28 +56,14 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 					{props.name}
 				</Heading>
 				<div class="shrink-0 ml-auto flex items-center gap-2">
-					<Show
-						when={props.isLoggedIn}
-						fallback={
-							<button
-								type="button"
-								onClick={() => {
-									saveReturnUrl();
-									window.location.href = getAuthorizationUrl();
-								}}
-								class="text-sm text-primary dark:text-primary-dark hover:underline cursor-pointer"
-							>
-								Sign in to upvote
-							</button>
-						}
-					>
-						<UpvoteButton
-							count={props.upvoteCount}
-							isUpvoted={props.hasUpvoted}
-							disabled={false}
-							onClick={props.onUpvote}
-							size="md"
-						/>
+					<UpvoteButton
+						count={props.upvoteCount}
+						isUpvoted={props.hasUpvoted}
+						disabled={!props.isLoggedIn}
+						onClick={props.onUpvote}
+						size="md"
+					/>
+					<Show when={props.isLoggedIn}>
 						<AddToProjectPopover
 							projects={props.projects}
 							isInProject={props.isInProject}
@@ -175,19 +160,21 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 						);
 					}}
 				</For>
-				<Badge
-					as="button"
-					variant="outline"
-					size="sm"
-					onClick={(e: MouseEvent) => {
-						(e.currentTarget as HTMLElement).blur();
-						props.onAddTag();
-					}}
-					class="gap-1"
-				>
-					<PlusIcon size="xs" />
-					<span>Add tag</span>
-				</Badge>
+				<Show when={props.isLoggedIn}>
+					<Badge
+						as="button"
+						variant="outline"
+						size="sm"
+						onClick={(e: MouseEvent) => {
+							(e.currentTarget as HTMLElement).blur();
+							props.onAddTag();
+						}}
+						class="gap-1"
+					>
+						<PlusIcon size="xs" />
+						<span>Add tag</span>
+					</Badge>
+				</Show>
 			</Flex>
 		</Stack>
 	);

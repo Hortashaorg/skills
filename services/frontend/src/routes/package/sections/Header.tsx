@@ -192,10 +192,6 @@ export const Header = (props: HeaderProps) => {
 	const { vote: handleVote } = useVote();
 
 	const handleAddTag = () => {
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest tags.", "Sign in required");
-			return;
-		}
 		setTagModalOpen(true);
 	};
 
@@ -268,28 +264,14 @@ export const Header = (props: HeaderProps) => {
 					{props.pkg.registry}
 				</Badge>
 				<div class="shrink-0 ml-auto flex items-center gap-2">
-					<Show
-						when={isLoggedIn()}
-						fallback={
-							<button
-								type="button"
-								onClick={() => {
-									saveReturnUrl();
-									window.location.href = getAuthorizationUrl();
-								}}
-								class="text-sm text-primary dark:text-primary-dark hover:underline cursor-pointer"
-							>
-								Sign in to upvote
-							</button>
-						}
-					>
-						<UpvoteButton
-							count={upvote.upvoteCount()}
-							isUpvoted={upvote.isUpvoted()}
-							disabled={upvote.isDisabled()}
-							onClick={upvote.toggle}
-							size="md"
-						/>
+					<UpvoteButton
+						count={upvote.upvoteCount()}
+						isUpvoted={upvote.isUpvoted()}
+						disabled={upvote.isDisabled()}
+						onClick={upvote.toggle}
+						size="md"
+					/>
+					<Show when={isLoggedIn()}>
 						<AddToProjectPopover
 							projects={addToProject.projects()}
 							isInProject={addToProject.isInProject}
@@ -389,19 +371,21 @@ export const Header = (props: HeaderProps) => {
 						);
 					}}
 				</For>
-				<Badge
-					as="button"
-					variant="outline"
-					size="sm"
-					onClick={(e: MouseEvent) => {
-						(e.currentTarget as HTMLElement).blur();
-						handleAddTag();
-					}}
-					class="gap-1"
-				>
-					<PlusIcon size="xs" />
-					<span>Add tag</span>
-				</Badge>
+				<Show when={isLoggedIn()}>
+					<Badge
+						as="button"
+						variant="outline"
+						size="sm"
+						onClick={(e: MouseEvent) => {
+							(e.currentTarget as HTMLElement).blur();
+							handleAddTag();
+						}}
+						class="gap-1"
+					>
+						<PlusIcon size="xs" />
+						<span>Add tag</span>
+					</Badge>
+				</Show>
 			</Flex>
 
 			{/* Footer: Sync info */}

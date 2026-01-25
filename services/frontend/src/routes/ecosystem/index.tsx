@@ -323,21 +323,12 @@ export const Ecosystem = () => {
 	};
 
 	const handleAddTag = () => {
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest tags.", "Sign in required");
-			return;
-		}
 		setTagModalOpen(true);
 	};
 
 	const handleRemoveTag = (tagId: string) => {
 		const eco = ecosystem();
 		if (!eco) return;
-
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest tag removal.", "Sign in required");
-			return;
-		}
 
 		if (pendingRemoveTagIds().has(tagId)) {
 			toast.info(
