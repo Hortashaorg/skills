@@ -12,7 +12,7 @@ import { handleMutationError } from "@/lib/mutation-error";
 
 interface UseSuggestionSubmitOptions {
 	type: SuggestionType;
-	entityId?: { packageId?: string; ecosystemId?: string };
+	getEntityId?: () => { packageId?: string; ecosystemId?: string } | undefined;
 	getPayload: () => ReadonlyJSONObject;
 	onSuccess?: () => void;
 }
@@ -22,11 +22,12 @@ export function useSuggestionSubmit(options: UseSuggestionSubmitOptions) {
 
 	const submit = (justification?: string) => {
 		try {
+			const entityId = options.getEntityId?.();
 			zero().mutate(
 				mutators.suggestions.create({
 					type: options.type,
-					packageId: options.entityId?.packageId,
-					ecosystemId: options.entityId?.ecosystemId,
+					packageId: entityId?.packageId,
+					ecosystemId: entityId?.ecosystemId,
 					payload: options.getPayload(),
 					justification,
 				}),

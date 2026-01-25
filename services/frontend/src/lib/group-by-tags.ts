@@ -20,6 +20,7 @@ export function groupByTags<T>(
 		if (tags.length === 0) {
 			uncategorized.push(entity);
 		} else {
+			let addedToGroup = false;
 			for (const tagRef of tags) {
 				const tagName = tagRef.tag?.name;
 				if (tagName) {
@@ -27,7 +28,12 @@ export function groupByTags<T>(
 						groups[tagName] = [];
 					}
 					groups[tagName].push(entity);
+					addedToGroup = true;
 				}
+			}
+			// Entity has tags but none with valid names - add to uncategorized
+			if (!addedToGroup) {
+				uncategorized.push(entity);
 			}
 		}
 	}

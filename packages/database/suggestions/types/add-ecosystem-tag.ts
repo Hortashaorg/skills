@@ -59,18 +59,17 @@ export const addEcosystemTag = defineSuggestionType({
 		if (existing) throw new Error("Tag is already on this ecosystem");
 
 		// Check no duplicate pending suggestion
-		const pending = await tx.run(
+		const pendingSuggestions = await tx.run(
 			zql.suggestions
 				.where("ecosystemId", ids.ecosystemId)
 				.where("type", "add_ecosystem_tag")
-				.where("status", "pending")
-				.one(),
+				.where("status", "pending"),
 		);
-		if (pending) {
-			const pendingPayload = pending.payload as { tagId: string };
-			if (pendingPayload.tagId === payload.tagId) {
-				throw new Error("A suggestion to add this tag is already pending");
-			}
+		const hasDuplicate = pendingSuggestions.some(
+			(s) => (s.payload as { tagId: string }).tagId === payload.tagId,
+		);
+		if (hasDuplicate) {
+			throw new Error("A suggestion to add this tag is already pending");
 		}
 	},
 });

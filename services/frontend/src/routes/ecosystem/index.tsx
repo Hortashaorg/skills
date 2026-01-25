@@ -216,7 +216,7 @@ export const Ecosystem = () => {
 
 	const { submit: submitAddTag } = useSuggestionSubmit({
 		type: "add_ecosystem_tag",
-		entityId: { ecosystemId: ecosystem()?.id },
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
 		getPayload: () => ({ tagId: selectedTagId() }),
 		onSuccess: () => {
 			setSelectedTagId(undefined);
@@ -301,7 +301,7 @@ export const Ecosystem = () => {
 
 	const { submit: submitAddPackage } = useSuggestionSubmit({
 		type: "add_ecosystem_package",
-		entityId: { ecosystemId: ecosystem()?.id },
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
 		getPayload: () => ({ packageId: selectedPackageId() }),
 		onSuccess: () => {
 			setSelectedPackageId(undefined);
@@ -345,7 +345,7 @@ export const Ecosystem = () => {
 
 	const { submit: submitRemoveTag } = useSuggestionSubmit({
 		type: "remove_ecosystem_tag",
-		entityId: { ecosystemId: ecosystem()?.id },
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
 		getPayload: () => ({ tagId: removeTagId() }),
 		onSuccess: () => {
 			setRemoveTagModalOpen(false);

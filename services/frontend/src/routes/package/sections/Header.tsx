@@ -176,7 +176,7 @@ export const Header = (props: HeaderProps) => {
 
 	const { submit: submitAddTag } = useSuggestionSubmit({
 		type: "add_tag",
-		entityId: { packageId: props.pkg.id },
+		getEntityId: () => ({ packageId: props.pkg.id }),
 		getPayload: () => ({ tagId: selectedTagId() }),
 		onSuccess: () => {
 			setSelectedTagId(undefined);
@@ -227,7 +227,7 @@ export const Header = (props: HeaderProps) => {
 
 	const { submit: submitRemoveTag } = useSuggestionSubmit({
 		type: "remove_tag",
-		entityId: { packageId: props.pkg.id },
+		getEntityId: () => ({ packageId: props.pkg.id }),
 		getPayload: () => ({ tagId: removeTagId() }),
 		onSuccess: () => {
 			setRemoveTagModalOpen(false);

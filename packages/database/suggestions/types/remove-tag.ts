@@ -52,18 +52,17 @@ export const removeTag = defineSuggestionType({
 		if (!existing) throw new Error("Tag is not on this package");
 
 		// Check no duplicate pending suggestion
-		const pending = await tx.run(
+		const pendingSuggestions = await tx.run(
 			zql.suggestions
 				.where("packageId", ids.packageId)
 				.where("type", "remove_tag")
-				.where("status", "pending")
-				.one(),
+				.where("status", "pending"),
 		);
-		if (pending) {
-			const pendingPayload = pending.payload as { tagId: string };
-			if (pendingPayload.tagId === payload.tagId) {
-				throw new Error("A suggestion to remove this tag is already pending");
-			}
+		const hasDuplicate = pendingSuggestions.some(
+			(s) => (s.payload as { tagId: string }).tagId === payload.tagId,
+		);
+		if (hasDuplicate) {
+			throw new Error("A suggestion to remove this tag is already pending");
 		}
 	},
 });

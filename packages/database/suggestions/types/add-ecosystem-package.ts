@@ -60,18 +60,18 @@ export const addEcosystemPackage = defineSuggestionType({
 		if (existing) throw new Error("Package is already in this ecosystem");
 
 		// Check no duplicate pending suggestion
-		const pending = await tx.run(
+		const pendingSuggestions = await tx.run(
 			zql.suggestions
 				.where("ecosystemId", ids.ecosystemId)
 				.where("type", "add_ecosystem_package")
-				.where("status", "pending")
-				.one(),
+				.where("status", "pending"),
 		);
-		if (pending) {
-			const pendingPayload = pending.payload as { packageId: string };
-			if (pendingPayload.packageId === payload.packageId) {
-				throw new Error("A suggestion to add this package is already pending");
-			}
+		const hasDuplicate = pendingSuggestions.some(
+			(s) =>
+				(s.payload as { packageId: string }).packageId === payload.packageId,
+		);
+		if (hasDuplicate) {
+			throw new Error("A suggestion to add this package is already pending");
 		}
 	},
 });
