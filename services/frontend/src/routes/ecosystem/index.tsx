@@ -7,6 +7,7 @@ import {
 } from "@package/database/client";
 import { A, useParams } from "@solidjs/router";
 import { createMemo, createSignal, Show } from "solid-js";
+import { SearchInput } from "@/components/composite/search-input";
 import { SEO } from "@/components/composite/seo";
 import {
 	type SuggestionItem,
@@ -24,6 +25,9 @@ import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
+import { useAddToProject } from "@/hooks/useAddToProject";
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
+import { useVote } from "@/hooks/useVote";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
@@ -92,6 +96,12 @@ export const Ecosystem = () => {
 			);
 		}
 	};
+
+	// Add to project
+	const addToProject = useAddToProject(() => ({
+		entityType: "ecosystem",
+		entityId: ecosystem()?.id ?? "",
+	}));
 
 	// Tags
 	const tags = createMemo(() => {
@@ -204,43 +214,34 @@ export const Ecosystem = () => {
 			});
 	});
 
-	const handleSuggestTag = (justification?: string) => {
-		const eco = ecosystem();
-		const tagId = selectedTagId();
-		if (!eco || !tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.createAddEcosystemTag({
-					ecosystemId: eco.id,
-					tagId,
-					justification,
-				}),
-			);
+	const { submit: submitAddTag } = useSuggestionSubmit({
+		type: "add_ecosystem_tag",
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
+		getPayload: () => ({ tagId: selectedTagId() }),
+		onSuccess: () => {
 			setSelectedTagId(undefined);
 			setTagModalOpen(false);
-			toast.success(
-				"Your tag suggestion is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		}
+		},
+	});
+
+	const handleSuggestTag = (justification?: string) => {
+		if (!ecosystem() || !selectedTagId()) return;
+		submitAddTag(justification);
 	};
 
 	// Package suggestion modal
 	const [packageModalOpen, setPackageModalOpen] = createSignal(false);
 	const [packageSearchQuery, setPackageSearchQuery] = createSignal("");
 
-	const [searchResults] = useQuery(() =>
+	const [searchResults, searchResultsResult] = useQuery(() =>
 		queries.packages.search({
 			query: packageSearchQuery() || undefined,
 			limit: 10,
 		}),
 	);
+	const isSearching = () =>
+		packageSearchQuery().length > 0 &&
+		searchResultsResult().type !== "complete";
 
 	const existingPackageIds = createMemo(() => {
 		const eco = ecosystem();
@@ -271,10 +272,12 @@ export const Ecosystem = () => {
 		);
 	});
 
-	const packageOptions = createMemo(() =>
+	const packagePickerItems = createMemo(() =>
 		availablePackages().map((p) => ({
-			value: p.id,
-			label: `${p.name} (${p.registry})`,
+			id: p.id,
+			primary: p.name,
+			secondary: p.description ?? undefined,
+			label: p.registry,
 		})),
 	);
 
@@ -296,49 +299,23 @@ export const Ecosystem = () => {
 			}));
 	});
 
-	const handleSuggestPackage = (justification?: string) => {
-		const eco = ecosystem();
-		const packageId = selectedPackageId();
-		if (!eco || !packageId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.createAddEcosystemPackage({
-					ecosystemId: eco.id,
-					packageId,
-					justification,
-				}),
-			);
+	const { submit: submitAddPackage } = useSuggestionSubmit({
+		type: "add_ecosystem_package",
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
+		getPayload: () => ({ packageId: selectedPackageId() }),
+		onSuccess: () => {
 			setSelectedPackageId(undefined);
 			setPackageSearchQuery("");
 			setPackageModalOpen(false);
-			toast.success(
-				"Your package suggestion is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		}
+		},
+	});
+
+	const handleSuggestPackage = (justification?: string) => {
+		if (!ecosystem() || !selectedPackageId()) return;
+		submitAddPackage(justification);
 	};
 
-	// Vote handler
-	const handleVote = (suggestionId: string, vote: "approve" | "reject") => {
-		try {
-			zero().mutate(mutators.suggestionVotes.vote({ suggestionId, vote }));
-			toast.success(
-				"Your vote has been recorded.",
-				vote === "approve" ? "Approved" : "Rejected",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to vote",
-			);
-		}
-	};
+	const { vote: handleVote } = useVote();
 
 	const handleLogin = () => {
 		saveReturnUrl();
@@ -346,21 +323,12 @@ export const Ecosystem = () => {
 	};
 
 	const handleAddTag = () => {
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest tags.", "Sign in required");
-			return;
-		}
 		setTagModalOpen(true);
 	};
 
 	const handleRemoveTag = (tagId: string) => {
 		const eco = ecosystem();
 		if (!eco) return;
-
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest tag removal.", "Sign in required");
-			return;
-		}
 
 		if (pendingRemoveTagIds().has(tagId)) {
 			toast.info(
@@ -375,32 +343,20 @@ export const Ecosystem = () => {
 		setRemoveTagModalOpen(true);
 	};
 
-	const handleConfirmRemoveTag = () => {
-		const eco = ecosystem();
-		const tagId = removeTagId();
-		if (!eco || !tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.createRemoveEcosystemTag({
-					ecosystemId: eco.id,
-					tagId,
-					justification: removeTagJustification() || undefined,
-				}),
-			);
+	const { submit: submitRemoveTag } = useSuggestionSubmit({
+		type: "remove_ecosystem_tag",
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
+		getPayload: () => ({ tagId: removeTagId() }),
+		onSuccess: () => {
 			setRemoveTagModalOpen(false);
 			setRemoveTagId(null);
 			setRemoveTagJustification("");
-			toast.success(
-				"Your suggestion to remove this tag is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		}
+		},
+	});
+
+	const handleConfirmRemoveTag = () => {
+		if (!ecosystem() || !removeTagId()) return;
+		submitRemoveTag(removeTagJustification() || undefined);
 	};
 
 	const handleAddPackage = () => {
@@ -454,6 +410,10 @@ export const Ecosystem = () => {
 										onUpvote={handleUpvote}
 										onAddTag={handleAddTag}
 										onRemoveTag={handleRemoveTag}
+										projects={addToProject.projects()}
+										isInProject={addToProject.isInProject}
+										onAddToProject={addToProject.onAdd}
+										addingToProjectId={addToProject.addingToProjectId()}
 									/>
 
 									<Stack spacing="md">
@@ -514,24 +474,16 @@ export const Ecosystem = () => {
 				submitLabel="Suggest Package"
 				isFormDisabled={!selectedPackageId()}
 				formContent={
-					<Stack spacing="sm">
-						<input
-							type="text"
-							value={packageSearchQuery()}
-							onInput={(e) => setPackageSearchQuery(e.currentTarget.value)}
-							placeholder="Search packages..."
-							class="flex h-10 w-full rounded-radius border border-outline dark:border-outline-dark bg-transparent px-3 py-2 text-sm placeholder:text-on-surface-subtle dark:placeholder:text-on-surface-dark-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-primary-dark"
-						/>
-						<Show when={packageSearchQuery().length > 0}>
-							<Select
-								options={packageOptions()}
-								value={selectedPackageId()}
-								onChange={setSelectedPackageId}
-								placeholder="Select a package..."
-								size="sm"
-							/>
-						</Show>
-					</Stack>
+					<SearchInput
+						value={packageSearchQuery()}
+						onValueChange={setPackageSearchQuery}
+						results={packagePickerItems()}
+						isLoading={isSearching()}
+						onSelect={(item) => setSelectedPackageId(item.id)}
+						onClear={() => setSelectedPackageId(undefined)}
+						placeholder="Search packages..."
+						noResultsMessage="No matching packages found"
+					/>
 				}
 			/>
 

@@ -4,6 +4,22 @@
 
 ---
 
+## Explaining It
+
+**One-liner:**
+"Yelp for developer tools - helps programmers find and compare the building blocks they use to make software."
+
+**30-second version:**
+"Developers build software using thousands of pre-made components - like Lego pieces. But there's no good way to know which pieces are reliable, which work well together, or what other developers actually use. TechGarden organizes all of this and lets the community rate and curate it."
+
+**"Why would anyone use this?"**
+"Same reason people use comparison sites instead of visiting ten different shops. The information exists, this just saves you the legwork."
+
+**"How do you make money?"**
+"It doesn't make money yet, and it doesn't cost anything to run either. Right now I'm focused on making it useful. If enough developers use it, there are options to explore - selling data access to companies, private instances for businesses - but nothing is guaranteed. It will always be free for individual developers."
+
+---
+
 ## Product
 
 ### Technical

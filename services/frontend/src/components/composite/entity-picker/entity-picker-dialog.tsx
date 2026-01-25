@@ -7,6 +7,7 @@ import {
 	SpinnerIcon,
 	XCircleIcon,
 } from "@/components/primitives/icon";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { EntityPickerDialogProps, PickerItem } from "./entity-picker";
 
@@ -104,9 +105,9 @@ export const EntityPickerDialog = <T extends PickerItem>(
 			</div>
 			<Show when={item.label}>
 				<div class="shrink-0">
-					<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark">
+					<Badge variant="subtle" size="sm">
 						{item.label}
-					</span>
+					</Badge>
 				</div>
 			</Show>
 		</div>

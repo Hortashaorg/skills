@@ -5,7 +5,7 @@ import {
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { createSignal, Show } from "solid-js";
+import { Show } from "solid-js";
 import { AuthGuard } from "@/components/composite/auth-guard";
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthData } from "@/context/app-provider";
+import { useModalState } from "@/hooks/useModalState";
 import { Layout } from "@/layout/Layout";
 import { handleMutationError } from "@/lib/mutation-error";
 import { TagForm } from "./sections/TagForm";
@@ -56,33 +57,20 @@ export const AdminTags = () => {
 	const [allTags, tagsResult] = useQuery(() => queries.tags.list());
 	const isLoading = () => tagsResult().type !== "complete";
 
-	const [showForm, setShowForm] = createSignal(false);
-	const [editingTag, setEditingTag] = createSignal<Tag | null>(null);
-	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
-	const [tagToDelete, setTagToDelete] = createSignal<Tag | null>(null);
+	const formModal = useModalState<Tag>();
+	const deleteModal = useModalState<Tag>();
 
 	const sortedTags = () => {
 		const tags = allTags() ?? [];
 		return [...tags].sort((a, b) => a.name.localeCompare(b.name));
 	};
 
-	const handleCreate = () => {
-		setEditingTag(null);
-		setShowForm(true);
-	};
-
-	const handleEdit = (tag: Tag) => {
-		setEditingTag(tag);
-		setShowForm(true);
-	};
-
-	const handleDeleteClick = (tag: Tag) => {
-		setTagToDelete(tag);
-		setDeleteDialogOpen(true);
-	};
+	const handleCreate = () => formModal.open();
+	const handleEdit = (tag: Tag) => formModal.open(tag);
+	const handleDeleteClick = (tag: Tag) => deleteModal.open(tag);
 
 	const handleDeleteConfirm = async () => {
-		const tag = tagToDelete();
+		const tag = deleteModal.data();
 		if (!tag) return;
 
 		try {
@@ -94,14 +82,13 @@ export const AdminTags = () => {
 		} catch (err) {
 			handleMutationError(err, "delete tag");
 		} finally {
-			setTagToDelete(null);
-			setDeleteDialogOpen(false);
+			deleteModal.close();
 		}
 	};
 
 	const handleSave = async (data: { name: string; description?: string }) => {
 		try {
-			const editing = editingTag();
+			const editing = formModal.data();
 			if (editing) {
 				const result = await zero().mutate(
 					mutators.tags.update({
@@ -124,16 +111,10 @@ export const AdminTags = () => {
 					throw result.error;
 				}
 			}
-			setShowForm(false);
-			setEditingTag(null);
+			formModal.close();
 		} catch (err) {
 			handleMutationError(err, "save tag");
 		}
-	};
-
-	const handleCancel = () => {
-		setShowForm(false);
-		setEditingTag(null);
 	};
 
 	return (
@@ -143,7 +124,7 @@ export const AdminTags = () => {
 					<AuthGuard hasAccess={isLoggedIn() && isAdmin()}>
 						<Flex justify="between" align="center">
 							<Heading level="h1">Tags</Heading>
-							<Show when={!showForm()}>
+							<Show when={!formModal.isOpen()}>
 								<Button variant="primary" onClick={handleCreate}>
 									Create Tag
 								</Button>
@@ -162,12 +143,12 @@ export const AdminTags = () => {
 							</Text>
 						</Show>
 
-						<Show when={showForm()}>
+						<Show when={formModal.isOpen()}>
 							<Card padding="lg">
 								<TagForm
-									editingTag={editingTag()}
+									editingTag={formModal.data()}
 									onSave={handleSave}
-									onCancel={handleCancel}
+									onCancel={formModal.close}
 								/>
 							</Card>
 						</Show>
@@ -176,10 +157,10 @@ export const AdminTags = () => {
 			</Container>
 
 			<AlertDialog
-				open={deleteDialogOpen()}
-				onOpenChange={setDeleteDialogOpen}
+				open={deleteModal.isOpen()}
+				onOpenChange={(open) => !open && deleteModal.close()}
 				title="Delete Tag"
-				description={`Are you sure you want to delete "${tagToDelete()?.name}"? This will remove it from all packages that use this tag.`}
+				description={`Are you sure you want to delete "${deleteModal.data()?.name}"? This will remove it from all packages that use this tag.`}
 				confirmText="Delete"
 				variant="danger"
 				onConfirm={handleDeleteConfirm}

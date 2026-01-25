@@ -23,7 +23,7 @@
 		"@storybook/test": "^8.6.15",
 		"@vitest/browser-playwright": "^4.0.18",
 		"@vitest/coverage-v8": "^4.0.18",
-		"playwright": "^1.57.0",
+		"playwright": "^1.58.0",
 		"storybook": "^10.2.0",
 		"storybook-solidjs-vite": "^10.0.9",
 		"tailwindcss": "^4.1.18",
@@ -43,7 +43,7 @@
 		"@tailwindcss/vite": "^4.1.18",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"solid-js": "^1.9.10",
+		"solid-js": "^1.9.11",
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss-animate": "^1.0.7"
 	}

@@ -1,5 +1,5 @@
 import type { Row } from "@package/database/client";
-import { mutators, queries, useQuery, useZero } from "@package/database/client";
+import { queries, useQuery, useZero } from "@package/database/client";
 import {
 	createEffect,
 	createMemo,
@@ -24,9 +24,8 @@ import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 import {
 	TextField,
 	TextFieldInput,
@@ -39,6 +38,7 @@ import {
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import {
@@ -57,22 +57,6 @@ type Ecosystem = Row["ecosystems"] & {
 	ecosystemTags?: readonly EcosystemTag[];
 };
 
-const SkeletonCard = () => (
-	<Card padding="md" class="h-full">
-		<div class="flex flex-col h-full gap-2">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-2">
-					<Skeleton width="120px" height="20px" />
-					<Skeleton width="40px" height="20px" />
-				</div>
-				<Skeleton width="50px" height="28px" variant="rectangular" />
-			</div>
-			<Skeleton width="100%" height="16px" />
-			<Skeleton width="75%" height="16px" />
-		</div>
-	</Card>
-);
-
 export const Ecosystems = () => {
 	const zero = useZero();
 	const isLoggedIn = () => zero().userID !== "anon";
@@ -88,8 +72,16 @@ export const Ecosystems = () => {
 		autoLoadLimit: ECOSYSTEMS_AUTO_LOAD_LIMIT,
 	});
 
-	// Reset limit when filters change
-	createEffect(on([searchValue, selectedTagSlugs], () => scroll.resetLimit()));
+	// Track if we've ever completed loading - prevents flicker on re-sync
+	const [hasLoadedOnce, setHasLoadedOnce] = createSignal(false);
+
+	// Reset limit and loading state when filters change
+	createEffect(
+		on([searchValue, selectedTagSlugs], () => {
+			scroll.resetLimit();
+			setHasLoadedOnce(false);
+		}),
+	);
 
 	const [ecosystems, ecosystemsResult] = useQuery(() =>
 		queries.ecosystems.search({
@@ -117,6 +109,13 @@ export const Ecosystems = () => {
 	const isLoading = () => ecosystemsResult().type !== "complete";
 	const ecosystemCount = () => ecosystems()?.length ?? 0;
 	const canLoadMore = () => scroll.canLoadMore(ecosystemCount());
+
+	// Set loaded once when query completes
+	createEffect(() => {
+		if (!isLoading()) {
+			setHasLoadedOnce(true);
+		}
+	});
 
 	const pendingEcosystems = () =>
 		(pendingSuggestions() ?? [])
@@ -146,40 +145,28 @@ export const Ecosystems = () => {
 	const [name, setName] = createSignal("");
 	const [description, setDescription] = createSignal("");
 	const [website, setWebsite] = createSignal("");
-	const [isSubmitting, setIsSubmitting] = createSignal(false);
 
-	const handleSubmit = () => {
-		const ecosystemName = name().trim();
-		if (!ecosystemName) {
-			toast.error("Please enter an ecosystem name.", "Missing name");
-			return;
-		}
-
-		setIsSubmitting(true);
-		try {
-			zero().mutate(
-				mutators.suggestions.createCreateEcosystem({
-					name: ecosystemName,
-					description: description().trim() || undefined,
-					website: website().trim() || undefined,
-				}),
-			);
+	const { submit: submitCreateEcosystem } = useSuggestionSubmit({
+		type: "create_ecosystem",
+		getPayload: () => ({
+			name: name().trim(),
+			description: description().trim() || undefined,
+			website: website().trim() || undefined,
+		}),
+		onSuccess: () => {
 			setName("");
 			setDescription("");
 			setWebsite("");
 			setDialogOpen(false);
-			toast.success(
-				"Your ecosystem suggestion is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		} finally {
-			setIsSubmitting(false);
+		},
+	});
+
+	const handleSubmit = () => {
+		if (!name().trim()) {
+			toast.error("Please enter an ecosystem name.", "Missing name");
+			return;
 		}
+		submitCreateEcosystem();
 	};
 
 	const openSuggestDialog = (prefillName?: string) => {
@@ -188,9 +175,6 @@ export const Ecosystems = () => {
 		}
 		setDialogOpen(true);
 	};
-
-	const showResults = () =>
-		ecosystemCount() > 0 || pendingEcosystems().length > 0;
 
 	return (
 		<Layout>
@@ -225,15 +209,15 @@ export const Ecosystems = () => {
 						/>
 					</Flex>
 
-					{/* Initial loading skeleton */}
-					<Show when={isLoading() && !showResults()}>
+					{/* Initial loading skeleton - only show if never loaded */}
+					<Show when={isLoading() && !hasLoadedOnce()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 						</div>
 					</Show>
 
-					{/* Results */}
-					<Show when={!isLoading() || showResults()}>
+					{/* Results - show once we've loaded at least once */}
+					<Show when={hasLoadedOnce()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							{/* Suggest ecosystem card - always visible */}
 							<ActionCard
@@ -356,9 +340,9 @@ export const Ecosystems = () => {
 							size="sm"
 							variant="primary"
 							onClick={handleSubmit}
-							disabled={!name().trim() || isSubmitting()}
+							disabled={!name().trim()}
 						>
-							{isSubmitting() ? "Submitting..." : "Submit"}
+							Submit
 						</Button>
 					</Flex>
 					<Text size="xs" color="muted">

@@ -7,6 +7,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { type GroupByTagsResult, groupByTags } from "@/lib/group-by-tags";
 import { buildPackageUrl } from "@/lib/url";
 
 type PackageWithUpvotes = {
@@ -19,15 +20,17 @@ type PackageWithUpvotes = {
 	packageTags?: readonly { tagId: string; tag?: { name: string } | null }[];
 };
 
-export interface PackagesByTag<T> {
-	groups: Record<string, T[]>;
-	sortedTags: string[];
-	uncategorized: T[];
+export type { GroupByTagsResult as PackagesByTag };
+
+export function groupPackagesByTag<T extends PackageWithUpvotes>(
+	packages: readonly T[],
+): GroupByTagsResult<T> {
+	return groupByTags(packages, (pkg) => pkg.packageTags);
 }
 
 interface EcosystemPackagesProps<T extends PackageWithUpvotes> {
 	packages: readonly T[];
-	packagesByTag: PackagesByTag<T>;
+	packagesByTag: GroupByTagsResult<T>;
 	onSuggestPackage: () => void;
 }
 
@@ -125,33 +128,3 @@ export const EcosystemPackages = <T extends PackageWithUpvotes>(
 		</Stack>
 	);
 };
-
-export function groupPackagesByTag<T extends PackageWithUpvotes>(
-	packages: readonly T[],
-): PackagesByTag<T> {
-	const groups: Record<string, T[]> = {};
-	const uncategorized: T[] = [];
-
-	for (const pkg of packages) {
-		const tags = pkg.packageTags ?? [];
-		if (tags.length === 0) {
-			uncategorized.push(pkg);
-		} else {
-			for (const pt of tags) {
-				const tagName = pt.tag?.name;
-				if (tagName) {
-					if (!groups[tagName]) {
-						groups[tagName] = [];
-					}
-					groups[tagName].push(pkg);
-				}
-			}
-		}
-	}
-
-	const sortedTags = Object.keys(groups).sort((a, b) =>
-		a.toLowerCase().localeCompare(b.toLowerCase()),
-	);
-
-	return { groups, sortedTags, uncategorized };
-}

@@ -17,6 +17,7 @@ import { Text } from "@/components/primitives/text";
 import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
+import { handleMutationError } from "@/lib/mutation-error";
 import { Backlog, type BacklogSuggestion } from "./sections/Backlog";
 import { Leaderboard } from "./sections/Leaderboard";
 import { PointsInfo } from "./sections/PointsInfo";
@@ -168,11 +169,15 @@ export const Curation = () => {
 	};
 
 	// Helper to format suggestion descriptions using shared helpers
-	const getDescription = (type: string, payload: unknown): string =>
-		formatSuggestionDescription(type, payload, { tags: tagsById() });
+	const getDescription = (
+		type: string,
+		payload: unknown,
+		version: number,
+	): string =>
+		formatSuggestionDescription(type, payload, version, { tags: tagsById() });
 
-	const getAction = (type: string, payload: unknown): string =>
-		formatSuggestionAction(type, payload, { tags: tagsById() });
+	const getAction = (type: string, payload: unknown, version: number): string =>
+		formatSuggestionAction(type, payload, version, { tags: tagsById() });
 
 	// Cast vote
 	const handleVote = async (voteType: "approve" | "reject") => {
@@ -189,7 +194,7 @@ export const Curation = () => {
 		const res = await write.client;
 
 		if (res.type === "error") {
-			toast.error(res.error.message, "Failed to vote");
+			handleMutationError(res.error, "vote", { useErrorMessage: true });
 			return;
 		}
 

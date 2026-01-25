@@ -1,33 +1,30 @@
 /**
- * Suggestion Type Registry
+ * Suggestion System
  *
- * Central configuration for suggestion types. When adding a new suggestion type:
- * 1. Add to db/schema/enums.ts (suggestionTypeEnum)
- * 2. Add versioned payload schema in schemas.ts
- * 3. Add type metadata in display.ts
- * 4. Add resolution handler in resolution.ts
+ * Adding a new suggestion type:
+ * 1. Add enum value to db/schema/enums.ts
+ * 2. Create type definition in suggestions/types/
+ * 3. Export from suggestions/types/index.ts
  */
 
-// Display helpers (frontend-safe)
 export {
+	type FormatContext,
 	formatSuggestionAction,
 	formatSuggestionDescription,
 	getSuggestionTypeLabel,
 	suggestionTypeMeta,
 } from "./display.ts";
-// Power user helpers
 export { isPowerUser, type PowerUserRole } from "./power-user.ts";
-// Resolution handlers (backend only)
 export {
 	type ResolutionContext,
-	resolutionHandlers,
 	resolveApprovedSuggestion,
 } from "./resolution.ts";
-// Schemas and validation
 export {
-	type AddTagPayload,
-	currentPayloadVersion,
-	getPayloadSchema,
-	parsePayload,
-	suggestionPayloads,
-} from "./schemas.ts";
+	defineSuggestionType,
+	getSuggestionType,
+	isValidSuggestionType,
+	type SuggestionTypeDefinition,
+	type SuggestionTypeKey,
+	suggestionTypeKeys,
+	suggestionTypes,
+} from "./types/index.ts";

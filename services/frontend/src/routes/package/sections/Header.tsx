@@ -1,15 +1,13 @@
-import { Popover } from "@kobalte/core/popover";
 import { formatShortDate } from "@package/common";
 import {
 	getSuggestionTypeLabel,
-	mutators,
 	queries,
 	type Row,
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { A } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
+import { AddToProjectPopover } from "@/components/composite/add-to-project-popover";
 import {
 	type SuggestionItem,
 	SuggestionModal,
@@ -17,8 +15,6 @@ import {
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import {
-	CheckIcon,
-	ChevronDownIcon,
 	ExternalLinkIcon,
 	PlusIcon,
 	SpinnerIcon,
@@ -36,9 +32,11 @@ import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createPackageRequest } from "@/hooks/createPackageRequest";
 import { createPackageUpvote } from "@/hooks/createPackageUpvote";
 import { createPolledValue } from "@/hooks/createPolledValue";
+import { useAddToProject } from "@/hooks/useAddToProject";
+import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
+import { useVote } from "@/hooks/useVote";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
-import { handleMutationError } from "@/lib/mutation-error";
 import { cn } from "@/lib/utils";
 
 type Package = Row["packages"] & {
@@ -67,6 +65,11 @@ export const Header = (props: HeaderProps) => {
 	}));
 
 	const isLoggedIn = () => zero().userID !== "anon";
+
+	const addToProject = useAddToProject(() => ({
+		entityType: "package",
+		entityId: props.pkg.id,
+	}));
 
 	// Tags query
 	const [packageWithTags] = useQuery(() =>
@@ -105,37 +108,6 @@ export const Header = (props: HeaderProps) => {
 		},
 		{ interval: 30_000 },
 	);
-
-	// Projects for add-to-project
-	const [projects] = useQuery(() => queries.projects.mine({}));
-	const [addingToProject, setAddingToProject] = createSignal<string | null>(
-		null,
-	);
-
-	const isPackageInProject = (projectId: string) => {
-		const project = projects()?.find((p) => p.id === projectId);
-		return project?.projectPackages?.some(
-			(pp) => pp.packageId === props.pkg.id,
-		);
-	};
-
-	const handleAddToProject = async (projectId: string) => {
-		if (isPackageInProject(projectId)) return;
-
-		setAddingToProject(projectId);
-		try {
-			zero().mutate(
-				mutators.projectPackages.add({
-					projectId,
-					packageId: props.pkg.id,
-				}),
-			);
-		} catch (err) {
-			handleMutationError(err, "add package to project");
-		} finally {
-			setAddingToProject(null);
-		}
-	};
 
 	// Tag suggestion modal state
 	const [tagModalOpen, setTagModalOpen] = createSignal(false);
@@ -202,52 +174,24 @@ export const Header = (props: HeaderProps) => {
 			});
 	});
 
-	const handleSuggestTag = (justification?: string) => {
-		const tagId = selectedTagId();
-		if (!tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.createAddTag({
-					packageId: props.pkg.id,
-					tagId,
-					justification,
-				}),
-			);
+	const { submit: submitAddTag } = useSuggestionSubmit({
+		type: "add_tag",
+		getEntityId: () => ({ packageId: props.pkg.id }),
+		getPayload: () => ({ tagId: selectedTagId() }),
+		onSuccess: () => {
 			setSelectedTagId(undefined);
 			setTagModalOpen(false);
-			toast.success(
-				"Your tag suggestion is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		}
+		},
+	});
+
+	const handleSuggestTag = (justification?: string) => {
+		if (!selectedTagId()) return;
+		submitAddTag(justification);
 	};
 
-	const handleVote = (suggestionId: string, vote: "approve" | "reject") => {
-		try {
-			zero().mutate(mutators.suggestionVotes.vote({ suggestionId, vote }));
-			toast.success(
-				"Your vote has been recorded.",
-				vote === "approve" ? "Approved" : "Rejected",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to vote",
-			);
-		}
-	};
+	const { vote: handleVote } = useVote();
 
 	const handleAddTag = () => {
-		if (!isLoggedIn()) {
-			toast.info("Sign in to suggest tags.", "Sign in required");
-			return;
-		}
 		setTagModalOpen(true);
 	};
 
@@ -281,31 +225,20 @@ export const Header = (props: HeaderProps) => {
 		setRemoveTagModalOpen(true);
 	};
 
-	const handleConfirmRemoveTag = () => {
-		const tagId = removeTagId();
-		if (!tagId) return;
-
-		try {
-			zero().mutate(
-				mutators.suggestions.createRemoveTag({
-					packageId: props.pkg.id,
-					tagId,
-					justification: removeTagJustification() || undefined,
-				}),
-			);
+	const { submit: submitRemoveTag } = useSuggestionSubmit({
+		type: "remove_tag",
+		getEntityId: () => ({ packageId: props.pkg.id }),
+		getPayload: () => ({ tagId: removeTagId() }),
+		onSuccess: () => {
 			setRemoveTagModalOpen(false);
 			setRemoveTagId(null);
 			setRemoveTagJustification("");
-			toast.success(
-				"Your suggestion to remove this tag is now pending review.",
-				"Suggestion submitted",
-			);
-		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Unknown error",
-				"Failed to submit",
-			);
-		}
+		},
+	});
+
+	const handleConfirmRemoveTag = () => {
+		if (!removeTagId()) return;
+		submitRemoveTag(removeTagJustification() || undefined);
 	};
 
 	const removeTagName = createMemo(() => {
@@ -331,125 +264,20 @@ export const Header = (props: HeaderProps) => {
 					{props.pkg.registry}
 				</Badge>
 				<div class="shrink-0 ml-auto flex items-center gap-2">
-					<Show
-						when={isLoggedIn()}
-						fallback={
-							<button
-								type="button"
-								onClick={() => {
-									saveReturnUrl();
-									window.location.href = getAuthorizationUrl();
-								}}
-								class="text-sm text-primary dark:text-primary-dark hover:underline cursor-pointer"
-							>
-								Sign in to upvote
-							</button>
-						}
-					>
-						<UpvoteButton
-							count={upvote.upvoteCount()}
-							isUpvoted={upvote.isUpvoted()}
-							disabled={upvote.isDisabled()}
-							onClick={upvote.toggle}
-							size="md"
+					<UpvoteButton
+						count={upvote.upvoteCount()}
+						isUpvoted={upvote.isUpvoted()}
+						disabled={upvote.isDisabled()}
+						onClick={upvote.toggle}
+						size="md"
+					/>
+					<Show when={isLoggedIn()}>
+						<AddToProjectPopover
+							projects={addToProject.projects()}
+							isInProject={addToProject.isInProject}
+							onAdd={addToProject.onAdd}
+							addingToProjectId={addToProject.addingToProjectId()}
 						/>
-						<Popover>
-							<Popover.Trigger
-								class={cn(
-									"inline-flex items-center gap-1.5 h-8 px-3 rounded-radius border whitespace-nowrap",
-									"border-outline-strong dark:border-outline-dark-strong",
-									"bg-transparent text-on-surface dark:text-on-surface-dark",
-									"text-sm font-medium",
-									"hover:opacity-75 transition",
-									"focus-visible:outline-2 focus-visible:outline-offset-2",
-									"focus-visible:outline-primary dark:focus-visible:outline-primary-dark",
-									"cursor-pointer",
-								)}
-							>
-								<PlusIcon size="sm" title="Add to project" />
-								<span>Add to project</span>
-								<ChevronDownIcon
-									size="xs"
-									class="text-on-surface-muted dark:text-on-surface-dark-muted"
-								/>
-							</Popover.Trigger>
-							<Popover.Portal>
-								<Popover.Content
-									class={cn(
-										"z-50 min-w-56 max-h-64 overflow-auto",
-										"rounded-radius border border-outline dark:border-outline-dark",
-										"bg-surface dark:bg-surface-dark shadow-lg",
-										"ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95",
-										"ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95",
-									)}
-								>
-									<Show
-										when={(projects()?.length ?? 0) > 0}
-										fallback={
-											<div class="p-4 text-center">
-												<Text size="sm" color="muted" class="mb-2">
-													No projects yet
-												</Text>
-												<A
-													href="/me/projects/new"
-													class="text-sm text-primary dark:text-primary-dark hover:underline"
-												>
-													Create a project
-												</A>
-											</div>
-										}
-									>
-										<div class="p-1">
-											<For each={projects()}>
-												{(project) => {
-													const isInProject = () =>
-														isPackageInProject(project.id);
-													const isAdding = () =>
-														addingToProject() === project.id;
-													return (
-														<button
-															type="button"
-															class={cn(
-																"w-full text-left px-3 py-2 text-sm rounded-sm",
-																"flex items-center justify-between gap-2",
-																"text-on-surface dark:text-on-surface-dark",
-																"hover:bg-surface-alt dark:hover:bg-surface-dark-alt",
-																"transition-colors cursor-pointer",
-																"disabled:opacity-50 disabled:cursor-not-allowed",
-															)}
-															disabled={isInProject() || isAdding()}
-															onClick={() => handleAddToProject(project.id)}
-														>
-															<span class="truncate">{project.name}</span>
-															<Show when={isInProject()}>
-																<CheckIcon
-																	size="sm"
-																	class="text-success shrink-0"
-																	title="Already in project"
-																/>
-															</Show>
-															<Show when={isAdding()}>
-																<span class="text-xs text-on-surface-muted dark:text-on-surface-dark-muted">
-																	Adding...
-																</span>
-															</Show>
-														</button>
-													);
-												}}
-											</For>
-										</div>
-										<div class="border-t border-outline dark:border-outline-dark p-2">
-											<A
-												href="/me/projects/new"
-												class="block w-full text-center text-xs text-primary dark:text-primary-dark hover:underline"
-											>
-												+ Create new project
-											</A>
-										</div>
-									</Show>
-								</Popover.Content>
-							</Popover.Portal>
-						</Popover>
 					</Show>
 				</div>
 			</Flex>
@@ -514,7 +342,8 @@ export const Header = (props: HeaderProps) => {
 								variant="secondary"
 								size="sm"
 								class={cn(
-									"inline-flex items-center gap-1 pr-1",
+									"gap-1",
+									isLoggedIn() && "pr-1",
 									isPendingRemoval() && "opacity-50",
 								)}
 							>
@@ -542,17 +371,21 @@ export const Header = (props: HeaderProps) => {
 						);
 					}}
 				</For>
-				<button
-					type="button"
-					onClick={(e) => {
-						e.currentTarget.blur();
-						handleAddTag();
-					}}
-					class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors cursor-pointer"
-				>
-					<PlusIcon size="xs" />
-					<span>Add tag</span>
-				</button>
+				<Show when={isLoggedIn()}>
+					<Badge
+						as="button"
+						variant="outline"
+						size="sm"
+						onClick={(e: MouseEvent) => {
+							(e.currentTarget as HTMLElement).blur();
+							handleAddTag();
+						}}
+						class="gap-1"
+					>
+						<PlusIcon size="xs" />
+						<span>Add tag</span>
+					</Badge>
+				</Show>
 			</Flex>
 
 			{/* Footer: Sync info */}

@@ -9,7 +9,16 @@ const meta = {
 	argTypes: {
 		variant: {
 			control: "select",
-			options: ["primary", "secondary", "success", "danger", "warning", "info"],
+			options: [
+				"primary",
+				"secondary",
+				"success",
+				"danger",
+				"warning",
+				"info",
+				"outline",
+				"subtle",
+			],
 			description: "Badge color variant",
 		},
 		size: {
@@ -113,6 +122,37 @@ const infoThemed = createThemedStories({
 export const InfoLight = infoThemed.Light;
 export const InfoDark = infoThemed.Dark;
 
+const outlineBase: Story = {
+	args: {
+		variant: "outline",
+		children: "+ Add tag",
+		as: "button",
+	},
+};
+
+const outlineThemed = createThemedStories({
+	story: outlineBase,
+	testMode: "both",
+});
+
+export const OutlineLight = outlineThemed.Light;
+export const OutlineDark = outlineThemed.Dark;
+
+const subtleBase: Story = {
+	args: {
+		variant: "subtle",
+		children: "npm",
+	},
+};
+
+const subtleThemed = createThemedStories({
+	story: subtleBase,
+	testMode: "both",
+});
+
+export const SubtleLight = subtleThemed.Light;
+export const SubtleDark = subtleThemed.Dark;
+
 const smallBase: Story = {
 	args: {
 		size: "sm",
@@ -153,6 +193,12 @@ const allVariantsBase: Story = {
 				<Badge variant="danger">Danger</Badge>
 				<Badge variant="warning">Warning</Badge>
 				<Badge variant="info">Info</Badge>
+			</div>
+			<div style={{ display: "flex", gap: "0.5rem", "flex-wrap": "wrap" }}>
+				<Badge variant="outline" as="button">
+					+ Add tag
+				</Badge>
+				<Badge variant="subtle">npm</Badge>
 			</div>
 			<div
 				style={{

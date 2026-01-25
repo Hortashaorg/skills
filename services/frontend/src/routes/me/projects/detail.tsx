@@ -13,8 +13,10 @@ import { AlertDialog } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
+import { useModalState } from "@/hooks/useModalState";
 import { Layout } from "@/layout/Layout";
 import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
+import { groupByTags } from "@/lib/group-by-tags";
 import { handleMutationError } from "@/lib/mutation-error";
 import { EcosystemGrid } from "./sections/EcosystemGrid";
 import { PackageGrid } from "./sections/PackageGrid";
@@ -39,13 +41,9 @@ export const ProjectDetail = () => {
 	const [editDescription, setEditDescription] = createSignal("");
 	const [isSaving, setIsSaving] = createSignal(false);
 	const [packageSearch, setPackageSearch] = createSignal("");
-	const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
-	const [removePackageId, setRemovePackageId] = createSignal<string | null>(
-		null,
-	);
-	const [removeEcosystemId, setRemoveEcosystemId] = createSignal<string | null>(
-		null,
-	);
+	const deleteModal = useModalState();
+	const removePackageModal = useModalState<string>();
+	const removeEcosystemModal = useModalState<string>();
 	const [activeTab, setActiveTab] = createSignal<"packages" | "ecosystems">(
 		"packages",
 	);
@@ -98,36 +96,9 @@ export const ProjectDetail = () => {
 	);
 
 	// Group packages by tag - packages with multiple tags appear in multiple groups
-	const packagesByTag = createMemo(() => {
-		const pkgs = packages();
-		type Pkg = (typeof pkgs)[number];
-		const groups: Record<string, Pkg[]> = {};
-		const uncategorized: Pkg[] = [];
-
-		for (const pkg of pkgs) {
-			const tags = pkg.packageTags ?? [];
-			if (tags.length === 0) {
-				uncategorized.push(pkg);
-			} else {
-				for (const pt of tags) {
-					const tagName = pt.tag?.name;
-					if (tagName) {
-						if (!groups[tagName]) {
-							groups[tagName] = [];
-						}
-						groups[tagName].push(pkg);
-					}
-				}
-			}
-		}
-
-		// Sort tag names alphabetically
-		const sortedTags = Object.keys(groups).sort((a, b) =>
-			a.toLowerCase().localeCompare(b.toLowerCase()),
-		);
-
-		return { groups, sortedTags, uncategorized };
-	});
+	const packagesByTag = createMemo(() =>
+		groupByTags(packages(), (pkg) => pkg.packageTags),
+	);
 
 	// Ecosystems
 	const ecosystems = createMemo(() => {
@@ -143,35 +114,9 @@ export const ProjectDetail = () => {
 	);
 
 	// Group ecosystems by tag
-	const ecosystemsByTag = createMemo(() => {
-		const ecos = ecosystems();
-		type Eco = (typeof ecos)[number];
-		const groups: Record<string, Eco[]> = {};
-		const uncategorized: Eco[] = [];
-
-		for (const eco of ecos) {
-			const tags = eco.ecosystemTags ?? [];
-			if (tags.length === 0) {
-				uncategorized.push(eco);
-			} else {
-				for (const et of tags) {
-					const tagName = et.tag?.name;
-					if (tagName) {
-						if (!groups[tagName]) {
-							groups[tagName] = [];
-						}
-						groups[tagName].push(eco);
-					}
-				}
-			}
-		}
-
-		const sortedTags = Object.keys(groups).sort((a, b) =>
-			a.toLowerCase().localeCompare(b.toLowerCase()),
-		);
-
-		return { groups, sortedTags, uncategorized };
-	});
+	const ecosystemsByTag = createMemo(() =>
+		groupByTags(ecosystems(), (eco) => eco.ecosystemTags),
+	);
 
 	const ecosystemSearchResultsFiltered = createMemo((): SearchResultItem[] => {
 		const results = ecosystemSearchResults() ?? [];
@@ -360,7 +305,7 @@ export const ProjectDetail = () => {
 
 	const confirmRemovePackage = async () => {
 		const p = project();
-		const packageId = removePackageId();
+		const packageId = removePackageModal.data();
 		if (!p || !packageId) return;
 
 		const projectPackage = p.projectPackages.find(
@@ -378,12 +323,12 @@ export const ProjectDetail = () => {
 		} catch (err) {
 			handleMutationError(err, "remove package");
 		}
-		setRemovePackageId(null);
+		removePackageModal.close();
 	};
 
 	const confirmRemoveEcosystem = async () => {
 		const p = project();
-		const ecosystemId = removeEcosystemId();
+		const ecosystemId = removeEcosystemModal.data();
 		if (!p || !ecosystemId) return;
 
 		const projectEcosystem = (p.projectEcosystems ?? []).find(
@@ -401,7 +346,7 @@ export const ProjectDetail = () => {
 		} catch (err) {
 			handleMutationError(err, "remove ecosystem");
 		}
-		setRemoveEcosystemId(null);
+		removeEcosystemModal.close();
 	};
 
 	const confirmDelete = async () => {
@@ -449,7 +394,7 @@ export const ProjectDetail = () => {
 												project={p()}
 												isOwner={isOwner()}
 												onEdit={startEditing}
-												onDelete={() => setDeleteDialogOpen(true)}
+												onDelete={() => deleteModal.open()}
 											/>
 										}
 									>
@@ -500,7 +445,7 @@ export const ProjectDetail = () => {
 															ecosystems={ecosystems()}
 															ecosystemsByTag={ecosystemsByTag()}
 															isOwner={isOwner()}
-															onRemove={setRemoveEcosystemId}
+															onRemove={removeEcosystemModal.open}
 														/>
 													</Stack>
 												}
@@ -520,7 +465,7 @@ export const ProjectDetail = () => {
 														packages={packages()}
 														packagesByTag={packagesByTag()}
 														isOwner={isOwner()}
-														onRemove={setRemovePackageId}
+														onRemove={removePackageModal.open}
 													/>
 												</Stack>
 											</Show>
@@ -535,8 +480,8 @@ export const ProjectDetail = () => {
 
 			{/* Delete Project Dialog */}
 			<AlertDialog
-				open={deleteDialogOpen()}
-				onOpenChange={setDeleteDialogOpen}
+				open={deleteModal.isOpen()}
+				onOpenChange={(open) => !open && deleteModal.close()}
 				title="Delete Project"
 				description={`Delete "${project()?.name}"? This cannot be undone.`}
 				confirmText="Delete"
@@ -546,10 +491,8 @@ export const ProjectDetail = () => {
 
 			{/* Remove Package Dialog */}
 			<AlertDialog
-				open={removePackageId() !== null}
-				onOpenChange={(open) => {
-					if (!open) setRemovePackageId(null);
-				}}
+				open={removePackageModal.isOpen()}
+				onOpenChange={(open) => !open && removePackageModal.close()}
 				title="Remove Package"
 				description="Remove this package from the project?"
 				confirmText="Remove"
@@ -559,10 +502,8 @@ export const ProjectDetail = () => {
 
 			{/* Remove Ecosystem Dialog */}
 			<AlertDialog
-				open={removeEcosystemId() !== null}
-				onOpenChange={(open) => {
-					if (!open) setRemoveEcosystemId(null);
-				}}
+				open={removeEcosystemModal.isOpen()}
+				onOpenChange={(open) => !open && removeEcosystemModal.close()}
 				title="Remove Ecosystem"
 				description="Remove this ecosystem from the project?"
 				confirmText="Remove"

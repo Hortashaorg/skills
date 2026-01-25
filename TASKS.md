@@ -4,146 +4,59 @@
 
 ---
 
-## Sprint 11: Tech Debt & DX
+## Sprint 12: Projects & Curation Expansion
 
-Dedicated sprint for code quality, developer experience, and consistency.
+Focus: Projects become decision journals, expand suggestion coverage.
 
-### Tier 1: High Impact, Low Effort
+### Projects Rework
 
-#### Consolidate Duplicate Code
-- [ ] Merge `createPackageUpvote` + `createEcosystemUpvote` into generic `useUpvote(entityType, entity)`
-  - Files: `hooks/createPackageUpvote.ts`, `hooks/createEcosystemUpvote.ts`
-  - ~100 LOC duplication removed
+Transform projects from stack lists into decision records.
 
-#### Fix Critical UX Bugs
-- [ ] Add user feedback when auth fails in `app-provider.tsx` (currently silent)
-  - Lines 48-62: login and refresh failures log to console but show nothing to user
-  - Add toast or banner: "Sign in failed. Please try again."
-- [ ] Auto-approved suggestions show "pending review" toast - should say "applied"
+#### Schema Changes
+- [ ] Add `reason` field to `projectPackages` table (nullable text)
+- [ ] Add `reason` field to `projectEcosystems` table (nullable text)
+- [ ] Add `removedAt` timestamp to track removal history
+- [ ] Consider `projectHistory` table for timeline view
 
-#### Standardize Error Handling
-- [ ] Replace direct `toast.error()` calls with `handleMutationError()`
-  - Files: `package/Header.tsx`, `ecosystem/index.tsx`, `curation/index.tsx`
-  - Ensures consistent logging + error extraction
+#### UI Updates
+- [ ] Add reason input when adding package/ecosystem to project
+- [ ] Show reasons on project detail page (expandable per item)
+- [ ] Add "Edit reason" inline functionality
+- [ ] Timeline view showing add/remove history with reasons
 
-#### Documentation Updates
-
-Keep docs compact - no repetition across files. Each file documents only its scope.
-
-- [ ] Update `services/frontend/CLAUDE.md` - Add hooks section:
-  - `createUrlSignal(key, parse, serialize)` - URL param ↔ signal sync
-  - `createUrlStringSignal(key)` / `createUrlArraySignal(key)` - String/array shortcuts
-  - `useInfiniteScroll({ initialLimit, loadMoreCount })` - Pagination + sentinel
-  - `createPolledValue(fetcher, interval)` - Poll non-Zero endpoints
-  - `createPackageUpvote/createEcosystemUpvote` - Upvote state (until merged)
-  - Note: `PACKAGES_*_LIMIT` constants must be divisible by 6 (grid columns)
-
-- [ ] Create `services/backend/CLAUDE.md`:
-  - Hono app structure (routes in index.ts)
-  - Auth middleware: `getAuthContext(c)` returns `{ userId, roles }`
-  - Token refresh endpoint: `/auth/refresh` with httpOnly cookie
-  - GDPR export endpoint pattern
-  - OpenTelemetry: counters, histograms already instrumented
-
-- [ ] Create `services/webhook/CLAUDE.md`:
-  - Zitadel webhook events: `user.removed`, `externalidp.added`
-  - Handler pattern: `handlers/events.ts`, `handlers/actions.ts`
-  - Zitadel API client: `zitadel-api.ts` for management API calls
-  - Soft-delete vs hard-delete account handling
-
-- [ ] Update root `README.md`:
-  - Add `pnpm database generate` to commands (currently missing)
-  - Keep setup minimal - link to CLAUDE.md for details
+#### Import Enhancement
+- [ ] When importing from package.json, allow bulk reason annotation
+- [ ] "Annotate later" flow - import first, add reasons over time
 
 ---
 
-### Tier 2: Medium Impact, Medium Effort
+### Suggestion Type Expansion
 
-#### Extract Reusable Hooks
+Current types: `add_tag`, `remove_tag`, `create_ecosystem`, `add_ecosystem_package`, `add_ecosystem_tag`, `remove_ecosystem_tag`
 
-- [ ] `useModalState()` - Modal open/close + optional data (repeated 5+ times)
-  ```tsx
-  const modal = useModalState<string>(); // { isOpen, data, open, close }
-  ```
-  - Files: Header.tsx, ecosystem/index.tsx, projects/detail.tsx, admin/tags
+#### High Priority
+- [ ] `remove_ecosystem_package` - Remove package from ecosystem
+  - Mirror of `add_ecosystem_package`
+  - Needs confirmation modal with justification
 
-- [ ] `useConfirmationDialog<T>()` - Modal state + justification + handlers
-  - Currently: manual signals for open, data, justification in each component
+#### Medium Priority
+- [ ] `edit_ecosystem_description` - Suggest description changes
+  - Show diff in curation UI
+  - Payload: `{ description: string }`
 
-- [ ] `useEntityTagSuggestions()` - Tag suggestion + voting logic (~200 LOC duplicated)
-  - Query pending, filter existing/pending/available, format options
-  - Files: package/Header.tsx (140-244), ecosystem/index.tsx (96-341)
-
-- [ ] `groupByTags<T>()` utility - Group entities by their tags
-  - Identical logic in projects/detail.tsx and EcosystemPackages.tsx
-  - Returns { groups, sortedTags, uncategorized }
-
-#### Extract Reusable Components
-
-- [ ] `AddToProjectPopover` - Entity → project linking (~80 LOC duplicated)
-  - Query user projects, check membership, handle mutation
-  - Files: package/Header.tsx (356-452), EcosystemHeader.tsx (64-114)
-
-- [ ] Centralize skeleton components
-  - ProfileSkeleton, ProjectCardSkeleton, EcosystemSkeleton, PackageDetailSkeleton
-  - Move to `components/ui/skeleton/` or create variants
-
-#### Split Large Files
-
-| File | Lines | Action |
-|------|-------|--------|
-| `package/sections/Header.tsx` | 656 | Split: Header + TagManager + PackageActions |
-| `me/projects/detail.tsx` | 574 | Extract grouping hooks + modal state |
-| `ecosystem/index.tsx` | 568 | Extract state management to hooks |
-| `me/index.tsx` | 430 | Extract ProfileForm section |
-| `home/sections/ResultsGrid.tsx` | 381 | Extract request dialog logic |
-
-#### Testing Gaps
-- [ ] Add Dialog component stories (`ui/dialog/dialog.stories.tsx`)
-- [ ] Add interaction tests for EntityPicker, SearchInput keyboard nav
-- [ ] Configure Chromatic for visual regression (addon installed, not configured)
+#### Consider Later
+- [ ] `edit_ecosystem_website` - Suggest website URL changes
+- [ ] `merge_ecosystems` - Suggest combining duplicate ecosystems (complex)
 
 ---
 
-### Tier 3: Polish & Consistency
+### Quick Fixes (From Sprint 11)
 
-#### Component Consistency
-- [ ] Extract "Add tag" button as Button variant (currently raw HTML with inline styles)
-  - Pattern: `<Button variant="outline" size="xs" class="rounded-full border-dashed">`
-- [ ] Standardize SearchInput usage across all list pages
-  - Packages: uses SearchInput ✓
-  - Ecosystems: uses plain Input ✗
-  - Projects: uses plain Input ✗
-- [ ] Reduce Button variant count from 10 to 7-8 (consider compound patterns)
-
-#### State Pattern Standardization
-- [ ] Modal state: Use ID-based pattern consistently
-  - Standardize: `const [removeId, setRemoveId] = createSignal<string | null>(null)`
-  - Current: Mix of boolean + separate data signal
-- [ ] Form errors: Show inline only (not toast + inline double feedback)
-
-#### Accessibility
-- [ ] Audit components for aria-hidden warnings - document patterns
-- [ ] Document preventive patterns (blur on close, portal usage guidelines)
-
-#### Suggestion System
-- [ ] Verify approval voting process still works correctly
-- [ ] Show justification in curation voting UI
-- [ ] Consider "contributor" role that skips review (between user and curator)
-
-#### Signed-Out UX
-- [ ] Hide "Add tag" button when signed out (don't show disabled)
-- [ ] Audit "sign in to..." patterns - reduce redundant CTAs
-
-#### Code Quality
-- [ ] `createPackageTags` hook - Extract tag mapping logic (repeated in 4 files)
-- [ ] `lib/package-formatting.ts` - Extract status label/description logic
-
----
-
-### Not Needed (Based on Review)
-
-~~Suggestion system architecture overhaul~~ - The backend is well-designed (537 LOC but handles complex multi-step transactions correctly). Focus on frontend patterns (hooks, modals) instead.
+Completed during sprint prep:
+- [x] Badge component: polymorphic `as` prop, `outline` and `subtle` variants
+- [x] Ecosystem suggest package: Use SearchInput for consistent UX
+- [x] Hide "+ Add tag" for logged-out users (reduce noise)
+- [x] Remove "Sign in to upvote" text (upvote count still visible)
 
 ---
 
@@ -153,40 +66,17 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 
 ---
 
-## Codebase Review Summary (Sprint 11 Context)
-
-### Scores by Area
-
-| Area | Score | Status |
-|------|-------|--------|
-| Component Library | 8.5/10 | Excellent CVA consistency, clear tiers |
-| State Patterns | 6.5/10 | Inconsistent modal/form patterns |
-| Data Layer | 8.5/10 | Strong Zod coverage, good type flow |
-| Documentation | 7/10 | Gaps in backend/webhook/hooks |
-| Error Handling | 7/10 | Centralized utility exists, not always used |
-| File Organization | 9/10 | Clear structure, some large files |
-| Testing | 7.5/10 | 73% story coverage, no backend tests |
-| UX Patterns | 8.5/10 | Consistent cards, upvotes, modals |
-
-### Key Findings
-
-**Strengths:**
-- ResourceCard → PackageCard/EcosystemCard hierarchy is clean
-- Upvote, tags, add-to-project flows identical across entities
-- No circular dependencies, clear module boundaries
-- 40/55 components have Storybook stories (73%)
-- All Zod validation in place for queries/mutators
-
-**Issues:**
-- 2 duplicate hooks (upvote logic)
-- Auth failures silent (no user feedback)
-- 2 error handling patterns in use
-- 5 files over 400 lines need splitting
-- 7+ hooks undocumented
-
----
-
 ## Completed (Previous Sprints)
+
+### Sprint 11: Tech Debt & DX
+
+- Suggestion system architecture overhaul (6 mutators → 1 generic, extensible type definitions)
+- `useSuggestionSubmit` hook with power user detection
+- Consolidated hooks: `createUpvote()`, `useModalState<T>()`, `useVote()`, `useAddToProject()`
+- Shared components: `SkeletonCard`, `AddToProjectPopover`
+- Utilities: `groupByTags<T>()`, `handleMutationError()`
+- Documentation: backend/webhook CLAUDE.md, Hook Reference section
+- Badge polymorphic rendering, ecosystem SearchInput UX, reduced sign-in noise
 
 ### Sprint 10: Ecosystems & Code Quality
 
