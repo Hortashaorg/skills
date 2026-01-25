@@ -360,7 +360,8 @@ export const Header = (props: HeaderProps) => {
 								variant="secondary"
 								size="sm"
 								class={cn(
-									"inline-flex items-center gap-1 pr-1",
+									"gap-1",
+									isLoggedIn() && "pr-1",
 									isPendingRemoval() && "opacity-50",
 								)}
 							>
@@ -388,17 +389,19 @@ export const Header = (props: HeaderProps) => {
 						);
 					}}
 				</For>
-				<button
-					type="button"
-					onClick={(e) => {
-						e.currentTarget.blur();
+				<Badge
+					as="button"
+					variant="outline"
+					size="sm"
+					onClick={(e: MouseEvent) => {
+						(e.currentTarget as HTMLElement).blur();
 						handleAddTag();
 					}}
-					class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border border-dashed border-outline hover:border-primary hover:text-primary dark:border-outline-dark dark:hover:border-primary-dark dark:hover:text-primary-dark transition-colors cursor-pointer"
+					class="gap-1"
 				>
 					<PlusIcon size="xs" />
 					<span>Add tag</span>
-				</button>
+				</Badge>
 			</Flex>
 
 			{/* Footer: Sync info */}

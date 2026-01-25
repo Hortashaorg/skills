@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type { JSX } from "solid-js";
-import { splitProps } from "solid-js";
+import { type JSX, splitProps, type ValidComponent } from "solid-js";
+import { Dynamic } from "solid-js/web";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
@@ -46,6 +46,25 @@ const badgeVariants = cva(
 					"dark:text-on-warning",
 				],
 				info: ["bg-info", "text-on-info", "dark:bg-info", "dark:text-on-info"],
+				outline: [
+					"border",
+					"border-dashed",
+					"border-outline",
+					"dark:border-outline-dark",
+					"text-on-surface-muted",
+					"dark:text-on-surface-dark-muted",
+					"hover:border-primary",
+					"hover:text-primary",
+					"dark:hover:border-primary-dark",
+					"dark:hover:text-primary-dark",
+					"cursor-pointer",
+				],
+				subtle: [
+					"bg-primary/10",
+					"dark:bg-primary-dark/15",
+					"text-on-surface-strong",
+					"dark:text-on-surface-dark-strong",
+				],
 			},
 			size: {
 				sm: ["text-xs", "px-2", "py-0.5", "h-5"],
@@ -60,25 +79,33 @@ const badgeVariants = cva(
 );
 
 export type BadgeProps = {
+	/** Element type to render (default: "span", use "button" for interactive badges) */
+	as?: ValidComponent;
 	children?: JSX.Element;
 	class?: string;
-	/** Semantic role for the badge. Use "status" for live updates, "note" for static labels. */
-	role?: "status" | "note" | "mark";
-	/** Accessible label for screen readers when badge content isn't descriptive */
-	"aria-label"?: string;
-	/** Hide badge from screen readers when purely decorative */
-	"aria-hidden"?: boolean;
-} & VariantProps<typeof badgeVariants>;
+} & VariantProps<typeof badgeVariants> &
+	Omit<JSX.HTMLAttributes<HTMLElement>, "children">;
 
 export const Badge = (props: BadgeProps) => {
-	const [local, others] = splitProps(props, ["variant", "size", "class"]);
+	const [local, others] = splitProps(props, [
+		"as",
+		"variant",
+		"size",
+		"class",
+		"children",
+	]);
+	const isButton = () => local.as === "button";
 	return (
-		<span
+		<Dynamic
+			component={local.as ?? "span"}
+			type={isButton() ? "button" : undefined}
 			class={cn(
 				badgeVariants({ variant: local.variant, size: local.size }),
 				local.class,
 			)}
-			{...(others as JSX.HTMLAttributes<HTMLSpanElement>)}
-		/>
+			{...(others as JSX.HTMLAttributes<HTMLElement>)}
+		>
+			{local.children}
+		</Dynamic>
 	);
 };

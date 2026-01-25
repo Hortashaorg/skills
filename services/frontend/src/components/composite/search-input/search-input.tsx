@@ -5,6 +5,7 @@ import {
 	SpinnerIcon,
 	XCircleIcon,
 } from "@/components/primitives/icon";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * Generic search result item structure
@@ -136,9 +137,9 @@ export const SearchInput = (props: SearchInputProps) => {
 							</div>
 							<Show when={itemProps.item.rawValue.label}>
 								<div class="shrink-0">
-									<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark">
+									<Badge variant="subtle" size="sm">
 										{itemProps.item.rawValue.label}
-									</span>
+									</Badge>
 								</div>
 							</Show>
 						</div>
