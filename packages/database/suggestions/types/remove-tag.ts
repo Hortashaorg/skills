@@ -14,12 +14,14 @@ export const removeTag = defineSuggestionType({
 		pending: "Your tag removal suggestion is now pending review.",
 	},
 
-	formatDescription: (payload, ctx) =>
-		ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag",
+	targetEntity: "package",
 
-	formatAction: (payload, ctx) => {
-		const name = ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag";
-		return `Remove tag "${name}"`;
+	formatDisplay: (payload, ctx) => {
+		const tagName = ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag";
+		return {
+			action: `Remove tag "${tagName}"`,
+			description: tagName,
+		};
 	},
 
 	resolve: async (tx, payload, ids) => {

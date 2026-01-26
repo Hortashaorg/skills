@@ -32,21 +32,11 @@ Transform projects from stack lists into decision records.
 
 ### Suggestion Type Expansion
 
-Current types: `add_tag`, `remove_tag`, `create_ecosystem`, `add_ecosystem_package`, `add_ecosystem_tag`, `remove_ecosystem_tag`
+Current types: `add_tag`, `remove_tag`, `create_ecosystem`, `add_ecosystem_package`, `remove_ecosystem_package`, `add_ecosystem_tag`, `remove_ecosystem_tag`, `edit_ecosystem_description`, `edit_ecosystem_website`
 
-#### High Priority
-- [ ] `remove_ecosystem_package` - Remove package from ecosystem
-  - Mirror of `add_ecosystem_package`
-  - Needs confirmation modal with justification
-
-#### Medium Priority
-- [ ] `edit_ecosystem_description` - Suggest description changes
-  - Show diff in curation UI
-  - Payload: `{ description: string }`
-
-#### Consider Later
-- [ ] `edit_ecosystem_website` - Suggest website URL changes
-- [ ] `merge_ecosystems` - Suggest combining duplicate ecosystems (complex)
+- [x] `remove_ecosystem_package` - Remove package from ecosystem
+- [x] `edit_ecosystem_description` - Suggest description changes
+- [x] `edit_ecosystem_website` - Suggest website URL changes
 
 ---
 

@@ -9,9 +9,9 @@
 
 export {
 	type FormatContext,
-	formatSuggestionAction,
-	formatSuggestionDescription,
+	formatSuggestionDisplay,
 	getSuggestionTypeLabel,
+	type SuggestionDisplay,
 	suggestionTypeMeta,
 } from "./display.ts";
 export { isPowerUser, type PowerUserRole } from "./power-user.ts";

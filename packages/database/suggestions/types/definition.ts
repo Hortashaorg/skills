@@ -14,8 +14,8 @@ export type SuggestionTransaction = Transaction<Schema>;
 /** Context for formatting - lookup maps for resolving IDs to names */
 export interface FormatContext {
 	tags?: Map<string, { name: string }>;
-	packages?: Map<string, { name: string }>;
-	ecosystems?: Map<string, { name: string }>;
+	packages?: Map<string, { name: string; registry: string }>;
+	ecosystems?: Map<string, { name: string; slug: string }>;
 }
 
 /** IDs passed to resolve */
@@ -35,6 +35,23 @@ export interface ToastMessages {
 	pending: string;
 }
 
+/** Structured display data returned by formatDisplay */
+export interface SuggestionDisplay {
+	/** Full action text, e.g. 'Add tag "Frontend"' */
+	action: string;
+	/** Short description for compact views, e.g. "Frontend" */
+	description: string;
+	/** Optional target entity this suggestion acts upon */
+	target?: {
+		/** Display label, e.g. "react" or "Web Frameworks" */
+		label: string;
+		/** URL path, e.g. "/package/npm/react" */
+		href: string;
+		/** Optional sublabel, e.g. "npm" */
+		sublabel?: string;
+	};
+}
+
 /**
  * Suggestion type definition.
  * TPayload is the parsed payload type - methods receive already-validated data.
@@ -52,11 +69,14 @@ export interface SuggestionTypeDefinition<TPayload> {
 	/** Toast messages for frontend feedback */
 	toastMessages: ToastMessages;
 
-	/** Format short description (e.g., "TypeScript") */
-	formatDescription: (payload: TPayload, ctx: FormatContext) => string;
+	/** What kind of entity this suggestion targets: 'package', 'ecosystem', or 'none' */
+	targetEntity: "package" | "ecosystem" | "none";
 
-	/** Format full action (e.g., 'Add tag "TypeScript"') */
-	formatAction: (payload: TPayload, ctx: FormatContext) => string;
+	/**
+	 * Display formatting with resolved context.
+	 * Returns action + description. The target link is attached by the resolution layer.
+	 */
+	formatDisplay: (payload: TPayload, ctx: FormatContext) => SuggestionDisplay;
 
 	/** Apply the suggestion when approved */
 	resolve: (

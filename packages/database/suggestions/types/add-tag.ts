@@ -15,12 +15,14 @@ export const addTag = defineSuggestionType({
 		pending: "Your tag suggestion is now pending review.",
 	},
 
-	formatDescription: (payload, ctx) =>
-		ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag",
+	targetEntity: "package",
 
-	formatAction: (payload, ctx) => {
-		const name = ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag";
-		return `Add tag "${name}"`;
+	formatDisplay: (payload, ctx) => {
+		const tagName = ctx.tags?.get(payload.tagId)?.name ?? "Unknown tag";
+		return {
+			action: `Add tag "${tagName}"`,
+			description: tagName,
+		};
 	},
 
 	resolve: async (tx, payload, ids) => {

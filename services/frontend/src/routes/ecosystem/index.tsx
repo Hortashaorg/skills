@@ -16,6 +16,7 @@ import {
 import { Container } from "@/components/primitives/container";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
+import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Textarea } from "@/components/primitives/textarea";
@@ -165,6 +166,26 @@ export const Ecosystem = () => {
 				.map((s) => (s.payload as { tagId?: string })?.tagId)
 				.filter(Boolean) as string[],
 		);
+	});
+
+	const pendingRemovePackageIds = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return new Set(
+			suggestions
+				.filter((s) => s.type === "remove_ecosystem_package")
+				.map((s) => (s.payload as { packageId?: string })?.packageId)
+				.filter(Boolean) as string[],
+		);
+	});
+
+	const hasPendingDescriptionEdit = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return suggestions.some((s) => s.type === "edit_ecosystem_description");
+	});
+
+	const hasPendingWebsiteEdit = createMemo(() => {
+		const suggestions = pendingSuggestions() ?? [];
+		return suggestions.some((s) => s.type === "edit_ecosystem_website");
 	});
 
 	const availableTags = createMemo(() => {
@@ -367,6 +388,137 @@ export const Ecosystem = () => {
 		setPackageModalOpen(true);
 	};
 
+	// Remove package
+	const [removePackageModalOpen, setRemovePackageModalOpen] =
+		createSignal(false);
+	const [removePackageId, setRemovePackageId] = createSignal<string | null>(
+		null,
+	);
+	const [removePackageJustification, setRemovePackageJustification] =
+		createSignal("");
+
+	const removePackageName = createMemo(() => {
+		const pkgId = removePackageId();
+		if (!pkgId) return "";
+		const pkg = packages().find((p) => p.id === pkgId);
+		return pkg?.name ?? "Unknown package";
+	});
+
+	const handleRemovePackage = (packageId: string) => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest removals.", "Sign in required");
+			return;
+		}
+		if (pendingRemovePackageIds().has(packageId)) {
+			toast.info(
+				"A suggestion to remove this package is already pending.",
+				"Already pending",
+			);
+			return;
+		}
+		setRemovePackageId(packageId);
+		setRemovePackageJustification("");
+		setRemovePackageModalOpen(true);
+	};
+
+	const { submit: submitRemovePackage } = useSuggestionSubmit({
+		type: "remove_ecosystem_package",
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
+		getPayload: () => ({ packageId: removePackageId() }),
+		onSuccess: () => {
+			setRemovePackageModalOpen(false);
+			setRemovePackageId(null);
+			setRemovePackageJustification("");
+		},
+	});
+
+	const handleConfirmRemovePackage = () => {
+		if (!ecosystem() || !removePackageId()) return;
+		submitRemovePackage(removePackageJustification() || undefined);
+	};
+
+	// Edit description
+	const [descriptionModalOpen, setDescriptionModalOpen] = createSignal(false);
+	const [proposedDescription, setProposedDescription] = createSignal("");
+	const [descriptionJustification, setDescriptionJustification] =
+		createSignal("");
+
+	const handleEditDescription = () => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest edits.", "Sign in required");
+			return;
+		}
+		if (hasPendingDescriptionEdit()) {
+			toast.info(
+				"A description edit suggestion is already pending.",
+				"Already pending",
+			);
+			return;
+		}
+		setProposedDescription(ecosystem()?.description ?? "");
+		setDescriptionJustification("");
+		setDescriptionModalOpen(true);
+	};
+
+	const { submit: submitEditDescription } = useSuggestionSubmit({
+		type: "edit_ecosystem_description",
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
+		getPayload: () => ({ description: proposedDescription() }),
+		onSuccess: () => {
+			setDescriptionModalOpen(false);
+			setProposedDescription("");
+			setDescriptionJustification("");
+		},
+	});
+
+	const handleConfirmEditDescription = () => {
+		if (!ecosystem() || !proposedDescription().trim()) return;
+		submitEditDescription(descriptionJustification() || undefined);
+	};
+
+	// Edit website
+	const [websiteModalOpen, setWebsiteModalOpen] = createSignal(false);
+	const [proposedWebsite, setProposedWebsite] = createSignal("");
+	const [websiteJustification, setWebsiteJustification] = createSignal("");
+
+	const handleEditWebsite = () => {
+		if (!isLoggedIn()) {
+			toast.info("Sign in to suggest edits.", "Sign in required");
+			return;
+		}
+		if (hasPendingWebsiteEdit()) {
+			toast.info(
+				"A website edit suggestion is already pending.",
+				"Already pending",
+			);
+			return;
+		}
+		setProposedWebsite(ecosystem()?.website ?? "");
+		setWebsiteJustification("");
+		setWebsiteModalOpen(true);
+	};
+
+	const { submit: submitEditWebsite } = useSuggestionSubmit({
+		type: "edit_ecosystem_website",
+		getEntityId: () => ({ ecosystemId: ecosystem()?.id }),
+		getPayload: () => ({
+			website: proposedWebsite().trim() || null,
+		}),
+		onSuccess: () => {
+			setWebsiteModalOpen(false);
+			setProposedWebsite("");
+			setWebsiteJustification("");
+		},
+	});
+
+	const handleConfirmEditWebsite = () => {
+		if (!ecosystem()) return;
+		const current = ecosystem()?.website ?? null;
+		const proposed = proposedWebsite().trim() || null;
+		if (current === proposed) return;
+		submitEditWebsite(websiteJustification() || undefined);
+	};
+
 	return (
 		<Layout>
 			<SEO
@@ -410,6 +562,10 @@ export const Ecosystem = () => {
 										onUpvote={handleUpvote}
 										onAddTag={handleAddTag}
 										onRemoveTag={handleRemoveTag}
+										onEditDescription={
+											isLoggedIn() ? handleEditDescription : undefined
+										}
+										onEditWebsite={isLoggedIn() ? handleEditWebsite : undefined}
 										projects={addToProject.projects()}
 										isInProject={addToProject.isInProject}
 										onAddToProject={addToProject.onAdd}
@@ -427,6 +583,9 @@ export const Ecosystem = () => {
 											packages={packages()}
 											packagesByTag={packagesByTag()}
 											onSuggestPackage={handleAddPackage}
+											isLoggedIn={isLoggedIn()}
+											onRemovePackage={handleRemovePackage}
+											pendingRemovePackageIds={pendingRemovePackageIds()}
 										/>
 									</Stack>
 								</>
@@ -510,6 +669,129 @@ export const Ecosystem = () => {
 							Cancel
 						</Button>
 						<Button variant="danger" size="sm" onClick={handleConfirmRemoveTag}>
+							Submit Suggestion
+						</Button>
+					</Flex>
+				</Stack>
+			</Dialog>
+
+			<Dialog
+				open={removePackageModalOpen()}
+				onOpenChange={setRemovePackageModalOpen}
+				title="Remove Package"
+				description={`Are you sure you want to suggest removing "${removePackageName()}" from this ecosystem?`}
+			>
+				<Stack spacing="md">
+					<Textarea
+						value={removePackageJustification()}
+						onInput={(e) =>
+							setRemovePackageJustification(e.currentTarget.value)
+						}
+						placeholder="Why should this package be removed? (optional)"
+						rows={3}
+						size="sm"
+					/>
+					<Flex gap="sm" justify="end">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setRemovePackageModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="danger"
+							size="sm"
+							onClick={handleConfirmRemovePackage}
+						>
+							Submit Suggestion
+						</Button>
+					</Flex>
+				</Stack>
+			</Dialog>
+
+			<Dialog
+				open={descriptionModalOpen()}
+				onOpenChange={setDescriptionModalOpen}
+				title="Edit Description"
+				description="Suggest a new description for this ecosystem."
+			>
+				<Stack spacing="md">
+					<Textarea
+						value={proposedDescription()}
+						onInput={(e) => setProposedDescription(e.currentTarget.value)}
+						placeholder="Enter the proposed description..."
+						rows={5}
+						size="sm"
+					/>
+					<Textarea
+						value={descriptionJustification()}
+						onInput={(e) => setDescriptionJustification(e.currentTarget.value)}
+						placeholder="Why should the description be changed? (optional)"
+						rows={3}
+						size="sm"
+					/>
+					<Flex gap="sm" justify="end">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setDescriptionModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={handleConfirmEditDescription}
+							disabled={
+								!proposedDescription().trim() ||
+								proposedDescription() === ecosystem()?.description
+							}
+						>
+							Submit Suggestion
+						</Button>
+					</Flex>
+				</Stack>
+			</Dialog>
+
+			<Dialog
+				open={websiteModalOpen()}
+				onOpenChange={setWebsiteModalOpen}
+				title="Edit Website"
+				description="Suggest a new website URL for this ecosystem. Leave empty to remove."
+			>
+				<Stack spacing="md">
+					<Input
+						type="url"
+						value={proposedWebsite()}
+						onInput={(e) => setProposedWebsite(e.currentTarget.value)}
+						placeholder="https://example.com"
+						size="sm"
+					/>
+					<Textarea
+						value={websiteJustification()}
+						onInput={(e) => setWebsiteJustification(e.currentTarget.value)}
+						placeholder="Why should the website be changed? (optional)"
+						rows={3}
+						size="sm"
+					/>
+					<Flex gap="sm" justify="end">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setWebsiteModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={handleConfirmEditWebsite}
+							disabled={
+								(proposedWebsite().trim() || null) ===
+								(ecosystem()?.website ?? null)
+							}
+						>
 							Submit Suggestion
 						</Button>
 					</Flex>

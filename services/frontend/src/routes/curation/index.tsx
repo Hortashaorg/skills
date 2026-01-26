@@ -1,14 +1,19 @@
 import {
-	formatSuggestionAction,
-	formatSuggestionDescription,
 	mutators,
 	queries,
+	type SuggestionDisplay,
 	useQuery,
 	useZero,
 } from "@package/database/client";
 import { useNavigate } from "@solidjs/router";
 import type { Accessor } from "solid-js";
-import { createEffect, createMemo, createSignal, Show } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createResource,
+	createSignal,
+	Show,
+} from "solid-js";
 import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
@@ -17,6 +22,7 @@ import { Text } from "@/components/primitives/text";
 import { toast } from "@/components/ui/toast";
 import { getAuthData } from "@/context/app-provider";
 import { Layout } from "@/layout/Layout";
+import { getConfig } from "@/lib/config";
 import { handleMutationError } from "@/lib/mutation-error";
 import { Backlog, type BacklogSuggestion } from "./sections/Backlog";
 import { Leaderboard } from "./sections/Leaderboard";
@@ -95,18 +101,33 @@ export const Curation = () => {
 		});
 	});
 
-	// Get all tags for name lookup
-	const [allTags, allTagsResult] = useQuery(() => queries.tags.list());
+	// Fetch display data from backend for all pending suggestions
+	const [displayMap] = createResource(
+		() => {
+			const all = allPendingSuggestions();
+			if (!all || all.length === 0) return null;
+			return all.map((s) => s.id);
+		},
+		async (ids) => {
+			if (!ids) return {};
+			const res = await fetch(
+				`${getConfig().backendUrl}/api/suggestions/display`,
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${getAuthData()?.accessToken}`,
+					},
+					body: JSON.stringify({ suggestionIds: ids }),
+				},
+			);
+			if (!res.ok) return {};
+			return res.json() as Promise<Record<string, SuggestionDisplay>>;
+		},
+	);
 
-	// Combined loading state for all required data
-	const isDataLoading = () => {
-		return isLoading() || allTagsResult().type !== "complete";
-	};
-
-	const tagsById = createMemo(() => {
-		const all = allTags() ?? [];
-		return new Map(all.map((t) => [t.id, t]));
-	});
+	const isDataLoading = () => isLoading();
 
 	// Get current suggestion to review (selected or first in queue)
 	const currentSuggestion: Accessor<ReviewQueueSuggestion | null> = createMemo(
@@ -168,16 +189,12 @@ export const Curation = () => {
 		setSelectedSuggestionId(null);
 	};
 
-	// Helper to format suggestion descriptions using shared helpers
-	const getDescription = (
-		type: string,
-		payload: unknown,
-		version: number,
-	): string =>
-		formatSuggestionDescription(type, payload, version, { tags: tagsById() });
-
-	const getAction = (type: string, payload: unknown, version: number): string =>
-		formatSuggestionAction(type, payload, version, { tags: tagsById() });
+	// Display data for current suggestion
+	const currentDisplay = (): SuggestionDisplay | undefined => {
+		const s = currentSuggestion();
+		if (!s) return undefined;
+		return displayMap()?.[s.id];
+	};
 
 	// Cast vote
 	const handleVote = async (voteType: "approve" | "reject") => {
@@ -226,13 +243,13 @@ export const Curation = () => {
 						<div class="lg:col-span-2">
 							<ReviewQueue
 								suggestion={currentSuggestion}
+								display={currentDisplay}
 								isLoading={isDataLoading}
 								isOwnSuggestion={isOwnSuggestion}
 								isAdmin={isAdmin}
 								hasVoted={hasVotedOnCurrent}
 								voteCounts={currentVoteCounts}
 								isSkipped={isCurrentSkipped}
-								formatAction={getAction}
 								onVote={handleVote}
 								onSkip={handleSkip}
 							/>
@@ -242,7 +259,7 @@ export const Curation = () => {
 								<Backlog
 									suggestions={allPendingSuggestions}
 									currentSuggestionId={() => currentSuggestion()?.id}
-									formatDescription={getDescription}
+									displayMap={displayMap}
 									onSelect={setSelectedSuggestionId}
 								/>
 							</Show>

@@ -1,4 +1,4 @@
-import { useZero } from "@package/database/client";
+import { type SuggestionDisplay, useZero } from "@package/database/client";
 import type { Accessor } from "solid-js";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
@@ -16,18 +16,13 @@ export interface BacklogSuggestion {
 	payload: unknown;
 	accountId: string;
 	account?: { name: string | null; deletedAt?: Date | number | null } | null;
-	package?: { name: string | null } | null;
 	votes?: readonly { accountId: string; vote: string }[];
 }
 
 interface BacklogProps {
 	suggestions: Accessor<readonly BacklogSuggestion[] | undefined>;
 	currentSuggestionId: Accessor<string | undefined>;
-	formatDescription: (
-		type: string,
-		payload: unknown,
-		version: number,
-	) => string;
+	displayMap: Accessor<Record<string, SuggestionDisplay> | undefined>;
 	onSelect: (id: string) => void;
 }
 
@@ -72,18 +67,22 @@ export const Backlog = (props: BacklogProps) => {
 														weight={isCurrent() ? "semibold" : "normal"}
 														class="truncate"
 													>
-														{props.formatDescription(
-															suggestion.type,
-															suggestion.payload,
-															suggestion.version,
-														)}
+														{props.displayMap()?.[suggestion.id]?.description ??
+															suggestion.type.replace(/_/g, " ")}
 													</Text>
-													<Text size="xs" color="muted">
-														→
-													</Text>
-													<Text size="xs" color="muted" class="truncate">
-														{suggestion.package?.name}
-													</Text>
+													<Show
+														when={props.displayMap()?.[suggestion.id]?.target}
+													>
+														<Text size="xs" color="muted">
+															→
+														</Text>
+														<Text size="xs" color="muted" class="truncate">
+															{
+																props.displayMap()?.[suggestion.id]?.target
+																	?.label
+															}
+														</Text>
+													</Show>
 												</Flex>
 												<Flex gap="xs" align="center">
 													<Text size="xs" color="muted">

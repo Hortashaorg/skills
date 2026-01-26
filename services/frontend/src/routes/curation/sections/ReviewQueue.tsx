@@ -1,3 +1,4 @@
+import type { SuggestionDisplay } from "@package/database/client";
 import { A } from "@solidjs/router";
 import type { Accessor } from "solid-js";
 import { Show } from "solid-js";
@@ -10,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getDisplayName } from "@/lib/account";
-import { buildPackageUrl } from "@/lib/url";
 
 export interface ReviewQueueSuggestion {
 	id: string;
@@ -18,24 +18,20 @@ export interface ReviewQueueSuggestion {
 	version: number;
 	payload: unknown;
 	accountId: string;
+	justification?: string | null;
 	account?: { name: string | null; deletedAt?: Date | number | null } | null;
-	package?: {
-		name: string | null;
-		registry: string | null;
-		description: string | null;
-	} | null;
 	votes?: readonly { accountId: string; vote: string }[];
 }
 
 interface ReviewQueueProps {
 	suggestion: Accessor<ReviewQueueSuggestion | null>;
+	display: Accessor<SuggestionDisplay | undefined>;
 	isLoading: Accessor<boolean>;
 	isOwnSuggestion: Accessor<boolean>;
 	isAdmin: Accessor<boolean>;
 	hasVoted: Accessor<boolean>;
 	voteCounts: Accessor<{ approve: number; reject: number }>;
 	isSkipped: Accessor<boolean>;
-	formatAction: (type: string, payload: unknown, version: number) => string;
 	onVote: (vote: "approve" | "reject") => void;
 	onSkip: () => void;
 }
@@ -100,32 +96,32 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 										</Show>
 									</Flex>
 									<Text size="lg" weight="semibold">
-										{props.formatAction(
-											suggestion().type,
-											suggestion().payload,
-											suggestion().version,
-										)}
+										{props.display()?.action ??
+											suggestion().type.replace(/_/g, " ")}
 									</Text>
-									<Flex gap="xs" align="center">
-										<Text size="sm" color="muted">
-											to
-										</Text>
-										<A
-											href={buildPackageUrl(
-												suggestion().package?.registry ?? "npm",
-												suggestion().package?.name ?? "",
-											)}
-											class="text-sm font-medium hover:text-primary dark:hover:text-primary-dark"
-										>
-											{suggestion().package?.name ?? "Unknown"}
-										</A>
-										<Text size="sm" color="muted">
-											({suggestion().package?.registry})
-										</Text>
-									</Flex>
-									<Show when={suggestion().package?.description}>
-										<Text size="xs" color="muted" class="line-clamp-2">
-											{suggestion().package?.description}
+									<Show when={props.display()?.target}>
+										{(target) => (
+											<Flex gap="xs" align="center">
+												<Text size="sm" color="muted">
+													on
+												</Text>
+												<A
+													href={target().href}
+													class="text-sm font-medium hover:text-primary dark:hover:text-primary-dark"
+												>
+													{target().label}
+												</A>
+												<Show when={target().sublabel}>
+													<Text size="sm" color="muted">
+														({target().sublabel})
+													</Text>
+												</Show>
+											</Flex>
+										)}
+									</Show>
+									<Show when={suggestion().justification}>
+										<Text size="sm" color="muted" class="italic line-clamp-3">
+											"{suggestion().justification}"
 										</Text>
 									</Show>
 									<div class="pt-2 border-t border-outline/50 dark:border-outline-dark/50">

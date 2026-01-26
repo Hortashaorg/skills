@@ -233,6 +233,83 @@ const withRemoveThemed = createThemedStories({
 export const WithRemoveLight = withRemoveThemed.Light;
 export const WithRemoveDark = withRemoveThemed.Dark;
 
+// Long name with remove button (ecosystem/project context)
+const longNameRemoveBase: Story = {
+	args: {
+		name: "@angular/platform-browser-dynamic",
+		href: "/package/npm/@angular/platform-browser-dynamic",
+		description:
+			"Library for running Angular apps in a web browser with JIT compilation.",
+		badge: "npm",
+		upvoteCount: 156,
+		isUpvoted: false,
+		upvoteDisabled: false,
+		onUpvote: () => console.log("upvote toggled"),
+		onRemove: () => console.log("remove clicked"),
+	},
+};
+
+const longNameRemoveThemed = createThemedStories({
+	story: longNameRemoveBase,
+	testMode: "both",
+});
+
+export const LongNameRemoveLight = longNameRemoveThemed.Light;
+export const LongNameRemoveDark = longNameRemoveThemed.Dark;
+
+// Mobile width simulation (320px) - worst case: long name + tags + remove
+const mobileBase: Story = {
+	render: () => (
+		<div style={{ "max-width": "288px" }}>
+			<ResourceCard
+				name="@typescript-eslint/eslint-plugin"
+				href="#"
+				description="An ESLint plugin which provides lint rules for TypeScript codebases."
+				badge="npm"
+				upvoteCount={1024}
+				isUpvoted={true}
+				upvoteDisabled={false}
+				onUpvote={() => {}}
+				onRemove={() => {}}
+				tags={[
+					{ name: "typescript", slug: "typescript" },
+					{ name: "linting", slug: "linting" },
+					{ name: "developer-tools", slug: "developer-tools" },
+				]}
+			/>
+		</div>
+	),
+};
+
+const mobileThemed = createThemedStories({
+	story: mobileBase,
+	testMode: "both",
+});
+
+export const MobileLight = mobileThemed.Light;
+export const MobileDark = mobileThemed.Dark;
+
+// Minimal card (no tags, no badge, no description - ecosystem pending)
+const minimalBase: Story = {
+	args: {
+		name: "express",
+		href: "/package/npm/express",
+		badge: "npm",
+		upvoteCount: 7,
+		isUpvoted: false,
+		upvoteDisabled: false,
+		onUpvote: () => {},
+	},
+};
+
+const minimalThemed = createThemedStories({
+	story: minimalBase,
+	testMode: "light",
+});
+
+export const MinimalLight = minimalThemed.Light;
+export const MinimalDark = minimalThemed.Dark;
+
 // All variants showcase
 const allVariantsBase: Story = {
 	render: () => (

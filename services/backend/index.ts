@@ -7,9 +7,11 @@ import {
 	db,
 	dbSchema,
 	eq,
+	inArray,
 	lt,
 	softDeleteAccountById,
 } from "@package/database/server";
+import { resolveDisplayBatch } from "@package/database/server/suggestions";
 import { createLogger, getMeter } from "@package/instrumentation/utils";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -285,6 +287,41 @@ app.get(
 		return c.json({
 			ahead: result?.count ?? 0,
 		});
+	},
+);
+
+const suggestionDisplaySchema = z.object({
+	suggestionIds: z.array(z.string().uuid()).max(200),
+});
+
+app.post(
+	"/api/suggestions/display",
+	zValidator("json", suggestionDisplaySchema),
+	async (c) => {
+		const ctx = await getAuthContext(c);
+		if (ctx.userID === "anon") {
+			return c.json({ error: "Not authenticated" }, 401);
+		}
+
+		const { suggestionIds } = c.req.valid("json");
+		if (suggestionIds.length === 0) {
+			return c.json({});
+		}
+
+		const suggestions = await db
+			.select({
+				id: dbSchema.suggestions.id,
+				type: dbSchema.suggestions.type,
+				version: dbSchema.suggestions.version,
+				payload: dbSchema.suggestions.payload,
+				packageId: dbSchema.suggestions.packageId,
+				ecosystemId: dbSchema.suggestions.ecosystemId,
+			})
+			.from(dbSchema.suggestions)
+			.where(inArray(dbSchema.suggestions.id, suggestionIds));
+
+		const displayMap = await resolveDisplayBatch(suggestions);
+		return c.json(displayMap);
 	},
 );
 

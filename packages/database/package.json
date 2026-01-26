@@ -16,6 +16,7 @@
 	"exports": {
 		"./client": "./client.ts",
 		"./server": "./server.ts",
+		"./server/suggestions": "./suggestions/resolve-display.ts",
 		"./types": "./types/context.ts"
 	},
 	"dependencies": {
