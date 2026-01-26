@@ -1,6 +1,7 @@
 import { z } from "@package/common";
 import { now } from "../../mutators/helpers.ts";
 import { zql } from "../../zero-schema.gen.ts";
+import { buildPackageUrl } from "../urls.ts";
 import { defineSuggestionType } from "./definition.ts";
 
 const schema = z.object({ packageId: z.string() });
@@ -18,11 +19,14 @@ export const removeEcosystemPackage = defineSuggestionType({
 	targetEntity: "ecosystem",
 
 	formatDisplay: (payload, ctx) => {
-		const pkgName =
-			ctx.packages?.get(payload.packageId)?.name ?? "Unknown package";
+		const pkg = ctx.packages?.get(payload.packageId);
+		const pkgName = pkg?.name ?? "Unknown package";
 		return {
 			action: `Remove package "${pkgName}"`,
 			description: pkgName,
+			actionEntity: pkg
+				? { label: pkgName, href: buildPackageUrl(pkg.registry, pkg.name) }
+				: undefined,
 		};
 	},
 

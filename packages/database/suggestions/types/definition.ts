@@ -39,9 +39,11 @@ export interface ToastMessages {
 export interface SuggestionDisplay {
 	/** Full action text, e.g. 'Add tag "Frontend"' */
 	action: string;
+	/** The verb/label portion of the action, e.g. "Add package" (set by resolution layer) */
+	actionLabel?: string;
 	/** Short description for compact views, e.g. "Frontend" */
 	description: string;
-	/** Optional target entity this suggestion acts upon */
+	/** Optional target entity this suggestion acts upon (e.g. the ecosystem it applies to) */
 	target?: {
 		/** Display label, e.g. "react" or "Web Frameworks" */
 		label: string;
@@ -49,6 +51,11 @@ export interface SuggestionDisplay {
 		href: string;
 		/** Optional sublabel, e.g. "npm" */
 		sublabel?: string;
+	};
+	/** Optional linkable entity referenced in the action text (e.g. the package being added) */
+	actionEntity?: {
+		label: string;
+		href: string;
 	};
 }
 

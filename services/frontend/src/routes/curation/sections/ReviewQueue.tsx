@@ -95,10 +95,27 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 											</Badge>
 										</Show>
 									</Flex>
-									<Text size="lg" weight="semibold">
-										{props.display()?.action ??
-											suggestion().type.replace(/_/g, " ")}
-									</Text>
+									<Show
+										when={props.display()?.actionEntity}
+										fallback={
+											<Text size="lg" weight="semibold">
+												{props.display()?.action ??
+													suggestion().type.replace(/_/g, " ")}
+											</Text>
+										}
+									>
+										{(entity) => (
+											<Text size="lg" weight="semibold">
+												{props.display()?.actionLabel ?? "Suggestion"}{" "}
+												<A
+													href={entity().href}
+													class="hover:text-primary dark:hover:text-primary-dark underline decoration-dotted underline-offset-2"
+												>
+													{entity().label}
+												</A>
+											</Text>
+										)}
+									</Show>
 									<Show when={props.display()?.target}>
 										{(target) => (
 											<Flex gap="xs" align="center">

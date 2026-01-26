@@ -87,6 +87,8 @@ export async function resolveDisplayBatch(
 
 		const typeDef = getSuggestionType(s.type);
 		if (typeDef) {
+			display.actionLabel = typeDef.label;
+
 			if (typeDef.targetEntity === "package" && s.packageId) {
 				const pkg = ctx.packages?.get(s.packageId);
 				if (pkg) {
