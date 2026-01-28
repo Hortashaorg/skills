@@ -1,6 +1,7 @@
 # Project Context
 
-> **New here?** See [VISION.md](./VISION.md) for what we're building and why.
+> **New here?** See [docs/VISION.md](./docs/VISION.md) for what we're building and why.
+> **Feature specs:** See [docs/](./docs/) for detailed documentation of each module.
 
 ## Tech Stack
 - **SolidJS** + **@solidjs/router** - Frontend
@@ -164,6 +165,22 @@ const name = () => decodeURIComponent(params.name);
 | `/registry-adapter` | Add new package registry support to worker |
 | `packages/database/CLAUDE.md` | Query/mutator patterns, timestamp helpers |
 | `services/frontend/CLAUDE.md` | Page structure, component tiers, Zero in sections |
+
+## Business Logic & Feature Specs
+
+Before implementing features, check the docs for design decisions and constraints:
+
+| Document | Covers |
+|----------|--------|
+| [Foundational-Packages.md](./docs/Foundational-Packages.md) | Multi-registry aggregation, fetching, release channels |
+| [Foundational-Ecosystems.md](./docs/Foundational-Ecosystems.md) | Product identities, package grouping |
+| [Foundational-Tags.md](./docs/Foundational-Tags.md) | Domain classification, tagging principles |
+| [Foundational-Curation.md](./docs/Foundational-Curation.md) | Suggestions, voting, contribution scoring |
+| [Foundational-Standards.md](./docs/Foundational-Standards.md) | Specifications packages implement (future) |
+| [Feature-Projects.md](./docs/Feature-Projects.md) | Kanban boards, status types, decision tracking |
+| [Feature-Comparisons.md](./docs/Feature-Comparisons.md) | User-generated comparisons (future) |
+
+Each doc has a **Scope** section with checkboxes showing what's implemented vs planned. If your implementation deviates from these specs, update the docs or discuss first.
 
 ## Contributing
 
