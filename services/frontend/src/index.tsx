@@ -12,6 +12,7 @@ import { AdminTags } from "./routes/admin/tags";
 import { Curation } from "./routes/curation";
 import { Ecosystem } from "./routes/ecosystem";
 import { Ecosystems } from "./routes/ecosystems";
+import { Experimental } from "./routes/experimental";
 import { Packages } from "./routes/home";
 import { Landing } from "./routes/landing";
 import { Profile } from "./routes/me";
@@ -52,6 +53,7 @@ loadConfig().then(() => {
 							<Route path="/privacy" component={Privacy} />
 							<Route path="/admin/requests" component={AdminRequests} />
 							<Route path="/admin/tags" component={AdminTags} />
+							<Route path="/experimental" component={Experimental} />
 							<Route path="*" component={NotFound} />
 						</Router>
 					</AppProvider>
