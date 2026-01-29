@@ -4,49 +4,58 @@
 
 ---
 
-## Sprint 12: Projects & Curation Expansion
+## Sprint 12: RichText & Projects
 
-Focus: Projects become decision journals, expand suggestion coverage.
+Focus: Markdown infrastructure first, then Projects kanban rework.
 
-### Projects Rework
+### RichText: Markdown Renderer
 
-Transform projects from stack lists into decision records.
+Build the renderer first - it's needed everywhere.
 
-#### Schema Changes
-- [ ] Add `reason` field to `projectPackages` table (nullable text)
-- [ ] Add `reason` field to `projectEcosystems` table (nullable text)
-- [ ] Add `removedAt` timestamp to track removal history
-- [ ] Consider `projectHistory` table for timeline view
+- [ ] Set up remark/rehype pipeline
+- [ ] GitHub Flavored Markdown (tables, strikethrough, task lists)
+- [ ] Syntax highlighting for code blocks (highlight.js or shiki)
+- [ ] TechGarden typography and styling
+- [ ] Entity link recognition (`/package/*`, `/ecosystem/*`, etc.)
+- [ ] Entity link styling (chips, icons, distinct from regular links)
 
-#### UI Updates
-- [ ] Add reason input when adding package/ecosystem to project
-- [ ] Show reasons on project detail page (expandable per item)
-- [ ] Add "Edit reason" inline functionality
-- [ ] Timeline view showing add/remove history with reasons
+### RichText: Markdown Editor (Raw)
 
-#### Import Enhancement
-- [ ] When importing from package.json, allow bulk reason annotation
-- [ ] "Annotate later" flow - import first, add reasons over time
+Simple textarea for writing markdown.
 
----
+- [ ] Textarea component with markdown input
+- [ ] Preview mode (toggle between edit/preview)
+- [ ] Mobile-friendly layout
 
-### Suggestion Type Expansion
+### RichText: Editor UI Layer
 
-Current types: `add_tag`, `remove_tag`, `create_ecosystem`, `add_ecosystem_package`, `remove_ecosystem_package`, `add_ecosystem_tag`, `remove_ecosystem_tag`, `edit_ecosystem_description`, `edit_ecosystem_website`
+Rich editing experience on top of raw markdown. Modular - each feature is a separate component that manipulates markdown.
 
-- [x] `remove_ecosystem_package` - Remove package from ecosystem
-- [x] `edit_ecosystem_description` - Suggest description changes
-- [x] `edit_ecosystem_website` - Suggest website URL changes
+- [ ] Toolbar component (inserts markdown syntax)
+  - [ ] Bold, italic, code
+  - [ ] Headers
+  - [ ] Lists
+  - [ ] Links
+- [ ] `/command` entity insertion
+  - [ ] Detect `/package`, `/ecosystem`, `/project`, `/user`
+  - [ ] Search popup component
+  - [ ] Insert markdown link on selection
+- [ ] Explore: WYSIWYG-ish mode (edit in rendered view?)
 
----
+### Projects: Kanban Rework
 
-### Quick Fixes (From Sprint 11)
+After RichText is ready for notes.
 
-Completed during sprint prep:
-- [x] Badge component: polymorphic `as` prop, `outline` and `subtle` variants
-- [x] Ecosystem suggest package: Use SearchInput for consistent UX
-- [x] Hide "+ Add tag" for logged-out users (reduce noise)
-- [x] Remove "Sign in to upvote" text (upvote count still visible)
+- [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
+- [ ] Schema: Add `statusId`, `note` to `projectPackages` and `projectEcosystems`
+- [ ] Default statuses on project creation
+- [ ] Kanban board layout (status columns)
+- [ ] Drag-and-drop between columns
+- [ ] Mobile: dropdown fallback for status change
+- [ ] Tag labels on cards
+- [ ] Tag filtering
+- [ ] Card expansion (notes, details)
+- [ ] Shareable URLs with filter state
 
 ---
 
