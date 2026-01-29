@@ -1,7 +1,14 @@
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
+import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
+import { Button } from "@/components/ui/button";
+import {
+	TextField,
+	TextFieldInput,
+	TextFieldLabel,
+} from "@/components/ui/text-field";
 import { Layout } from "@/layout/Layout";
 import { MarkdownInput } from "./components/markdown-input";
 import { MarkdownOutput } from "./components/markdown-output";
@@ -187,6 +194,42 @@ You can also use \`inline code\` like \`const x = 42\` within paragraphs.
 
 export const Experimental = () => {
 	const [input, setInput] = createSignal(INITIAL_MARKDOWN);
+	let textareaRef: HTMLTextAreaElement | undefined;
+
+	const insertAtCursor = (text: string) => {
+		if (!textareaRef) return;
+
+		textareaRef.focus();
+
+		// execCommand("insertText") preserves the browser's native undo stack,
+		// so Ctrl+Z works as expected. While technically deprecated since ~2015,
+		// it still works in all browsers and has no replacement API for
+		// programmatic text insertion with undo support. If browsers ever
+		// remove it, we'd need to implement a custom undo stack.
+		document.execCommand("insertText", false, text);
+
+		// Sync our state with the new value
+		setInput(textareaRef.value);
+	};
+
+	const insertCodeBlock = () => {
+		insertAtCursor("\n```typescript\n\n```\n");
+	};
+
+	const [linkText, setLinkText] = createSignal("");
+	const [linkUrl, setLinkUrl] = createSignal("");
+	const [linkOpen, setLinkOpen] = createSignal(false);
+
+	const insertLink = () => {
+		const text = linkText() || linkUrl();
+		const url = linkUrl();
+		if (url) {
+			insertAtCursor(`[${text}](${url})`);
+		}
+		setLinkText("");
+		setLinkUrl("");
+		setLinkOpen(false);
+	};
 
 	return (
 		<Layout>
@@ -196,10 +239,69 @@ export const Experimental = () => {
 
 					<div class="grid grid-cols-2 gap-8 h-[calc(100vh-250px)]">
 						<div class="flex flex-col gap-3">
-							<label class="text-sm font-medium text-on-surface dark:text-on-surface-dark">
-								Markdown Input
-							</label>
+							<div class="flex items-center justify-between">
+								<label class="text-sm font-medium text-on-surface dark:text-on-surface-dark">
+									Markdown Input
+								</label>
+								<div class="flex gap-2">
+									<Button
+										size="sm"
+										variant="secondary"
+										onClick={() => setLinkOpen(!linkOpen())}
+									>
+										Link
+									</Button>
+									<Button
+										size="sm"
+										variant="secondary"
+										onClick={insertCodeBlock}
+									>
+										Code Block
+									</Button>
+								</div>
+							</div>
+							<Show when={linkOpen()}>
+								<div class="p-4 rounded-lg border border-outline dark:border-outline-dark bg-surface-alt dark:bg-surface-dark-alt">
+									<Stack spacing="sm">
+										<Flex gap="sm">
+											<TextField class="flex-1">
+												<TextFieldLabel>Text (optional)</TextFieldLabel>
+												<TextFieldInput
+													value={linkText()}
+													onInput={(e) => setLinkText(e.currentTarget.value)}
+												/>
+											</TextField>
+											<TextField class="flex-1">
+												<TextFieldLabel>URL</TextFieldLabel>
+												<TextFieldInput
+													value={linkUrl()}
+													onInput={(e) => setLinkUrl(e.currentTarget.value)}
+													onKeyDown={(e) => {
+														if (e.key === "Enter") {
+															e.preventDefault();
+															insertLink();
+														}
+													}}
+												/>
+											</TextField>
+										</Flex>
+										<Flex justify="end" gap="sm">
+											<Button
+												size="sm"
+												variant="secondary"
+												onClick={() => setLinkOpen(false)}
+											>
+												Cancel
+											</Button>
+											<Button size="sm" onClick={insertLink}>
+												Insert Link
+											</Button>
+										</Flex>
+									</Stack>
+								</div>
+							</Show>
 							<MarkdownInput
+								ref={(el) => (textareaRef = el)}
 								class="flex-1"
 								value={input()}
 								onInput={setInput}

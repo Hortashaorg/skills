@@ -8,39 +8,42 @@
 
 Focus: Markdown infrastructure - renderer, editor, UI layer.
 
-### RichText: Markdown Renderer
+### RichText: Markdown Renderer ✓
 
 Build the renderer first - it's needed everywhere.
 
-- [ ] Set up remark/rehype pipeline
-- [ ] GitHub Flavored Markdown (tables, strikethrough, task lists)
-- [ ] Syntax highlighting for code blocks (highlight.js or shiki)
-- [ ] TechGarden typography and styling
+- [x] Set up remark/rehype pipeline
+- [x] GitHub Flavored Markdown (tables, strikethrough, task lists)
+- [x] Syntax highlighting for code blocks (rehype-highlight)
+- [x] TechGarden typography and styling (prose styles, brand colors)
 - [ ] Entity link recognition (`/package/*`, `/ecosystem/*`, etc.)
 - [ ] Entity link styling (chips, icons, distinct from regular links)
 
-### RichText: Markdown Editor (Raw)
+### RichText: Markdown Editor (Raw) ✓
 
 Simple textarea for writing markdown.
 
-- [ ] Textarea component with markdown input
-- [ ] Preview mode (toggle between edit/preview)
+- [x] MarkdownInput component with styling
+- [x] Side-by-side edit/preview layout
 - [ ] Mobile-friendly layout
 
 ### RichText: Editor UI Layer
 
 Rich editing experience on top of raw markdown. Modular - each feature is a separate component that manipulates markdown.
 
-- [ ] Toolbar component (inserts markdown syntax)
-  - [ ] Bold, italic, code
-  - [ ] Headers
-  - [ ] Lists
-  - [ ] Links
+- [x] insertAtCursor helper (uses execCommand for native undo support)
+- [x] Basic toolbar with buttons (Link, Code Block)
+- [x] Link insertion panel (text + URL fields)
+- [ ] **Modular toolbar system**
+  - [ ] ToolbarModule type definition (button, panel, insert logic)
+  - [ ] Toolbar component that renders modules right-to-left
+  - [ ] Panel management (one open at a time)
+  - [ ] Modules: link, code-block, heading, bold/italic, list, table
 - [ ] `/command` entity insertion
-  - [ ] Detect `/package`, `/ecosystem`, `/project`, `/user`
+  - [ ] Detect `/` trigger in textarea
   - [ ] Search popup component
   - [ ] Insert markdown link on selection
-- [ ] Explore: WYSIWYG-ish mode (edit in rendered view?)
+- [x] ~~WYSIWYG-ish mode~~ (explored contenteditable, not viable - cursor/selection mapping too fragile)
 
 ---
 
