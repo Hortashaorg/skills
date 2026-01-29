@@ -4,9 +4,9 @@
 
 ---
 
-## Sprint 12: RichText & Projects
+## Sprint 12: RichText
 
-Focus: Markdown infrastructure first, then Projects kanban rework.
+Focus: Markdown infrastructure - renderer, editor, UI layer.
 
 ### RichText: Markdown Renderer
 
@@ -42,9 +42,11 @@ Rich editing experience on top of raw markdown. Modular - each feature is a sepa
   - [ ] Insert markdown link on selection
 - [ ] Explore: WYSIWYG-ish mode (edit in rendered view?)
 
-### Projects: Kanban Rework
+---
 
-After RichText is ready for notes.
+## Sprint 13: Projects Kanban Rework
+
+See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 
 - [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
 - [ ] Schema: Add `statusId`, `note` to `projectPackages` and `projectEcosystems`
