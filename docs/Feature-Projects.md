@@ -13,19 +13,25 @@
 - [x] Public project sharing (URL)
 - [x] Group by tags view
 
-### Core (Status & Notes Rework)
+### Core (Kanban Rework)
+- [ ] Kanban board layout (status columns)
+- [ ] Drag-and-drop to change status
 - [ ] Status types (considering, using, deprecated, rejected)
 - [ ] Custom status names per project (mapping to fixed types)
-- [ ] Status badge on cards
-- [ ] Notes on cards (optional)
-- [ ] Note indicator icon on cards
 - [ ] Default statuses for new projects
-- [ ] View by status (alternative grouping)
-- [ ] URL reflects view/filter state for sharing
+- [ ] Tag labels displayed on cards
+- [ ] Tag filtering
+- [ ] Tag-based ordering within columns
+- [ ] URL reflects filter state for sharing
+- [ ] Card expansion (notes, details) on click
+
+### Core (Notes)
+- [ ] Notes on cards (plain text initially)
+- [ ] Note indicator icon on cards
 
 ### Future
+- [ ] Rich text notes (when RichText feature is available)
 - [ ] Link cards to comparisons
-- [ ] Rich text notes (when editor is available)
 - [ ] Package.json import
 
 ---
@@ -79,17 +85,36 @@ The depth is optional. No required fields beyond the basics. You decide what's w
 
 ## Features
 
-### Tag-Grouped Layout (Default)
+### Kanban Board Layout
 
-**What:** Items displayed in a grid, grouped by tags (API, Database, Infrastructure, etc.). Current design, proven to work.
+**What:** Status columns as a drag-and-drop kanban board. Cards can be dragged between columns to change status.
 
-**Why:** Natural way to browse a stack. "What are they using for observability?" Easy to scan.
+**Why:** Satisfying, tactile interaction for organizing thoughts. One fluid motion to update decision state. Visual clarity of where everything stands.
 
-### Status as a Property
+```
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ Considering │ Using       │ Phasing Out │ Rejected    │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│ [prisma]    │ [drizzle]   │ [express]   │ [moment]    │
+│  orm,db     │  orm,db     │  api        │  dates      │
+│             │ [zod]       │             │             │
+│             │  validation │             │             │
+│             │ [hono]      │             │             │
+│             │  api        │             │             │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+```
 
-**What:** Each item has a status (considering, using, deprecated, rejected). Displayed as a badge on the card.
+### Cards Show Tag Labels
 
-**Why:** Shows decision state without changing the layout. Filter or group by status when needed.
+**What:** Each card displays its tag labels (e.g., `orm`, `database`, `api`). Tags are informational, not structural.
+
+**Why:** See at a glance what role a package plays. Packages with same purpose visually cluster by their labels.
+
+### Tag Filtering & Ordering
+
+**What:** Filter to show only packages with specific tags. Within columns, cards ordered by tag so same-purpose packages group together.
+
+**Why:** "Show me all my database packages across statuses." Quick focus without changing the board structure.
 
 ### Status Types (Fixed)
 
@@ -117,24 +142,27 @@ The depth is optional. No required fields beyond the basics. You decide what's w
 ### Card Interactions
 
 **What:**
-- Click card → expand details (notes, links) in context
-- Click status badge → change status (dropdown)
-- Click note icon → view/edit notes
-- Explicit "go to package" link → navigate to package/ecosystem page
+- **Drag card** → move to different status column (primary interaction)
+- **Click card** → expand details (notes, links) in context
+- **Click note icon** → view/edit notes
+- **Explicit link** → navigate to package/ecosystem page
 
-**Why:** Clicking a card should keep you in the project context. Navigating away is a separate, explicit action.
+**Why:** Drag is the primary organization action. Click expands, doesn't navigate away.
 
-### View Modes
+### Shareable URLs
 
-**What:** Toggle between "group by tag" and "group by status". URL reflects current view.
+**What:** URL reflects current filters. Share a link to "only my database packages" or "only what I'm considering."
 
-**Why:** Different perspectives on same data. Share the view that makes sense for the recipient.
+**Why:** Context-specific sharing. Recipient sees what you wanted to show them.
 
 ### Mobile-Friendly
 
-**What:** All interactions work on mobile. No hover-dependent functionality required (hover can enhance but not required).
+**What:** 
+- Columns stack vertically on mobile (not side-by-side)
+- Status change via dropdown (alternative to drag)
+- Drag-and-drop optional enhancement on larger screens
 
-**Why:** Must work everywhere.
+**Why:** Dragging feels natural on desktop, awkward on mobile. Dropdown works everywhere. Same functionality, different interaction.
 
 ---
 
@@ -194,16 +222,17 @@ Users can rename these. Adding/removing statuses TBD.
 - **Consistent with site** - Cards look similar to elsewhere, but interaction differs in project context
 - **Mobile-first interactions** - No hover dependencies
 
+### Decided
+
+- **Layout:** Kanban board with status columns (not tag grouping as primary)
+- **Tags:** Labels on cards, filtering/ordering, not structural grouping
+- **Drag-and-drop:** Primary interaction for changing status
+
 ### Open Questions
 
 **Expand behavior:** When clicking a card, does it:
 - Expand inline (accordion style)?
 - Open a side panel?
 - Open a modal?
-
-**Status grouping view:** How to display when grouped by status?
-- Columns (kanban-style)?
-- Collapsible sections?
-- Tabs?
 
 **History tracking:** Do we track status changes over time? (Adds complexity, maybe future)

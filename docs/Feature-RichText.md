@@ -1,16 +1,30 @@
 # Rich Text
 
-> Markdown editor with entity linking - enables commentary and detailed notes across the platform.
+> Markdown as source of truth - rendered with your brand, optionally edited with rich tooling.
 
 ---
 
 ## Scope
 
-### Core
-- [ ] Markdown editor component (GitHub-flavored markdown)
-- [ ] Entity mentions (@package, @ecosystem, @project) - clickable links
-- [ ] Preview mode
-- [ ] Mobile-friendly editing
+### Core (Renderer)
+- [ ] Markdown → HTML renderer
+- [ ] TechGarden styling (typography, colors, spacing)
+- [ ] GitHub Flavored Markdown (tables, strikethrough, task lists)
+- [ ] Syntax-highlighted code blocks
+- [ ] Entity mention rendering (special styling for internal links)
+
+### Core (Editor)
+- [ ] Textarea with markdown input
+- [ ] Preview mode (toggle or side-by-side)
+- [ ] Toolbar for common formatting (optional, helps non-markdown users)
+- [ ] Entity mention insertion (`/package`, `/ecosystem`, etc.)
+- [ ] Mobile-friendly
+
+### Extended Rendering (Future)
+- [ ] Mermaid diagrams
+- [ ] KaTeX math
+- [ ] Custom callout blocks (`:::warning`, `:::info`)
+- [ ] Image uploads
 
 ### Integration Points
 - [ ] Project notes (per-item notes, project description)
@@ -18,10 +32,52 @@
 - [ ] User profile bio
 - [ ] Comparison notes
 
-### Future
-- [ ] Image uploads
-- [ ] Code syntax highlighting
-- [ ] Collaborative editing
+---
+
+## Architecture
+
+### Markdown-First
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Markdown (stored)                   │
+│  "Check out [drizzle](/package/npm/drizzle-orm)..." │
+└─────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────┐
+│              Renderer (your plugins)                 │
+│  - GFM tables                                        │
+│  - Syntax highlighting                               │
+│  - Entity link recognition                           │
+│  - Mermaid, KaTeX (future)                          │
+└─────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────┐
+│               HTML (displayed)                       │
+│  - TechGarden typography                             │
+│  - Branded code blocks                               │
+│  - Interactive entity chips                          │
+└─────────────────────────────────────────────────────┘
+```
+
+### Why Markdown as Source
+
+| Benefit | Detail |
+|---------|--------|
+| Portable | Works everywhere, not locked to any editor |
+| Readable | Raw content makes sense without rendering |
+| Diffable | Git-friendly, easy to see changes |
+| Extensible | Add renderer plugins anytime |
+| Future-proof | Not tied to editor library's JSON format |
+
+### The Editor is Optional
+
+Users can:
+1. Write raw markdown in a textarea (power users)
+2. Use rich toolbar that generates markdown (convenience)
+3. Use `/command` to insert entities without knowing URLs
+
+All three produce the same markdown output.
 
 ---
 
@@ -29,121 +85,182 @@
 
 ### Developer Writing
 
-- **As a developer**, I want to write formatted text (headers, lists, code blocks), so my content is readable.
-- **As a developer**, I want to @mention packages and ecosystems, so my writing links to real entities.
+- **As a developer**, I want to write markdown directly, so I have full control.
+- **As a developer**, I want toolbar buttons for formatting, so I don't need to remember syntax.
+- **As a developer**, I want to type `/package` and search, so I can link to entities without knowing URLs.
 - **As a developer**, I want to preview before saving, so I know how it will look.
 
 ### Developer Reading
 
-- **As a developer**, I want to click @mentions to navigate to that entity, so I can learn more.
-- **As a developer**, I want code blocks to be formatted properly, so technical content is clear.
-
-### Cross-Feature Integration
-
-**With Projects:**
-- Project description (rich text intro)
-- Per-item notes (why did I choose this package?)
-
-**With Issues:**
-- Question content
-- Answer content
-
-**With User Profiles:**
-- Bio section
-
-**With Comparisons:**
-- Notes per comparison item
-- Overall comparison description
-
----
-
-## Purpose
-
-Rich text is **infrastructure that enables discussion** across the platform.
-
-Instead of plain text fields, rich text allows:
-- Formatted content (markdown)
-- Grounded references (@mentions that link to real entities)
-- Technical content (code blocks)
-
-This is what makes "technology discussions concrete" - when you mention a package, it's a clickable link to real data, not just text.
+- **As a developer**, I want content styled with TechGarden branding, so it feels cohesive.
+- **As a developer**, I want entity mentions to be visually distinct and clickable.
+- **As a developer**, I want code blocks with syntax highlighting, so code is readable.
+- **As a developer**, I want to see diagrams inline (mermaid), so technical docs are clear.
 
 ---
 
 ## Features
 
-### Markdown Support
+### Markdown Renderer
 
-**What:** GitHub-flavored markdown - headers, lists, bold/italic, code blocks, links.
+**What:** Configurable pipeline that transforms markdown → HTML with plugins.
 
-**Why:** Developers already know markdown. Don't reinvent.
+**Plugins:**
+- GitHub Flavored Markdown (tables, strikethrough, autolinks)
+- Syntax highlighting for code blocks
+- Entity link recognition and styling
+- Mermaid diagram rendering (future)
+- KaTeX math rendering (future)
+
+**Why:** One renderer, used everywhere. Your brand, your rules.
 
 ### Entity Mentions
 
-**What:** Type `@` to search and insert a reference to a package, ecosystem, or project. Renders as a clickable link.
+**What:** Standard markdown links with internal URL pattern.
 
-**Why:** The core value prop - grounding discussions in real entities. "I had issues with @drizzle-orm" links to the actual package.
+```markdown
+Check out [drizzle-orm](/package/npm/drizzle-orm) for a great ORM.
+```
 
-### Preview Mode
+**Rendered as:** Styled chip/link with package icon, hover card with details.
 
-**What:** Toggle between edit and preview while writing.
+**Why:** No special syntax needed. Standard links that your renderer recognizes.
 
-**Why:** Markdown can be hard to visualize. Preview before committing.
+### Mention Insertion (`/command`)
 
-### Mobile Editing
+**What:** Type `/package`, get a search popup, select entity, markdown link inserted.
 
-**What:** Editor works on mobile devices. Toolbar accessible, text area usable.
+| Trigger | Searches | Inserts |
+|---------|----------|---------|
+| `/package` | Packages | `[name](/package/registry/name)` |
+| `/ecosystem` | Ecosystems | `[name](/ecosystem/slug)` |
+| `/project` | Your projects | `[name](/project/id)` |
+| `/user` | Users | `[name](/user/username)` |
 
-**Why:** People browse on phones. Should be able to comment/respond.
+**Why:** Easy entity linking without knowing URLs. Keyboard-friendly.
+
+### Editor Modes
+
+**Textarea + Preview:**
+```
+┌────────────────────┬────────────────────┐
+│ # My note          │ My note            │
+│                    │ ═══════            │
+│ Some **bold** text │ Some bold text     │
+│                    │                    │
+│ [Edit]             │ [Preview]          │
+└────────────────────┴────────────────────┘
+```
+
+**Or toggle between edit/preview (mobile-friendly).**
+
+### Toolbar (Optional)
+
+For users who don't know markdown:
+
+| Button | Inserts |
+|--------|---------|
+| **B** | `**selection**` |
+| *I* | `*selection*` |
+| `</>` | `` `selection` `` or code block |
+| 🔗 | `[text](url)` |
+| H1/H2 | `# ` / `## ` |
+| • | `- ` |
+
+Toolbar generates markdown, not a separate format.
 
 ---
 
 ## Data Model
 
-Rich text content is stored as markdown strings in existing tables:
+Stored as plain markdown strings:
 
 ```
-# No new tables - rich text is a field type
+# No new tables - markdown is a field type
 
-# Examples of where it's used:
 projects.description: text (markdown)
 projectPackages.note: text (markdown)
 issues.content: text (markdown)
 issueAnswers.content: text (markdown)
 accounts.bio: text (markdown)
+comparisons.description: text (markdown)
+comparisonItems.notes: text (markdown)
 ```
 
-### Entity Mention Format
+### Entity Link Format
 
-Mentions stored as markdown links with special format:
+Standard markdown links with internal paths:
+
 ```markdown
-Check out [@drizzle-orm](techgarden:package:npm:drizzle-orm) for a great ORM.
+[drizzle-orm](/package/npm/drizzle-orm)
+[React](/ecosystem/react)
+[My Stack](/project/abc-123)
+[@username](/user/username)
 ```
 
-Renderer parses `techgarden:` links and makes them interactive.
+Renderer recognizes these patterns and applies special styling.
 
 ---
 
-## Additional Notes
+## Technical Approach
 
-### Design Principles
+### Build vs Use
 
-- **Markdown-native** - Store as markdown, render as HTML
-- **Progressive enhancement** - Works as plain text if editor fails
-- **Consistent rendering** - Same markdown renders the same everywhere
-- **Lightweight** - Don't need a heavy WYSIWYG editor
+| Component | Approach | Why |
+|-----------|----------|-----|
+| **Markdown parser** | Use library | Solved problem, don't reinvent |
+| **Renderer pipeline** | Use library | remark/rehype ecosystem is modular |
+| **Syntax highlighting** | Use library | highlight.js or shiki |
+| **Entity link styling** | Build | Custom to TechGarden |
+| **`/command` insertion** | Build | Custom UX, simple implementation |
+| **Toolbar** | Build | Simple, just inserts text |
+| **Mermaid/KaTeX** | Use plugins | Existing remark plugins |
+
+### Likely Stack
+
+```
+remark (parse markdown)
+  → remark-gfm (tables, etc.)
+  → remark-rehype (convert to HTML AST)
+  → rehype-highlight (code highlighting)
+  → rehype-stringify (output HTML)
+  → custom plugin (entity link styling)
+```
 
 ### Editor Component
 
-Likely implementation:
-- Textarea with toolbar for common formatting
-- Autocomplete dropdown for @mentions
-- Split or toggle preview pane
-- Mobile: simplified toolbar, full-screen edit mode
+Simple implementation:
+1. `<textarea>` for input
+2. Render preview with markdown pipeline
+3. Toolbar buttons that insert text at cursor
+4. `/command` detection + popup for entity search
 
-### Mention Resolution
+No heavy editor library needed for MVP.
 
-When rendering, mentions need to resolve:
-1. Parse `techgarden:package:npm:drizzle-orm` format
-2. Look up entity (may not exist anymore)
-3. Render as link with entity name, or "deleted" state if gone
+---
+
+## Open Questions
+
+**Preview style:**
+- Toggle (edit or preview)?
+- Side-by-side (both visible)?
+- Live preview (WYSIWYG-ish)?
+
+**Mobile editing:**
+- Simplified toolbar?
+- Full-screen edit mode?
+
+**Image uploads:**
+- Where to store? (Minio?)
+- Paste to upload?
+- Drag and drop?
+
+---
+
+## Design Principles
+
+- **Markdown is the source of truth** - Never store rendered HTML
+- **Renderer is brandable** - Your typography, your code theme, your entity styling
+- **Editor is a convenience** - Power users can write raw markdown
+- **Progressive enhancement** - Basic textarea works, rich features layer on top
+- **Extensible** - Add Mermaid, KaTeX, custom blocks via plugins
