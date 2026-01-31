@@ -14,8 +14,9 @@ export const byThreadId = defineQuery(
 			.orderBy("createdAt", "desc") // Newest top-level comments first
 			.limit(args.limit)
 			.related("author")
-			.related("replies", (r) =>
-				r.related("author").orderBy("createdAt", "asc"), // Replies chronologically
+			.related(
+				"replies",
+				(r) => r.related("author").orderBy("createdAt", "asc"), // Replies chronologically
 			);
 	},
 );
