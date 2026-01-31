@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { account } from "./account.ts";
+import { comments, threads } from "./comments.ts";
 import {
 	contributionEvents,
 	contributionScores,
@@ -37,9 +38,14 @@ export const accountRelations = relations(account, ({ many, one }) => ({
 		references: [contributionScores.accountId],
 	}),
 	notifications: many(notifications),
+	comments: many(comments),
+	thread: one(threads, {
+		fields: [account.id],
+		references: [threads.accountId],
+	}),
 }));
 
-export const packagesRelations = relations(packages, ({ many }) => ({
+export const packagesRelations = relations(packages, ({ many, one }) => ({
 	releaseChannels: many(packageReleaseChannels),
 	channelDependents: many(channelDependencies, {
 		relationName: "dependencyPackage",
@@ -50,6 +56,10 @@ export const packagesRelations = relations(packages, ({ many }) => ({
 	projectPackages: many(projectPackages),
 	ecosystemPackages: many(ecosystemPackages),
 	suggestions: many(suggestions),
+	thread: one(threads, {
+		fields: [packages.id],
+		references: [threads.packageId],
+	}),
 }));
 
 export const packageFetchesRelations = relations(packageFetches, ({ one }) => ({
@@ -119,6 +129,10 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 	}),
 	projectPackages: many(projectPackages),
 	projectEcosystems: many(projectEcosystems),
+	thread: one(threads, {
+		fields: [projects.id],
+		references: [threads.projectId],
+	}),
 }));
 
 export const projectPackagesRelations = relations(
@@ -196,12 +210,16 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	}),
 }));
 
-export const ecosystemsRelations = relations(ecosystems, ({ many }) => ({
+export const ecosystemsRelations = relations(ecosystems, ({ many, one }) => ({
 	ecosystemPackages: many(ecosystemPackages),
 	ecosystemTags: many(ecosystemTags),
 	upvotes: many(ecosystemUpvotes),
 	projectEcosystems: many(projectEcosystems),
 	suggestions: many(suggestions),
+	thread: one(threads, {
+		fields: [ecosystems.id],
+		references: [threads.ecosystemId],
+	}),
 }));
 
 export const ecosystemPackagesRelations = relations(
@@ -256,3 +274,42 @@ export const projectEcosystemsRelations = relations(
 		}),
 	}),
 );
+
+export const threadsRelations = relations(threads, ({ one, many }) => ({
+	package: one(packages, {
+		fields: [threads.packageId],
+		references: [packages.id],
+	}),
+	ecosystem: one(ecosystems, {
+		fields: [threads.ecosystemId],
+		references: [ecosystems.id],
+	}),
+	project: one(projects, {
+		fields: [threads.projectId],
+		references: [projects.id],
+	}),
+	account: one(account, {
+		fields: [threads.accountId],
+		references: [account.id],
+	}),
+	comments: many(comments),
+}));
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+	thread: one(threads, {
+		fields: [comments.threadId],
+		references: [threads.id],
+	}),
+	author: one(account, {
+		fields: [comments.authorId],
+		references: [account.id],
+	}),
+	replyTo: one(comments, {
+		fields: [comments.replyToId],
+		references: [comments.id],
+		relationName: "commentReplies",
+	}),
+	replies: many(comments, {
+		relationName: "commentReplies",
+	}),
+}));

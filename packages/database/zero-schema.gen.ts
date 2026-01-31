@@ -88,6 +88,52 @@ const channelDependenciesTable = {
   primaryKey: ["id"],
   serverName: "channel_dependencies",
 } as const;
+const commentsTable = {
+  name: "comments",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    threadId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "thread_id",
+    },
+    authorId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "author_id",
+    },
+    content: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    replyToId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "reply_to_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const contributionEventsTable = {
   name: "contributionEvents",
   columns: {
@@ -862,6 +908,47 @@ const tagsTable = {
   },
   primaryKey: ["id"],
 } as const;
+const threadsTable = {
+  name: "threads",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    packageId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "package_id",
+    },
+    ecosystemId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "ecosystem_id",
+    },
+    projectId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    accountId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const accountRelationships = {
   projects: [
     {
@@ -927,6 +1014,22 @@ const accountRelationships = {
       cardinality: "many",
     },
   ],
+  comments: [
+    {
+      sourceField: ["id"],
+      destField: ["authorId"],
+      destSchema: "comments",
+      cardinality: "many",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
 } as const;
 const channelDependenciesRelationships = {
   channel: [
@@ -943,6 +1046,40 @@ const channelDependenciesRelationships = {
       destField: ["id"],
       destSchema: "packages",
       cardinality: "one",
+    },
+  ],
+} as const;
+const commentsRelationships = {
+  thread: [
+    {
+      sourceField: ["threadId"],
+      destField: ["id"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
+  author: [
+    {
+      sourceField: ["authorId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+  replyTo: [
+    {
+      sourceField: ["replyToId"],
+      destField: ["id"],
+      destSchema: "comments",
+      cardinality: "one",
+    },
+  ],
+  replies: [
+    {
+      sourceField: ["id"],
+      destField: ["replyToId"],
+      destSchema: "comments",
+      cardinality: "many",
     },
   ],
 } as const;
@@ -1067,6 +1204,14 @@ const ecosystemsRelationships = {
       destField: ["ecosystemId"],
       destSchema: "suggestions",
       cardinality: "many",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["ecosystemId"],
+      destSchema: "threads",
+      cardinality: "one",
     },
   ],
 } as const;
@@ -1209,6 +1354,14 @@ const packagesRelationships = {
       cardinality: "many",
     },
   ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["packageId"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
 } as const;
 const projectEcosystemsRelationships = {
   project: [
@@ -1269,6 +1422,14 @@ const projectsRelationships = {
       destField: ["projectId"],
       destSchema: "projectEcosystems",
       cardinality: "many",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "threads",
+      cardinality: "one",
     },
   ],
 } as const;
@@ -1342,6 +1503,48 @@ const tagsRelationships = {
     },
   ],
 } as const;
+const threadsRelationships = {
+  package: [
+    {
+      sourceField: ["packageId"],
+      destField: ["id"],
+      destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+  ecosystem: [
+    {
+      sourceField: ["ecosystemId"],
+      destField: ["id"],
+      destSchema: "ecosystems",
+      cardinality: "one",
+    },
+  ],
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+  comments: [
+    {
+      sourceField: ["id"],
+      destField: ["threadId"],
+      destSchema: "comments",
+      cardinality: "many",
+    },
+  ],
+} as const;
 /**
  * The Zero schema object.
  * This type is auto-generated from your Drizzle schema definition.
@@ -1350,6 +1553,7 @@ export const schema = {
   tables: {
     account: accountTable,
     channelDependencies: channelDependenciesTable,
+    comments: commentsTable,
     contributionEvents: contributionEventsTable,
     contributionScores: contributionScoresTable,
     ecosystemPackages: ecosystemPackagesTable,
@@ -1368,10 +1572,12 @@ export const schema = {
     suggestionVotes: suggestionVotesTable,
     suggestions: suggestionsTable,
     tags: tagsTable,
+    threads: threadsTable,
   },
   relationships: {
     account: accountRelationships,
     channelDependencies: channelDependenciesRelationships,
+    comments: commentsRelationships,
     contributionEvents: contributionEventsRelationships,
     contributionScores: contributionScoresRelationships,
     ecosystemPackages: ecosystemPackagesRelationships,
@@ -1390,6 +1596,7 @@ export const schema = {
     suggestionVotes: suggestionVotesRelationships,
     suggestions: suggestionsRelationships,
     tags: tagsRelationships,
+    threads: threadsRelationships,
   },
   enableLegacyQueries: false,
   enableLegacyMutators: false,
@@ -1412,6 +1619,11 @@ export type Account = Row<(typeof schema)["tables"]["account"]>;
 export type ChannelDependency = Row<
   (typeof schema)["tables"]["channelDependencies"]
 >;
+/**
+ * Represents a row from the "comments" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type Comment = Row<(typeof schema)["tables"]["comments"]>;
 /**
  * Represents a row from the "contributionEvents" table.
  * This type is auto-generated from your Drizzle schema definition.
@@ -1514,6 +1726,11 @@ export type Suggestion = Row<(typeof schema)["tables"]["suggestions"]>;
  * This type is auto-generated from your Drizzle schema definition.
  */
 export type Tag = Row<(typeof schema)["tables"]["tags"]>;
+/**
+ * Represents a row from the "threads" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type Thread = Row<(typeof schema)["tables"]["threads"]>;
 
 /**
  * Represents the ZQL query builder.

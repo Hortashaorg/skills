@@ -253,6 +253,13 @@
       "when": 1769449414260,
       "tag": "0035_good_wolf_cub",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1769866850474,
+      "tag": "0036_lethal_sentinel",
+      "breakpoints": true
     }
   ]
 }
