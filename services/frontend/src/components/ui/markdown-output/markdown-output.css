@@ -122,34 +122,37 @@
 	appearance: none;
 	width: 1em;
 	height: 1em;
-	border: 2px solid var(--color-outline-strong);
+	border: 2px solid var(--color-outline);
 	border-radius: 0.2em;
-	background-color: var(--color-surface);
-	cursor: default;
+	background-color: var(--color-surface-alt);
+	cursor: not-allowed;
 	flex-shrink: 0;
 	position: relative;
+	opacity: 0.6;
+	pointer-events: none;
 }
 
 .prose :where(input[type="checkbox"]:checked) {
 	background-color: var(--color-primary);
 	border-color: var(--color-primary);
+	opacity: 0.7;
 }
 
 .prose :where(input[type="checkbox"]:checked)::after {
 	content: "";
 	position: absolute;
-	left: 0.2em;
-	top: 0;
-	width: 0.35em;
-	height: 0.65em;
+	left: 50%;
+	top: 45%;
+	width: 0.3em;
+	height: 0.55em;
 	border: solid var(--color-on-primary);
 	border-width: 0 2px 2px 0;
-	transform: rotate(45deg);
+	transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .dark .prose :where(input[type="checkbox"]) {
-	border-color: var(--color-outline-dark-strong);
-	background-color: var(--color-surface-dark);
+	border-color: var(--color-outline-dark);
+	background-color: var(--color-surface-dark-alt);
 }
 
 .dark .prose :where(input[type="checkbox"]:checked) {
