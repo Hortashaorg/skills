@@ -14,7 +14,6 @@ type Story = StoryObj<typeof meta>;
 const defaultBase: Story = {
 	args: {
 		author: "sarah_dev",
-		avatar: "S",
 		timestamp: "2 hours ago",
 		content: `Has anyone tried using this package with **Bun**? I'm getting some weird behavior with the ESM imports.
 
@@ -39,7 +38,6 @@ export const DefaultDark = defaultThemed.Dark;
 const withReplyToBase: Story = {
 	args: {
 		author: "mike_js",
-		avatar: "M",
 		timestamp: "1 hour ago",
 		replyToAuthor: "sarah_dev",
 		content: `I had the same issue! The fix is to add this to your \`bunfig.toml\`:
@@ -50,7 +48,6 @@ peer = false
 \`\`\`
 
 Then reinstall. Worked for me.`,
-		size: "sm",
 		onReply: () => console.log("Reply clicked"),
 	},
 };
@@ -66,7 +63,6 @@ export const WithReplyToDark = withReplyToThemed.Dark;
 const editableBase: Story = {
 	args: {
 		author: "sarah_dev",
-		avatar: "S",
 		timestamp: "45 min ago",
 		editedAt: "40 min ago",
 		content: `> Then reinstall. Worked for me.
@@ -89,7 +85,6 @@ export const EditableDark = editableThemed.Dark;
 const deletedBase: Story = {
 	args: {
 		author: "deleted_user",
-		avatar: "?",
 		timestamp: "3 hours ago",
 		content: "",
 		isDeleted: true,
@@ -104,21 +99,32 @@ const deletedThemed = createThemedStories({
 export const DeletedLight = deletedThemed.Light;
 export const DeletedDark = deletedThemed.Dark;
 
-const smallSizeBase: Story = {
-	args: {
-		author: "alex_maintainer",
-		avatar: "A",
-		timestamp: "30 min ago",
-		content: "Great catch! I've added this to the docs in the latest release.",
-		size: "sm",
-		onReply: () => console.log("Reply clicked"),
-	},
+const withAvatarLayoutBase: Story = {
+	name: "With Avatar Layout (Example)",
+	render: () => (
+		<div class="flex gap-3">
+			<div class="shrink-0 w-10 h-10 rounded-full bg-primary/20 dark:bg-primary-dark/20 text-primary dark:text-primary-dark flex items-center justify-center font-medium text-sm">
+				S
+			</div>
+			<div class="flex-1 min-w-0">
+				<CommentCard
+					author="sarah_dev"
+					timestamp="2 hours ago"
+					content={`This shows how the card looks when composed with an avatar in the parent layout.
+
+The avatar is **not** part of the CommentCard - the parent controls positioning.`}
+					onReply={() => console.log("Reply clicked")}
+					onEdit={() => console.log("Edit clicked")}
+				/>
+			</div>
+		</div>
+	),
 };
 
-const smallSizeThemed = createThemedStories({
-	story: smallSizeBase,
+const withAvatarLayoutThemed = createThemedStories({
+	story: withAvatarLayoutBase,
 	testMode: "both",
 });
 
-export const SmallSizeLight = smallSizeThemed.Light;
-export const SmallSizeDark = smallSizeThemed.Dark;
+export const WithAvatarLayoutLight = withAvatarLayoutThemed.Light;
+export const WithAvatarLayoutDark = withAvatarLayoutThemed.Dark;
