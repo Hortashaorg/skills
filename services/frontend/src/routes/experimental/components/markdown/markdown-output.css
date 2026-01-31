@@ -317,3 +317,17 @@
 .dark .prose :where(pre code) .hljs-tag {
 	color: var(--color-on-surface-dark);
 }
+
+/* @mentions */
+.prose .mention {
+	color: oklch(0.5 0.15 250);
+	font-weight: 500;
+	background-color: oklch(0.95 0.03 250);
+	padding: 0.1em 0.35em;
+	border-radius: 0.25rem;
+}
+
+.dark .prose .mention {
+	color: oklch(0.75 0.15 250);
+	background-color: oklch(0.3 0.05 250);
+}

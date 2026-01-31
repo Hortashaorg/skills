@@ -14,7 +14,10 @@ const processor = unified()
 	.use(rehypeStringify);
 
 function renderMarkdown(markdown: string): string {
-	return processor.processSync(markdown).toString();
+	const html = processor.processSync(markdown).toString();
+
+	// Style @mentions (non-clickable for now)
+	return html.replace(/@([a-zA-Z0-9_-]+)/g, '<span class="mention">@$1</span>');
 }
 
 type MarkdownOutputProps = {
