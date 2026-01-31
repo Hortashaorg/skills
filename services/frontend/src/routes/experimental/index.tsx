@@ -7,7 +7,21 @@ import { codeBlockModule, linkModule } from "./components/toolbar";
 
 const CURRENT_USER = "sarah_dev";
 
+// Comments sorted newest-first (top-level), replies sorted chronologically
 const MOCK_COMMENTS: Comment[] = [
+	{
+		id: "4",
+		author: "alex_maintainer",
+		avatar: "A",
+		timestamp: "30 min ago",
+		content: `> Should we open an issue about this? Feels like it should be documented.
+
+Great catch! I've added this to the docs in the latest release.
+
+> I'm getting some weird behavior with the ESM imports.
+
+This should be fixed in v2.1.1 as well. Thanks for reporting everyone!`,
+	},
 	{
 		id: "1",
 		author: "sarah_dev",
@@ -51,19 +65,6 @@ Then reinstall. Worked for me.`,
 That worked! Thanks so much. Should we open an issue about this? Feels like it should be documented.`,
 			},
 		],
-	},
-	{
-		id: "4",
-		author: "alex_maintainer",
-		avatar: "A",
-		timestamp: "30 min ago",
-		content: `> Should we open an issue about this? Feels like it should be documented.
-
-Great catch! I've added this to the docs in the latest release.
-
-> I'm getting some weird behavior with the ESM imports.
-
-This should be fixed in v2.1.1 as well. Thanks for reporting everyone!`,
 	},
 ];
 

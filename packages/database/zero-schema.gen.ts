@@ -131,6 +131,12 @@ const commentsTable = {
       customType: null as unknown as number,
       serverName: "updated_at",
     },
+    deletedAt: {
+      type: "number",
+      optional: true,
+      customType: null as unknown as number,
+      serverName: "deleted_at",
+    },
   },
   primaryKey: ["id"],
 } as const;
@@ -934,12 +940,6 @@ const threadsTable = {
       customType: null as unknown as string,
       serverName: "project_id",
     },
-    accountId: {
-      type: "string",
-      optional: true,
-      customType: null as unknown as string,
-      serverName: "account_id",
-    },
     createdAt: {
       type: "number",
       optional: false,
@@ -1020,14 +1020,6 @@ const accountRelationships = {
       destField: ["authorId"],
       destSchema: "comments",
       cardinality: "many",
-    },
-  ],
-  thread: [
-    {
-      sourceField: ["id"],
-      destField: ["accountId"],
-      destSchema: "threads",
-      cardinality: "one",
     },
   ],
 } as const;
@@ -1525,14 +1517,6 @@ const threadsRelationships = {
       sourceField: ["projectId"],
       destField: ["id"],
       destSchema: "projects",
-      cardinality: "one",
-    },
-  ],
-  account: [
-    {
-      sourceField: ["accountId"],
-      destField: ["id"],
-      destSchema: "account",
       cardinality: "one",
     },
   ],

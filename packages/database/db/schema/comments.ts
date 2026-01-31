@@ -18,14 +18,12 @@ export const threads = pgTable(
 		packageId: uuid().references(() => packages.id),
 		ecosystemId: uuid().references(() => ecosystems.id),
 		projectId: uuid().references(() => projects.id),
-		accountId: uuid().references(() => account.id),
 		createdAt: timestamp().notNull(),
 	},
 	(table) => [
 		index("idx_threads_package_id").on(table.packageId),
 		index("idx_threads_ecosystem_id").on(table.ecosystemId),
 		index("idx_threads_project_id").on(table.projectId),
-		index("idx_threads_account_id").on(table.accountId),
 	],
 );
 
@@ -43,6 +41,7 @@ export const comments = pgTable(
 		replyToId: uuid().references((): AnyPgColumn => comments.id),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
+		deletedAt: timestamp(),
 	},
 	(table) => [
 		index("idx_comments_thread_id").on(table.threadId),

@@ -2,6 +2,7 @@ import { defineQueries } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
+import * as commentsQueries from "./comments.ts";
 import * as contributionScoresQueries from "./contribution-scores.ts";
 import * as ecosystemsQueries from "./ecosystems.ts";
 import * as notificationsQueries from "./notifications.ts";
@@ -12,6 +13,7 @@ import * as packagesQueries from "./packages.ts";
 import * as projectsQueries from "./projects.ts";
 import * as suggestionsQueries from "./suggestions.ts";
 import * as tagsQueries from "./tags.ts";
+import * as threadsQueries from "./threads.ts";
 
 export const queries = defineQueries({
 	account: {
@@ -82,5 +84,16 @@ export const queries = defineQueries({
 		byId: ecosystemsQueries.byId,
 		search: ecosystemsQueries.search,
 		byPackageId: ecosystemsQueries.byPackageId,
+	},
+	threads: {
+		byId: threadsQueries.byId,
+		byPackageId: threadsQueries.byPackageId,
+		byEcosystemId: threadsQueries.byEcosystemId,
+		byProjectId: threadsQueries.byProjectId,
+	},
+	comments: {
+		byThreadId: commentsQueries.byThreadId,
+		byId: commentsQueries.byId,
+		byAuthorId: commentsQueries.byAuthorId,
 	},
 });

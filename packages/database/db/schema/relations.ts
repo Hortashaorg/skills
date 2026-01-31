@@ -39,10 +39,6 @@ export const accountRelations = relations(account, ({ many, one }) => ({
 	}),
 	notifications: many(notifications),
 	comments: many(comments),
-	thread: one(threads, {
-		fields: [account.id],
-		references: [threads.accountId],
-	}),
 }));
 
 export const packagesRelations = relations(packages, ({ many, one }) => ({
@@ -287,10 +283,6 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
 	project: one(projects, {
 		fields: [threads.projectId],
 		references: [projects.id],
-	}),
-	account: one(account, {
-		fields: [threads.accountId],
-		references: [account.id],
 	}),
 	comments: many(comments),
 }));
