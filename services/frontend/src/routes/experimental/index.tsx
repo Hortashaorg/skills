@@ -301,7 +301,9 @@ export const Experimental = () => {
 								</div>
 							</Show>
 							<MarkdownInput
-								ref={(el) => (textareaRef = el)}
+								ref={(el) => {
+									textareaRef = el;
+								}}
 								class="flex-1"
 								value={input()}
 								onInput={setInput}
