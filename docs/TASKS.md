@@ -4,9 +4,9 @@
 
 ---
 
-## Sprint 12: RichText
+## Sprint 12: RichText & Comments
 
-Focus: Markdown infrastructure - renderer, editor, UI layer.
+Focus: Markdown infrastructure, editor, and threaded comments system.
 
 ### RichText: Markdown Renderer ✓
 
@@ -19,31 +19,39 @@ Build the renderer first - it's needed everywhere.
 - [ ] Entity link recognition (`/package/*`, `/ecosystem/*`, etc.)
 - [ ] Entity link styling (chips, icons, distinct from regular links)
 
-### RichText: Markdown Editor (Raw) ✓
-
-Simple textarea for writing markdown.
+### RichText: Markdown Editor ✓
 
 - [x] MarkdownInput component with styling
-- [x] Side-by-side edit/preview layout
-- [ ] Mobile-friendly layout
-
-### RichText: Editor UI Layer
-
-Rich editing experience on top of raw markdown. Modular - each feature is a separate component that manipulates markdown.
-
+- [x] MarkdownEditor composite (Write/Preview tabs, toolbar)
 - [x] insertAtCursor helper (uses execCommand for native undo support)
-- [x] Basic toolbar with buttons (Link, Code Block)
+- [x] Basic toolbar modules (Link, Code Block)
 - [x] Link insertion panel (text + URL fields)
-- [ ] **Modular toolbar system**
-  - [ ] ToolbarModule type definition (button, panel, insert logic)
-  - [ ] Toolbar component that renders modules right-to-left
-  - [ ] Panel management (one open at a time)
-  - [ ] Modules: link, code-block, heading, bold/italic, list, table
-- [ ] `/command` entity insertion
-  - [ ] Detect `/` trigger in textarea
-  - [ ] Search popup component
-  - [ ] Insert markdown link on selection
-- [x] ~~WYSIWYG-ish mode~~ (explored contenteditable, not viable - cursor/selection mapping too fragile)
+- [ ] Mobile-friendly layout
+- [ ] Additional toolbar modules: heading, bold/italic, list, table
+- [ ] `/command` entity insertion (detect trigger, search popup, insert link)
+
+### Comments System ✓
+
+Database and UI for threaded discussions on packages, ecosystems, and projects.
+
+- [x] Database: `threads` table (per entity), `comments` table with `replyToId`
+- [x] Queries: `byThreadId` (with nested replies), `byId`, `byAuthorId`
+- [x] Mutators: `create` (auto-creates thread), `update`, `remove` (soft delete)
+- [x] Avatar component (ui tier) with size/variant props
+- [x] CommentCard component (presentational, avatar-less)
+- [x] CommentThread component (orchestrates edit/reply modes)
+- [x] useCommentThread hook (Zero queries/mutations wrapper)
+- [ ] Integrate CommentThread on package detail page
+- [ ] Integrate on ecosystem and project pages
+- [ ] User profile links from comment avatars
+
+### User Profiles
+
+- [ ] Schema: extend `account` with bio, avatar URL, social links
+- [ ] Profile page route (`/user/:id` or `/u/:username`)
+- [ ] Profile display: name, avatar, bio, contribution stats
+- [ ] Link to profile from comments, leaderboard, suggestions
+- [ ] Profile editing (own profile only)
 
 ---
 
