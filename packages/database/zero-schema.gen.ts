@@ -88,6 +88,64 @@ const channelDependenciesTable = {
   primaryKey: ["id"],
   serverName: "channel_dependencies",
 } as const;
+const commentsTable = {
+  name: "comments",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    threadId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "thread_id",
+    },
+    authorId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "author_id",
+    },
+    content: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    replyToId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "reply_to_id",
+    },
+    rootCommentId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "root_comment_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+    deletedAt: {
+      type: "number",
+      optional: true,
+      customType: null as unknown as number,
+      serverName: "deleted_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const contributionEventsTable = {
   name: "contributionEvents",
   columns: {
@@ -777,8 +835,11 @@ const suggestionsTable = {
         | "remove_tag"
         | "create_ecosystem"
         | "add_ecosystem_package"
+        | "remove_ecosystem_package"
         | "add_ecosystem_tag"
-        | "remove_ecosystem_tag",
+        | "remove_ecosystem_tag"
+        | "edit_ecosystem_description"
+        | "edit_ecosystem_website",
     },
     version: {
       type: "number",
@@ -859,6 +920,41 @@ const tagsTable = {
   },
   primaryKey: ["id"],
 } as const;
+const threadsTable = {
+  name: "threads",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    packageId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "package_id",
+    },
+    ecosystemId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "ecosystem_id",
+    },
+    projectId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+} as const;
 const accountRelationships = {
   projects: [
     {
@@ -924,6 +1020,14 @@ const accountRelationships = {
       cardinality: "many",
     },
   ],
+  comments: [
+    {
+      sourceField: ["id"],
+      destField: ["authorId"],
+      destSchema: "comments",
+      cardinality: "many",
+    },
+  ],
 } as const;
 const channelDependenciesRelationships = {
   channel: [
@@ -940,6 +1044,40 @@ const channelDependenciesRelationships = {
       destField: ["id"],
       destSchema: "packages",
       cardinality: "one",
+    },
+  ],
+} as const;
+const commentsRelationships = {
+  thread: [
+    {
+      sourceField: ["threadId"],
+      destField: ["id"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
+  author: [
+    {
+      sourceField: ["authorId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+  replyTo: [
+    {
+      sourceField: ["replyToId"],
+      destField: ["id"],
+      destSchema: "comments",
+      cardinality: "one",
+    },
+  ],
+  replies: [
+    {
+      sourceField: ["id"],
+      destField: ["replyToId"],
+      destSchema: "comments",
+      cardinality: "many",
     },
   ],
 } as const;
@@ -1064,6 +1202,14 @@ const ecosystemsRelationships = {
       destField: ["ecosystemId"],
       destSchema: "suggestions",
       cardinality: "many",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["ecosystemId"],
+      destSchema: "threads",
+      cardinality: "one",
     },
   ],
 } as const;
@@ -1206,6 +1352,14 @@ const packagesRelationships = {
       cardinality: "many",
     },
   ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["packageId"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
 } as const;
 const projectEcosystemsRelationships = {
   project: [
@@ -1266,6 +1420,14 @@ const projectsRelationships = {
       destField: ["projectId"],
       destSchema: "projectEcosystems",
       cardinality: "many",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "threads",
+      cardinality: "one",
     },
   ],
 } as const;
@@ -1339,6 +1501,40 @@ const tagsRelationships = {
     },
   ],
 } as const;
+const threadsRelationships = {
+  package: [
+    {
+      sourceField: ["packageId"],
+      destField: ["id"],
+      destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+  ecosystem: [
+    {
+      sourceField: ["ecosystemId"],
+      destField: ["id"],
+      destSchema: "ecosystems",
+      cardinality: "one",
+    },
+  ],
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  comments: [
+    {
+      sourceField: ["id"],
+      destField: ["threadId"],
+      destSchema: "comments",
+      cardinality: "many",
+    },
+  ],
+} as const;
 /**
  * The Zero schema object.
  * This type is auto-generated from your Drizzle schema definition.
@@ -1347,6 +1543,7 @@ export const schema = {
   tables: {
     account: accountTable,
     channelDependencies: channelDependenciesTable,
+    comments: commentsTable,
     contributionEvents: contributionEventsTable,
     contributionScores: contributionScoresTable,
     ecosystemPackages: ecosystemPackagesTable,
@@ -1365,10 +1562,12 @@ export const schema = {
     suggestionVotes: suggestionVotesTable,
     suggestions: suggestionsTable,
     tags: tagsTable,
+    threads: threadsTable,
   },
   relationships: {
     account: accountRelationships,
     channelDependencies: channelDependenciesRelationships,
+    comments: commentsRelationships,
     contributionEvents: contributionEventsRelationships,
     contributionScores: contributionScoresRelationships,
     ecosystemPackages: ecosystemPackagesRelationships,
@@ -1387,6 +1586,7 @@ export const schema = {
     suggestionVotes: suggestionVotesRelationships,
     suggestions: suggestionsRelationships,
     tags: tagsRelationships,
+    threads: threadsRelationships,
   },
   enableLegacyQueries: false,
   enableLegacyMutators: false,
@@ -1400,143 +1600,127 @@ export type Schema = typeof schema;
 /**
  * Represents a row from the "account" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["account"] instead from "@rocicorp/zero".
  */
-export type Account = Row["account"];
+export type Account = Row<(typeof schema)["tables"]["account"]>;
 /**
  * Represents a row from the "channelDependencies" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["channelDependencies"] instead from "@rocicorp/zero".
  */
-export type ChannelDependency = Row["channelDependencies"];
+export type ChannelDependency = Row<
+  (typeof schema)["tables"]["channelDependencies"]
+>;
+/**
+ * Represents a row from the "comments" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type Comment = Row<(typeof schema)["tables"]["comments"]>;
 /**
  * Represents a row from the "contributionEvents" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["contributionEvents"] instead from "@rocicorp/zero".
  */
-export type ContributionEvent = Row["contributionEvents"];
+export type ContributionEvent = Row<
+  (typeof schema)["tables"]["contributionEvents"]
+>;
 /**
  * Represents a row from the "contributionScores" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["contributionScores"] instead from "@rocicorp/zero".
  */
-export type ContributionScore = Row["contributionScores"];
+export type ContributionScore = Row<
+  (typeof schema)["tables"]["contributionScores"]
+>;
 /**
  * Represents a row from the "ecosystemPackages" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["ecosystemPackages"] instead from "@rocicorp/zero".
  */
-export type EcosystemPackage = Row["ecosystemPackages"];
+export type EcosystemPackage = Row<
+  (typeof schema)["tables"]["ecosystemPackages"]
+>;
 /**
  * Represents a row from the "ecosystemTags" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["ecosystemTags"] instead from "@rocicorp/zero".
  */
-export type EcosystemTag = Row["ecosystemTags"];
+export type EcosystemTag = Row<(typeof schema)["tables"]["ecosystemTags"]>;
 /**
  * Represents a row from the "ecosystemUpvotes" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["ecosystemUpvotes"] instead from "@rocicorp/zero".
  */
-export type EcosystemUpvote = Row["ecosystemUpvotes"];
+export type EcosystemUpvote = Row<
+  (typeof schema)["tables"]["ecosystemUpvotes"]
+>;
 /**
  * Represents a row from the "ecosystems" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["ecosystems"] instead from "@rocicorp/zero".
  */
-export type Ecosystem = Row["ecosystems"];
+export type Ecosystem = Row<(typeof schema)["tables"]["ecosystems"]>;
 /**
  * Represents a row from the "notifications" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["notifications"] instead from "@rocicorp/zero".
  */
-export type Notification = Row["notifications"];
+export type Notification = Row<(typeof schema)["tables"]["notifications"]>;
 /**
  * Represents a row from the "packageFetches" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["packageFetches"] instead from "@rocicorp/zero".
  */
-export type PackageFetch = Row["packageFetches"];
+export type PackageFetch = Row<(typeof schema)["tables"]["packageFetches"]>;
 /**
  * Represents a row from the "packageReleaseChannels" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["packageReleaseChannels"] instead from "@rocicorp/zero".
  */
-export type PackageReleaseChannel = Row["packageReleaseChannels"];
+export type PackageReleaseChannel = Row<
+  (typeof schema)["tables"]["packageReleaseChannels"]
+>;
 /**
  * Represents a row from the "packageTags" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["packageTags"] instead from "@rocicorp/zero".
  */
-export type PackageTag = Row["packageTags"];
+export type PackageTag = Row<(typeof schema)["tables"]["packageTags"]>;
 /**
  * Represents a row from the "packageUpvotes" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["packageUpvotes"] instead from "@rocicorp/zero".
  */
-export type PackageUpvote = Row["packageUpvotes"];
+export type PackageUpvote = Row<(typeof schema)["tables"]["packageUpvotes"]>;
 /**
  * Represents a row from the "packages" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["packages"] instead from "@rocicorp/zero".
  */
-export type Package = Row["packages"];
+export type Package = Row<(typeof schema)["tables"]["packages"]>;
 /**
  * Represents a row from the "projectEcosystems" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["projectEcosystems"] instead from "@rocicorp/zero".
  */
-export type ProjectEcosystem = Row["projectEcosystems"];
+export type ProjectEcosystem = Row<
+  (typeof schema)["tables"]["projectEcosystems"]
+>;
 /**
  * Represents a row from the "projectPackages" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["projectPackages"] instead from "@rocicorp/zero".
  */
-export type ProjectPackage = Row["projectPackages"];
+export type ProjectPackage = Row<(typeof schema)["tables"]["projectPackages"]>;
 /**
  * Represents a row from the "projects" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["projects"] instead from "@rocicorp/zero".
  */
-export type Project = Row["projects"];
+export type Project = Row<(typeof schema)["tables"]["projects"]>;
 /**
  * Represents a row from the "suggestionVotes" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["suggestionVotes"] instead from "@rocicorp/zero".
  */
-export type SuggestionVote = Row["suggestionVotes"];
+export type SuggestionVote = Row<(typeof schema)["tables"]["suggestionVotes"]>;
 /**
  * Represents a row from the "suggestions" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["suggestions"] instead from "@rocicorp/zero".
  */
-export type Suggestion = Row["suggestions"];
+export type Suggestion = Row<(typeof schema)["tables"]["suggestions"]>;
 /**
  * Represents a row from the "tags" table.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use Row["tags"] instead from "@rocicorp/zero".
  */
-export type Tag = Row["tags"];
+export type Tag = Row<(typeof schema)["tables"]["tags"]>;
+/**
+ * Represents a row from the "threads" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type Thread = Row<(typeof schema)["tables"]["threads"]>;
 
 /**
  * Represents the ZQL query builder.
@@ -1546,8 +1730,6 @@ export const zql = createBuilder(schema);
 /**
  * Represents the Zero schema query builder.
  * This type is auto-generated from your Drizzle schema definition.
- *
- * @deprecated Use `zql` instead.
  */
 export const builder = zql;
 

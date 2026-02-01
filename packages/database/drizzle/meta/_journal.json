@@ -246,6 +246,41 @@
       "when": 1769105077048,
       "tag": "0034_fresh_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1769449414260,
+      "tag": "0035_good_wolf_cub",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1769866850474,
+      "tag": "0036_lethal_sentinel",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1769872428846,
+      "tag": "0037_calm_agent_zero",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1769872783715,
+      "tag": "0038_minor_gravity",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1769962716617,
+      "tag": "0039_supreme_smasher",
+      "breakpoints": true
     }
   ]
 }

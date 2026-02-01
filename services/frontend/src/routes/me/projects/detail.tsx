@@ -409,68 +409,64 @@ export const ProjectDetail = () => {
 										/>
 									</Show>
 
-									<Card class="overflow-hidden">
-										<Tabs.Root
-											value={activeTab()}
-											onChange={(v) =>
-												setActiveTab(v as "packages" | "ecosystems")
-											}
-										>
-											<Tabs.List variant="contained">
-												<Tabs.Trigger value="packages" variant="contained">
-													Packages ({packages().length})
-												</Tabs.Trigger>
-												<Tabs.Trigger value="ecosystems" variant="contained">
-													Ecosystems ({ecosystems().length})
-												</Tabs.Trigger>
-											</Tabs.List>
-										</Tabs.Root>
+									<Tabs.Root
+										value={activeTab()}
+										onChange={(v) =>
+											setActiveTab(v as "packages" | "ecosystems")
+										}
+									>
+										<Tabs.List variant="line">
+											<Tabs.Trigger value="packages" variant="line">
+												Packages ({packages().length})
+											</Tabs.Trigger>
+											<Tabs.Trigger value="ecosystems" variant="line">
+												Ecosystems ({ecosystems().length})
+											</Tabs.Trigger>
+										</Tabs.List>
+									</Tabs.Root>
 
-										<div class="p-4">
-											<Show
-												when={activeTab() === "packages"}
-												fallback={
-													<Stack spacing="md">
-														<Show when={isOwner()}>
-															<SearchInput
-																value={ecosystemSearch()}
-																onValueChange={setEcosystemSearch}
-																results={ecosystemSearchResultsFiltered()}
-																isLoading={isSearchingEcosystems()}
-																onSelect={handleAddEcosystem}
-																placeholder="Search ecosystems to add..."
-															/>
-														</Show>
-														<EcosystemGrid
-															ecosystems={ecosystems()}
-															ecosystemsByTag={ecosystemsByTag()}
-															isOwner={isOwner()}
-															onRemove={removeEcosystemModal.open}
-														/>
-													</Stack>
-												}
-											>
-												<Stack spacing="md">
-													<Show when={isOwner()}>
-														<SearchInput
-															value={packageSearch()}
-															onValueChange={setPackageSearch}
-															results={packageSearchResults()}
-															isLoading={isSearching()}
-															onSelect={handleAddPackage}
-															placeholder="Search packages to add..."
-														/>
-													</Show>
-													<PackageGrid
-														packages={packages()}
-														packagesByTag={packagesByTag()}
-														isOwner={isOwner()}
-														onRemove={removePackageModal.open}
+									<Show
+										when={activeTab() === "packages"}
+										fallback={
+											<Stack spacing="md" class="mt-4">
+												<Show when={isOwner()}>
+													<SearchInput
+														value={ecosystemSearch()}
+														onValueChange={setEcosystemSearch}
+														results={ecosystemSearchResultsFiltered()}
+														isLoading={isSearchingEcosystems()}
+														onSelect={handleAddEcosystem}
+														placeholder="Search ecosystems to add..."
 													/>
-												</Stack>
+												</Show>
+												<EcosystemGrid
+													ecosystems={ecosystems()}
+													ecosystemsByTag={ecosystemsByTag()}
+													isOwner={isOwner()}
+													onRemove={removeEcosystemModal.open}
+												/>
+											</Stack>
+										}
+									>
+										<Stack spacing="md" class="mt-4">
+											<Show when={isOwner()}>
+												<SearchInput
+													value={packageSearch()}
+													onValueChange={setPackageSearch}
+													results={packageSearchResults()}
+													isLoading={isSearching()}
+													onSelect={handleAddPackage}
+													placeholder="Search packages to add..."
+												/>
 											</Show>
-										</div>
-									</Card>
+											<PackageGrid
+												packages={packages()}
+												packagesByTag={packagesByTag()}
+												isOwner={isOwner()}
+												onRemove={removePackageModal.open}
+											/>
+										</Stack>
+									</Show>
 								</>
 							)}
 						</Show>
@@ -513,3 +509,5 @@ export const ProjectDetail = () => {
 		</Layout>
 	);
 };
+
+export default ProjectDetail;

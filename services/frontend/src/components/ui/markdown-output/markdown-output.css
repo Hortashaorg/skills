@@ -1,0 +1,384 @@
+.prose {
+	color: var(--color-on-surface);
+	line-height: 1.75;
+	max-width: 65ch;
+}
+
+.prose :where(h1, h2, h3, h4, h5, h6) {
+	color: var(--color-on-surface-strong);
+	font-weight: 600;
+	line-height: 1.25;
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+}
+
+.prose :where(h1) {
+	font-size: 2em;
+	margin-top: 0;
+}
+
+.prose :where(h2) {
+	font-size: 1.5em;
+}
+
+.prose :where(h3) {
+	font-size: 1.25em;
+}
+
+.prose :where(p) {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+.prose :where(a) {
+	color: var(--color-primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.prose :where(a):hover {
+	color: var(--color-brand);
+}
+
+.prose :where(strong) {
+	font-weight: 600;
+	color: var(--color-on-surface-strong);
+}
+
+.prose :where(ul, ol) {
+	margin-top: 1em;
+	margin-bottom: 1em;
+	padding-left: 1.5em;
+}
+
+.prose :where(ul) {
+	list-style-type: disc;
+}
+
+.prose :where(ol) {
+	list-style-type: decimal;
+}
+
+.prose :where(li) {
+	margin-top: 0.25em;
+	margin-bottom: 0.25em;
+}
+
+.prose :where(code) {
+	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+	font-size: 0.875em;
+	background-color: var(--color-surface-alt);
+	padding: 0.2em 0.4em;
+	border-radius: 0.25rem;
+}
+
+.prose :where(pre) {
+	background-color: var(--color-surface-alt);
+	border-radius: 0.5rem;
+	padding: 1em;
+	overflow-x: auto;
+	margin-top: 1.5em;
+	margin-bottom: 1.5em;
+}
+
+.prose :where(pre code) {
+	background-color: transparent;
+	padding: 0;
+	font-size: 0.875em;
+	line-height: 1.7;
+}
+
+.prose :where(table) {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 1.5em;
+	margin-bottom: 1.5em;
+	font-size: 0.875em;
+}
+
+.prose :where(th) {
+	font-weight: 600;
+	text-align: left;
+	padding: 0.5em 1em;
+	border-bottom: 2px solid var(--color-outline);
+	color: var(--color-on-surface-strong);
+}
+
+.prose :where(td) {
+	padding: 0.5em 1em;
+	border-bottom: 1px solid var(--color-outline);
+}
+
+/* Task list - hide bullet, style checkbox */
+.prose :where(.task-list-item) {
+	list-style: none;
+	margin-left: -1.5em;
+	display: flex;
+	align-items: baseline;
+	gap: 0.5em;
+}
+
+.prose :where(input[type="checkbox"]) {
+	appearance: none;
+	width: 1em;
+	height: 1em;
+	border: 2px solid var(--color-outline);
+	border-radius: 0.2em;
+	background-color: var(--color-surface-alt);
+	cursor: not-allowed;
+	flex-shrink: 0;
+	position: relative;
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.prose :where(input[type="checkbox"]:checked) {
+	background-color: var(--color-primary);
+	border-color: var(--color-primary);
+	opacity: 0.7;
+}
+
+.prose :where(input[type="checkbox"]:checked)::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 45%;
+	width: 0.3em;
+	height: 0.55em;
+	border: solid var(--color-on-primary);
+	border-width: 0 2px 2px 0;
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.dark .prose :where(input[type="checkbox"]) {
+	border-color: var(--color-outline-dark);
+	background-color: var(--color-surface-dark-alt);
+}
+
+.dark .prose :where(input[type="checkbox"]:checked) {
+	background-color: var(--color-primary-dark);
+	border-color: var(--color-primary-dark);
+}
+
+.dark .prose :where(input[type="checkbox"]:checked)::after {
+	border-color: var(--color-on-primary-dark);
+}
+
+.prose :where(blockquote) {
+	border-left: 4px solid var(--color-outline);
+	padding-left: 1em;
+	margin-left: 0;
+	color: var(--color-on-surface-muted);
+	font-style: italic;
+}
+
+.prose :where(hr) {
+	border: none;
+	border-top: 1px solid var(--color-outline);
+	margin: 2em 0;
+}
+
+/* Syntax highlighting - light mode (all colors meet 4.5:1 contrast on #e4e4e7) */
+.prose :where(pre code) .hljs-keyword,
+.prose :where(pre code) .hljs-selector-tag,
+.prose :where(pre code) .hljs-built_in,
+.prose :where(pre code) .hljs-name {
+	color: oklch(0.45 0.22 277);
+}
+
+.prose :where(pre code) .hljs-string,
+.prose :where(pre code) .hljs-attr,
+.prose :where(pre code) .hljs-template-variable,
+.prose :where(pre code) .hljs-addition {
+	color: oklch(0.38 0.17 145);
+}
+
+.prose :where(pre code) .hljs-number,
+.prose :where(pre code) .hljs-literal,
+.prose :where(pre code) .hljs-symbol,
+.prose :where(pre code) .hljs-bullet {
+	color: oklch(0.45 0.18 35);
+}
+
+.prose :where(pre code) .hljs-type,
+.prose :where(pre code) .hljs-class,
+.prose :where(pre code) .hljs-title {
+	color: oklch(0.42 0.15 215);
+}
+
+.prose :where(pre code) .hljs-title.function_ {
+	color: oklch(0.42 0.18 277);
+}
+
+.prose :where(pre code) .hljs-comment,
+.prose :where(pre code) .hljs-quote,
+.prose :where(pre code) .hljs-meta {
+	color: var(--color-on-surface-muted);
+	font-style: italic;
+}
+
+.prose :where(pre code) .hljs-variable,
+.prose :where(pre code) .hljs-params {
+	color: var(--color-on-surface);
+}
+
+.prose :where(pre code) .hljs-punctuation,
+.prose :where(pre code) .hljs-operator {
+	color: var(--color-on-surface-subtle);
+}
+
+.prose :where(pre code) .hljs-deletion {
+	color: oklch(0.42 0.2 25);
+	background-color: oklch(0.95 0.05 25);
+}
+
+.prose :where(pre code) .hljs-regexp {
+	color: oklch(0.45 0.18 35);
+}
+
+.prose :where(pre code) .hljs-property {
+	color: oklch(0.42 0.15 215);
+}
+
+.prose :where(pre code) .hljs-attribute {
+	color: oklch(0.45 0.15 277);
+}
+
+.prose :where(pre code) .hljs-tag {
+	color: var(--color-on-surface);
+}
+
+/* Dark mode */
+.dark .prose {
+	color: var(--color-on-surface-dark);
+}
+
+.dark .prose :where(h1, h2, h3, h4, h5, h6) {
+	color: var(--color-on-surface-dark-strong);
+}
+
+.dark .prose :where(a) {
+	color: var(--color-primary-dark);
+}
+
+.dark .prose :where(a):hover {
+	color: var(--color-brand-dark);
+}
+
+.dark .prose :where(strong) {
+	color: var(--color-on-surface-dark-strong);
+}
+
+.dark .prose :where(code) {
+	background-color: var(--color-surface-dark-alt);
+}
+
+.dark .prose :where(pre) {
+	background-color: var(--color-surface-dark-alt);
+}
+
+.dark .prose :where(th) {
+	border-bottom-color: var(--color-outline-dark);
+	color: var(--color-on-surface-dark-strong);
+}
+
+.dark .prose :where(td) {
+	border-bottom-color: var(--color-outline-dark);
+}
+
+.dark .prose :where(blockquote) {
+	border-left-color: var(--color-outline-dark);
+	color: var(--color-on-surface-dark-muted);
+}
+
+.dark .prose :where(hr) {
+	border-top-color: var(--color-outline-dark);
+}
+
+/* Dark mode syntax highlighting */
+.dark .prose :where(pre code) .hljs-keyword,
+.dark .prose :where(pre code) .hljs-selector-tag,
+.dark .prose :where(pre code) .hljs-built_in,
+.dark .prose :where(pre code) .hljs-name {
+	color: oklch(0.75 0.2 277);
+}
+
+.dark .prose :where(pre code) .hljs-string,
+.dark .prose :where(pre code) .hljs-attr,
+.dark .prose :where(pre code) .hljs-template-variable {
+	color: oklch(0.72 0.17 145);
+}
+
+.dark .prose :where(pre code) .hljs-number,
+.dark .prose :where(pre code) .hljs-literal,
+.dark .prose :where(pre code) .hljs-symbol,
+.dark .prose :where(pre code) .hljs-bullet {
+	color: oklch(0.75 0.18 35);
+}
+
+.dark .prose :where(pre code) .hljs-type,
+.dark .prose :where(pre code) .hljs-class,
+.dark .prose :where(pre code) .hljs-title {
+	color: oklch(0.72 0.15 215);
+}
+
+.dark .prose :where(pre code) .hljs-title.function_ {
+	color: oklch(0.7 0.18 277);
+}
+
+.dark .prose :where(pre code) .hljs-comment,
+.dark .prose :where(pre code) .hljs-quote,
+.dark .prose :where(pre code) .hljs-meta {
+	color: var(--color-on-surface-dark-muted);
+	font-style: italic;
+}
+
+.dark .prose :where(pre code) .hljs-variable,
+.dark .prose :where(pre code) .hljs-params {
+	color: var(--color-on-surface-dark);
+}
+
+.dark .prose :where(pre code) .hljs-punctuation,
+.dark .prose :where(pre code) .hljs-operator {
+	color: var(--color-on-surface-dark-subtle);
+}
+
+.dark .prose :where(pre code) .hljs-deletion {
+	color: oklch(0.7 0.2 25);
+	background-color: oklch(0.3 0.08 25);
+}
+
+.dark .prose :where(pre code) .hljs-addition {
+	color: oklch(0.72 0.17 145);
+	background-color: oklch(0.3 0.08 145);
+}
+
+.dark .prose :where(pre code) .hljs-regexp {
+	color: oklch(0.75 0.18 35);
+}
+
+.dark .prose :where(pre code) .hljs-property {
+	color: oklch(0.7 0.15 215);
+}
+
+.dark .prose :where(pre code) .hljs-attribute {
+	color: oklch(0.75 0.15 277);
+}
+
+.dark .prose :where(pre code) .hljs-tag {
+	color: var(--color-on-surface-dark);
+}
+
+/* @mentions */
+.prose .mention {
+	color: oklch(0.4 0.15 250);
+	font-weight: 500;
+	background-color: oklch(0.95 0.03 250);
+	padding: 0.1em 0.35em;
+	border-radius: 0.25rem;
+}
+
+.dark .prose .mention {
+	color: oklch(0.75 0.15 250);
+	background-color: oklch(0.3 0.05 250);
+}

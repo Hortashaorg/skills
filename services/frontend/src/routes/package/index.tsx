@@ -21,6 +21,7 @@ import { buildPackageUrl } from "@/lib/url";
 import { ChannelSelector } from "./sections/ChannelSelector";
 import { Dependencies } from "./sections/Dependencies";
 import { DetailsTab } from "./sections/DetailsTab";
+import { DiscussionTab } from "./sections/DiscussionTab";
 import { Header } from "./sections/Header";
 
 type ReleaseChannel = Row["packageReleaseChannels"];
@@ -173,63 +174,66 @@ export const Package = () => {
 								{/* Package header */}
 								<Header pkg={p} />
 
-								{/* Tabbed content card */}
-								<Card class="overflow-hidden">
-									<Tabs.Root
-										value={tab()}
-										onChange={(value) => {
-											navigate(
-												value === "overview"
-													? baseUrl()
-													: `${baseUrl()}/${value}`,
-											);
-										}}
-									>
-										<Tabs.List variant="contained">
-											<Tabs.Trigger value="overview" variant="contained">
-												Overview
-											</Tabs.Trigger>
-											<Tabs.Trigger value="details" variant="contained">
-												Details
-											</Tabs.Trigger>
-										</Tabs.List>
-									</Tabs.Root>
+								{/* Tabs */}
+								<Tabs.Root
+									value={tab()}
+									onChange={(value) => {
+										navigate(
+											value === "overview"
+												? baseUrl()
+												: `${baseUrl()}/${value}`,
+										);
+									}}
+								>
+									<Tabs.List variant="line">
+										<Tabs.Trigger value="overview" variant="line">
+											Overview
+										</Tabs.Trigger>
+										<Tabs.Trigger value="details" variant="line">
+											Details
+										</Tabs.Trigger>
+										<Tabs.Trigger value="discussion" variant="line">
+											Discussion
+										</Tabs.Trigger>
+									</Tabs.List>
+								</Tabs.Root>
 
-									{/* Tab content */}
-									<div class="p-4">
+								{/* Tab content */}
+								<Switch>
+									<Match when={tab() === "overview"}>
 										<Stack spacing="lg">
-											<Switch>
-												<Match when={tab() === "overview"}>
-													<Show when={sortedChannels().length > 0}>
-														<ChannelSelector
-															channels={sortedChannels()}
-															selectedChannel={selectedChannel()}
-															onChannelChange={setSelectedChannelId}
-														/>
-													</Show>
-													<Show when={selectedChannel()}>
-														{(channel) => (
-															<Dependencies
-																channelId={channel().id}
-																registry={p.registry}
-															/>
-														)}
-													</Show>
-												</Match>
-
-												<Match when={tab() === "details"}>
-													<DetailsTab
-														packageId={p.id}
+											<Show when={sortedChannels().length > 0}>
+												<ChannelSelector
+													channels={sortedChannels()}
+													selectedChannel={selectedChannel()}
+													onChannelChange={setSelectedChannelId}
+												/>
+											</Show>
+											<Show when={selectedChannel()}>
+												{(channel) => (
+													<Dependencies
+														channelId={channel().id}
 														registry={p.registry}
-														channels={sortedChannels()}
-														selectedChannel={selectedChannel()}
-														onChannelChange={setSelectedChannelId}
 													/>
-												</Match>
-											</Switch>
+												)}
+											</Show>
 										</Stack>
-									</div>
-								</Card>
+									</Match>
+
+									<Match when={tab() === "details"}>
+										<DetailsTab
+											packageId={p.id}
+											registry={p.registry}
+											channels={sortedChannels()}
+											selectedChannel={selectedChannel()}
+											onChannelChange={setSelectedChannelId}
+										/>
+									</Match>
+
+									<Match when={tab() === "discussion"}>
+										<DiscussionTab packageId={p.id} />
+									</Match>
+								</Switch>
 							</>
 						)}
 					</QueryBoundary>
@@ -238,3 +242,5 @@ export const Package = () => {
 		</Layout>
 	);
 };
+
+export default Package;

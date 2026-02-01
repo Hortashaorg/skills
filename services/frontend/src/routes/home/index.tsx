@@ -292,3 +292,5 @@ export const Packages = () => {
 		</Layout>
 	);
 };
+
+export default Packages;

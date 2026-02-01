@@ -229,3 +229,5 @@ export const Landing = () => {
 		</Layout>
 	);
 };
+
+export default Landing;

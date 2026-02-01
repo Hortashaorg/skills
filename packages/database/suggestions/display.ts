@@ -4,16 +4,15 @@
  */
 
 import type { SuggestionType } from "../db/types.ts";
-import type { FormatContext } from "./types/definition.ts";
+import type { FormatContext, SuggestionDisplay } from "./types/definition.ts";
 import {
-	formatAction,
-	formatDescription,
+	formatDisplay,
 	getSuggestionTypeLabel,
 	suggestionTypes,
 } from "./types/index.ts";
 
 export { getSuggestionTypeLabel };
-export type { FormatContext };
+export type { FormatContext, SuggestionDisplay };
 
 /** Type metadata for display */
 export const suggestionTypeMeta: Record<SuggestionType, { label: string }> =
@@ -25,25 +24,13 @@ export const suggestionTypeMeta: Record<SuggestionType, { label: string }> =
 	) as Record<SuggestionType, { label: string }>;
 
 /**
- * Format suggestion description with version support.
+ * Format display data with resolved context maps.
  */
-export function formatSuggestionDescription(
+export function formatSuggestionDisplay(
 	type: string,
 	payload: unknown,
 	version: number,
-	ctx: FormatContext,
-): string {
-	return formatDescription(type, payload, version, ctx);
-}
-
-/**
- * Format suggestion action with version support.
- */
-export function formatSuggestionAction(
-	type: string,
-	payload: unknown,
-	version: number,
-	ctx: FormatContext,
-): string {
-	return formatAction(type, payload, version, ctx);
+	ctx: FormatContext = {},
+): SuggestionDisplay {
+	return formatDisplay(type, payload, version, ctx);
 }

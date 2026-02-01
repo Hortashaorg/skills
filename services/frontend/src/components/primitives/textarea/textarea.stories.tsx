@@ -132,6 +132,23 @@ const withContentThemed = createThemedStories({
 export const WithContentLight = withContentThemed.Light;
 export const WithContentDark = withContentThemed.Dark;
 
+// Code variant (monospace, no spellcheck)
+const codeBase: Story = {
+	args: {
+		variant: "code",
+		placeholder: "// Write code here...",
+		rows: 5,
+	},
+};
+
+const codeThemed = createThemedStories({
+	story: codeBase,
+	testMode: "both",
+});
+
+export const CodeLight = codeThemed.Light;
+export const CodeDark = codeThemed.Dark;
+
 // All sizes showcase
 const allSizesBase: Story = {
 	render: () => (

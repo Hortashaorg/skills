@@ -11,6 +11,9 @@ import { addEcosystemPackage } from "./add-ecosystem-package.ts";
 import { addEcosystemTag } from "./add-ecosystem-tag.ts";
 import { addTag } from "./add-tag.ts";
 import { createEcosystem } from "./create-ecosystem.ts";
+import { editEcosystemDescription } from "./edit-ecosystem-description.ts";
+import { editEcosystemWebsite } from "./edit-ecosystem-website.ts";
+import { removeEcosystemPackage } from "./remove-ecosystem-package.ts";
 import { removeEcosystemTag } from "./remove-ecosystem-tag.ts";
 import { removeTag } from "./remove-tag.ts";
 
@@ -18,12 +21,17 @@ export {
 	defineSuggestionType,
 	type FormatContext,
 	type ResolveIds,
+	type SuggestionDisplay,
 	type SuggestionTransaction,
 	type SuggestionTypeDefinition,
 	type ToastMessages,
 } from "./definition.ts";
 
-import type { FormatContext, SuggestionTypeDefinition } from "./definition.ts";
+import type {
+	FormatContext,
+	SuggestionDisplay,
+	SuggestionTypeDefinition,
+} from "./definition.ts";
 
 /** Registry of all suggestion types */
 export const suggestionTypes = {
@@ -31,8 +39,11 @@ export const suggestionTypes = {
 	remove_tag: removeTag,
 	create_ecosystem: createEcosystem,
 	add_ecosystem_package: addEcosystemPackage,
+	remove_ecosystem_package: removeEcosystemPackage,
 	add_ecosystem_tag: addEcosystemTag,
 	remove_ecosystem_tag: removeEcosystemTag,
+	edit_ecosystem_description: editEcosystemDescription,
+	edit_ecosystem_website: editEcosystemWebsite,
 } as const;
 
 export type SuggestionTypeKey = keyof typeof suggestionTypes;
@@ -73,41 +84,23 @@ export function getSchema(type: string, version: number) {
 }
 
 /**
- * Parse payload with versioned schema and format description.
- * Returns fallback string if payload is invalid.
+ * Parse payload with versioned schema and format display data.
+ * Context maps are built by the backend resolution layer.
  */
-export function formatDescription(
+export function formatDisplay(
 	type: string,
 	payload: unknown,
 	version: number,
-	ctx: FormatContext,
-): string {
+	ctx: FormatContext = {},
+): SuggestionDisplay {
 	const typeDef = getSuggestionType(type);
-	if (!typeDef) return type.replace(/_/g, " ");
+	if (!typeDef) return { action: type.replace(/_/g, " "), description: type };
 	const schema = getSchema(type, version);
-	if (!schema) return typeDef.label;
+	if (!schema) return { action: typeDef.label, description: typeDef.label };
 	const parsed = schema.safeParse(payload);
-	if (!parsed.success) return typeDef.label;
-	return typeDef.formatDescription(parsed.data, ctx);
-}
-
-/**
- * Parse payload with versioned schema and format action.
- * Returns fallback string if payload is invalid.
- */
-export function formatAction(
-	type: string,
-	payload: unknown,
-	version: number,
-	ctx: FormatContext,
-): string {
-	const typeDef = getSuggestionType(type);
-	if (!typeDef) return type.replace(/_/g, " ");
-	const schema = getSchema(type, version);
-	if (!schema) return typeDef.label;
-	const parsed = schema.safeParse(payload);
-	if (!parsed.success) return typeDef.label;
-	return typeDef.formatAction(parsed.data, ctx);
+	if (!parsed.success)
+		return { action: typeDef.label, description: typeDef.label };
+	return typeDef.formatDisplay(parsed.data, ctx);
 }
 
 /** Get toast messages for a suggestion type */

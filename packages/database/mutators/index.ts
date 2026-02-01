@@ -1,6 +1,7 @@
 import { defineMutators } from "@rocicorp/zero";
 import "../types/context.ts";
 import * as accountMutators from "./account.ts";
+import * as commentsMutators from "./comments.ts";
 import * as ecosystemPackagesMutators from "./ecosystem-packages.ts";
 import * as ecosystemUpvotesMutators from "./ecosystem-upvotes.ts";
 import * as ecosystemsMutators from "./ecosystems.ts";
@@ -71,5 +72,11 @@ export const mutators = defineMutators({
 	projectEcosystems: {
 		add: projectEcosystemsMutators.add,
 		remove: projectEcosystemsMutators.remove,
+	},
+	threads: {},
+	comments: {
+		create: commentsMutators.create,
+		update: commentsMutators.update,
+		remove: commentsMutators.remove,
 	},
 });

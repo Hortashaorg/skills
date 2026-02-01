@@ -49,6 +49,14 @@ export default defineConfig(({ mode }) => ({
 		fileParallelism: false,
 		isolate: false,
 		setupFiles: ["./.storybook/vitest.setup.ts"],
+		// Suppress SolidJS reactivity warnings in Storybook tests
+		// These occur because stories create signals outside createRoot - harmless noise
+		onConsoleLog(log: string): boolean | undefined {
+			if (log.includes("computations created outside a `createRoot`")) {
+				return false;
+			}
+			return undefined;
+		},
 		coverage: {
 			exclude: [
 				"**/*.stories.tsx",

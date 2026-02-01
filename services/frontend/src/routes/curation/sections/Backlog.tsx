@@ -1,4 +1,5 @@
-import { useZero } from "@package/database/client";
+import { type SuggestionDisplay, useZero } from "@package/database/client";
+import { A } from "@solidjs/router";
 import type { Accessor } from "solid-js";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
@@ -16,18 +17,13 @@ export interface BacklogSuggestion {
 	payload: unknown;
 	accountId: string;
 	account?: { name: string | null; deletedAt?: Date | number | null } | null;
-	package?: { name: string | null } | null;
 	votes?: readonly { accountId: string; vote: string }[];
 }
 
 interface BacklogProps {
 	suggestions: Accessor<readonly BacklogSuggestion[] | undefined>;
 	currentSuggestionId: Accessor<string | undefined>;
-	formatDescription: (
-		type: string,
-		payload: unknown,
-		version: number,
-	) => string;
+	displayMap: Accessor<Record<string, SuggestionDisplay> | undefined>;
 	onSelect: (id: string) => void;
 }
 
@@ -67,23 +63,76 @@ export const Backlog = (props: BacklogProps) => {
 										<Flex justify="between" align="start" gap="sm">
 											<Stack spacing="xs" class="flex-1 min-w-0">
 												<Flex gap="xs" align="center" wrap="wrap">
-													<Text
-														size="sm"
-														weight={isCurrent() ? "semibold" : "normal"}
-														class="truncate"
+													<Show
+														when={
+															props.displayMap()?.[suggestion.id]?.actionEntity
+														}
+														fallback={
+															<Text
+																size="sm"
+																weight={isCurrent() ? "semibold" : "normal"}
+																class="truncate"
+															>
+																{props.displayMap()?.[suggestion.id]?.action ??
+																	suggestion.type.replace(/_/g, " ")}
+															</Text>
+														}
 													>
-														{props.formatDescription(
-															suggestion.type,
-															suggestion.payload,
-															suggestion.version,
+														{(entity) => (
+															<>
+																<Text
+																	size="sm"
+																	weight={isCurrent() ? "semibold" : "normal"}
+																	class="shrink-0"
+																>
+																	{props.displayMap()?.[suggestion.id]
+																		?.actionLabel ?? "Suggestion"}
+																</Text>
+																<A
+																	href={entity().href}
+																	class="text-sm font-medium hover:text-primary dark:hover:text-primary-dark truncate underline decoration-dotted underline-offset-2"
+																	onClick={(e) => e.stopPropagation()}
+																>
+																	{entity().label}
+																</A>
+															</>
 														)}
-													</Text>
-													<Text size="xs" color="muted">
-														→
-													</Text>
-													<Text size="xs" color="muted" class="truncate">
-														{suggestion.package?.name}
-													</Text>
+													</Show>
+													<Show
+														when={props.displayMap()?.[suggestion.id]?.target}
+													>
+														<Text size="xs" color="muted">
+															on
+														</Text>
+														<A
+															href={
+																props.displayMap()?.[suggestion.id]?.target
+																	?.href ?? ""
+															}
+															class="text-xs font-medium hover:text-primary dark:hover:text-primary-dark truncate"
+															onClick={(e) => e.stopPropagation()}
+														>
+															{
+																props.displayMap()?.[suggestion.id]?.target
+																	?.label
+															}
+														</A>
+														<Show
+															when={
+																props.displayMap()?.[suggestion.id]?.target
+																	?.sublabel
+															}
+														>
+															<Text size="xs" color="muted">
+																(
+																{
+																	props.displayMap()?.[suggestion.id]?.target
+																		?.sublabel
+																}
+																)
+															</Text>
+														</Show>
+													</Show>
 												</Flex>
 												<Flex gap="xs" align="center">
 													<Text size="xs" color="muted">

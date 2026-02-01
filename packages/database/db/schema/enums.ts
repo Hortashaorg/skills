@@ -33,8 +33,11 @@ export const suggestionTypeEnum = pgEnum("suggestion_type", [
 	"remove_tag",
 	"create_ecosystem",
 	"add_ecosystem_package",
+	"remove_ecosystem_package",
 	"add_ecosystem_tag",
 	"remove_ecosystem_tag",
+	"edit_ecosystem_description",
+	"edit_ecosystem_website",
 ]);
 
 export const suggestionStatusEnum = pgEnum("suggestion_status", [

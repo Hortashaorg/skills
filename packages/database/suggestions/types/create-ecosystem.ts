@@ -29,9 +29,12 @@ export const createEcosystem = defineSuggestionType({
 		pending: "Your ecosystem suggestion is now pending review.",
 	},
 
-	formatDescription: (payload) => payload.name,
+	targetEntity: "none",
 
-	formatAction: (payload) => `Create ecosystem "${payload.name}"`,
+	formatDisplay: (payload) => ({
+		action: `Create ecosystem "${payload.name}"`,
+		description: payload.name,
+	}),
 
 	resolve: async (tx, payload) => {
 		const record = newRecord();

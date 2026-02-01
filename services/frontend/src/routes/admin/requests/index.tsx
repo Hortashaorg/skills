@@ -194,3 +194,5 @@ export const AdminRequests = () => {
 		</Layout>
 	);
 };
+
+export default AdminRequests;

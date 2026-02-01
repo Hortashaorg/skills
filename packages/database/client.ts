@@ -21,9 +21,9 @@ export { mutators } from "./mutators/index.ts";
 export { queries } from "./queries/index.ts";
 // Suggestion helpers (frontend-safe)
 export {
-	formatSuggestionAction,
-	formatSuggestionDescription,
+	formatSuggestionDisplay,
 	getSuggestionTypeLabel,
+	type SuggestionDisplay,
 } from "./suggestions/display.ts";
 export { isPowerUser } from "./suggestions/power-user.ts";
 export { getSuggestionToastMessages } from "./suggestions/types/index.ts";

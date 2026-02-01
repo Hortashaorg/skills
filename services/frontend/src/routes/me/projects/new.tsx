@@ -81,3 +81,5 @@ export const NewProject = () => {
 		</Layout>
 	);
 };
+
+export default NewProject;

@@ -32,6 +32,7 @@ export interface EcosystemHeaderProps {
 	onAddTag: () => void;
 	onRemoveTag: (tagId: string) => void;
 	onEditDescription?: () => void;
+	onEditWebsite?: () => void;
 	projects: readonly Project[];
 	isInProject: (projectId: string) => boolean;
 	onAddToProject: (projectId: string) => void;
@@ -97,20 +98,44 @@ export const EcosystemHeader = (props: EcosystemHeaderProps) => {
 			{/* Website link */}
 			<Show when={props.website} keyed>
 				{(website) => (
-					<Flex gap="sm" align="center" class="min-w-0">
-						<Text size="sm" color="muted" class="shrink-0">
-							Homepage
-						</Text>
-						<a
-							href={website}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
-						>
-							<span class="truncate">{formatUrl(website)}</span>
-							<ExternalLinkIcon size="xs" class="shrink-0" />
-						</a>
-					</Flex>
+					<Show
+						when={props.onEditWebsite}
+						fallback={
+							<Flex gap="sm" align="center" class="min-w-0">
+								<Text size="sm" color="muted" class="shrink-0">
+									Homepage
+								</Text>
+								<a
+									href={website}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
+								>
+									<span class="truncate">{formatUrl(website)}</span>
+									<ExternalLinkIcon size="xs" class="shrink-0" />
+								</a>
+							</Flex>
+						}
+					>
+						{(onEdit) => (
+							<EditableField onEdit={onEdit()}>
+								<Flex gap="sm" align="center" class="min-w-0">
+									<Text size="sm" color="muted" class="shrink-0">
+										Homepage
+									</Text>
+									<a
+										href={website}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-sm text-primary dark:text-primary-dark hover:underline truncate inline-flex items-center gap-1 min-w-0"
+									>
+										<span class="truncate">{formatUrl(website)}</span>
+										<ExternalLinkIcon size="xs" class="shrink-0" />
+									</a>
+								</Flex>
+							</EditableField>
+						)}
+					</Show>
 				)}
 			</Show>
 

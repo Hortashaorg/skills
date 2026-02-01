@@ -45,7 +45,7 @@ services:
 
     zero-cache:
         container_name: skills_zero
-        image: rocicorp/zero:0.25.9
+        image: rocicorp/zero:0.25.11
         ports:
             - "4848:4848"
         environment:

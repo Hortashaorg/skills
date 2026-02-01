@@ -129,11 +129,11 @@ const buttonVariants = cva(
 				ghost: [
 					"bg-transparent",
 					"border-transparent",
-					"text-primary",
+					"text-on-surface-strong",
 					"hover:underline",
 					"hover:opacity-100",
 					"focus-visible:outline-primary",
-					"dark:text-primary-dark",
+					"dark:text-on-surface-dark-strong",
 					"dark:focus-visible:outline-primary-dark",
 				],
 			},

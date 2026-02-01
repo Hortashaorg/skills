@@ -135,3 +135,5 @@ export const BrowseProjects = () => {
 		</Layout>
 	);
 };
+
+export default BrowseProjects;

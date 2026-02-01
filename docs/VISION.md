@@ -2,6 +2,8 @@
 
 A place for engineers to architect in public - built on concrete, linked technology data.
 
+> **Detailed documentation:** Feature specifications, data models, and implementation status are in this folder.
+
 ## Core Concept
 
 Technology discussions are abstract. "We chose Drizzle over Prisma" is just words until you click through and understand what those things actually are, what ecosystems they belong to, how they compare.
@@ -16,10 +18,13 @@ TechGarden separates **foundational data** from **user-generated content**. This
 
 Facts about the world that engineers need to reference. Curated collaboratively through democratic consensus - no single person owns this data, everyone helps maintain it.
 
-- **Packages** - aggregated from npm, jsr, nuget, homebrew, archlinux, dockerhub
-- **Ecosystems** - product/technology identities (React, AWS, TalosOS) containing related packages
-- **Standards** (future) - specifications like OpenAPI, GraphQL, JSON Schema
-- **Regulations** (future) - compliance requirements like GDPR, SOC2, HIPAA that affect technology choices
+- **[Packages](./Foundational-Packages.md)** - aggregated from npm, jsr, nuget, homebrew, archlinux, dockerhub
+- **[Ecosystems](./Foundational-Ecosystems.md)** - product/technology identities (React, AWS, TalosOS) containing related packages
+- **[Tags](./Foundational-Tags.md)** - domain classification (UI, Testing, CI/CD, Observability)
+- **[Curation](./Foundational-Curation.md)** - suggestion system, voting, contribution scoring
+- **[Standards](./Foundational-Standards.md)** (future) - voluntary specifications (OpenAPI, ECMA, WCAG)
+- **[Regulations](./Foundational-Regulations.md)** (future) - legal requirements (GDPR, HIPAA, SOC2)
+- **[Paradigms](./Foundational-Paradigms.md)** (future) - design approaches (Functional, OOP, Reactive)
 
 Foundation data is:
 - **Objective** - facts, not opinions
@@ -31,12 +36,11 @@ Foundation data is:
 
 Content created by individuals that references foundation data. Personal expression anchored to concrete entities.
 
-- **Projects** - your stack, linked to packages and ecosystems
-- **Comparisons** - "which ORM?" with concrete package references
-- **Decision records** - why you chose what you chose, linked to real entities
-- **Discussions** - grounded in specific packages, ecosystems, or projects
-- **Articles/Guides** (future) - tutorials and explanations referencing real packages
-- **Courses** (future) - learning paths through ecosystems
+- **[Projects](./Feature-Projects.md)** - your stack, linked to packages and ecosystems
+- **[Comparisons](./Feature-Comparisons.md)** - "which ORM?" with concrete package references
+- **[Rich Text](./Feature-RichText.md)** (future) - markdown editor with entity mentions
+- **[Issues](./Feature-Issues.md)** (future) - Q&A grounded in packages and ecosystems
+- **[User Profiles](./Feature-UserProfiles.md)** (future) - public presence, activity, expertise signals
 
 Value layer content is:
 - **Subjective** - opinions, experiences, choices
@@ -123,53 +127,50 @@ You don't need a community to get value. Create something useful, share the link
 - Community-curated ecosystem suggestions and package associations
 - Project-ecosystem linking (declare "I use Azure" not just individual packages)
 
-### Phase 6: Projects & Decision History (Current)
+### Phase 6: Projects Rework (Current)
 
-Projects become more than a stack list - they tell the story of your technology decisions.
+Projects become decision visualization tools, not just stack lists.
 
-- **Decision records**: Document why you added or removed each package
-- **Change history**: Timeline of stack evolution with reasoning
-- **Shareable narratives**: "Here's my stack AND how it evolved"
-- **Import with context**: Add packages from package.json, annotate decisions later
+- **Status types**: considering, using, deprecated, rejected - with custom display names
+- **Optional notes**: Add context to any card using rich text with entity mentions
+- **View modes**: Filter and group by status, ecosystem, or other properties
+- **Quick and deep modes**: Add packages fast, or take time to document decisions
+- **Shareable URLs**: URL reflects view state for sharing specific perspectives
 
-### Phase 7: Discussions & Commentary
+### Phase 7: Rich Text & Entity Mentions
 
-Foster grounded technical discussion anchored to real entities.
+Foundational infrastructure for content across the platform.
 
-- **Markdown editor**: GitHub-flavored markdown for rich content
-- **Entity references**: @mention packages, ecosystems, projects inline - clickable links
-- **Threaded replies**: Respond to specific comments, build conversations
-- **Contextual placement**: Comments on packages, ecosystems, projects, decisions
-- **Notifications**: Get notified when someone replies to your comments
+- **Markdown editor**: GitHub-flavored markdown for notes, descriptions, issues
+- **Entity mentions**: @package, @ecosystem, @project - clickable links to real entities
+- **Preview mode**: See rendered content before saving
+- **Mobile-friendly**: Touch-friendly editing experience
 
-### Phase 8: User Profiles
+### Phase 8: Issues
 
-Click on any name to see who's behind the contribution.
+Context-rich Q&A grounded in packages and ecosystems.
+
+- **Package-linked questions**: "How do I do X with @drizzle?" - grounded, discoverable
+- **Multiple answers**: Community provides solutions, best answers surface
+- **Entity context**: Issues link to relevant packages and ecosystems
+- **Better than Stack Overflow**: Questions automatically connected to technology data
+
+### Phase 9: User Profiles
+
+Public presence built from contributions.
 
 - **Profile pages**: Activity feed, projects, contribution history
 - **Expertise signals**: Technologies you've contributed to most
-- **Public presence**: Your projects, decisions, and discussions in one place
-- **Discoverability**: Find people by the technologies they work with
+- **Public presence**: Your projects, issues, and curation work in one place
 
-### Phase 9: Comparisons
+### Phase 10: Comparisons
 
-- Comparisons - community-curated "which X?" pages linking to packages and ecosystems
-- Voting on comparison items and quality
-- Link to decision records showing real-world choices
+User-generated technology comparisons - personal evaluations, not community-curated.
 
-### Phase 10: Following & Discovery
-
-- Follow packages/ecosystems for version and update notifications
-- Enhanced search with recommendations
-- "Similar to" and "used together with" suggestions
-- Per-package leaderboards (recognize package experts)
-
-### Phase 11: Trust & Moderation
-
-- Audit log for ecosystem/curation changes (who did what, when)
-- Power user role for trusted contributors (frictionless contributions)
-- Promotion criteria based on contribution history
-- Moderation tools (review actions, revert changes, revoke privileges)
+- **Personal comparisons**: Create your own "which ORM?" evaluations
+- **Linked to packages**: Each comparison item references real packages/ecosystems
+- **Shareable**: Share your research with others facing the same decision
+- **Project integration**: Link comparisons to project cards to show your reasoning
 
 ## Technical Architecture
 

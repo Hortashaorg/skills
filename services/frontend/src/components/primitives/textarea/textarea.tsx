@@ -25,6 +25,10 @@ const textareaVariants = cva(
 	],
 	{
 		variants: {
+			variant: {
+				default: [],
+				code: ["font-mono"],
+			},
 			size: {
 				sm: ["px-2", "py-1", "text-xs"],
 				md: ["px-3", "py-2", "text-sm"],
@@ -36,6 +40,7 @@ const textareaVariants = cva(
 			},
 		},
 		defaultVariants: {
+			variant: "default",
 			size: "md",
 			resizable: false,
 		},
@@ -46,14 +51,30 @@ export type TextareaProps = Omit<JSX.IntrinsicElements["textarea"], "size"> &
 	VariantProps<typeof textareaVariants>;
 
 export const Textarea = (props: TextareaProps) => {
-	const [local, others] = splitProps(props, ["size", "resizable", "class"]);
+	const [local, others] = splitProps(props, [
+		"variant",
+		"size",
+		"resizable",
+		"class",
+		"value",
+	]);
+
+	// Code variant disables spellcheck by default
+	const spellcheck = () =>
+		local.variant === "code" ? false : props.spellcheck;
 
 	return (
 		<textarea
 			class={cn(
-				textareaVariants({ size: local.size, resizable: local.resizable }),
+				textareaVariants({
+					variant: local.variant,
+					size: local.size,
+					resizable: local.resizable,
+				}),
 				local.class,
 			)}
+			spellcheck={spellcheck()}
+			value={local.value}
 			{...others}
 		/>
 	);

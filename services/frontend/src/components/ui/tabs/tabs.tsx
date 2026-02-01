@@ -17,6 +17,7 @@ const tabsListVariants = cva(
 		variants: {
 			variant: {
 				line: [
+					"w-full",
 					"bg-transparent",
 					"border-b",
 					"border-outline",

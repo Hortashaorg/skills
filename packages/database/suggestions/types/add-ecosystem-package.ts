@@ -1,6 +1,7 @@
 import { z } from "@package/common";
 import { newRecord } from "../../mutators/helpers.ts";
 import { zql } from "../../zero-schema.gen.ts";
+import { buildPackageUrl } from "../urls.ts";
 import { defineSuggestionType } from "./definition.ts";
 
 const schema = z.object({ packageId: z.string() });
@@ -15,13 +16,18 @@ export const addEcosystemPackage = defineSuggestionType({
 		pending: "Your package suggestion is now pending review.",
 	},
 
-	formatDescription: (payload, ctx) =>
-		ctx.packages?.get(payload.packageId)?.name ?? "Unknown package",
+	targetEntity: "ecosystem",
 
-	formatAction: (payload, ctx) => {
-		const name =
-			ctx.packages?.get(payload.packageId)?.name ?? "Unknown package";
-		return `Add package "${name}"`;
+	formatDisplay: (payload, ctx) => {
+		const pkg = ctx.packages?.get(payload.packageId);
+		const pkgName = pkg?.name ?? "Unknown package";
+		return {
+			action: `Add package "${pkgName}"`,
+			description: pkgName,
+			actionEntity: pkg
+				? { label: pkgName, href: buildPackageUrl(pkg.registry, pkg.name) }
+				: undefined,
+		};
 	},
 
 	resolve: async (tx, payload, ids) => {

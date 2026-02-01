@@ -9,4 +9,3 @@ services/frontend/coverage
 
 # MCP config (contains secrets) - see .example files for structure
 .mcp.json
-.claude/settings.local.json

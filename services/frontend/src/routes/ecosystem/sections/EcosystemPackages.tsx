@@ -32,22 +32,32 @@ interface EcosystemPackagesProps<T extends PackageWithUpvotes> {
 	packages: readonly T[];
 	packagesByTag: GroupByTagsResult<T>;
 	onSuggestPackage: () => void;
+	isLoggedIn?: boolean;
+	onRemovePackage?: (packageId: string) => void;
+	pendingRemovePackageIds?: ReadonlySet<string>;
 }
 
-const PackageGridItem = <T extends PackageWithUpvotes>(props: { pkg: T }) => {
+const PackageGridItem = <T extends PackageWithUpvotes>(props: {
+	pkg: T;
+	onRemove?: () => void;
+	isPendingRemoval?: boolean;
+}) => {
 	const upvote = createPackageUpvote(() => props.pkg);
 
 	return (
-		<PackageCard
-			name={props.pkg.name}
-			registry={props.pkg.registry}
-			description={props.pkg.description}
-			href={buildPackageUrl(props.pkg.registry, props.pkg.name)}
-			upvoteCount={upvote.upvoteCount()}
-			isUpvoted={upvote.isUpvoted()}
-			upvoteDisabled={upvote.isDisabled()}
-			onUpvote={upvote.toggle}
-		/>
+		<div class={props.isPendingRemoval ? "opacity-50" : undefined}>
+			<PackageCard
+				name={props.pkg.name}
+				registry={props.pkg.registry}
+				description={props.pkg.description}
+				href={buildPackageUrl(props.pkg.registry, props.pkg.name)}
+				upvoteCount={upvote.upvoteCount()}
+				isUpvoted={upvote.isUpvoted()}
+				upvoteDisabled={upvote.isDisabled()}
+				onUpvote={upvote.toggle}
+				onRemove={props.onRemove}
+			/>
+		</div>
 	);
 };
 
@@ -78,7 +88,19 @@ export const EcosystemPackages = <T extends PackageWithUpvotes>(
 						fallback={
 							<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 								<For each={[...props.packages]}>
-									{(pkg) => <PackageGridItem pkg={pkg} />}
+									{(pkg) => (
+										<PackageGridItem
+											pkg={pkg}
+											onRemove={
+												props.isLoggedIn && props.onRemovePackage
+													? () => props.onRemovePackage?.(pkg.id)
+													: undefined
+											}
+											isPendingRemoval={props.pendingRemovePackageIds?.has(
+												pkg.id,
+											)}
+										/>
+									)}
 								</For>
 								<SuggestPackageCard onClick={props.onSuggestPackage} />
 							</div>
@@ -107,7 +129,19 @@ export const EcosystemPackages = <T extends PackageWithUpvotes>(
 							<Heading level="h3">{tagName}</Heading>
 							<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 								<For each={props.packagesByTag.groups[tagName]}>
-									{(pkg) => <PackageGridItem pkg={pkg} />}
+									{(pkg) => (
+										<PackageGridItem
+											pkg={pkg}
+											onRemove={
+												props.isLoggedIn && props.onRemovePackage
+													? () => props.onRemovePackage?.(pkg.id)
+													: undefined
+											}
+											isPendingRemoval={props.pendingRemovePackageIds?.has(
+												pkg.id,
+											)}
+										/>
+									)}
 								</For>
 							</div>
 						</Stack>
@@ -119,7 +153,19 @@ export const EcosystemPackages = <T extends PackageWithUpvotes>(
 						<Heading level="h3">Other</Heading>
 						<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 							<For each={props.packagesByTag.uncategorized}>
-								{(pkg) => <PackageGridItem pkg={pkg} />}
+								{(pkg) => (
+									<PackageGridItem
+										pkg={pkg}
+										onRemove={
+											props.isLoggedIn && props.onRemovePackage
+												? () => props.onRemovePackage?.(pkg.id)
+												: undefined
+										}
+										isPendingRemoval={props.pendingRemovePackageIds?.has(
+											pkg.id,
+										)}
+									/>
+								)}
 							</For>
 						</div>
 					</Stack>

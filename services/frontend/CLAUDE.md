@@ -2,6 +2,28 @@
 
 SolidJS application with Zero for real-time sync.
 
+## Route Lazy Loading
+
+All routes MUST use lazy loading for code splitting. This prevents loading all route code on initial page load.
+
+```tsx
+// In src/index.tsx
+import { lazy } from "solid-js";
+
+// ✅ Lazy load - only loads when navigating to route
+const Package = lazy(() => import("./routes/package"));
+const Profile = lazy(() => import("./routes/me"));
+
+// ❌ Static import - loads immediately on app start
+import { Package } from "./routes/package";
+```
+
+**When adding a new route:**
+1. Add `export default ComponentName;` at the end of your route file
+2. In `src/index.tsx`, use `lazy(() => import("./routes/your-route"))`
+
+This is important because routes may have heavy dependencies (e.g., markdown editor with remark/rehype plugins). Without lazy loading, visiting `/me` would load all the markdown code even though it's only used on `/package/:id/discussion`.
+
 ## Page Structure
 
 Pages use folder-per-page pattern with sections:
