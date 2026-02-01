@@ -68,6 +68,10 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [ ] Linkable comments (URL anchors, scroll to comment)
 - [ ] User profile links from comment avatars
 
+### Leaderboard UX
+
+- [ ] Show empty state when monthly scores are all 0 (instead of hiding the card)
+
 ### Editor & Renderer Enhancements
 
 - [ ] Code block language dropdown (select language for syntax highlighting)
