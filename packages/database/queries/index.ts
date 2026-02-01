@@ -92,7 +92,8 @@ export const queries = defineQueries({
 		byProjectId: threadsQueries.byProjectId,
 	},
 	comments: {
-		byThreadId: commentsQueries.byThreadId,
+		rootsByThreadId: commentsQueries.rootsByThreadId,
+		repliesByRootId: commentsQueries.repliesByRootId,
 		byId: commentsQueries.byId,
 		byAuthorId: commentsQueries.byAuthorId,
 	},

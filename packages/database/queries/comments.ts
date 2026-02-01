@@ -2,22 +2,34 @@ import { z } from "@package/common";
 import { defineQuery } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
 
-export const byThreadId = defineQuery(
+export const rootsByThreadId = defineQuery(
 	z.object({
 		threadId: z.string(),
-		limit: z.number().default(100),
+		limit: z.number().default(20),
 	}),
 	({ args }) => {
 		return zql.comments
 			.where("threadId", args.threadId)
-			.where("replyToId", "IS", null)
-			.orderBy("createdAt", "desc") // Newest top-level comments first
+			.where("rootCommentId", "IS", null)
+			.orderBy("createdAt", "desc")
 			.limit(args.limit)
 			.related("author")
-			.related(
-				"replies",
-				(r) => r.related("author").orderBy("createdAt", "asc"), // Replies chronologically
-			);
+			.related("replies", (r) => r.limit(1));
+	},
+);
+
+export const repliesByRootId = defineQuery(
+	z.object({
+		rootCommentId: z.string(),
+		limit: z.number().default(20),
+	}),
+	({ args }) => {
+		return zql.comments
+			.where("rootCommentId", args.rootCommentId)
+			.orderBy("createdAt", "asc")
+			.limit(args.limit)
+			.related("author")
+			.related("replyTo", (r) => r.related("author"));
 	},
 );
 

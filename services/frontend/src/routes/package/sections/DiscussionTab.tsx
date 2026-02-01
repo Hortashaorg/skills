@@ -3,7 +3,7 @@ import { CommentThread } from "@/components/composite/comment-thread";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Spinner } from "@/components/ui/spinner";
-import { useCommentThread } from "@/hooks/useCommentThread";
+import { useCommentThread, useReplies } from "@/hooks/useCommentThread";
 
 interface DiscussionTabProps {
 	packageId: string;
@@ -14,6 +14,16 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 		entityType: "package",
 		entityId: props.packageId,
 	}));
+
+	// Create a replies fetcher for each root comment
+	const getRepliesData = (rootCommentId: string) => {
+		const { replies, hasMore } = useReplies(
+			() =>
+				thread.isShowingReplies(rootCommentId) ? rootCommentId : undefined,
+			() => thread.getReplyLimit(rootCommentId),
+		);
+		return { replies: replies(), hasMore: hasMore() };
+	};
 
 	return (
 		<Show
@@ -34,6 +44,11 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 				onCommentSubmit={thread.onSubmit}
 				onCommentEdit={thread.onEdit}
 				onCommentDelete={thread.onDelete}
+				showReplies={thread.showReplies}
+				loadMoreReplies={thread.loadMoreReplies}
+				hideReplies={thread.hideReplies}
+				isShowingReplies={thread.isShowingReplies}
+				getRepliesData={getRepliesData}
 			/>
 		</Show>
 	);

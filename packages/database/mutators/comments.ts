@@ -6,12 +6,27 @@ import { newRecord, now } from "./helpers.ts";
 const entityTypeSchema = z.enum(["package", "ecosystem", "project"]);
 
 export const create = defineMutator(
-	z.object({
-		entityType: entityTypeSchema,
-		entityId: z.string(),
-		content: z.string().min(1).max(10000),
-		replyToId: z.string().optional(),
-	}),
+	z
+		.object({
+			entityType: entityTypeSchema,
+			entityId: z.string(),
+			content: z.string().min(1).max(10000),
+			replyToId: z.string().optional(),
+			rootCommentId: z.string().optional(),
+		})
+		.refine(
+			(data) => {
+				// If replying, rootCommentId is required
+				if (data.replyToId && !data.rootCommentId) return false;
+				// If not replying, rootCommentId must not be set
+				if (!data.replyToId && data.rootCommentId) return false;
+				return true;
+			},
+			{
+				message:
+					"rootCommentId is required when replying and must not be set for root comments",
+			},
+		),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
 			throw new Error("Must be logged in to comment");
@@ -71,7 +86,7 @@ export const create = defineMutator(
 			threadId = threadRecord.id;
 		}
 
-		// If replying, verify parent comment exists and belongs to same thread
+		// Verify parent comment exists and belongs to same thread
 		if (args.replyToId) {
 			const parentComment = await tx.run(
 				zql.comments.one().where("id", args.replyToId),
@@ -84,6 +99,22 @@ export const create = defineMutator(
 			}
 		}
 
+		// Verify root comment exists and belongs to same thread
+		if (args.rootCommentId) {
+			const rootComment = await tx.run(
+				zql.comments.one().where("id", args.rootCommentId),
+			);
+			if (!rootComment) {
+				throw new Error("Root comment not found");
+			}
+			if (rootComment.threadId !== threadId) {
+				throw new Error("Root comment belongs to different thread");
+			}
+			if (rootComment.rootCommentId !== null) {
+				throw new Error("Root comment cannot itself be a reply");
+			}
+		}
+
 		const record = newRecord();
 
 		await tx.mutate.comments.insert({
@@ -92,6 +123,7 @@ export const create = defineMutator(
 			authorId: ctx.userID,
 			content: args.content,
 			replyToId: args.replyToId ?? null,
+			rootCommentId: args.rootCommentId ?? null,
 			createdAt: record.now,
 			updatedAt: record.now,
 		});

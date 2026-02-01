@@ -274,6 +274,13 @@
       "when": 1769872783715,
       "tag": "0038_minor_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1769962716617,
+      "tag": "0039_supreme_smasher",
+      "breakpoints": true
     }
   ]
 }

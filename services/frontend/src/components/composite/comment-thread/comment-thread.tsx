@@ -3,44 +3,40 @@ import { CommentCard } from "@/components/composite/comment-card";
 import { MarkdownEditor } from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import type { BaseComment, Reply, RootComment } from "@/hooks/useCommentThread";
 import { cn } from "@/lib/utils";
 
-interface Author {
-	id: string;
-	name: string | null;
-}
-
-interface Reply {
-	id: string;
-	content: string;
-	createdAt: number;
-	updatedAt: number;
-	deletedAt: number | null;
-	replyToId: string | null;
-	author: Author | undefined;
-}
-
-interface Comment {
-	id: string;
-	content: string;
-	createdAt: number;
-	updatedAt: number;
-	deletedAt: number | null;
-	replyToId: string | null;
-	author: Author | undefined;
-	replies?: readonly Reply[];
+interface ReplyTarget {
+	rootCommentId: string;
+	replyToId: string;
+	replyToAuthorName: string | null;
 }
 
 export type CommentThreadProps = Omit<
 	JSX.IntrinsicElements["div"],
 	"children"
 > & {
-	comments: readonly Comment[];
+	comments: readonly RootComment[];
 	currentUserId?: string;
 	currentUserName?: string;
-	onCommentSubmit: (content: string, replyToId?: string) => void;
+	onCommentSubmit: (
+		content: string,
+		replyToId?: string,
+		rootCommentId?: string,
+	) => void;
 	onCommentEdit: (commentId: string, content: string) => void;
 	onCommentDelete: (commentId: string) => void;
+	// Replies management
+	showReplies: (rootCommentId: string) => void;
+	loadMoreReplies: (rootCommentId: string) => void;
+	hideReplies: (rootCommentId: string) => void;
+	isShowingReplies: (rootCommentId: string) => boolean;
+	// For fetching replies data
+	getRepliesData: (rootCommentId: string) => {
+		replies: readonly Reply[];
+		hasMore: boolean;
+	};
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -70,12 +66,17 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"onCommentSubmit",
 		"onCommentEdit",
 		"onCommentDelete",
+		"showReplies",
+		"loadMoreReplies",
+		"hideReplies",
+		"isShowingReplies",
+		"getRepliesData",
 		"class",
 	]);
 
 	// State
 	const [editingId, setEditingId] = createSignal<string | null>(null);
-	const [replyingToId, setReplyingToId] = createSignal<string | null>(null);
+	const [replyTarget, setReplyTarget] = createSignal<ReplyTarget | null>(null);
 	const [newComment, setNewComment] = createSignal("");
 	const [editContent, setEditContent] = createSignal("");
 	const [replyContent, setReplyContent] = createSignal("");
@@ -87,10 +88,10 @@ export const CommentThread = (props: CommentThreadProps) => {
 		setNewComment("");
 	};
 
-	const startEdit = (comment: Comment | Reply) => {
+	const startEdit = (comment: BaseComment) => {
 		setEditingId(comment.id);
 		setEditContent(comment.content);
-		setReplyingToId(null);
+		setReplyTarget(null);
 	};
 
 	const cancelEdit = () => {
@@ -106,48 +107,53 @@ export const CommentThread = (props: CommentThreadProps) => {
 		setEditContent("");
 	};
 
-	const startReply = (commentId: string) => {
-		setReplyingToId(commentId);
+	const startReply = (
+		rootCommentId: string,
+		replyToId: string,
+		replyToAuthorName: string | null,
+	) => {
+		setReplyTarget({ rootCommentId, replyToId, replyToAuthorName });
 		setReplyContent("");
 		setEditingId(null);
+		// Show replies when starting to reply
+		local.showReplies(rootCommentId);
 	};
 
 	const cancelReply = () => {
-		setReplyingToId(null);
+		setReplyTarget(null);
 		setReplyContent("");
 	};
 
 	const submitReply = () => {
-		const parentId = replyingToId();
-		if (!parentId || !replyContent().trim()) return;
-		local.onCommentSubmit(replyContent(), parentId);
-		setReplyingToId(null);
+		const target = replyTarget();
+		if (!target || !replyContent().trim()) return;
+		local.onCommentSubmit(
+			replyContent(),
+			target.replyToId,
+			target.rootCommentId,
+		);
+		setReplyTarget(null);
 		setReplyContent("");
 	};
 
-	// Render a single comment (used for both top-level and replies)
-	const CommentItem = (itemProps: {
-		comment: Comment | Reply;
-		depth: number;
-		parentAuthorName?: string;
+	// Render a single comment card with edit mode support
+	const SingleComment = (itemProps: {
+		comment: BaseComment;
+		rootCommentId: string;
+		isRoot: boolean;
+		replyToAuthorName?: string;
 	}) => {
 		const isEditing = () => editingId() === itemProps.comment.id;
 		const isDeleted = () => itemProps.comment.deletedAt !== null;
 		const isOwnComment = () =>
 			local.currentUserId &&
 			itemProps.comment.author?.id === local.currentUserId;
-		const avatarSize = () =>
-			(itemProps.depth === 0 ? "md" : "sm") as "md" | "sm";
-
-		const replies = () =>
-			"replies" in itemProps.comment ? itemProps.comment.replies : undefined;
-		const isReplyingToThis = () => replyingToId() === itemProps.comment.id;
 
 		return (
 			<div class="flex gap-3">
 				<Avatar
 					initials={getInitials(itemProps.comment.author?.name)}
-					size={avatarSize()}
+					size={itemProps.isRoot ? "md" : "sm"}
 					variant={
 						isOwnComment() ? "secondary" : isDeleted() ? "muted" : "primary"
 					}
@@ -171,8 +177,9 @@ export const CommentThread = (props: CommentThreadProps) => {
 							author={itemProps.comment.author?.name ?? "Unknown"}
 							timestamp={formatRelativeTime(itemProps.comment.createdAt)}
 							content={itemProps.comment.content}
-							replyToAuthor={itemProps.parentAuthorName}
+							replyToAuthor={itemProps.replyToAuthorName}
 							editedAt={
+								!isDeleted() &&
 								itemProps.comment.updatedAt > itemProps.comment.createdAt
 									? formatRelativeTime(itemProps.comment.updatedAt)
 									: undefined
@@ -190,60 +197,127 @@ export const CommentThread = (props: CommentThreadProps) => {
 							}
 							onReply={
 								!isDeleted() && local.currentUserId
-									? () => startReply(itemProps.comment.id)
+									? () =>
+											startReply(
+												itemProps.rootCommentId,
+												itemProps.comment.id,
+												itemProps.comment.author?.name ?? null,
+											)
 									: undefined
 							}
 						/>
 					</Show>
-
-					{/* Nested replies */}
-					<Show when={(replies()?.length ?? 0) > 0 || isReplyingToThis()}>
-						<div class="mt-3 pl-4 border-l-2 border-outline/30 dark:border-outline-dark/30">
-							<Stack spacing="md">
-								<For each={replies()}>
-									{(reply) => (
-										<CommentItem
-											comment={reply}
-											depth={itemProps.depth + 1}
-											parentAuthorName={
-												itemProps.comment.author?.name ?? undefined
-											}
-										/>
-									)}
-								</For>
-
-								{/* Inline reply editor */}
-								<Show when={isReplyingToThis() && local.currentUserId}>
-									<div
-										class="flex gap-3"
-										ref={(el) => {
-											el.scrollIntoView({
-												behavior: "smooth",
-												block: "center",
-											});
-										}}
-									>
-										<Avatar
-											initials={getInitials(local.currentUserName)}
-											size="sm"
-											variant="secondary"
-										/>
-										<div class="flex-1 min-w-0">
-											<MarkdownEditor
-												value={replyContent()}
-												onInput={setReplyContent}
-												onSubmit={submitReply}
-												onCancel={cancelReply}
-												submitLabel="Reply"
-												placeholder="Write a reply..."
-											/>
-										</div>
-									</div>
-								</Show>
-							</Stack>
-						</div>
-					</Show>
 				</div>
+			</div>
+		);
+	};
+
+	// Render a root comment with its replies
+	const RootCommentItem = (itemProps: { comment: RootComment }) => {
+		const isReplyingToThisThread = () =>
+			replyTarget()?.rootCommentId === itemProps.comment.id;
+		const showingReplies = () => local.isShowingReplies(itemProps.comment.id);
+		const repliesData = () => local.getRepliesData(itemProps.comment.id);
+
+		return (
+			<div>
+				<SingleComment
+					comment={itemProps.comment}
+					rootCommentId={itemProps.comment.id}
+					isRoot={true}
+				/>
+
+				{/* Show replies button - when has replies but not showing */}
+				<Show
+					when={
+						itemProps.comment.hasReplies &&
+						!showingReplies() &&
+						!isReplyingToThisThread()
+					}
+				>
+					<div class="mt-2 ml-12">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => local.showReplies(itemProps.comment.id)}
+						>
+							Show replies
+						</Button>
+					</div>
+				</Show>
+
+				{/* Replies section - when showing */}
+				<Show when={showingReplies() || isReplyingToThisThread()}>
+					<div class="mt-4 ml-12 space-y-3">
+						{/* Replies list */}
+						<For each={repliesData().replies}>
+							{(reply) => (
+								<SingleComment
+									comment={reply}
+									rootCommentId={itemProps.comment.id}
+									isRoot={false}
+									replyToAuthorName={reply.replyTo?.author?.name ?? undefined}
+								/>
+							)}
+						</For>
+
+						{/* Load more / Collapse buttons */}
+						<Show when={showingReplies()}>
+							<div class="flex gap-2">
+								<Show when={repliesData().hasMore}>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => local.loadMoreReplies(itemProps.comment.id)}
+									>
+										Show more replies
+									</Button>
+								</Show>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => local.hideReplies(itemProps.comment.id)}
+								>
+									Collapse
+								</Button>
+							</div>
+						</Show>
+
+						{/* Inline reply editor */}
+						<Show when={isReplyingToThisThread() && local.currentUserId}>
+							<div
+								class="flex gap-3"
+								ref={(el) => {
+									el.scrollIntoView({
+										behavior: "smooth",
+										block: "center",
+									});
+								}}
+							>
+								<Avatar
+									initials={getInitials(local.currentUserName)}
+									size="sm"
+									variant="secondary"
+								/>
+								<div class="flex-1 min-w-0">
+									<Show when={replyTarget()?.replyToAuthorName}>
+										<p class="text-xs text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
+											Replying to @{replyTarget()?.replyToAuthorName}
+										</p>
+									</Show>
+									<MarkdownEditor
+										value={replyContent()}
+										onInput={setReplyContent}
+										onSubmit={submitReply}
+										onCancel={cancelReply}
+										submitLabel="Reply"
+										placeholder="Write a reply..."
+									/>
+								</div>
+							</div>
+						</Show>
+					</div>
+				</Show>
 			</div>
 		);
 	};
@@ -281,7 +355,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 			>
 				<Stack spacing="lg">
 					<For each={local.comments}>
-						{(comment) => <CommentItem comment={comment} depth={0} />}
+						{(comment) => <RootCommentItem comment={comment} />}
 					</For>
 				</Stack>
 			</Show>

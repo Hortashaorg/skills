@@ -119,6 +119,12 @@ const commentsTable = {
       customType: null as unknown as string,
       serverName: "reply_to_id",
     },
+    rootCommentId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "root_comment_id",
+    },
     createdAt: {
       type: "number",
       optional: false,

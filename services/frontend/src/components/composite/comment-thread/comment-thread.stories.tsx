@@ -26,58 +26,44 @@ Any ideas?`,
 		updatedAt: Date.now() - 2 * 60 * 60 * 1000,
 		deletedAt: null,
 		replyToId: null,
+		rootCommentId: null,
 		author: { id: "user-1", name: "sarah_dev" },
-		replies: [
-			{
-				id: "2",
-				content: `I had the same issue! The fix is to add this to your \`bunfig.toml\`:
-
-\`\`\`toml
-[install]
-peer = false
-\`\`\`
-
-Then reinstall. Worked for me.`,
-				createdAt: Date.now() - 1 * 60 * 60 * 1000,
-				updatedAt: Date.now() - 1 * 60 * 60 * 1000,
-				deletedAt: null,
-				replyToId: "1",
-				author: { id: "user-2", name: "mike_js" },
-			},
-			{
-				id: "3",
-				content:
-					"That worked! Thanks so much. Should we open an issue about this?",
-				createdAt: Date.now() - 45 * 60 * 1000,
-				updatedAt: Date.now() - 40 * 60 * 1000,
-				deletedAt: null,
-				replyToId: "1",
-				author: { id: "user-1", name: "sarah_dev" },
-			},
-		],
+		hasReplies: true,
 	},
 	{
 		id: "4",
-		content: "Great catch! I've added this to the docs in the latest release.",
+		content: "Great package! Works perfectly for my use case.",
 		createdAt: Date.now() - 30 * 60 * 1000,
 		updatedAt: Date.now() - 30 * 60 * 1000,
 		deletedAt: null,
 		replyToId: null,
+		rootCommentId: null,
 		author: { id: "user-3", name: "alex_maintainer" },
-		replies: [],
+		hasReplies: false,
 	},
 ];
+
+const noop = () => {};
+const emptyRepliesData = () => ({ replies: [], hasMore: false });
 
 const withCommentsBase: Story = {
 	args: {
 		comments: mockComments,
 		currentUserId: "user-1",
 		currentUserName: "sarah_dev",
-		onCommentSubmit: (content: string, replyToId?: string) =>
-			console.log("Submit:", { content, replyToId }),
+		onCommentSubmit: (
+			content: string,
+			replyToId?: string,
+			rootCommentId?: string,
+		) => console.log("Submit:", { content, replyToId, rootCommentId }),
 		onCommentEdit: (id: string, content: string) =>
 			console.log("Edit:", { id, content }),
 		onCommentDelete: (id: string) => console.log("Delete:", id),
+		showReplies: (id: string) => console.log("Show replies:", id),
+		loadMoreReplies: (id: string) => console.log("Load more:", id),
+		hideReplies: (id: string) => console.log("Hide:", id),
+		isShowingReplies: () => false,
+		getRepliesData: emptyRepliesData,
 	},
 };
 
@@ -94,11 +80,14 @@ const emptyBase: Story = {
 		comments: [],
 		currentUserId: "user-1",
 		currentUserName: "sarah_dev",
-		onCommentSubmit: (content: string, replyToId?: string) =>
-			console.log("Submit:", { content, replyToId }),
-		onCommentEdit: (id: string, content: string) =>
-			console.log("Edit:", { id, content }),
-		onCommentDelete: (id: string) => console.log("Delete:", id),
+		onCommentSubmit: noop,
+		onCommentEdit: noop,
+		onCommentDelete: noop,
+		showReplies: noop,
+		loadMoreReplies: noop,
+		hideReplies: noop,
+		isShowingReplies: () => false,
+		getRepliesData: emptyRepliesData,
 	},
 };
 
@@ -115,9 +104,14 @@ const notLoggedInBase: Story = {
 		comments: mockComments,
 		currentUserId: undefined,
 		currentUserName: undefined,
-		onCommentSubmit: () => {},
-		onCommentEdit: () => {},
-		onCommentDelete: () => {},
+		onCommentSubmit: noop,
+		onCommentEdit: noop,
+		onCommentDelete: noop,
+		showReplies: noop,
+		loadMoreReplies: noop,
+		hideReplies: noop,
+		isShowingReplies: () => false,
+		getRepliesData: emptyRepliesData,
 	},
 };
 
@@ -139,26 +133,21 @@ const withDeletedCommentBase: Story = {
 				updatedAt: Date.now() - 3 * 60 * 60 * 1000,
 				deletedAt: Date.now() - 2 * 60 * 60 * 1000,
 				replyToId: null,
+				rootCommentId: null,
 				author: { id: "user-deleted", name: "deleted_user" },
-				replies: [
-					{
-						id: "2",
-						content:
-							"Replying to a deleted comment - the context is preserved.",
-						createdAt: Date.now() - 1 * 60 * 60 * 1000,
-						updatedAt: Date.now() - 1 * 60 * 60 * 1000,
-						deletedAt: null,
-						replyToId: "1",
-						author: { id: "user-1", name: "sarah_dev" },
-					},
-				],
+				hasReplies: true,
 			},
 		],
 		currentUserId: "user-1",
 		currentUserName: "sarah_dev",
-		onCommentSubmit: () => {},
-		onCommentEdit: () => {},
-		onCommentDelete: () => {},
+		onCommentSubmit: noop,
+		onCommentEdit: noop,
+		onCommentDelete: noop,
+		showReplies: noop,
+		loadMoreReplies: noop,
+		hideReplies: noop,
+		isShowingReplies: () => false,
+		getRepliesData: emptyRepliesData,
 	},
 };
 

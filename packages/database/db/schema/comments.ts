@@ -39,6 +39,7 @@ export const comments = pgTable(
 			.references(() => account.id),
 		content: text().notNull(),
 		replyToId: uuid().references((): AnyPgColumn => comments.id),
+		rootCommentId: uuid().references((): AnyPgColumn => comments.id),
 		createdAt: timestamp().notNull(),
 		updatedAt: timestamp().notNull(),
 		deletedAt: timestamp(),
@@ -47,5 +48,6 @@ export const comments = pgTable(
 		index("idx_comments_thread_id").on(table.threadId),
 		index("idx_comments_author_id").on(table.authorId),
 		index("idx_comments_reply_to_id").on(table.replyToId),
+		index("idx_comments_root_comment_id").on(table.rootCommentId),
 	],
 );
