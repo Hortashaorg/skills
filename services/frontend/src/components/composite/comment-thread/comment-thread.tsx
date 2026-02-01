@@ -151,13 +151,15 @@ export const CommentThread = (props: CommentThreadProps) => {
 
 		return (
 			<div class="flex gap-3">
-				<Avatar
-					initials={getInitials(itemProps.comment.author?.name)}
-					size={itemProps.isRoot ? "md" : "sm"}
-					variant={
-						isOwnComment() ? "secondary" : isDeleted() ? "muted" : "primary"
-					}
-				/>
+				<div class="hidden sm:block">
+					<Avatar
+						initials={getInitials(itemProps.comment.author?.name)}
+						size={itemProps.isRoot ? "md" : "sm"}
+						variant={
+							isOwnComment() ? "secondary" : isDeleted() ? "muted" : "primary"
+						}
+					/>
+				</div>
 
 				<div class="flex-1 min-w-0">
 					<Show
@@ -235,7 +237,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 						!isReplyingToThisThread()
 					}
 				>
-					<div class="mt-2 ml-12">
+					<div class="mt-2 sm:ml-12">
 						<Button
 							variant="ghost"
 							size="sm"
@@ -248,7 +250,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 
 				{/* Replies section - when showing */}
 				<Show when={showingReplies() || isReplyingToThisThread()}>
-					<div class="mt-4 ml-12 space-y-3">
+					<div class="mt-4 pl-4 sm:pl-0 sm:ml-12 space-y-3 border-l-2 sm:border-l-0 border-outline/30 dark:border-outline-dark/30">
 						{/* Replies list */}
 						<For each={repliesData().replies}>
 							{(reply) => (
@@ -294,11 +296,13 @@ export const CommentThread = (props: CommentThreadProps) => {
 									});
 								}}
 							>
-								<Avatar
-									initials={getInitials(local.currentUserName)}
-									size="sm"
-									variant="secondary"
-								/>
+								<div class="hidden sm:block">
+									<Avatar
+										initials={getInitials(local.currentUserName)}
+										size="sm"
+										variant="secondary"
+									/>
+								</div>
 								<div class="flex-1 min-w-0">
 									<Show when={replyTarget()?.replyToAuthorName}>
 										<p class="text-xs text-on-surface-muted dark:text-on-surface-dark-muted mb-2">
@@ -327,11 +331,13 @@ export const CommentThread = (props: CommentThreadProps) => {
 			{/* New comment input */}
 			<Show when={local.currentUserId}>
 				<div class="flex gap-3">
-					<Avatar
-						initials={getInitials(local.currentUserName)}
-						size="md"
-						variant="secondary"
-					/>
+					<div class="hidden sm:block">
+						<Avatar
+							initials={getInitials(local.currentUserName)}
+							size="md"
+							variant="secondary"
+						/>
+					</div>
 					<div class="flex-1 min-w-0">
 						<MarkdownEditor
 							value={newComment()}

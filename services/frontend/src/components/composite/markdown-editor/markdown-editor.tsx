@@ -75,7 +75,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			{...others}
 		>
 			{/* Header: Tabs + Toolbar */}
-			<div class="flex items-center justify-between px-2 py-1.5 border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">
+			<div class="flex flex-wrap items-center justify-between gap-2 px-2 py-1.5 border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">
 				{/* Tab buttons */}
 				<div class="flex gap-1">
 					<button

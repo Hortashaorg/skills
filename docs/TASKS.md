@@ -16,19 +16,15 @@ Build the renderer first - it's needed everywhere.
 - [x] GitHub Flavored Markdown (tables, strikethrough, task lists)
 - [x] Syntax highlighting for code blocks (rehype-highlight)
 - [x] TechGarden typography and styling (prose styles, brand colors)
-- [ ] Entity link recognition (`/package/*`, `/ecosystem/*`, etc.)
-- [ ] Entity link styling (chips, icons, distinct from regular links)
 
 ### RichText: Markdown Editor ✓
 
 - [x] MarkdownInput component with styling
 - [x] MarkdownEditor composite (Write/Preview tabs, toolbar)
 - [x] insertAtCursor helper (uses execCommand for native undo support)
-- [x] Basic toolbar modules (Link, Code Block)
-- [x] Link insertion panel (text + URL fields)
-- [ ] Mobile-friendly layout
-- [ ] Additional toolbar modules: heading, bold/italic, list, table
-- [ ] `/command` entity insertion (detect trigger, search popup, insert link)
+- [x] Basic toolbar modules (Bold, Italic, Link, Code, Quote)
+- [x] Link insertion panel (text + URL fields, responsive)
+- [x] Mobile-friendly layout (toolbar wraps, link panel stacks)
 
 ### Comments System ✓
 
@@ -41,9 +37,21 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [x] CommentCard component (presentational, avatar-less)
 - [x] CommentThread component (orchestrates edit/reply modes)
 - [x] useCommentThread hook (Zero queries/mutations wrapper)
-- [ ] Integrate CommentThread on package detail page
-- [ ] Integrate on ecosystem and project pages
-- [ ] User profile links from comment avatars
+- [x] Flat threading with `rootCommentId` (Reddit-style, replies don't nest deeply)
+- [x] Pagination: 20 root comments, "Show replies" loads 20 at a time
+- [x] Mobile layout: avatars hidden, left border for reply indentation
+- [x] Integrate CommentThread on package detail page (Discussion tab)
+
+### UX Improvements ✓
+
+- [x] Route lazy loading (code splitting, prevents loading unused dependencies)
+- [x] Package page: removed card wrapper, full-width underline tabs
+- [x] Project page: same tab pattern for consistency
+- [x] Tab hierarchy: page-level uses `line` variant, nested uses `pills` variant
+
+---
+
+## Sprint 13: User Profiles & Comments Expansion
 
 ### User Profiles
 
@@ -53,9 +61,26 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [ ] Link to profile from comments, leaderboard, suggestions
 - [ ] Profile editing (own profile only)
 
+### Comments Expansion
+
+- [ ] Integrate CommentThread on ecosystem pages
+- [ ] Integrate CommentThread on project pages
+- [ ] Linkable comments (URL anchors, scroll to comment)
+- [ ] User profile links from comment avatars
+
+### Editor & Renderer Enhancements
+
+- [ ] Code block language dropdown (select language for syntax highlighting)
+- [ ] Textarea behavior overrides (Tab for indent, auto-close brackets)
+- [ ] Entity link syntax (e.g., `@package:lodash` or similar)
+- [ ] Entity link autocomplete (search popup on trigger)
+- [ ] Entity link recognition in renderer (`/package/*`, `/ecosystem/*`, etc.)
+- [ ] Entity link styling (chips, icons, distinct from regular links)
+- [ ] Rich hover preview for entity links (package/ecosystem/project details)
+
 ---
 
-## Sprint 13: Projects Kanban Rework
+## Sprint 14: Projects Kanban Rework
 
 See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 

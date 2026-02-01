@@ -6,19 +6,22 @@
 
 ## Scope
 
-### Core (Renderer)
-- [ ] Markdown → HTML renderer
-- [ ] TechGarden styling (typography, colors, spacing)
-- [ ] GitHub Flavored Markdown (tables, strikethrough, task lists)
-- [ ] Syntax-highlighted code blocks
+### Core (Renderer) ✓
+- [x] Markdown → HTML renderer (remark/rehype pipeline)
+- [x] TechGarden styling (typography, colors, spacing via prose classes)
+- [x] GitHub Flavored Markdown (tables, strikethrough, task lists, autolinks)
+- [x] Syntax-highlighted code blocks (rehype-highlight)
 - [ ] Entity mention rendering (special styling for internal links)
+- [ ] Rich hover preview for entity links
 
-### Core (Editor)
-- [ ] Textarea with markdown input
-- [ ] Preview mode (toggle or side-by-side)
-- [ ] Toolbar for common formatting (optional, helps non-markdown users)
+### Core (Editor) ✓
+- [x] Textarea with markdown input (MarkdownInput component)
+- [x] Preview mode (Write/Preview tabs)
+- [x] Toolbar for common formatting (Bold, Italic, Link, Code, Quote)
+- [x] Mobile-friendly (toolbar wraps, panels stack vertically)
+- [ ] Code block language dropdown
+- [ ] Textarea behavior overrides (Tab for indent, auto-close brackets)
 - [ ] Entity mention insertion (`/package`, `/ecosystem`, etc.)
-- [ ] Mobile-friendly
 
 ### Extended Rendering (Future)
 - [ ] Mermaid diagrams
@@ -27,6 +30,7 @@
 - [ ] Image uploads
 
 ### Integration Points
+- [x] Comments/Discussions (packages, ecosystems, projects)
 - [ ] Project notes (per-item notes, project description)
 - [ ] Issues (question/answer content)
 - [ ] User profile bio
@@ -216,44 +220,61 @@ Renderer recognizes these patterns and applies special styling.
 | **Toolbar** | Build | Simple, just inserts text |
 | **Mermaid/KaTeX** | Use plugins | Existing remark plugins |
 
-### Likely Stack
+### Current Stack
 
 ```
-remark (parse markdown)
-  → remark-gfm (tables, etc.)
+unified (pipeline)
+  → remark-parse (parse markdown)
+  → remark-gfm (tables, strikethrough, autolinks, task lists)
   → remark-rehype (convert to HTML AST)
   → rehype-highlight (code highlighting)
   → rehype-stringify (output HTML)
-  → custom plugin (entity link styling)
+  → (future) custom plugin for entity link styling
 ```
 
-### Editor Component
+### Editor Implementation
 
-Simple implementation:
-1. `<textarea>` for input
-2. Render preview with markdown pipeline
-3. Toolbar buttons that insert text at cursor
-4. `/command` detection + popup for entity search
+Built with simple primitives:
+1. `MarkdownInput` - styled textarea with code font
+2. `MarkdownEditor` - composite with Write/Preview tabs, toolbar
+3. Toolbar modules - each module defines icon, action, optional panel
+4. `insertAtCursor` - uses `execCommand` for native undo support
+5. `MarkdownOutput` - renders markdown via the unified pipeline
 
-No heavy editor library needed for MVP.
+**Toolbar modules:**
+- Bold, Italic - wrap selection with `**` or `*`
+- Link - panel with text/URL fields, inserts `[text](url)`
+- Code - wraps selection with backticks
+- Quote - prefixes line with `>`
+
+No heavy editor library - just textarea + unified rendering.
 
 ---
 
+## Decisions Made
+
+**Preview style:** Toggle (Write/Preview tabs). Simple, works well on all screen sizes.
+
+**Mobile editing:** 
+- Toolbar wraps to new line when needed
+- Link panel stacks inputs vertically
+- No full-screen mode needed yet
+
 ## Open Questions
 
-**Preview style:**
-- Toggle (edit or preview)?
-- Side-by-side (both visible)?
-- Live preview (WYSIWYG-ish)?
-
-**Mobile editing:**
-- Simplified toolbar?
-- Full-screen edit mode?
-
 **Image uploads:**
-- Where to store? (Minio?)
+- Where to store? (Minio? S3?)
 - Paste to upload?
 - Drag and drop?
+
+**Entity link syntax:**
+- Use standard markdown links to internal URLs? (current plan)
+- Or special syntax like `@package:lodash`?
+- How to trigger autocomplete in editor?
+
+**Code block language selection:**
+- Dropdown in toolbar?
+- Type language after opening fence?
 
 ---
 

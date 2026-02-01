@@ -26,14 +26,14 @@ export const linkModule: ToolbarModule = {
 		};
 
 		return (
-			<div class="flex items-center gap-2">
+			<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
 				<Input
 					ref={textInput}
 					type="text"
 					size="sm"
 					placeholder="Link text"
 					aria-label="Link text"
-					class="w-auto"
+					class="w-full sm:w-auto"
 				/>
 				<Input
 					ref={urlInput}
@@ -41,7 +41,7 @@ export const linkModule: ToolbarModule = {
 					size="sm"
 					placeholder="https://..."
 					aria-label="Link URL"
-					class="flex-1"
+					class="w-full sm:flex-1"
 				/>
 				<Button type="button" size="sm" onClick={handleInsert}>
 					Insert
