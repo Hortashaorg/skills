@@ -9,22 +9,22 @@ import { AppProvider } from "./context/app-provider";
 import { loadConfig } from "./lib/config";
 
 // Lazy load all routes for code splitting
-const Landing = lazy(() => import("./routes/landing"));
-const Packages = lazy(() => import("./routes/home"));
-const Package = lazy(() => import("./routes/package"));
-const Ecosystems = lazy(() => import("./routes/ecosystems"));
-const Ecosystem = lazy(() => import("./routes/ecosystem"));
-const Profile = lazy(() => import("./routes/me"));
-const Notifications = lazy(() => import("./routes/me/notifications"));
-const Projects = lazy(() => import("./routes/me/projects"));
-const ProjectDetail = lazy(() => import("./routes/me/projects/detail"));
-const NewProject = lazy(() => import("./routes/me/projects/new"));
-const BrowseProjects = lazy(() => import("./routes/projects"));
-const Curation = lazy(() => import("./routes/curation"));
-const Privacy = lazy(() => import("./routes/privacy"));
-const AdminRequests = lazy(() => import("./routes/admin/requests"));
-const AdminTags = lazy(() => import("./routes/admin/tags"));
-const NotFound = lazy(() => import("./routes/not-found"));
+const Landing = lazy(() => import("@/routes/landing"));
+const Packages = lazy(() => import("@/routes/home"));
+const Package = lazy(() => import("@/routes/package"));
+const Ecosystems = lazy(() => import("@/routes/ecosystems"));
+const Ecosystem = lazy(() => import("@/routes/ecosystem"));
+const Profile = lazy(() => import("@/routes/me"));
+const Notifications = lazy(() => import("@/routes/me/notifications"));
+const Projects = lazy(() => import("@/routes/me/projects"));
+const ProjectDetail = lazy(() => import("@/routes/me/projects/detail"));
+const NewProject = lazy(() => import("@/routes/me/projects/new"));
+const BrowseProjects = lazy(() => import("@/routes/projects"));
+const Curation = lazy(() => import("@/routes/curation"));
+const Privacy = lazy(() => import("@/routes/privacy"));
+const AdminRequests = lazy(() => import("@/routes/admin/requests"));
+const AdminTags = lazy(() => import("@/routes/admin/tags"));
+const NotFound = lazy(() => import("@/routes/not-found"));
 
 const root = document.getElementById("root");
 

@@ -289,7 +289,7 @@ const mobileThemed = createThemedStories({
 export const MobileLight = mobileThemed.Light;
 export const MobileDark = mobileThemed.Dark;
 
-// Minimal card (no tags, no badge, no description - ecosystem pending)
+// Minimal card (no tags, no description - just name, badge, upvotes)
 const minimalBase: Story = {
 	args: {
 		name: "express",

@@ -97,6 +97,12 @@ export const create = defineMutator(
 			if (parentComment.threadId !== threadId) {
 				throw new Error("Parent comment belongs to different thread");
 			}
+
+			// Verify rootCommentId matches what we'd compute from the parent
+			const expectedRootId = parentComment.rootCommentId ?? parentComment.id;
+			if (args.rootCommentId !== expectedRootId) {
+				throw new Error("rootCommentId does not match parent's root");
+			}
 		}
 
 		// Verify root comment exists and belongs to same thread

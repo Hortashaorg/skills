@@ -1,4 +1,5 @@
 import rehypeHighlight from "rehype-highlight";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
@@ -8,11 +9,23 @@ import { unified } from "unified";
 import { cn } from "@/lib/utils";
 import "./markdown-output.css";
 
+// Sanitize schema that preserves syntax highlighting classes
+const sanitizeSchema = {
+	...defaultSchema,
+	attributes: {
+		...defaultSchema.attributes,
+		// Allow class on code and span for syntax highlighting
+		code: [...(defaultSchema.attributes?.code ?? []), "className"],
+		span: [...(defaultSchema.attributes?.span ?? []), "className"],
+	},
+};
+
 const processor = unified()
 	.use(remarkParse)
 	.use(remarkGfm)
 	.use(remarkRehype)
 	.use(rehypeHighlight)
+	.use(rehypeSanitize, sanitizeSchema)
 	.use(rehypeStringify);
 
 function renderMarkdown(markdown: string): string {
