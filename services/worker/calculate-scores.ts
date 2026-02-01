@@ -17,6 +17,7 @@ import {
 	gt,
 	gte,
 	isNull,
+	lt,
 	max,
 	or,
 	sqlExpr,
@@ -44,7 +45,33 @@ export async function calculateScores(): Promise<ScoreResult> {
 			const now = new Date();
 			const currentMonthStart = getMonthStartUTC(now);
 
-			// Find accounts with events that need processing:
+			// Phase 1: Reset monthly scores for accounts where month has changed
+			// This handles accounts with no new events that still need their monthly score zeroed
+			const accountsToReset = await db
+				.select({ id: dbSchema.contributionScores.id })
+				.from(dbSchema.contributionScores)
+				.where(
+					lt(dbSchema.contributionScores.lastCalculatedAt, currentMonthStart),
+				);
+
+			if (accountsToReset.length > 0) {
+				await db
+					.update(dbSchema.contributionScores)
+					.set({
+						monthlyScore: 0,
+						lastCalculatedAt: now,
+					})
+					.where(
+						lt(dbSchema.contributionScores.lastCalculatedAt, currentMonthStart),
+					);
+
+				logger.info("Monthly scores reset", {
+					accounts: accountsToReset.length,
+				});
+				span.setAttribute("accounts.monthly_reset", accountsToReset.length);
+			}
+
+			// Phase 2: Find accounts with events that need processing:
 			// - Either no score record exists (left join gives null)
 			// - Or events exist after lastCalculatedAt
 			const accountsToProcess = await db

@@ -5,9 +5,15 @@ import { z } from "@package/common";
  * If npm changes their API, validation fails and we can alert.
  */
 
-// Some packages have malformed deps (string instead of object) - accept both
+// Legacy npm packages have various malformed dependency formats:
+// - Normal: { "lodash": "^4.0.0" }
+// - Legacy object: { "lodash": { "version": ">=0.5.0" } }
+// - Malformed: entire field is a string
 const depsField = z
-	.union([z.record(z.string(), z.string()), z.string()])
+	.union([
+		z.record(z.string(), z.union([z.string(), z.object({})])),
+		z.string(),
+	])
 	.optional();
 
 export const NpmVersionSchema = z.object({

@@ -75,6 +75,20 @@ function parsePublishedAt(timeString: string | undefined): Date {
 	return new Date(timeString);
 }
 
+/**
+ * Extract version range from dependency value.
+ * Handles legacy formats like { "version": ">=0.5.0" }.
+ */
+function extractVersionRange(value: string | object): string {
+	if (typeof value === "string") return value;
+	// Legacy object format: { version: ">=0.5.0" }
+	if (typeof value === "object" && value !== null && "version" in value) {
+		const v = (value as { version: unknown }).version;
+		if (typeof v === "string") return v;
+	}
+	return "*"; // Fallback for unparseable formats
+}
+
 function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 	const deps: DependencyData[] = [];
 
@@ -82,7 +96,7 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 		for (const [name, range] of Object.entries(version.dependencies)) {
 			deps.push({
 				name,
-				versionRange: range,
+				versionRange: extractVersionRange(range),
 				type: "runtime",
 				registry: "npm",
 			});
@@ -91,7 +105,12 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 
 	if (version.devDependencies && typeof version.devDependencies === "object") {
 		for (const [name, range] of Object.entries(version.devDependencies)) {
-			deps.push({ name, versionRange: range, type: "dev", registry: "npm" });
+			deps.push({
+				name,
+				versionRange: extractVersionRange(range),
+				type: "dev",
+				registry: "npm",
+			});
 		}
 	}
 
@@ -100,7 +119,12 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 		typeof version.peerDependencies === "object"
 	) {
 		for (const [name, range] of Object.entries(version.peerDependencies)) {
-			deps.push({ name, versionRange: range, type: "peer", registry: "npm" });
+			deps.push({
+				name,
+				versionRange: extractVersionRange(range),
+				type: "peer",
+				registry: "npm",
+			});
 		}
 	}
 
@@ -111,7 +135,7 @@ function mapDependencies(version: NpmVersionResponse): DependencyData[] {
 		for (const [name, range] of Object.entries(version.optionalDependencies)) {
 			deps.push({
 				name,
-				versionRange: range,
+				versionRange: extractVersionRange(range),
 				type: "optional",
 				registry: "npm",
 			});
