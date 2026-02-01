@@ -278,3 +278,5 @@ export const Curation = () => {
 		</Layout>
 	);
 };
+
+export default Curation;

@@ -131,3 +131,5 @@ export const Privacy = () => {
 		</Layout>
 	);
 };
+
+export default Privacy;

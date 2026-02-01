@@ -140,3 +140,5 @@ export const Notifications = () => {
 		</Layout>
 	);
 };
+
+export default Notifications;

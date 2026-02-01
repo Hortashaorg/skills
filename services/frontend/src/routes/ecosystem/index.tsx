@@ -800,3 +800,5 @@ export const Ecosystem = () => {
 		</Layout>
 	);
 };
+
+export default Ecosystem;

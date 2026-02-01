@@ -246,3 +246,5 @@ export const Package = () => {
 		</Layout>
 	);
 };
+
+export default Package;

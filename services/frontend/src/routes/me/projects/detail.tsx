@@ -513,3 +513,5 @@ export const ProjectDetail = () => {
 		</Layout>
 	);
 };
+
+export default ProjectDetail;

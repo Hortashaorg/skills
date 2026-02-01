@@ -381,3 +381,5 @@ const EcosystemCardWrapper = (props: { ecosystem: Ecosystem }) => {
 		/>
 	);
 };
+
+export default Ecosystems;

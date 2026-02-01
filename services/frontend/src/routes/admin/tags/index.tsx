@@ -168,3 +168,5 @@ export const AdminTags = () => {
 		</Layout>
 	);
 };
+
+export default AdminTags;

@@ -428,3 +428,5 @@ export const Profile = () => {
 		</Layout>
 	);
 };
+
+export default Profile;
