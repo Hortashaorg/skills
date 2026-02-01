@@ -21,6 +21,7 @@ import { buildPackageUrl } from "@/lib/url";
 import { ChannelSelector } from "./sections/ChannelSelector";
 import { Dependencies } from "./sections/Dependencies";
 import { DetailsTab } from "./sections/DetailsTab";
+import { DiscussionTab } from "./sections/DiscussionTab";
 import { Header } from "./sections/Header";
 
 type ReleaseChannel = Row["packageReleaseChannels"];
@@ -192,6 +193,9 @@ export const Package = () => {
 											<Tabs.Trigger value="details" variant="contained">
 												Details
 											</Tabs.Trigger>
+											<Tabs.Trigger value="discussion" variant="contained">
+												Discussion
+											</Tabs.Trigger>
 										</Tabs.List>
 									</Tabs.Root>
 
@@ -225,6 +229,10 @@ export const Package = () => {
 														selectedChannel={selectedChannel()}
 														onChannelChange={setSelectedChannelId}
 													/>
+												</Match>
+
+												<Match when={tab() === "discussion"}>
+													<DiscussionTab packageId={p.id} />
 												</Match>
 											</Switch>
 										</Stack>

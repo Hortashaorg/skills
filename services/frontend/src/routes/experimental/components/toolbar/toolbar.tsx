@@ -46,7 +46,7 @@ export const Toolbar = (props: ToolbarProps) => {
 								${activePanel() === module.id ? "bg-surface-alt dark:bg-surface-dark-alt" : ""}
 							`}
 						>
-							{module.icon && <span class="mr-1.5">{module.icon}</span>}
+							{module.icon && <span class="mr-1.5">{module.icon()}</span>}
 							{module.label}
 						</button>
 					)}

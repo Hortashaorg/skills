@@ -73,11 +73,11 @@ const withCommentsBase: Story = {
 		comments: mockComments,
 		currentUserId: "user-1",
 		currentUserName: "sarah_dev",
-		onSubmit: (content: string, replyToId?: string) =>
+		onCommentSubmit: (content: string, replyToId?: string) =>
 			console.log("Submit:", { content, replyToId }),
-		onEdit: (id: string, content: string) =>
+		onCommentEdit: (id: string, content: string) =>
 			console.log("Edit:", { id, content }),
-		onDelete: (id: string) => console.log("Delete:", id),
+		onCommentDelete: (id: string) => console.log("Delete:", id),
 	},
 };
 
@@ -94,11 +94,11 @@ const emptyBase: Story = {
 		comments: [],
 		currentUserId: "user-1",
 		currentUserName: "sarah_dev",
-		onSubmit: (content: string, replyToId?: string) =>
+		onCommentSubmit: (content: string, replyToId?: string) =>
 			console.log("Submit:", { content, replyToId }),
-		onEdit: (id: string, content: string) =>
+		onCommentEdit: (id: string, content: string) =>
 			console.log("Edit:", { id, content }),
-		onDelete: (id: string) => console.log("Delete:", id),
+		onCommentDelete: (id: string) => console.log("Delete:", id),
 	},
 };
 
@@ -115,9 +115,9 @@ const notLoggedInBase: Story = {
 		comments: mockComments,
 		currentUserId: undefined,
 		currentUserName: undefined,
-		onSubmit: () => {},
-		onEdit: () => {},
-		onDelete: () => {},
+		onCommentSubmit: () => {},
+		onCommentEdit: () => {},
+		onCommentDelete: () => {},
 	},
 };
 
@@ -156,9 +156,9 @@ const withDeletedCommentBase: Story = {
 		],
 		currentUserId: "user-1",
 		currentUserName: "sarah_dev",
-		onSubmit: () => {},
-		onEdit: () => {},
-		onDelete: () => {},
+		onCommentSubmit: () => {},
+		onCommentEdit: () => {},
+		onCommentDelete: () => {},
 	},
 };
 

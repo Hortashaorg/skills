@@ -10,7 +10,7 @@ export type ToolbarContext = {
 export type ToolbarModule = {
 	id: string;
 	label: string;
-	icon?: JSX.Element;
+	icon?: () => JSX.Element;
 	panel?: (ctx: ToolbarContext) => JSX.Element;
 	action?: (ctx: ToolbarContext) => void;
 };

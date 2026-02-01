@@ -38,9 +38,9 @@ export type CommentThreadProps = Omit<
 	comments: readonly Comment[];
 	currentUserId?: string;
 	currentUserName?: string;
-	onSubmit: (content: string, replyToId?: string) => void;
-	onEdit: (commentId: string, content: string) => void;
-	onDelete: (commentId: string) => void;
+	onCommentSubmit: (content: string, replyToId?: string) => void;
+	onCommentEdit: (commentId: string, content: string) => void;
+	onCommentDelete: (commentId: string) => void;
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -67,9 +67,9 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"comments",
 		"currentUserId",
 		"currentUserName",
-		"onSubmit",
-		"onEdit",
-		"onDelete",
+		"onCommentSubmit",
+		"onCommentEdit",
+		"onCommentDelete",
 		"class",
 	]);
 
@@ -83,7 +83,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 	// Handlers
 	const handleNewCommentSubmit = () => {
 		if (!newComment().trim()) return;
-		local.onSubmit(newComment());
+		local.onCommentSubmit(newComment());
 		setNewComment("");
 	};
 
@@ -101,7 +101,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 	const saveEdit = () => {
 		const id = editingId();
 		if (!id || !editContent().trim()) return;
-		local.onEdit(id, editContent());
+		local.onCommentEdit(id, editContent());
 		setEditingId(null);
 		setEditContent("");
 	};
@@ -120,7 +120,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 	const submitReply = () => {
 		const parentId = replyingToId();
 		if (!parentId || !replyContent().trim()) return;
-		local.onSubmit(replyContent(), parentId);
+		local.onCommentSubmit(replyContent(), parentId);
 		setReplyingToId(null);
 		setReplyContent("");
 	};
@@ -185,7 +185,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 							}
 							onDelete={
 								isOwnComment() && !isDeleted()
-									? () => local.onDelete(itemProps.comment.id)
+									? () => local.onCommentDelete(itemProps.comment.id)
 									: undefined
 							}
 							onReply={

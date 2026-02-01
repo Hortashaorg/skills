@@ -98,7 +98,7 @@ export const MarkdownField = (props: MarkdownFieldProps) => {
 											: ""
 									}`}
 								>
-									{module.icon ?? (
+									{module.icon?.() ?? (
 										<span class="text-xs font-medium">{module.label}</span>
 									)}
 								</button>

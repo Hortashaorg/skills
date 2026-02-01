@@ -75,6 +75,6 @@ const LinkPanel = (ctx: ToolbarContext) => {
 export const linkModule: ToolbarModule = {
 	id: "link",
 	label: "Link",
-	icon: <LinkIcon />,
+	icon: () => <LinkIcon />,
 	panel: LinkPanel,
 };

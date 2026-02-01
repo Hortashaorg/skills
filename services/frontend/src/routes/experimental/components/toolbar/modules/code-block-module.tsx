@@ -21,7 +21,7 @@ const CodeIcon = () => (
 export const codeBlockModule: ToolbarModule = {
 	id: "code-block",
 	label: "Code block",
-	icon: <CodeIcon />,
+	icon: () => <CodeIcon />,
 	action: (ctx) => {
 		ctx.insert("\n```\n\n```\n");
 	},

@@ -122,7 +122,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 											"bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark",
 									)}
 								>
-									{module.icon ?? (
+									{module.icon?.() ?? (
 										<span class="text-xs font-medium">{module.label}</span>
 									)}
 								</button>
