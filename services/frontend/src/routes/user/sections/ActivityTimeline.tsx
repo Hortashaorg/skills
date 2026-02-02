@@ -100,47 +100,78 @@ const EventTarget = (props: {
 	);
 };
 
-const CommentTarget = (props: { thread: Comment["thread"] }) => {
-	const pkg = () => props.thread?.package;
-	const eco = () => props.thread?.ecosystem;
-	const proj = () => props.thread?.project;
+const CommentLink = (props: { comment: Comment }) => {
+	const thread = () => props.comment.thread;
+	const pkg = () => thread()?.package;
+	const eco = () => thread()?.ecosystem;
+	const proj = () => thread()?.project;
+
+	const commentHref = () => {
+		const id = props.comment.id;
+		const p = pkg();
+		const e = eco();
+		const pr = proj();
+		if (p)
+			return `${buildPackageUrl(p.registry, p.name)}/discussion#comment-${id}`;
+		if (e) return `/ecosystem/${e.slug}/discussion#comment-${id}`;
+		if (pr) return `/projects/${pr.id}#comment-${id}`;
+		return "#";
+	};
 
 	return (
-		<Show when={pkg() || eco() || proj()}>
-			<Text size="sm" color="muted">
-				on
-			</Text>
+		<Flex gap="xs" align="center" class="flex-wrap">
+			<A
+				href={commentHref()}
+				class="text-brand dark:text-brand-dark hover:underline"
+			>
+				<Text size="sm">Comment</Text>
+			</A>
 			<Show when={pkg()}>
 				{(p) => (
-					<A
-						href={`${buildPackageUrl(p().registry, p().name)}/discussion`}
-						class="text-brand dark:text-brand-dark hover:underline"
-					>
-						{p().name}
-					</A>
+					<>
+						<Text size="sm" color="muted">
+							on Package
+						</Text>
+						<A
+							href={buildPackageUrl(p().registry, p().name)}
+							class="text-brand dark:text-brand-dark hover:underline"
+						>
+							<Text size="sm">{p().name}</Text>
+						</A>
+					</>
 				)}
 			</Show>
 			<Show when={!pkg() && eco()}>
 				{(e) => (
-					<A
-						href={`/ecosystem/${e().slug}/discussion`}
-						class="text-brand dark:text-brand-dark hover:underline"
-					>
-						{e().name}
-					</A>
+					<>
+						<Text size="sm" color="muted">
+							on Ecosystem
+						</Text>
+						<A
+							href={`/ecosystem/${e().slug}`}
+							class="text-brand dark:text-brand-dark hover:underline"
+						>
+							<Text size="sm">{e().name}</Text>
+						</A>
+					</>
 				)}
 			</Show>
 			<Show when={!pkg() && !eco() && proj()}>
 				{(p) => (
-					<A
-						href={`/projects/${p().id}`}
-						class="text-brand dark:text-brand-dark hover:underline"
-					>
-						{p().name}
-					</A>
+					<>
+						<Text size="sm" color="muted">
+							on Project
+						</Text>
+						<A
+							href={`/projects/${p().id}`}
+							class="text-brand dark:text-brand-dark hover:underline"
+						>
+							<Text size="sm">{p().name}</Text>
+						</A>
+					</>
 				)}
 			</Show>
-		</Show>
+		</Flex>
 	);
 };
 
@@ -223,19 +254,9 @@ export const ActivityTimeline = (props: ActivityTimelineProps) => {
 											size="sm"
 											class="text-muted dark:text-muted-dark shrink-0"
 										/>
-										<Flex
-											gap="xs"
-											align="center"
-											class="flex-1 min-w-0 flex-wrap"
-										>
-											<Text size="sm" class="truncate max-w-48">
-												{(item.data as Comment).content.slice(0, 50)}
-												{(item.data as Comment).content.length > 50
-													? "..."
-													: ""}
-											</Text>
-											<CommentTarget thread={(item.data as Comment).thread} />
-										</Flex>
+										<div class="flex-1 min-w-0">
+											<CommentLink comment={item.data as Comment} />
+										</div>
 										<Text
 											size="xs"
 											color="muted"
