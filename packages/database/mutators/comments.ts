@@ -1,4 +1,4 @@
-import { z } from "@package/common";
+import { MAX_COMMENT_LENGTH, z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
@@ -10,7 +10,7 @@ export const create = defineMutator(
 		.object({
 			entityType: entityTypeSchema,
 			entityId: z.string(),
-			content: z.string().min(1).max(10000),
+			content: z.string().min(1).max(MAX_COMMENT_LENGTH),
 			replyToId: z.string().optional(),
 			rootCommentId: z.string().optional(),
 		})
@@ -139,7 +139,7 @@ export const create = defineMutator(
 export const update = defineMutator(
 	z.object({
 		id: z.string(),
-		content: z.string().min(1).max(10000),
+		content: z.string().min(1).max(MAX_COMMENT_LENGTH),
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {

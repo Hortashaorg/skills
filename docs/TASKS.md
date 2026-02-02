@@ -62,11 +62,14 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [ ] Link to profile from comments, suggestions
 - [ ] Profile editing (own profile only)
 
-### Comments Expansion
+### Comments Expansion ✓
 
 - [x] Integrate CommentThread on ecosystem pages
 - [ ] Integrate CommentThread on project pages
-- [ ] Linkable comments (URL anchors, scroll to comment)
+- [x] Linkable comments (URL anchors, scroll to comment, deep link support)
+- [x] "Reply to {name}" in activity timeline with clickable author links
+- [x] Reply limit (100 per thread) with UI feedback
+- [x] Character limit (10,000) with live counter in editor
 - [ ] User profile links from comment avatars
 
 ### Leaderboard UX ✓

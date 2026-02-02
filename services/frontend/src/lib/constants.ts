@@ -21,6 +21,7 @@ export const LEADERBOARD_PREVIEW_LIMIT = 5;
 
 // Comments
 export const MAX_REPLIES_PER_THREAD = 100;
+export { MAX_COMMENT_LENGTH } from "@package/common";
 
 // Infinite Scroll
 export const INFINITE_SCROLL_DEBOUNCE_MS = 100;

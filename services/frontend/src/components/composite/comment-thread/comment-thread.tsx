@@ -5,6 +5,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { BaseComment, Reply, RootComment } from "@/hooks/useCommentThread";
+import { MAX_COMMENT_LENGTH } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface ReplyTarget {
@@ -188,6 +189,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 								onCancel={cancelEdit}
 								submitLabel="Save"
 								placeholder="Edit your comment..."
+								maxLength={MAX_COMMENT_LENGTH}
 							/>
 						}
 					>
@@ -332,6 +334,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 										onCancel={cancelReply}
 										submitLabel="Reply"
 										placeholder="Write a reply..."
+										maxLength={MAX_COMMENT_LENGTH}
 									/>
 								</div>
 							</div>
@@ -361,6 +364,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 							onSubmit={handleNewCommentSubmit}
 							submitLabel="Comment"
 							placeholder="Write a comment..."
+							maxLength={MAX_COMMENT_LENGTH}
 						/>
 					</div>
 				</div>

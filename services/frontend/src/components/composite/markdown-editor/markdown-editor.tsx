@@ -18,6 +18,7 @@ export type MarkdownEditorProps = Omit<
 	cancelLabel?: string;
 	placeholder?: string;
 	minHeight?: string;
+	maxLength?: number;
 };
 
 export const MarkdownEditor = (props: MarkdownEditorProps) => {
@@ -30,6 +31,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		"cancelLabel",
 		"placeholder",
 		"minHeight",
+		"maxLength",
 		"class",
 	]);
 
@@ -173,17 +175,51 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 				</div>
 			</Show>
 
-			{/* Footer with submit/cancel */}
-			<Show when={local.onSubmit}>
-				<div class="flex justify-end gap-2 px-3 py-2 border-t border-outline dark:border-outline-dark bg-surface-alt/30 dark:bg-surface-dark-alt/30">
-					<Show when={local.onCancel}>
-						<Button onClick={local.onCancel} size="sm" variant="ghost">
-							{local.cancelLabel ?? "Cancel"}
-						</Button>
+			{/* Footer with character count and submit/cancel */}
+			<Show when={local.onSubmit || local.maxLength}>
+				<div class="flex items-center justify-between gap-2 px-3 py-2 border-t border-outline dark:border-outline-dark bg-surface-alt/30 dark:bg-surface-dark-alt/30">
+					{/* Character count */}
+					<Show when={local.maxLength} fallback={<div />}>
+						{(max) => {
+							const count = () => local.value.length;
+							const isOverLimit = () => count() > max();
+							const isNearLimit = () => count() > max() * 0.9;
+							return (
+								<span
+									class={cn(
+										"text-xs",
+										isOverLimit()
+											? "text-danger dark:text-danger-dark font-medium"
+											: isNearLimit()
+												? "text-warning dark:text-warning-dark"
+												: "text-on-surface-muted dark:text-on-surface-dark-muted",
+									)}
+								>
+									{count().toLocaleString()} / {max().toLocaleString()}
+								</span>
+							);
+						}}
 					</Show>
-					<Button onClick={local.onSubmit} size="sm">
-						{local.submitLabel ?? "Submit"}
-					</Button>
+
+					{/* Submit/cancel buttons */}
+					<Show when={local.onSubmit}>
+						<div class="flex gap-2">
+							<Show when={local.onCancel}>
+								<Button onClick={local.onCancel} size="sm" variant="ghost">
+									{local.cancelLabel ?? "Cancel"}
+								</Button>
+							</Show>
+							<Button
+								onClick={local.onSubmit}
+								size="sm"
+								disabled={
+									local.maxLength ? local.value.length > local.maxLength : false
+								}
+							>
+								{local.submitLabel ?? "Submit"}
+							</Button>
+						</div>
+					</Show>
 				</div>
 			</Show>
 		</div>
