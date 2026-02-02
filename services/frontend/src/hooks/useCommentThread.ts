@@ -1,5 +1,6 @@
 import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { createSignal } from "solid-js";
+import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
 
 export type EntityType = "package" | "ecosystem" | "project";
 
@@ -32,16 +33,14 @@ export interface RootComment extends BaseComment {
 	hasReplies: boolean;
 }
 
-const REPLIES_PAGE_SIZE = 20;
-
 export function useCommentThread(options: () => UseCommentThreadOptions) {
 	const zero = useZero();
 
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	// Track loaded replies per root comment and their limits
-	const [replyLimits, setReplyLimits] = createSignal<Map<string, number>>(
-		new Map(),
+	// Track which root comments have their replies expanded
+	const [showingRepliesSet, setShowingRepliesSet] = createSignal<Set<string>>(
+		new Set(),
 	);
 
 	// Get current user's account info
@@ -127,31 +126,15 @@ export function useCommentThread(options: () => UseCommentThreadOptions) {
 		zero().mutate(mutators.comments.remove({ id: commentId }));
 	};
 
-	// Show replies for a root comment (initial load)
+	// Show replies for a root comment
 	const showReplies = (rootCommentId: string) => {
-		setReplyLimits((prev) => {
-			const next = new Map(prev);
-			if (!next.has(rootCommentId)) {
-				next.set(rootCommentId, REPLIES_PAGE_SIZE + 1); // +1 to detect "has more"
-			}
-			return next;
-		});
-	};
-
-	// Load more replies
-	const loadMoreReplies = (rootCommentId: string) => {
-		setReplyLimits((prev) => {
-			const next = new Map(prev);
-			const current = next.get(rootCommentId) ?? REPLIES_PAGE_SIZE + 1;
-			next.set(rootCommentId, current + REPLIES_PAGE_SIZE);
-			return next;
-		});
+		setShowingRepliesSet((prev) => new Set(prev).add(rootCommentId));
 	};
 
 	// Collapse replies
 	const hideReplies = (rootCommentId: string) => {
-		setReplyLimits((prev) => {
-			const next = new Map(prev);
+		setShowingRepliesSet((prev) => {
+			const next = new Set(prev);
 			next.delete(rootCommentId);
 			return next;
 		});
@@ -159,11 +142,7 @@ export function useCommentThread(options: () => UseCommentThreadOptions) {
 
 	// Check if replies are shown for a root
 	const isShowingReplies = (rootCommentId: string) =>
-		replyLimits().has(rootCommentId);
-
-	// Get current limit for a root (0 if not showing)
-	const getReplyLimit = (rootCommentId: string) =>
-		replyLimits().get(rootCommentId) ?? 0;
+		showingRepliesSet().has(rootCommentId);
 
 	return {
 		comments,
@@ -174,48 +153,25 @@ export function useCommentThread(options: () => UseCommentThreadOptions) {
 		onEdit,
 		onDelete,
 		showReplies,
-		loadMoreReplies,
 		hideReplies,
 		isShowingReplies,
-		getReplyLimit,
 	};
 }
 
-// Hook to get replies for a specific root comment with pagination
-export function useReplies(
-	rootCommentId: () => string | undefined,
-	limit: () => number,
-) {
+// Hook to get replies for a specific root comment
+export function useReplies(rootCommentId: () => string | undefined) {
 	const [repliesRaw] = useQuery(() => {
 		const id = rootCommentId();
-		const lim = limit();
-		return id && lim > 0
-			? queries.comments.repliesByRootId({ rootCommentId: id, limit: lim })
+		return id
+			? queries.comments.repliesByRootId({
+					rootCommentId: id,
+					limit: MAX_REPLIES_PER_THREAD,
+				})
 			: null;
 	});
 
 	const replies = (): readonly Reply[] =>
 		(repliesRaw() ?? []) as readonly Reply[];
 
-	// Has more if we got exactly the limit (which includes +1 for detection)
-	const hasMore = () => {
-		const lim = limit();
-		const count = replies().length;
-		return count >= lim;
-	};
-
-	// Actual replies to show (excluding the +1 detection item)
-	const visibleReplies = (): readonly Reply[] => {
-		const lim = limit();
-		const all = replies();
-		if (all.length >= lim) {
-			return all.slice(0, lim - 1);
-		}
-		return all;
-	};
-
-	return {
-		replies: visibleReplies,
-		hasMore,
-	};
+	return { replies };
 }

@@ -19,6 +19,8 @@ export type CommentCardProps = Omit<
 	editedAt?: string;
 	/** Whether the comment is deleted (show placeholder) */
 	isDeleted?: boolean;
+	/** Whether this comment is highlighted (linked from URL) */
+	isHighlighted?: boolean;
 	/** Called when reply button clicked */
 	onReply?: () => void;
 	/** Called when edit button clicked */
@@ -35,6 +37,7 @@ export const CommentCard = (props: CommentCardProps) => {
 		"replyToAuthor",
 		"editedAt",
 		"isDeleted",
+		"isHighlighted",
 		"onReply",
 		"onEdit",
 		"onDelete",
@@ -50,7 +53,14 @@ export const CommentCard = (props: CommentCardProps) => {
 			{...others}
 		>
 			{/* Header */}
-			<div class="px-4 py-2 bg-surface-alt/50 dark:bg-surface-dark-alt/50 border-b border-outline dark:border-outline-dark">
+			<div
+				class={cn(
+					"px-4 py-2 border-b border-outline dark:border-outline-dark",
+					local.isHighlighted
+						? "bg-success/20 dark:bg-success-dark/20"
+						: "bg-surface-alt/50 dark:bg-surface-dark-alt/50",
+				)}
+			>
 				<Flex gap="sm" align="center" justify="between">
 					<Flex gap="sm" align="center" class="flex-wrap">
 						<span class="font-medium text-sm text-on-surface dark:text-on-surface-dark">

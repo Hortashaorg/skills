@@ -29,14 +29,16 @@ export type CommentThreadProps = Omit<
 	onCommentDelete: (commentId: string) => void;
 	// Replies management
 	showReplies: (rootCommentId: string) => void;
-	loadMoreReplies: (rootCommentId: string) => void;
 	hideReplies: (rootCommentId: string) => void;
 	isShowingReplies: (rootCommentId: string) => boolean;
 	// For fetching replies data
 	getRepliesData: (rootCommentId: string) => {
 		replies: readonly Reply[];
-		hasMore: boolean;
+		isAtMax: boolean;
 	};
+	// Linked comment highlighting and scrolling
+	highlightedCommentId?: string | null;
+	onHighlightedCommentMounted?: () => void;
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -67,10 +69,11 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"onCommentEdit",
 		"onCommentDelete",
 		"showReplies",
-		"loadMoreReplies",
 		"hideReplies",
 		"isShowingReplies",
 		"getRepliesData",
+		"highlightedCommentId",
+		"onHighlightedCommentMounted",
 		"class",
 	]);
 
@@ -142,15 +145,28 @@ export const CommentThread = (props: CommentThreadProps) => {
 		rootCommentId: string;
 		isRoot: boolean;
 		replyToAuthorName?: string;
+		isAtMax?: boolean;
 	}) => {
 		const isEditing = () => editingId() === itemProps.comment.id;
 		const isDeleted = () => itemProps.comment.deletedAt !== null;
 		const isOwnComment = () =>
 			local.currentUserId &&
 			itemProps.comment.author?.id === local.currentUserId;
+		const isHighlighted = () =>
+			local.highlightedCommentId === itemProps.comment.id;
+
+		const handleRef = (_el: HTMLDivElement) => {
+			if (isHighlighted() && local.onHighlightedCommentMounted) {
+				local.onHighlightedCommentMounted();
+			}
+		};
 
 		return (
-			<div class="flex gap-3">
+			<div
+				ref={handleRef}
+				id={`comment-${itemProps.comment.id}`}
+				class="flex gap-3"
+			>
 				<div class="hidden sm:block">
 					<Avatar
 						initials={getInitials(itemProps.comment.author?.name)}
@@ -187,6 +203,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 									: undefined
 							}
 							isDeleted={isDeleted()}
+							isHighlighted={isHighlighted()}
 							onEdit={
 								isOwnComment() && !isDeleted()
 									? () => startEdit(itemProps.comment)
@@ -198,7 +215,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 									: undefined
 							}
 							onReply={
-								!isDeleted() && local.currentUserId
+								!isDeleted() && local.currentUserId && !itemProps.isAtMax
 									? () =>
 											startReply(
 												itemProps.rootCommentId,
@@ -227,6 +244,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 					comment={itemProps.comment}
 					rootCommentId={itemProps.comment.id}
 					isRoot={true}
+					isAtMax={repliesData().isAtMax}
 				/>
 
 				{/* Show replies button - when has replies but not showing */}
@@ -259,30 +277,28 @@ export const CommentThread = (props: CommentThreadProps) => {
 									rootCommentId={itemProps.comment.id}
 									isRoot={false}
 									replyToAuthorName={reply.replyTo?.author?.name ?? undefined}
+									isAtMax={repliesData().isAtMax}
 								/>
 							)}
 						</For>
 
-						{/* Load more / Collapse buttons */}
+						{/* Max replies message */}
+						<Show when={repliesData().isAtMax}>
+							<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted italic">
+								Maximum replies reached (100). No more replies can be added to
+								this thread.
+							</p>
+						</Show>
+
+						{/* Collapse button */}
 						<Show when={showingReplies()}>
-							<div class="flex gap-2">
-								<Show when={repliesData().hasMore}>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => local.loadMoreReplies(itemProps.comment.id)}
-									>
-										Show more replies
-									</Button>
-								</Show>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => local.hideReplies(itemProps.comment.id)}
-								>
-									Collapse
-								</Button>
-							</div>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => local.hideReplies(itemProps.comment.id)}
+							>
+								Collapse
+							</Button>
 						</Show>
 
 						{/* Inline reply editor */}

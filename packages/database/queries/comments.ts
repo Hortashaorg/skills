@@ -21,7 +21,7 @@ export const rootsByThreadId = defineQuery(
 export const repliesByRootId = defineQuery(
 	z.object({
 		rootCommentId: z.string(),
-		limit: z.number().default(20),
+		limit: z.number().default(100),
 	}),
 	({ args }) => {
 		return zql.comments
@@ -52,6 +52,7 @@ export const byAuthorId = defineQuery(
 			.where("authorId", args.authorId)
 			.orderBy("createdAt", "desc")
 			.limit(args.limit)
+			.related("replyTo", (r) => r.related("author"))
 			.related("thread", (t) =>
 				t.related("package").related("ecosystem").related("project"),
 			);

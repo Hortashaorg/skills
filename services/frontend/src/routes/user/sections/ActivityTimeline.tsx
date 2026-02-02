@@ -31,6 +31,11 @@ type Comment = Row["comments"] & {
 				project?: Row["projects"] | null;
 		  })
 		| null;
+	replyTo?:
+		| (Row["comments"] & {
+				author?: Row["account"] | null;
+		  })
+		| null;
 };
 
 interface ActivityTimelineProps {
@@ -106,6 +111,9 @@ const CommentLink = (props: { comment: Comment }) => {
 	const eco = () => thread()?.ecosystem;
 	const proj = () => thread()?.project;
 
+	const isReply = () => !!props.comment.replyToId;
+	const replyToAuthor = () => props.comment.replyTo?.author;
+
 	const commentHref = () => {
 		const id = props.comment.id;
 		const p = pkg();
@@ -124,8 +132,23 @@ const CommentLink = (props: { comment: Comment }) => {
 				href={commentHref()}
 				class="text-brand dark:text-brand-dark hover:underline"
 			>
-				<Text size="sm">Comment</Text>
+				<Text size="sm">{isReply() ? "Reply" : "Comment"}</Text>
 			</A>
+			<Show when={isReply() && replyToAuthor()}>
+				{(author) => (
+					<>
+						<Text size="sm" color="muted">
+							to
+						</Text>
+						<A
+							href={`/user/${author().id}`}
+							class="text-brand dark:text-brand-dark hover:underline"
+						>
+							<Text size="sm">{author().name ?? "someone"}</Text>
+						</A>
+					</>
+				)}
+			</Show>
 			<Show when={pkg()}>
 				{(p) => (
 					<>
