@@ -5,8 +5,8 @@ import {
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { A, useParams } from "@solidjs/router";
-import { createMemo, createSignal, Show } from "solid-js";
+import { A, useNavigate, useParams } from "@solidjs/router";
+import { createMemo, createSignal, Match, Show, Switch } from "solid-js";
 import { SearchInput } from "@/components/composite/search-input";
 import { SEO } from "@/components/composite/seo";
 import {
@@ -25,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toast";
 import { useAddToProject } from "@/hooks/useAddToProject";
 import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
@@ -32,6 +33,7 @@ import { useVote } from "@/hooks/useVote";
 import { Layout } from "@/layout/Layout";
 import { getDisplayName } from "@/lib/account";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
+import { DiscussionTab } from "./sections/DiscussionTab";
 import { EcosystemHeader } from "./sections/EcosystemHeader";
 import {
 	EcosystemPackages,
@@ -54,8 +56,11 @@ const EcosystemSkeleton = () => (
 );
 
 export const Ecosystem = () => {
-	const params = useParams<{ slug: string }>();
+	const params = useParams<{ slug: string; tab?: string }>();
+	const navigate = useNavigate();
 	const slug = () => decodeURIComponent(params.slug);
+	const tab = () => params.tab || "packages";
+	const baseUrl = () => `/ecosystem/${encodeURIComponent(slug())}`;
 
 	const zero = useZero();
 	const isLoggedIn = () => zero().userID !== "anon";
@@ -572,22 +577,42 @@ export const Ecosystem = () => {
 										addingToProjectId={addToProject.addingToProjectId()}
 									/>
 
-									<Stack spacing="md">
-										<Flex justify="between" align="center">
-											<Heading level="h2">
+									<Tabs.Root
+										value={tab()}
+										onChange={(value) => {
+											navigate(
+												value === "packages"
+													? baseUrl()
+													: `${baseUrl()}/${value}`,
+											);
+										}}
+									>
+										<Tabs.List variant="line">
+											<Tabs.Trigger value="packages" variant="line">
 												Packages ({packages().length})
-											</Heading>
-										</Flex>
+											</Tabs.Trigger>
+											<Tabs.Trigger value="discussion" variant="line">
+												Discussion
+											</Tabs.Trigger>
+										</Tabs.List>
+									</Tabs.Root>
 
-										<EcosystemPackages
-											packages={packages()}
-											packagesByTag={packagesByTag()}
-											onSuggestPackage={handleAddPackage}
-											isLoggedIn={isLoggedIn()}
-											onRemovePackage={handleRemovePackage}
-											pendingRemovePackageIds={pendingRemovePackageIds()}
-										/>
-									</Stack>
+									<Switch>
+										<Match when={tab() === "packages"}>
+											<EcosystemPackages
+												packages={packages()}
+												packagesByTag={packagesByTag()}
+												onSuggestPackage={handleAddPackage}
+												isLoggedIn={isLoggedIn()}
+												onRemovePackage={handleRemovePackage}
+												pendingRemovePackageIds={pendingRemovePackageIds()}
+											/>
+										</Match>
+
+										<Match when={tab() === "discussion"}>
+											<DiscussionTab ecosystemId={eco().id} />
+										</Match>
+									</Switch>
 								</>
 							)}
 						</Show>
