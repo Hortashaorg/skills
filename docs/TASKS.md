@@ -68,9 +68,10 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [ ] Linkable comments (URL anchors, scroll to comment)
 - [ ] User profile links from comment avatars
 
-### Leaderboard UX
+### Leaderboard UX ✓
 
-- [ ] Show empty state when monthly scores are all 0 (instead of hiding the card)
+- [x] Show empty state when monthly scores are all 0 (instead of hiding the card)
+- [x] Filter out negative scores from leaderboards
 
 ### Editor & Renderer Enhancements
 
