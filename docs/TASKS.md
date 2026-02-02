@@ -56,9 +56,10 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 ### User Profiles
 
 - [ ] Schema: extend `account` with bio, avatar URL, social links
-- [ ] Profile page route (`/user/:id` or `/u/:username`)
-- [ ] Profile display: name, avatar, bio, contribution stats
-- [ ] Link to profile from comments, leaderboard, suggestions
+- [x] Profile page route (`/user/:id`)
+- [x] Profile display: name, member since, contribution stats, activity timeline, projects
+- [x] Link to profile from leaderboard
+- [ ] Link to profile from comments, suggestions
 - [ ] Profile editing (own profile only)
 
 ### Comments Expansion

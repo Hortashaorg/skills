@@ -81,6 +81,7 @@ export const Landing = () => {
 					rank: index + 1,
 					name: getDisplayName(entry.account),
 					score: entry.monthlyScore,
+					accountId: entry.accountId,
 					isCurrentUser: entry.accountId === zero().userID,
 				}));
 		}
@@ -93,6 +94,7 @@ export const Landing = () => {
 					rank: index + 1,
 					name: getDisplayName(entry.account),
 					score: 0,
+					accountId: entry.accountId,
 					isCurrentUser: entry.accountId === zero().userID,
 				}));
 		}
@@ -110,6 +112,7 @@ export const Landing = () => {
 				rank: index + 1,
 				name: getDisplayName(entry.account),
 				score: entry.allTimeScore,
+				accountId: entry.accountId,
 				isCurrentUser: entry.accountId === zero().userID,
 			}));
 	});

@@ -10,6 +10,7 @@ export type LeaderboardEntry = {
 	rank: number;
 	name: string;
 	score: number;
+	accountId: string;
 	isCurrentUser?: boolean;
 };
 
@@ -63,14 +64,18 @@ export const LeaderboardPreview = (props: LeaderboardPreviewProps) => {
 										>
 											{entry.rank}.
 										</Text>
-										<Text
-											size="sm"
-											weight={entry.isCurrentUser ? "semibold" : "normal"}
-											class="truncate"
+										<A
+											href={`/user/${entry.accountId}`}
+											class="truncate hover:underline"
 										>
-											{entry.name}
-											{entry.isCurrentUser && " (you)"}
-										</Text>
+											<Text
+												size="sm"
+												weight={entry.isCurrentUser ? "semibold" : "normal"}
+											>
+												{entry.name}
+												{entry.isCurrentUser && " (you)"}
+											</Text>
+										</A>
 									</Flex>
 									<Text
 										size="sm"

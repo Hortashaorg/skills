@@ -1,4 +1,5 @@
 import { queries, useQuery, useZero } from "@package/database/client";
+import { A } from "@solidjs/router";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -101,17 +102,22 @@ export const Leaderboard = () => {
 										>
 											{index() + 1}.
 										</Text>
-										<Text
-											size="sm"
-											weight={
-												score.accountId === currentUserId()
-													? "semibold"
-													: "normal"
-											}
+										<A
+											href={`/user/${score.accountId}`}
+											class="hover:underline"
 										>
-											{getDisplayName(score.account)}
-											{score.accountId === currentUserId() && " (you)"}
-										</Text>
+											<Text
+												size="sm"
+												weight={
+													score.accountId === currentUserId()
+														? "semibold"
+														: "normal"
+												}
+											>
+												{getDisplayName(score.account)}
+												{score.accountId === currentUserId() && " (you)"}
+											</Text>
+										</A>
 									</Flex>
 									<Text size="sm" weight="medium">
 										{tab() === "monthly"

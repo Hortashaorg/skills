@@ -33,19 +33,25 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const sampleEntries: LeaderboardEntry[] = [
-	{ rank: 1, name: "Alice", score: 1250 },
-	{ rank: 2, name: "Bob", score: 980 },
-	{ rank: 3, name: "Charlie", score: 875 },
-	{ rank: 4, name: "Diana", score: 720 },
-	{ rank: 5, name: "Eve", score: 650 },
+	{ rank: 1, name: "Alice", score: 1250, accountId: "user-1" },
+	{ rank: 2, name: "Bob", score: 980, accountId: "user-2" },
+	{ rank: 3, name: "Charlie", score: 875, accountId: "user-3" },
+	{ rank: 4, name: "Diana", score: 720, accountId: "user-4" },
+	{ rank: 5, name: "Eve", score: 650, accountId: "user-5" },
 ];
 
 const entriesWithCurrentUser: LeaderboardEntry[] = [
-	{ rank: 1, name: "Alice", score: 1250 },
-	{ rank: 2, name: "Bob", score: 980 },
-	{ rank: 3, name: "You", score: 875, isCurrentUser: true },
-	{ rank: 4, name: "Diana", score: 720 },
-	{ rank: 5, name: "Eve", score: 650 },
+	{ rank: 1, name: "Alice", score: 1250, accountId: "user-1" },
+	{ rank: 2, name: "Bob", score: 980, accountId: "user-2" },
+	{
+		rank: 3,
+		name: "You",
+		score: 875,
+		accountId: "user-3",
+		isCurrentUser: true,
+	},
+	{ rank: 4, name: "Diana", score: 720, accountId: "user-4" },
+	{ rank: 5, name: "Eve", score: 650, accountId: "user-5" },
 ];
 
 // Default with entries

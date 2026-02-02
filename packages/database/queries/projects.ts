@@ -62,3 +62,15 @@ export const list = defineQuery(
 			.related("projectPackages");
 	},
 );
+
+export const byAccountId = defineQuery(
+	z.object({ accountId: z.string(), limit: z.number().default(6) }),
+	({ args }) => {
+		return zql.projects
+			.where("accountId", args.accountId)
+			.orderBy("updatedAt", "desc")
+			.limit(args.limit)
+			.related("projectPackages")
+			.related("account");
+	},
+);

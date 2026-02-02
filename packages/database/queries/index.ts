@@ -3,6 +3,7 @@ import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
 import * as commentsQueries from "./comments.ts";
+import * as contributionEventsQueries from "./contribution-events.ts";
 import * as contributionScoresQueries from "./contribution-scores.ts";
 import * as ecosystemsQueries from "./ecosystems.ts";
 import * as notificationsQueries from "./notifications.ts";
@@ -19,6 +20,7 @@ export const queries = defineQueries({
 	account: {
 		myAccount: accountQueries.myAccount,
 		allAccounts: accountQueries.allAccounts,
+		byId: accountQueries.byId,
 	},
 	packages: {
 		list: packagesQueries.list,
@@ -60,6 +62,7 @@ export const queries = defineQueries({
 		mine: projectsQueries.mine,
 		byId: projectsQueries.byId,
 		list: projectsQueries.list,
+		byAccountId: projectsQueries.byAccountId,
 	},
 	suggestions: {
 		pendingForPackage: suggestionsQueries.pendingForPackage,
@@ -73,6 +76,9 @@ export const queries = defineQueries({
 		leaderboardMonthly: contributionScoresQueries.leaderboardMonthly,
 		leaderboardAllTime: contributionScoresQueries.leaderboardAllTime,
 		forUser: contributionScoresQueries.forUser,
+	},
+	contributionEvents: {
+		forUser: contributionEventsQueries.forUser,
 	},
 	notifications: {
 		mine: notificationsQueries.mine,
