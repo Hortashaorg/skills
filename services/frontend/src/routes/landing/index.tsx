@@ -70,17 +70,34 @@ export const Landing = () => {
 	);
 
 	const monthlyEntries = createMemo((): readonly LeaderboardEntry[] => {
-		const data = monthlyData();
-		if (!data) return [];
+		const monthly = monthlyData();
+		const allTime = allTimeData();
 
-		return data
-			.filter((entry) => entry.monthlyScore > 0)
-			.map((entry, index) => ({
-				rank: index + 1,
-				name: getDisplayName(entry.account),
-				score: entry.monthlyScore,
-				isCurrentUser: entry.accountId === zero().userID,
-			}));
+		// If we have monthly scores > 0, use those
+		if (monthly?.some((e) => e.monthlyScore > 0)) {
+			return monthly
+				.filter((entry) => entry.monthlyScore > 0)
+				.map((entry, index) => ({
+					rank: index + 1,
+					name: getDisplayName(entry.account),
+					score: entry.monthlyScore,
+					isCurrentUser: entry.accountId === zero().userID,
+				}));
+		}
+
+		// Otherwise, show all-time leaders with 0 monthly score
+		if (allTime?.some((e) => e.allTimeScore > 0)) {
+			return allTime
+				.filter((entry) => entry.allTimeScore > 0)
+				.map((entry, index) => ({
+					rank: index + 1,
+					name: getDisplayName(entry.account),
+					score: 0,
+					isCurrentUser: entry.accountId === zero().userID,
+				}));
+		}
+
+		return [];
 	});
 
 	const allTimeEntries = createMemo((): readonly LeaderboardEntry[] => {

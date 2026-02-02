@@ -28,7 +28,26 @@ export const Leaderboard = () => {
 	);
 
 	const activeLeaderboard = createMemo(() => {
-		return tab() === "monthly" ? monthlyLeaderboard() : allTimeLeaderboard();
+		if (tab() === "allTime") {
+			return allTimeLeaderboard()?.filter((e) => e.allTimeScore > 0);
+		}
+
+		// For monthly tab: if no monthly scores, show all-time users with 0
+		const monthly = monthlyLeaderboard();
+		const hasMonthlyScores = monthly?.some((e) => e.monthlyScore > 0);
+
+		if (hasMonthlyScores) {
+			return monthly.filter((e) => e.monthlyScore > 0);
+		}
+
+		// Fall back to all-time leaderboard (scores will display as 0)
+		return allTimeLeaderboard()?.filter((e) => e.allTimeScore > 0);
+	});
+
+	const isMonthlyFallback = createMemo(() => {
+		if (tab() !== "monthly") return false;
+		const monthly = monthlyLeaderboard();
+		return !monthly?.some((e) => e.monthlyScore > 0);
 	});
 
 	const userRank = createMemo(() => {
@@ -96,7 +115,9 @@ export const Leaderboard = () => {
 									</Flex>
 									<Text size="sm" weight="medium">
 										{tab() === "monthly"
-											? score.monthlyScore
+											? isMonthlyFallback()
+												? 0
+												: score.monthlyScore
 											: score.allTimeScore}
 									</Text>
 								</Flex>
