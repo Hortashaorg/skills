@@ -45,13 +45,15 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 export const byAuthorId = defineQuery(
 	z.object({
 		authorId: z.string(),
-		limit: z.number().default(50),
+		limit: z.number().default(20),
 	}),
 	({ args }) => {
 		return zql.comments
 			.where("authorId", args.authorId)
 			.orderBy("createdAt", "desc")
 			.limit(args.limit)
-			.related("thread");
+			.related("thread", (t) =>
+				t.related("package").related("ecosystem").related("project"),
+			);
 	},
 );

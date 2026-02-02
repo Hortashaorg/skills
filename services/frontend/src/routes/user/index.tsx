@@ -53,6 +53,10 @@ export const UserProfile = () => {
 		queries.contributionEvents.forUser({ accountId: params.id, limit: 20 }),
 	);
 
+	const [comments] = useQuery(() =>
+		queries.comments.byAuthorId({ authorId: params.id, limit: 20 }),
+	);
+
 	const [projects] = useQuery(() =>
 		queries.projects.byAccountId({ accountId: params.id, limit: 6 }),
 	);
@@ -76,6 +80,7 @@ export const UserProfile = () => {
 	});
 
 	const events = () => contributionEvents() ?? [];
+	const userComments = () => comments() ?? [];
 	const userProjects = () => projects() ?? [];
 
 	const displayName = () => getDisplayName(account());
@@ -120,7 +125,10 @@ export const UserProfile = () => {
 
 									<UserProjects projects={userProjects()} />
 
-									<ActivityTimeline events={events()} />
+									<ActivityTimeline
+										events={events()}
+										comments={userComments()}
+									/>
 								</Stack>
 							)}
 						</Show>

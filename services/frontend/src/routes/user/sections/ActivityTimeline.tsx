@@ -1,11 +1,17 @@
 import { formatCompactDateTime } from "@package/common";
 import type { Row } from "@package/database/client";
 import { A } from "@solidjs/router";
-import { For, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
-import { CheckIcon, TrophyIcon, XIcon } from "@/components/primitives/icon";
+import {
+	CheckIcon,
+	DocumentIcon,
+	TrophyIcon,
+	XIcon,
+} from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Tabs } from "@/components/ui/tabs";
 import { buildPackageUrl } from "@/lib/url";
 
 type ContributionEvent = Row["contributionEvents"] & {
@@ -17,9 +23,22 @@ type ContributionEvent = Row["contributionEvents"] & {
 		| null;
 };
 
+type Comment = Row["comments"] & {
+	thread?:
+		| (Row["threads"] & {
+				package?: Row["packages"] | null;
+				ecosystem?: Row["ecosystems"] | null;
+				project?: Row["projects"] | null;
+		  })
+		| null;
+};
+
 interface ActivityTimelineProps {
 	events: readonly ContributionEvent[];
+	comments: readonly Comment[];
 }
+
+type ActivityTab = "all" | "contributions" | "comments";
 
 const EventIcon = (props: { type: string }) => {
 	switch (props.type) {
@@ -81,12 +100,108 @@ const EventTarget = (props: {
 	);
 };
 
+const CommentTarget = (props: { thread: Comment["thread"] }) => {
+	const pkg = () => props.thread?.package;
+	const eco = () => props.thread?.ecosystem;
+	const proj = () => props.thread?.project;
+
+	return (
+		<Show when={pkg() || eco() || proj()}>
+			<Text size="sm" color="muted">
+				on
+			</Text>
+			<Show when={pkg()}>
+				{(p) => (
+					<A
+						href={`${buildPackageUrl(p().registry, p().name)}/discussion`}
+						class="text-brand dark:text-brand-dark hover:underline"
+					>
+						{p().name}
+					</A>
+				)}
+			</Show>
+			<Show when={!pkg() && eco()}>
+				{(e) => (
+					<A
+						href={`/ecosystem/${e().slug}/discussion`}
+						class="text-brand dark:text-brand-dark hover:underline"
+					>
+						{e().name}
+					</A>
+				)}
+			</Show>
+			<Show when={!pkg() && !eco() && proj()}>
+				{(p) => (
+					<A
+						href={`/projects/${p().id}`}
+						class="text-brand dark:text-brand-dark hover:underline"
+					>
+						{p().name}
+					</A>
+				)}
+			</Show>
+		</Show>
+	);
+};
+
+type ActivityItem =
+	| { type: "event"; data: ContributionEvent; createdAt: number }
+	| { type: "comment"; data: Comment; createdAt: number };
+
 export const ActivityTimeline = (props: ActivityTimelineProps) => {
+	const [tab, setTab] = createSignal<ActivityTab>("all");
+
+	const allItems = (): ActivityItem[] => {
+		const eventItems: ActivityItem[] = props.events.map((e) => ({
+			type: "event",
+			data: e,
+			createdAt: e.createdAt,
+		}));
+		const commentItems: ActivityItem[] = props.comments.map((c) => ({
+			type: "comment",
+			data: c,
+			createdAt: c.createdAt,
+		}));
+		return [...eventItems, ...commentItems].sort(
+			(a, b) => b.createdAt - a.createdAt,
+		);
+	};
+
+	const filteredItems = () => {
+		const currentTab = tab();
+		if (currentTab === "all") return allItems().slice(0, 20);
+		if (currentTab === "contributions")
+			return allItems()
+				.filter((i) => i.type === "event")
+				.slice(0, 20);
+		return allItems()
+			.filter((i) => i.type === "comment")
+			.slice(0, 20);
+	};
+
+	const hasAnyActivity = () =>
+		props.events.length > 0 || props.comments.length > 0;
+
 	return (
 		<Stack spacing="sm">
-			<Text weight="semibold">Recent Activity</Text>
+			<Flex justify="between" align="center">
+				<Text weight="semibold">Recent Activity</Text>
+			</Flex>
+
+			<Show when={hasAnyActivity()}>
+				<Tabs.Root value={tab()} onChange={(v) => setTab(v as ActivityTab)}>
+					<Tabs.List>
+						<Tabs.Trigger value="all">All</Tabs.Trigger>
+						<Tabs.Trigger value="contributions">
+							Votes & Suggestions
+						</Tabs.Trigger>
+						<Tabs.Trigger value="comments">Comments</Tabs.Trigger>
+					</Tabs.List>
+				</Tabs.Root>
+			</Show>
+
 			<Show
-				when={props.events.length > 0}
+				when={filteredItems().length > 0}
 				fallback={
 					<Text size="sm" color="muted" class="py-4">
 						No activity yet
@@ -94,36 +209,80 @@ export const ActivityTimeline = (props: ActivityTimelineProps) => {
 				}
 			>
 				<Stack spacing="xs">
-					<For each={props.events}>
-						{(event) => (
-							<Flex
-								gap="sm"
-								align="center"
-								class="py-2 px-3 rounded-radius hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
-							>
-								<EventIcon type={event.type} />
-								<Flex gap="xs" align="center" class="flex-1 min-w-0 flex-wrap">
-									<Text size="sm">{getEventDescription(event)}</Text>
-									<EventTarget suggestion={event.suggestion} />
-								</Flex>
-								<Flex gap="sm" align="center" class="shrink-0">
-									<Text
-										size="sm"
-										weight="medium"
-										class={
-											event.points > 0
-												? "text-success dark:text-success-dark"
-												: "text-danger dark:text-danger-dark"
-										}
+					<For each={filteredItems()}>
+						{(item) => (
+							<Show
+								when={item.type === "event"}
+								fallback={
+									<Flex
+										gap="sm"
+										align="center"
+										class="py-2 px-3 rounded-radius hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
 									>
-										{event.points > 0 ? "+" : ""}
-										{event.points}
-									</Text>
-									<Text size="xs" color="muted" class="hidden sm:block">
-										{formatCompactDateTime(event.createdAt)}
-									</Text>
+										<DocumentIcon
+											size="sm"
+											class="text-muted dark:text-muted-dark shrink-0"
+										/>
+										<Flex
+											gap="xs"
+											align="center"
+											class="flex-1 min-w-0 flex-wrap"
+										>
+											<Text size="sm" class="truncate max-w-48">
+												{(item.data as Comment).content.slice(0, 50)}
+												{(item.data as Comment).content.length > 50
+													? "..."
+													: ""}
+											</Text>
+											<CommentTarget thread={(item.data as Comment).thread} />
+										</Flex>
+										<Text
+											size="xs"
+											color="muted"
+											class="shrink-0 hidden sm:block"
+										>
+											{formatCompactDateTime(item.createdAt)}
+										</Text>
+									</Flex>
+								}
+							>
+								<Flex
+									gap="sm"
+									align="center"
+									class="py-2 px-3 rounded-radius hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+								>
+									<EventIcon type={(item.data as ContributionEvent).type} />
+									<Flex
+										gap="xs"
+										align="center"
+										class="flex-1 min-w-0 flex-wrap"
+									>
+										<Text size="sm">
+											{getEventDescription(item.data as ContributionEvent)}
+										</Text>
+										<EventTarget
+											suggestion={(item.data as ContributionEvent).suggestion}
+										/>
+									</Flex>
+									<Flex gap="sm" align="center" class="shrink-0">
+										<Text
+											size="sm"
+											weight="medium"
+											class={
+												(item.data as ContributionEvent).points > 0
+													? "text-success dark:text-success-dark"
+													: "text-danger dark:text-danger-dark"
+											}
+										>
+											{(item.data as ContributionEvent).points > 0 ? "+" : ""}
+											{(item.data as ContributionEvent).points}
+										</Text>
+										<Text size="xs" color="muted" class="hidden sm:block">
+											{formatCompactDateTime(item.createdAt)}
+										</Text>
+									</Flex>
 								</Flex>
-							</Flex>
+							</Show>
 						)}
 					</For>
 				</Stack>
