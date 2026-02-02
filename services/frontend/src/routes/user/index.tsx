@@ -118,9 +118,9 @@ export const UserProfile = () => {
 										rank={rank()}
 									/>
 
-									<ActivityTimeline events={events()} />
-
 									<UserProjects projects={userProjects()} />
+
+									<ActivityTimeline events={events()} />
 								</Stack>
 							)}
 						</Show>
