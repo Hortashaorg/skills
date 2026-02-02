@@ -63,7 +63,7 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 
 ### Comments Expansion
 
-- [ ] Integrate CommentThread on ecosystem pages
+- [x] Integrate CommentThread on ecosystem pages
 - [ ] Integrate CommentThread on project pages
 - [ ] Linkable comments (URL anchors, scroll to comment)
 - [ ] User profile links from comment avatars
