@@ -66,6 +66,7 @@ const LANGUAGES = [
 	{ id: "matlab", label: "MATLAB" },
 	{ id: "diff", label: "Diff" },
 	{ id: "regex", label: "Regex" },
+	{ id: "mermaid", label: "Mermaid" },
 	{ id: "", label: "Plain text" },
 ];
 

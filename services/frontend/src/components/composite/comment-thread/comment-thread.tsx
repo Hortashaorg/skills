@@ -188,7 +188,10 @@ export const CommentThread = (props: CommentThreadProps) => {
 						}
 					>
 						{(authorId) => (
-							<A href={`/user/${authorId()}`}>
+							<A
+								href={`/user/${authorId()}`}
+								aria-label={`View ${itemProps.comment.author?.name ?? "user"}'s profile`}
+							>
 								<Avatar
 									initials={getInitials(itemProps.comment.author?.name)}
 									size={itemProps.isRoot ? "md" : "sm"}
