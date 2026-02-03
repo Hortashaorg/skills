@@ -1,4 +1,6 @@
 import { createSignal } from "solid-js";
+import type { Shortcut, ToolbarModule } from "./markdown-editor-types";
+import { createUndoStack } from "./undo-stack";
 
 export type WrapOptions = {
 	prefix: string;
@@ -6,16 +8,26 @@ export type WrapOptions = {
 };
 
 type Options = {
-	onValue: (v: string) => void;
 	debug?: boolean;
 };
+
+function matchesShortcut(e: KeyboardEvent, shortcut: Shortcut | Shortcut[]) {
+	const shortcuts = Array.isArray(shortcut) ? shortcut : [shortcut];
+	return shortcuts.some(
+		(s) =>
+			e.key.toLowerCase() === s.key.toLowerCase() &&
+			(e.ctrlKey || e.metaKey) === (s.ctrl ?? false) &&
+			e.shiftKey === (s.shift ?? false),
+	);
+}
 
 function clamp(n: number, min: number, max: number) {
 	return Math.max(min, Math.min(n, max));
 }
 
-export function useTextareaUtility(options: Options) {
-	const { onValue, debug = false } = options;
+export function useEditor(options?: Options) {
+	const debug = options?.debug ?? false;
+	const undoStack = createUndoStack();
 
 	const log = (...args: unknown[]) => {
 		if (debug) console.log("[textarea-utility]", ...args);
@@ -25,7 +37,13 @@ export function useTextareaUtility(options: Options) {
 	// State tracking: ref, selection, and event handlers to keep them in sync
 	// ──────────────────────────────────────────────────────────────────────────
 
-	const [textareaRef, setTextareaRef] = createSignal<HTMLTextAreaElement>();
+	const [textareaRef, _setTextareaRef] = createSignal<HTMLTextAreaElement>();
+
+	const setTextareaRef = (el: HTMLTextAreaElement) => {
+		const wasSet = !!textareaRef();
+		_setTextareaRef(el);
+		return wasSet;
+	};
 	const [selection, setSelection] = createSignal({ start: 0, end: 0 });
 
 	const captureSelection = (el: HTMLTextAreaElement) => {
@@ -43,13 +61,44 @@ export function useTextareaUtility(options: Options) {
 		el.setSelectionRange(clamp(sel.start, 0, max), clamp(sel.end, 0, max));
 	};
 
+	// Track undo checkpoints on word boundaries and pauses
+	let pauseTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	const saveOnBoundary = (el: HTMLTextAreaElement, key: string) => {
+		// Clear any pending pause save
+		if (pauseTimeout) {
+			clearTimeout(pauseTimeout);
+			pauseTimeout = null;
+		}
+
+		// Save immediately on word boundaries
+		const isBoundary = /^[\s.,!?;:\-(){}[\]"'`]$/.test(key) || key === "Enter";
+		if (isBoundary) {
+			undoStack.save(el);
+			log("save (boundary)");
+			return;
+		}
+
+		// Save after typing pause (300ms)
+		pauseTimeout = setTimeout(() => {
+			undoStack.save(el);
+			log("save (pause)");
+		}, 300);
+	};
+
 	const handlers = {
 		onSelect: (e: Event & { currentTarget: HTMLTextAreaElement }) =>
 			captureSelection(e.currentTarget),
-		onKeyUp: (e: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) =>
-			captureSelection(e.currentTarget),
-		onMouseUp: (e: MouseEvent & { currentTarget: HTMLTextAreaElement }) =>
-			captureSelection(e.currentTarget),
+		onKeyUp: (e: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) => {
+			captureSelection(e.currentTarget);
+			saveOnBoundary(e.currentTarget, e.key);
+		},
+		onMouseUp: (e: MouseEvent & { currentTarget: HTMLTextAreaElement }) => {
+			captureSelection(e.currentTarget);
+			// Save on click (selection change)
+			undoStack.save(e.currentTarget);
+			log("save (click)");
+		},
 	};
 
 	// ──────────────────────────────────────────────────────────────────────────
@@ -72,10 +121,11 @@ export function useTextareaUtility(options: Options) {
 		const sel = getSelection();
 		if (!sel) return;
 
+		undoStack.save(sel.el);
 		sel.el.setRangeText(replacement, sel.start, sel.end, "end");
 		log("applyEdit", { replacement, start: sel.start, end: sel.end });
 		captureSelection(sel.el);
-		onValue(sel.el.value);
+		sel.el.dispatchEvent(new InputEvent("input", { bubbles: true }));
 	};
 
 	const insert = (text: string) => applyEdit(text);
@@ -93,10 +143,11 @@ export function useTextareaUtility(options: Options) {
 		const needsNewline = before.length > 0 && !before.endsWith("\n");
 
 		const text = needsNewline ? `\n${block}` : block;
+		undoStack.save(el);
 		el.setRangeText(text, pos, pos, "end");
 		log("insertBlock", { block, pos, needsNewline });
 		captureSelection(el);
-		onValue(el.value);
+		el.dispatchEvent(new InputEvent("input", { bubbles: true }));
 	};
 
 	const wrap = (opts: WrapOptions) => {
@@ -104,6 +155,7 @@ export function useTextareaUtility(options: Options) {
 		if (!sel) return;
 
 		const replacement = `${opts.prefix}${sel.text}${opts.suffix}`;
+		undoStack.save(sel.el);
 		sel.el.setRangeText(replacement, sel.start, sel.end, "end");
 		log("wrap", { replacement, start: sel.start, end: sel.end });
 
@@ -115,14 +167,71 @@ export function useTextareaUtility(options: Options) {
 		sel.el.setSelectionRange(caret, caret);
 
 		captureSelection(sel.el);
-		onValue(sel.el.value);
+		sel.el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+	};
+
+	const undo = () => {
+		const el = textareaRef();
+		if (!el) return false;
+
+		// Clear pending pause save
+		if (pauseTimeout) {
+			clearTimeout(pauseTimeout);
+			pauseTimeout = null;
+		}
+
+		// Save current state if changed (captures in-progress typing)
+		undoStack.save(el);
+
+		const result = undoStack.undo(el);
+		if (result) {
+			log("undo");
+			captureSelection(el);
+		}
+		return result;
+	};
+
+	const redo = () => {
+		const el = textareaRef();
+		if (!el) return false;
+		const result = undoStack.redo(el);
+		if (result) {
+			log("redo");
+			captureSelection(el);
+		}
+		return result;
 	};
 
 	// ──────────────────────────────────────────────────────────────────────────
+
+	const saveState = () => {
+		const el = textareaRef();
+		if (el) undoStack.save(el);
+	};
+
+	const createKeyDownHandler =
+		(
+			modules: ToolbarModule[],
+			createContext: () => Parameters<NonNullable<ToolbarModule["action"]>>[0],
+		) =>
+		(e: KeyboardEvent) => {
+			for (const mod of modules) {
+				if (!mod.shortcut || !mod.action) continue;
+				if (matchesShortcut(e, mod.shortcut)) {
+					e.preventDefault();
+					mod.action(createContext());
+					return;
+				}
+			}
+		};
 
 	return {
 		setTextareaRef,
 		handlers,
 		mutators: { insert, insertBlock, wrap },
+		undo,
+		redo,
+		saveState,
+		createKeyDownHandler,
 	};
 }

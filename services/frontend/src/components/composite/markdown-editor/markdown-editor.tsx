@@ -5,7 +5,7 @@ import { MarkdownOutput } from "@/components/ui/markdown-output";
 import { cn } from "@/lib/utils";
 import type { ToolbarContext, ToolbarModule } from "./markdown-editor-types";
 import { defaultModules } from "./modules";
-import { useTextareaUtility } from "./use-textarea-utility";
+import { useEditor } from "./use-editor";
 
 export type MarkdownEditorProps = Omit<
 	JSX.IntrinsicElements["div"],
@@ -41,17 +41,16 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 
 	const minHeight = () => local.minHeight ?? "min-h-32";
 
-	const textarea = useTextareaUtility({
-		onValue: local.onInput,
-		debug: import.meta.env.DEV,
-	});
+	const editor = useEditor({ debug: import.meta.env.DEV });
 
 	const modules = defaultModules;
 
 	const createContext = (): ToolbarContext => ({
-		insert: textarea.mutators.insert,
-		insertBlock: textarea.mutators.insertBlock,
-		wrap: textarea.mutators.wrap,
+		insert: editor.mutators.insert,
+		insertBlock: editor.mutators.insertBlock,
+		wrap: editor.mutators.wrap,
+		undo: editor.undo,
+		redo: editor.redo,
 		closePanel: () => setActivePanel(null),
 	});
 
@@ -62,6 +61,8 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			module.action(createContext());
 		}
 	};
+
+	const handleKeyDown = editor.createKeyDownHandler(modules, createContext);
 
 	const activeModule = () =>
 		modules.find((m) => m.id === activePanel() && m.panel);
@@ -146,18 +147,23 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			<Show when={activeTab() === "write"}>
 				<Textarea
 					ref={(el) => {
-						textarea.setTextareaRef(el);
+						if (!el) return;
+						const isInit = !editor.setTextareaRef(el);
+						if (isInit) {
+							el.value = local.value;
+							editor.saveState();
+						}
 					}}
 					variant="code"
 					class={cn(
 						"border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
 						minHeight(),
 					)}
-					value={local.value}
 					onInput={(e) => local.onInput(e.currentTarget.value)}
-					onSelect={textarea.handlers.onSelect}
-					onKeyUp={textarea.handlers.onKeyUp}
-					onMouseUp={textarea.handlers.onMouseUp}
+					onSelect={editor.handlers.onSelect}
+					onKeyDown={handleKeyDown}
+					onKeyUp={editor.handlers.onKeyUp}
+					onMouseUp={editor.handlers.onMouseUp}
 					placeholder={local.placeholder}
 				/>
 			</Show>

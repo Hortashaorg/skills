@@ -3,7 +3,8 @@ import type { ToolbarModule } from "../markdown-editor-types";
 
 export const boldModule: ToolbarModule = {
 	id: "bold",
-	label: "Bold",
+	label: "Bold (Ctrl+B)",
+	shortcut: { key: "b", ctrl: true },
 	icon: () => (
 		<Icon size="sm">
 			<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
