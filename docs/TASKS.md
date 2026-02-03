@@ -8,17 +8,16 @@
 
 ### User Profiles
 
-- [ ] Schema: extend `account` with bio, avatar URL, social links
 - [x] Profile page route (`/user/:id`)
 - [x] Profile display: name, member since, contribution stats, activity timeline, projects
 - [x] Link to profile from leaderboard
 - [x] Link to profile from comments, suggestions, projects
-- [ ] Profile editing (own profile only)
+
 
 ### Comments Expansion ✓
 
 - [x] Integrate CommentThread on ecosystem pages
-- [ ] Integrate CommentThread on project pages
+
 - [x] Linkable comments (URL anchors, scroll to comment, deep link support)
 - [x] "Reply to {name}" in activity timeline with clickable author links
 - [x] Reply limit (100 per thread) with UI feedback
@@ -32,19 +31,21 @@
 
 ### Editor & Renderer Enhancements
 
-- [ ] Code block language dropdown (select language for syntax highlighting)
-- [ ] Textarea behavior overrides (Tab for indent, auto-close brackets)
-- [ ] Entity link syntax (e.g., `@package:lodash` or similar)
-- [ ] Entity link autocomplete (search popup on trigger)
-- [ ] Entity link recognition in renderer (`/package/*`, `/ecosystem/*`, etc.)
-- [ ] Entity link styling (chips, icons, distinct from regular links)
-- [ ] Rich hover preview for entity links (package/ecosystem/project details)
+- [x] Replace `execCommand` insert with textarea-range editing (preserve selection + Ctrl+Z/Ctrl+Y)
+- [ ] Textarea behavior overrides: Tab/Shift+Tab indent + outdent (multi-line), auto-close brackets/quotes
+- [ ] Renderer: memoize markdown processing to avoid re-processing on unrelated re-renders
+- [ ] Renderer: remove HTML string post-processing for mentions; prefer structured parsing/transforms
+- [ ] Entity token syntax (draft): `$$project:<id>`, `$$user:<id>`, `$$ecosystem:<id>` (unambiguous, ID-based)
+- [ ] Renderer: recognize `$$...` entity tokens and render as safe links (no embedded HTML in markdown)
+- [ ] Editor utility: insert helpers for entity tokens (panel or minimal command), but keep input as plain markdown textarea
 
 ---
 
 ## Sprint 14: Projects Kanban Rework
 
 See [Feature-Projects.md](./Feature-Projects.md) for full spec.
+
+- [ ] Integrate CommentThread on project pages
 
 - [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
 - [ ] Schema: Add `statusId`, `note` to `projectPackages` and `projectEcosystems`

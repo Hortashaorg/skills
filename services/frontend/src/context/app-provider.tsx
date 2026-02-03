@@ -27,7 +27,24 @@ export const AppProvider: ParentComponent = (props) => {
 	const [authData, setAuthData] = createSignal<AuthData | null>(null);
 	const [authLoading, setAuthLoading] = createSignal(true);
 
-	_setAuthData = setAuthData;
+	// Separate signal for access token - updates don't trigger ZeroProvider identity changes
+	const [accessToken, setAccessToken] = createSignal<string | null>(null);
+
+	// Wrap setAuthData to update both signals, but only update identity when it changes
+	const updateAuth = (data: AuthData | null) => {
+		setAccessToken(data?.accessToken ?? null);
+
+		const current = authData();
+		const identityChanged =
+			current?.userId !== data?.userId ||
+			JSON.stringify(current?.roles) !== JSON.stringify(data?.roles);
+
+		if (identityChanged) {
+			setAuthData(data);
+		}
+	};
+
+	_setAuthData = updateAuth;
 	_getAuthData = authData;
 
 	onMount(async () => {
@@ -37,7 +54,7 @@ export const AppProvider: ParentComponent = (props) => {
 		if (code) {
 			try {
 				const data = await authApi.login(code);
-				setAuthData(data);
+				updateAuth(data);
 
 				const returnUrl = getAndClearReturnUrl();
 				if (returnUrl) {
@@ -56,7 +73,7 @@ export const AppProvider: ParentComponent = (props) => {
 			try {
 				const data = await authApi.refresh();
 				if (data) {
-					setAuthData(data);
+					updateAuth(data);
 				}
 			} catch (error) {
 				console.error("Token refresh failed:", error);
@@ -71,7 +88,7 @@ export const AppProvider: ParentComponent = (props) => {
 		<Show when={!authLoading()} fallback={<div class="min-h-screen" />}>
 			<ZeroProvider
 				userID={authData()?.userId ?? "anon"}
-				auth={authData()?.accessToken ?? null}
+				auth={accessToken()}
 				context={{
 					userID: authData()?.userId ?? "anon",
 					roles: authData()?.roles ?? [],
@@ -81,7 +98,7 @@ export const AppProvider: ParentComponent = (props) => {
 				cacheURL={getConfig().zeroUrl}
 				disconnectTimeoutMs={1000 * 30}
 			>
-				<ConnectionStatus authData={authData} setAuthData={setAuthData}>
+				<ConnectionStatus authData={authData} setAuthData={updateAuth}>
 					{props.children}
 				</ConnectionStatus>
 			</ZeroProvider>

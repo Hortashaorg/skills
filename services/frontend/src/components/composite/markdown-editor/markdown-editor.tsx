@@ -5,6 +5,7 @@ import { MarkdownOutput } from "@/components/ui/markdown-output";
 import { cn } from "@/lib/utils";
 import type { ToolbarContext, ToolbarModule } from "./markdown-editor-types";
 import { defaultModules } from "./modules";
+import { useTextareaUtility } from "./use-textarea-utility";
 
 export type MarkdownEditorProps = Omit<
 	JSX.IntrinsicElements["div"],
@@ -35,24 +36,22 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		"class",
 	]);
 
-	let textareaRef: HTMLTextAreaElement | undefined;
 	const [activeTab, setActiveTab] = createSignal<"write" | "preview">("write");
 	const [activePanel, setActivePanel] = createSignal<string | null>(null);
 
 	const minHeight = () => local.minHeight ?? "min-h-32";
 
-	const insertAtCursor = (text: string) => {
-		if (!textareaRef) return;
-
-		textareaRef.focus();
-		document.execCommand("insertText", false, text);
-		local.onInput(textareaRef.value);
-	};
+	const textarea = useTextareaUtility({
+		onValue: local.onInput,
+		debug: import.meta.env.DEV,
+	});
 
 	const modules = defaultModules;
 
 	const createContext = (): ToolbarContext => ({
-		insert: insertAtCursor,
+		insert: textarea.mutators.insert,
+		insertBlock: textarea.mutators.insertBlock,
+		wrap: textarea.mutators.wrap,
 		closePanel: () => setActivePanel(null),
 	});
 
@@ -147,7 +146,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			<Show when={activeTab() === "write"}>
 				<Textarea
 					ref={(el) => {
-						textareaRef = el;
+						textarea.setTextareaRef(el);
 					}}
 					variant="code"
 					class={cn(
@@ -156,6 +155,9 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 					)}
 					value={local.value}
 					onInput={(e) => local.onInput(e.currentTarget.value)}
+					onSelect={textarea.handlers.onSelect}
+					onKeyUp={textarea.handlers.onKeyUp}
+					onMouseUp={textarea.handlers.onMouseUp}
 					placeholder={local.placeholder}
 				/>
 			</Show>

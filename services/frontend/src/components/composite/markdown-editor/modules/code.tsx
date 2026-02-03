@@ -10,7 +10,5 @@ export const codeModule: ToolbarModule = {
 			<polyline points="8 6 2 12 8 18" />
 		</Icon>
 	),
-	action: (ctx) => {
-		ctx.insert("```\n\n```");
-	},
+	action: (ctx) => ctx.insertBlock("```\n\n```"),
 };

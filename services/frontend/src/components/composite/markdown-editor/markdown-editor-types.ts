@@ -1,9 +1,9 @@
 import type { JSX } from "solid-js";
 
-export type InsertFn = (text: string) => void;
-
 export type ToolbarContext = {
-	insert: InsertFn;
+	insert: (text: string) => void;
+	insertBlock: (block: string) => void;
+	wrap: (options: { prefix: string; suffix: string }) => void;
 	closePanel: () => void;
 };
 
