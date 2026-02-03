@@ -167,11 +167,8 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 				<Textarea
 					ref={(el) => {
 						if (!el) return;
-						const isInit = !editor.setTextareaRef(el);
-						if (isInit) {
-							el.value = local.value;
-							editor.saveState();
-						}
+						editor.setTextareaRef(el);
+						el.value = local.value;
 					}}
 					variant="code"
 					class={cn(
