@@ -4,53 +4,6 @@
 
 ---
 
-## Sprint 12: RichText & Comments
-
-Focus: Markdown infrastructure, editor, and threaded comments system.
-
-### RichText: Markdown Renderer ✓
-
-Build the renderer first - it's needed everywhere.
-
-- [x] Set up remark/rehype pipeline
-- [x] GitHub Flavored Markdown (tables, strikethrough, task lists)
-- [x] Syntax highlighting for code blocks (rehype-highlight)
-- [x] TechGarden typography and styling (prose styles, brand colors)
-
-### RichText: Markdown Editor ✓
-
-- [x] MarkdownInput component with styling
-- [x] MarkdownEditor composite (Write/Preview tabs, toolbar)
-- [x] insertAtCursor helper (uses execCommand for native undo support)
-- [x] Basic toolbar modules (Bold, Italic, Link, Code, Quote)
-- [x] Link insertion panel (text + URL fields, responsive)
-- [x] Mobile-friendly layout (toolbar wraps, link panel stacks)
-
-### Comments System ✓
-
-Database and UI for threaded discussions on packages, ecosystems, and projects.
-
-- [x] Database: `threads` table (per entity), `comments` table with `replyToId`
-- [x] Queries: `byThreadId` (with nested replies), `byId`, `byAuthorId`
-- [x] Mutators: `create` (auto-creates thread), `update`, `remove` (soft delete)
-- [x] Avatar component (ui tier) with size/variant props
-- [x] CommentCard component (presentational, avatar-less)
-- [x] CommentThread component (orchestrates edit/reply modes)
-- [x] useCommentThread hook (Zero queries/mutations wrapper)
-- [x] Flat threading with `rootCommentId` (Reddit-style, replies don't nest deeply)
-- [x] Pagination: 20 root comments, "Show replies" loads 20 at a time
-- [x] Mobile layout: avatars hidden, left border for reply indentation
-- [x] Integrate CommentThread on package detail page (Discussion tab)
-
-### UX Improvements ✓
-
-- [x] Route lazy loading (code splitting, prevents loading unused dependencies)
-- [x] Package page: removed card wrapper, full-width underline tabs
-- [x] Project page: same tab pattern for consistency
-- [x] Tab hierarchy: page-level uses `line` variant, nested uses `pills` variant
-
----
-
 ## Sprint 13: User Profiles & Comments Expansion
 
 ### User Profiles
@@ -59,7 +12,7 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [x] Profile page route (`/user/:id`)
 - [x] Profile display: name, member since, contribution stats, activity timeline, projects
 - [x] Link to profile from leaderboard
-- [ ] Link to profile from comments, suggestions
+- [x] Link to profile from comments, suggestions, projects
 - [ ] Profile editing (own profile only)
 
 ### Comments Expansion ✓
@@ -70,7 +23,7 @@ Database and UI for threaded discussions on packages, ecosystems, and projects.
 - [x] "Reply to {name}" in activity timeline with clickable author links
 - [x] Reply limit (100 per thread) with UI feedback
 - [x] Character limit (10,000) with live counter in editor
-- [ ] User profile links from comment avatars
+- [x] User profile links from comment avatars
 
 ### Leaderboard UX ✓
 
@@ -113,6 +66,17 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 12: RichText & Comments
+
+- Markdown renderer: remark/rehype pipeline, GFM support, syntax highlighting, prose styles
+- Markdown editor: MarkdownInput, MarkdownEditor composite with Write/Preview tabs
+- Editor toolbar: Bold, Italic, Link, Code, Quote modules with link insertion panel
+- Comments system: threads/comments tables, nested replies with `rootCommentId`
+- Comment components: Avatar, CommentCard, CommentThread with useCommentThread hook
+- Flat threading (Reddit-style), pagination (20 root + "Show replies"), mobile layout
+- Discussion tab on package detail page
+- Route lazy loading (code splitting), consistent tab patterns across pages
 
 ### Sprint 11: Tech Debt & DX
 
