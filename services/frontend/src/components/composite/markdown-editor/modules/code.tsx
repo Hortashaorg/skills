@@ -4,22 +4,68 @@ import { Input } from "@/components/primitives/input";
 import type { ToolbarModule } from "../markdown-editor-types";
 
 const LANGUAGES = [
+	// Web
 	{ id: "js", label: "JavaScript" },
 	{ id: "ts", label: "TypeScript" },
 	{ id: "tsx", label: "TSX" },
 	{ id: "jsx", label: "JSX" },
 	{ id: "html", label: "HTML" },
 	{ id: "css", label: "CSS" },
+	{ id: "scss", label: "SCSS" },
 	{ id: "json", label: "JSON" },
+	{ id: "graphql", label: "GraphQL" },
+	// Shell
 	{ id: "bash", label: "Bash" },
 	{ id: "sh", label: "Shell" },
-	{ id: "python", label: "Python" },
+	{ id: "powershell", label: "PowerShell" },
+	// Systems
+	{ id: "c", label: "C" },
+	{ id: "cpp", label: "C++" },
+	{ id: "csharp", label: "C#" },
 	{ id: "rust", label: "Rust" },
 	{ id: "go", label: "Go" },
+	{ id: "zig", label: "Zig" },
+	// JVM
+	{ id: "java", label: "Java" },
+	{ id: "kotlin", label: "Kotlin" },
+	{ id: "scala", label: "Scala" },
+	{ id: "groovy", label: "Groovy" },
+	// Scripting
+	{ id: "python", label: "Python" },
+	{ id: "ruby", label: "Ruby" },
+	{ id: "php", label: "PHP" },
+	{ id: "perl", label: "Perl" },
+	{ id: "lua", label: "Lua" },
+	// Functional
+	{ id: "haskell", label: "Haskell" },
+	{ id: "elixir", label: "Elixir" },
+	{ id: "erlang", label: "Erlang" },
+	{ id: "clojure", label: "Clojure" },
+	{ id: "fsharp", label: "F#" },
+	{ id: "ocaml", label: "OCaml" },
+	// Mobile
+	{ id: "swift", label: "Swift" },
+	{ id: "objc", label: "Objective-C" },
+	{ id: "dart", label: "Dart" },
+	// Data & Config
 	{ id: "sql", label: "SQL" },
 	{ id: "yaml", label: "YAML" },
+	{ id: "toml", label: "TOML" },
+	{ id: "xml", label: "XML" },
+	{ id: "ini", label: "INI" },
+	// Markup & Docs
 	{ id: "md", label: "Markdown" },
+	{ id: "latex", label: "LaTeX" },
+	// DevOps
+	{ id: "dockerfile", label: "Dockerfile" },
+	{ id: "nginx", label: "Nginx" },
+	{ id: "terraform", label: "Terraform" },
+	// Other
+	{ id: "r", label: "R" },
+	{ id: "julia", label: "Julia" },
+	{ id: "matlab", label: "MATLAB" },
 	{ id: "diff", label: "Diff" },
+	{ id: "regex", label: "Regex" },
 	{ id: "", label: "Plain text" },
 ];
 
