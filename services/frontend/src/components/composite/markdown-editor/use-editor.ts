@@ -170,6 +170,77 @@ export function useEditor(options?: Options) {
 		sel.el.dispatchEvent(new InputEvent("input", { bubbles: true }));
 	};
 
+	const indent = (indentStr = "\t") => {
+		const el = textareaRef();
+		if (!el) return;
+
+		el.focus();
+		restoreSelection(el);
+
+		const start = el.selectionStart ?? 0;
+		const end = el.selectionEnd ?? 0;
+		const value = el.value;
+
+		// Find line boundaries
+		const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+		const lineEnd = value.indexOf("\n", end);
+		const actualLineEnd = lineEnd === -1 ? value.length : lineEnd;
+
+		// Get all lines in selection
+		const selectedText = value.slice(lineStart, actualLineEnd);
+		const lines = selectedText.split("\n");
+
+		// Indent each line
+		const indented = lines.map((line) => indentStr + line).join("\n");
+
+		undoStack.save(el);
+		el.setRangeText(indented, lineStart, actualLineEnd, "select");
+
+		// Adjust selection to cover indented text
+		el.setSelectionRange(lineStart, lineStart + indented.length);
+
+		log("indent", { lineStart, actualLineEnd, lines: lines.length });
+		captureSelection(el);
+		el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+	};
+
+	const outdent = () => {
+		const el = textareaRef();
+		if (!el) return;
+
+		el.focus();
+		restoreSelection(el);
+
+		const start = el.selectionStart ?? 0;
+		const end = el.selectionEnd ?? 0;
+		const value = el.value;
+
+		// Find line boundaries
+		const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+		const lineEnd = value.indexOf("\n", end);
+		const actualLineEnd = lineEnd === -1 ? value.length : lineEnd;
+
+		// Get all lines in selection
+		const selectedText = value.slice(lineStart, actualLineEnd);
+		const lines = selectedText.split("\n");
+
+		// Remove common prefixes: tab, 2 spaces, "> ", "- [ ] ", "- [x] ", "- "
+		const prefixPattern = /^(\t| {2}|> |- \[[x ]\] |- )/;
+		const outdented = lines
+			.map((line) => line.replace(prefixPattern, ""))
+			.join("\n");
+
+		undoStack.save(el);
+		el.setRangeText(outdented, lineStart, actualLineEnd, "select");
+
+		// Adjust selection to cover outdented text
+		el.setSelectionRange(lineStart, lineStart + outdented.length);
+
+		log("outdent", { lineStart, actualLineEnd, lines: lines.length });
+		captureSelection(el);
+		el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+	};
+
 	const undo = () => {
 		const el = textareaRef();
 		if (!el) return false;
@@ -228,7 +299,7 @@ export function useEditor(options?: Options) {
 	return {
 		setTextareaRef,
 		handlers,
-		mutators: { insert, insertBlock, wrap },
+		mutators: { insert, insertBlock, wrap, indent, outdent },
 		undo,
 		redo,
 		saveState,

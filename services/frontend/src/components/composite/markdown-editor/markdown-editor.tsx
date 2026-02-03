@@ -7,6 +7,9 @@ import type { ToolbarContext, ToolbarModule } from "./markdown-editor-types";
 import { defaultModules } from "./modules";
 import { useEditor } from "./use-editor";
 
+const isModule = (item: unknown): item is ToolbarModule =>
+	typeof item === "object" && item !== null && "id" in item;
+
 export type MarkdownEditorProps = Omit<
 	JSX.IntrinsicElements["div"],
 	"onSubmit"
@@ -49,6 +52,8 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		insert: editor.mutators.insert,
 		insertBlock: editor.mutators.insertBlock,
 		wrap: editor.mutators.wrap,
+		indent: editor.mutators.indent,
+		outdent: editor.mutators.outdent,
 		undo: editor.undo,
 		redo: editor.redo,
 		closePanel: () => setActivePanel(null),
@@ -62,10 +67,15 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		}
 	};
 
-	const handleKeyDown = editor.createKeyDownHandler(modules, createContext);
+	const toolbarModules = modules.filter(isModule);
+
+	const handleKeyDown = editor.createKeyDownHandler(
+		toolbarModules,
+		createContext,
+	);
 
 	const activeModule = () =>
-		modules.find((m) => m.id === activePanel() && m.panel);
+		toolbarModules.find((m) => m.id === activePanel() && m.panel);
 
 	return (
 		<div
@@ -110,25 +120,29 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 				<Show when={activeTab() === "write" && modules.length > 0}>
 					<div class="flex gap-0.5">
 						<For each={modules}>
-							{(module) => (
-								<button
-									type="button"
-									onClick={() => handleModuleClick(module)}
-									title={module.label}
-									class={cn(
-										"p-1.5 rounded-radius transition-colors",
-										"text-on-surface-muted dark:text-on-surface-dark-muted",
-										"hover:text-on-surface dark:hover:text-on-surface-dark",
-										"hover:bg-surface dark:hover:bg-surface-dark",
-										activePanel() === module.id &&
-											"bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark",
-									)}
-								>
-									{module.icon?.() ?? (
-										<span class="text-xs font-medium">{module.label}</span>
-									)}
-								</button>
-							)}
+							{(item) =>
+								"separator" in item ? (
+									<div class="w-px h-5 mx-1 bg-outline/50 dark:bg-outline-dark/50 self-center" />
+								) : (
+									<button
+										type="button"
+										onClick={() => handleModuleClick(item)}
+										title={item.label}
+										class={cn(
+											"p-1.5 rounded-radius transition-colors",
+											"text-on-surface-muted dark:text-on-surface-dark-muted",
+											"hover:text-on-surface dark:hover:text-on-surface-dark",
+											"hover:bg-surface dark:hover:bg-surface-dark",
+											activePanel() === item.id &&
+												"bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark",
+										)}
+									>
+										{item.icon?.() ?? (
+											<span class="text-xs font-medium">{item.label}</span>
+										)}
+									</button>
+								)
+							}
 						</For>
 					</div>
 				</Show>
