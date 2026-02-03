@@ -6,7 +6,7 @@ export const indentModule: ToolbarModule = {
 	label: "Indent (Tab)",
 	shortcut: { key: "Tab", ctrl: false },
 	icon: () => (
-		<Icon size="sm">
+		<Icon class="w-4 h-4 md:w-5 md:h-5">
 			<polyline points="3 8 7 12 3 16" />
 			<line x1="21" x2="11" y1="12" y2="12" />
 			<line x1="21" x2="11" y1="6" y2="6" />
@@ -21,7 +21,7 @@ export const outdentModule: ToolbarModule = {
 	label: "Outdent (Shift+Tab)",
 	shortcut: { key: "Tab", ctrl: false, shift: true },
 	icon: () => (
-		<Icon size="sm">
+		<Icon class="w-4 h-4 md:w-5 md:h-5">
 			<polyline points="7 8 3 12 7 16" />
 			<line x1="21" x2="11" y1="12" y2="12" />
 			<line x1="21" x2="11" y1="6" y2="6" />

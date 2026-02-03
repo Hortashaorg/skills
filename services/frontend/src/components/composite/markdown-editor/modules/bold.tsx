@@ -6,7 +6,7 @@ export const boldModule: ToolbarModule = {
 	label: "Bold (Ctrl+B)",
 	shortcut: { key: "b", ctrl: true },
 	icon: () => (
-		<Icon size="sm">
+		<Icon class="w-4 h-4 md:w-5 md:h-5">
 			<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
 			<path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
 		</Icon>

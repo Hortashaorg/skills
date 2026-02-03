@@ -5,7 +5,7 @@ export const checklistModule: ToolbarModule = {
 	id: "checklist",
 	label: "Checklist",
 	icon: () => (
-		<Icon size="sm">
+		<Icon class="w-4 h-4 md:w-5 md:h-5">
 			<rect x="3" y="5" width="6" height="6" rx="1" />
 			<path d="m3 17 2 2 4-4" />
 			<path d="M13 6h8" />
