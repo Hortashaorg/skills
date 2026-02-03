@@ -296,6 +296,14 @@ export function useEditor(options?: Options) {
 			}
 		};
 
+	const getSelectedText = () => {
+		const el = textareaRef();
+		if (!el) return "";
+		const start = el.selectionStart ?? 0;
+		const end = el.selectionEnd ?? 0;
+		return el.value.slice(start, end);
+	};
+
 	return {
 		setTextareaRef,
 		handlers,
@@ -304,5 +312,6 @@ export function useEditor(options?: Options) {
 		redo,
 		saveState,
 		createKeyDownHandler,
+		getSelectedText,
 	};
 }

@@ -8,6 +8,7 @@ export type ToolbarContext = {
 	outdent: (prefix?: string) => void;
 	undo: () => boolean;
 	redo: () => boolean;
+	getSelectedText: () => string;
 	closePanel: () => void;
 };
 
@@ -19,7 +20,8 @@ export type ToolbarModule = {
 	shortcut?: Shortcut | Shortcut[];
 	icon?: () => JSX.Element;
 	panel?: (ctx: ToolbarContext) => JSX.Element;
-	action?: (ctx: ToolbarContext) => void;
+	/** Return true if action was fully handled, otherwise opens panel (if exists) */
+	action?: (ctx: ToolbarContext) => unknown;
 };
 
 export type ToolbarSeparator = { separator: true };

@@ -56,14 +56,20 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		outdent: editor.mutators.outdent,
 		undo: editor.undo,
 		redo: editor.redo,
+		getSelectedText: editor.getSelectedText,
 		closePanel: () => setActivePanel(null),
 	});
 
 	const handleModuleClick = (module: ToolbarModule) => {
+		// If action exists, try it first - if it returns true, it handled everything
+		if (module.action) {
+			const handled = module.action(createContext());
+			if (handled) return;
+		}
+
+		// Otherwise toggle the panel (if exists)
 		if (module.panel) {
 			setActivePanel(activePanel() === module.id ? null : module.id);
-		} else if (module.action) {
-			module.action(createContext());
 		}
 	};
 
