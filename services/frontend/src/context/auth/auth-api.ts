@@ -11,6 +11,7 @@ const authResponseSchema = z.object({
 
 export const authApi = {
 	async refresh(): Promise<AuthData | null> {
+		console.log("[Auth] refresh() called");
 		try {
 			const res = await fetch(`${getConfig().backendUrl}/refresh`, {
 				method: "POST",
@@ -18,19 +19,31 @@ export const authApi = {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			if (!res.ok) return null;
+			if (!res.ok) {
+				console.log("[Auth] refresh failed - response not ok:", res.status);
+				return null;
+			}
 
 			const result = authResponseSchema.safeParse(await res.json());
-			if (!result.success) return null;
+			if (!result.success) {
+				console.log("[Auth] refresh failed - invalid response schema");
+				return null;
+			}
 
-			return {
+			const authData = {
 				accessToken: result.data.access_token,
 				userId: result.data.sub,
 				roles: result.data.roles,
 				expiresAt: Date.now() + result.data.expires_in * 1000,
 			};
+			console.log(
+				"[Auth] refresh success - expires in",
+				result.data.expires_in,
+				"seconds",
+			);
+			return authData;
 		} catch (error) {
-			console.error("Token refresh failed:", error);
+			console.error("[Auth] refresh failed with error:", error);
 			return null;
 		}
 	},
