@@ -87,9 +87,9 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			{...others}
 		>
 			{/* Header: Tabs + Toolbar */}
-			<div class="flex flex-wrap items-center justify-between gap-2 px-2 py-1.5 border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">
+			<div class="border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">
 				{/* Tab buttons */}
-				<div class="flex gap-1">
+				<div class="flex gap-1 px-2 pt-1.5 pb-1">
 					<button
 						type="button"
 						onClick={() => setActiveTab("write")}
@@ -116,9 +116,14 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 					</button>
 				</div>
 
-				{/* Toolbar buttons - only show in write mode */}
-				<Show when={activeTab() === "write" && modules.length > 0}>
-					<div class="flex gap-0.5">
+				{/* Toolbar buttons - always visible, disabled in preview mode */}
+				<Show when={modules.length > 0}>
+					<div
+						class={cn(
+							"flex gap-0.5 px-2 pb-1.5",
+							activeTab() === "preview" && "opacity-50 pointer-events-none",
+						)}
+					>
 						<For each={modules}>
 							{(item) =>
 								"separator" in item ? (
