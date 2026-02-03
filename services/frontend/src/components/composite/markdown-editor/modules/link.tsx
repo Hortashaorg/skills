@@ -1,23 +1,11 @@
 import { Icon } from "@/components/primitives/icon";
 import { Input } from "@/components/primitives/input";
 import { Button } from "@/components/ui/button";
-import type { ToolbarContext, ToolbarModule } from "../markdown-editor-types";
+import type { ToolbarModule } from "../markdown-editor-types";
 
 const URL_PATTERN = /^https?:\/\/\S+$/i;
 
 const isUrl = (text: string) => URL_PATTERN.test(text.trim());
-
-const handleLinkAction = (ctx: ToolbarContext) => {
-	const selected = ctx.getSelectedText().trim();
-
-	// If selection is a URL, wrap it directly as [url](url)
-	if (isUrl(selected)) {
-		ctx.insert(`[${selected}](${selected})`);
-		return true;
-	}
-
-	return false;
-};
 
 export const linkModule: ToolbarModule = {
 	id: "link",
@@ -28,14 +16,6 @@ export const linkModule: ToolbarModule = {
 			<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
 		</Icon>
 	),
-	action: (ctx) => {
-		// Try direct conversion first - if it worked, we're done
-		if (handleLinkAction(ctx)) {
-			return;
-		}
-		// Otherwise, this will be ignored and panel will open
-		// (handled by the module having both action and panel)
-	},
 	panel: (ctx) => {
 		const selected = ctx.getSelectedText().trim();
 		const initialText = isUrl(selected) ? "" : selected;
