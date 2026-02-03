@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router";
 import { createSignal, For, type JSX, Show, splitProps } from "solid-js";
 import { CommentCard } from "@/components/composite/comment-card";
 import { MarkdownEditor } from "@/components/composite/markdown-editor";
@@ -146,6 +147,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 		rootCommentId: string;
 		isRoot: boolean;
 		replyToAuthorName?: string;
+		replyToAuthorId?: string;
 		isAtMax?: boolean;
 	}) => {
 		const isEditing = () => editingId() === itemProps.comment.id;
@@ -169,13 +171,38 @@ export const CommentThread = (props: CommentThreadProps) => {
 				class="flex gap-3"
 			>
 				<div class="hidden sm:block">
-					<Avatar
-						initials={getInitials(itemProps.comment.author?.name)}
-						size={itemProps.isRoot ? "md" : "sm"}
-						variant={
-							isOwnComment() ? "secondary" : isDeleted() ? "muted" : "primary"
+					<Show
+						when={itemProps.comment.author?.id}
+						fallback={
+							<Avatar
+								initials={getInitials(itemProps.comment.author?.name)}
+								size={itemProps.isRoot ? "md" : "sm"}
+								variant={
+									isOwnComment()
+										? "secondary"
+										: isDeleted()
+											? "muted"
+											: "primary"
+								}
+							/>
 						}
-					/>
+					>
+						{(authorId) => (
+							<A href={`/user/${authorId()}`}>
+								<Avatar
+									initials={getInitials(itemProps.comment.author?.name)}
+									size={itemProps.isRoot ? "md" : "sm"}
+									variant={
+										isOwnComment()
+											? "secondary"
+											: isDeleted()
+												? "muted"
+												: "primary"
+									}
+								/>
+							</A>
+						)}
+					</Show>
 				</div>
 
 				<div class="flex-1 min-w-0">
@@ -195,9 +222,11 @@ export const CommentThread = (props: CommentThreadProps) => {
 					>
 						<CommentCard
 							author={itemProps.comment.author?.name ?? "Unknown"}
+							authorId={itemProps.comment.author?.id}
 							timestamp={formatRelativeTime(itemProps.comment.createdAt)}
 							content={itemProps.comment.content}
 							replyToAuthor={itemProps.replyToAuthorName}
+							replyToAuthorId={itemProps.replyToAuthorId}
 							editedAt={
 								!isDeleted() &&
 								itemProps.comment.updatedAt > itemProps.comment.createdAt
@@ -279,6 +308,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 									rootCommentId={itemProps.comment.id}
 									isRoot={false}
 									replyToAuthorName={reply.replyTo?.author?.name ?? undefined}
+									replyToAuthorId={reply.replyTo?.author?.id}
 									isAtMax={repliesData().isAtMax}
 								/>
 							)}

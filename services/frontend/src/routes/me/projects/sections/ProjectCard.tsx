@@ -25,7 +25,7 @@ export const ProjectCard = (props: ProjectCardProps) => {
 		<A href={`/projects/${props.project.id}`}>
 			<Card
 				padding="md"
-				class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt transition-colors cursor-pointer"
+				class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt has-[[data-author]:hover]:bg-transparent dark:has-[[data-author]:hover]:bg-transparent transition-colors cursor-pointer"
 			>
 				<Stack spacing="sm">
 					<Text weight="semibold" class="truncate">
@@ -53,7 +53,15 @@ export const ProjectCard = (props: ProjectCardProps) => {
 							}
 						>
 							<Text size="xs" color="muted">
-								by {getDisplayName(props.project.account)}
+								by{" "}
+								<A
+									href={`/user/${props.project.account?.id}`}
+									class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+									onClick={(e) => e.stopPropagation()}
+									data-author
+								>
+									{getDisplayName(props.project.account)}
+								</A>
 							</Text>
 						</Show>
 					</Flex>

@@ -144,7 +144,13 @@ export const ReviewQueue = (props: ReviewQueueProps) => {
 									<div class="pt-2 border-t border-outline/50 dark:border-outline-dark/50">
 										<Flex gap="md" align="center">
 											<Text size="xs" color="muted">
-												by {getDisplayName(suggestion().account)}
+												by{" "}
+												<A
+													href={`/user/${suggestion().accountId}`}
+													class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+												>
+													{getDisplayName(suggestion().account)}
+												</A>
 											</Text>
 											<Flex gap="xs">
 												<Badge variant="success" size="sm">
