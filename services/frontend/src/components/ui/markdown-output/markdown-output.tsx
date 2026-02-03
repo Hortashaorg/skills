@@ -5,9 +5,18 @@ import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import { type JSX, onMount, splitProps } from "solid-js";
+import {
+	createEffect,
+	type JSX,
+	on,
+	onCleanup,
+	onMount,
+	splitProps,
+} from "solid-js";
+import { render } from "solid-js/web";
 import { unified } from "unified";
 import { cn } from "@/lib/utils";
+import { type EntityData, EntityToken, type EntityType } from "./entity-token";
 import "./markdown-output.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,6 +109,10 @@ const processor = unified()
 	.use(rehypeSanitize, sanitizeSchema)
 	.use(rehypeStringify);
 
+// Entity token pattern: $$type:uuid (not inside code blocks - handled by checking parent)
+const ENTITY_TOKEN_REGEX =
+	/\$\$(user|project|package|ecosystem):([a-zA-Z0-9_-]+)/g;
+
 function renderMarkdown(markdown: string): string {
 	let html = processor.processSync(markdown).toString();
 
@@ -110,7 +123,78 @@ function renderMarkdown(markdown: string): string {
 		return match.replace(">", ` aria-label="${label}">`);
 	});
 
+	// Replace entity tokens with interactive spans (skip those inside <code> tags)
+	// We do a two-pass approach: first mark code blocks, then replace tokens outside them
+	html = replaceEntityTokens(html);
+
 	return html;
+}
+
+function replaceEntityTokens(html: string): string {
+	// Split by code tags to avoid replacing inside them
+	const parts: string[] = [];
+	let lastIndex = 0;
+	const codeRegex = /<code[^>]*>[\s\S]*?<\/code>/gi;
+
+	for (const match of html.matchAll(codeRegex)) {
+		// Process text before this code block
+		const before = html.slice(lastIndex, match.index);
+		parts.push(replaceTokensInText(before));
+		// Keep code block as-is
+		parts.push(match[0]);
+		lastIndex = (match.index ?? 0) + match[0].length;
+	}
+
+	// Process remaining text after last code block
+	parts.push(replaceTokensInText(html.slice(lastIndex)));
+
+	return parts.join("");
+}
+
+function replaceTokensInText(text: string): string {
+	return text.replace(ENTITY_TOKEN_REGEX, (_match, type, id) => {
+		return `<span class="entity-token" data-entity-type="${type}" data-entity-id="${id}" tabindex="0">${type}: ${id}</span>`;
+	});
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Entity token hydration
+// ─────────────────────────────────────────────────────────────────────────────
+
+type EntityResolver = (
+	type: EntityType,
+	id: string,
+) => EntityData | null | undefined;
+
+function hydrateEntityTokens(
+	container: HTMLElement,
+	resolveEntity?: EntityResolver,
+): (() => void)[] {
+	const disposers: (() => void)[] = [];
+	const tokens = container.querySelectorAll<HTMLSpanElement>(
+		"span.entity-token[data-entity-type][data-entity-id]",
+	);
+
+	for (const span of tokens) {
+		const type = span.dataset.entityType as EntityType;
+		const id = span.dataset.entityId;
+		if (!type || !id) continue;
+
+		const data = resolveEntity?.(type, id) ?? null;
+
+		// Create a wrapper to mount SolidJS component
+		const wrapper = document.createElement("span");
+		wrapper.className = "entity-token-wrapper";
+		span.replaceWith(wrapper);
+
+		const dispose = render(
+			() => <EntityToken type={type} id={id} data={data} />,
+			wrapper,
+		);
+		disposers.push(dispose);
+	}
+
+	return disposers;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -122,17 +206,43 @@ export type MarkdownOutputProps = Omit<
 	"children"
 > & {
 	content: string;
+	/** Optional resolver to look up entity data by type and id */
+	resolveEntity?: EntityResolver;
 };
 
 export const MarkdownOutput = (props: MarkdownOutputProps) => {
-	const [local, others] = splitProps(props, ["content", "class"]);
+	const [local, others] = splitProps(props, [
+		"content",
+		"class",
+		"resolveEntity",
+	]);
 	const html = () => getCachedOrProcess(local.content);
 
 	let containerRef: HTMLDivElement | undefined;
+	let entityDisposers: (() => void)[] = [];
 
-	onMount(() => {
-		if (containerRef) {
-			renderMermaidDiagrams(containerRef);
+	const hydrateContent = () => {
+		if (!containerRef) return;
+
+		// Clean up previous entity tokens
+		for (const dispose of entityDisposers) {
+			dispose();
+		}
+		entityDisposers = [];
+
+		// Hydrate new content
+		renderMermaidDiagrams(containerRef);
+		entityDisposers = hydrateEntityTokens(containerRef, local.resolveEntity);
+	};
+
+	onMount(hydrateContent);
+
+	// Re-hydrate when content changes
+	createEffect(on(() => local.content, hydrateContent, { defer: true }));
+
+	onCleanup(() => {
+		for (const dispose of entityDisposers) {
+			dispose();
 		}
 	});
 
@@ -145,3 +255,5 @@ export const MarkdownOutput = (props: MarkdownOutputProps) => {
 		/>
 	);
 };
+
+export type { EntityData, EntityType };
