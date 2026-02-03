@@ -32,7 +32,8 @@
 ### Editor & Renderer Enhancements
 
 - [x] Replace `execCommand` insert with textarea-range editing (preserve selection + Ctrl+Z/Ctrl+Y)
-- [ ] Textarea behavior overrides: Tab/Shift+Tab indent + outdent (multi-line), auto-close brackets/quotes
+- [x] Tab/Shift+Tab indent + outdent (multi-line)
+- [ ] Auto-close brackets/quotes
 - [ ] Renderer: memoize markdown processing to avoid re-processing on unrelated re-renders
 - [ ] Renderer: remove HTML string post-processing for mentions; prefer structured parsing/transforms
 - [ ] Entity token syntax (draft): `$$project:<id>`, `$$user:<id>`, `$$ecosystem:<id>` (unambiguous, ID-based)
