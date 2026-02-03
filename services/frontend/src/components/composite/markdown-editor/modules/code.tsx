@@ -1,4 +1,4 @@
-import { createSignal, For } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { Icon } from "@/components/primitives/icon";
 import { Input } from "@/components/primitives/input";
 import type { ToolbarModule } from "../markdown-editor-types";
@@ -100,9 +100,8 @@ export const codeModule: ToolbarModule = {
 			if (e.key === "Enter") {
 				e.preventDefault();
 				const first = filteredLanguages()[0];
-				if (first) {
-					insertCodeBlock(first.id);
-				}
+				// Use first match, or custom input if no matches
+				insertCodeBlock(first?.id ?? search().trim().toLowerCase());
 			}
 		};
 
@@ -130,6 +129,15 @@ export const codeModule: ToolbarModule = {
 							</button>
 						)}
 					</For>
+					<Show when={filteredLanguages().length === 0 && search().trim()}>
+						<button
+							type="button"
+							onClick={() => insertCodeBlock(search().trim().toLowerCase())}
+							class="px-2 py-1 text-xs rounded-radius bg-primary/10 dark:bg-primary-dark/10 hover:bg-primary/20 dark:hover:bg-primary-dark/20 border border-primary/50 dark:border-primary-dark/50 transition-colors"
+						>
+							Use "{search().trim()}"
+						</button>
+					</Show>
 				</div>
 			</div>
 		);
