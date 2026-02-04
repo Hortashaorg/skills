@@ -1,5 +1,6 @@
 import { A } from "@solidjs/router";
 import {
+	createEffect,
 	createMemo,
 	createSignal,
 	For,
@@ -56,6 +57,8 @@ export type CommentThreadProps = Omit<
 	search: EntitySearch;
 	/** Entity data maps for resolving markdown tokens */
 	byIds: EntityByIds;
+	/** Called when editor content changes (for entity token resolution in preview) */
+	onEditorContentChange?: (content: string) => void;
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -93,6 +96,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"onHighlightedCommentMounted",
 		"search",
 		"byIds",
+		"onEditorContentChange",
 		"class",
 	]);
 
@@ -102,6 +106,19 @@ export const CommentThread = (props: CommentThreadProps) => {
 	const [newComment, setNewComment] = createSignal("");
 	const [editContent, setEditContent] = createSignal("");
 	const [replyContent, setReplyContent] = createSignal("");
+
+	// Track current editor content for entity resolution in preview
+	const currentEditorContent = () => {
+		if (editingId()) return editContent();
+		if (replyTarget()) return replyContent();
+		return newComment();
+	};
+
+	// Notify parent when editor content changes (for entity token resolution)
+	createEffect(() => {
+		const content = currentEditorContent();
+		local.onEditorContentChange?.(content);
+	});
 
 	// Handlers
 	const handleNewCommentSubmit = () => {

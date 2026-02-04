@@ -1,5 +1,5 @@
 import { queries, useQuery } from "@package/database/client";
-import { createEffect, createMemo, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { CommentThread } from "@/components/composite/comment-thread";
 import type { EntitySearch } from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
@@ -83,16 +83,24 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 	// Entity ID extraction and byIds hooks for resolving entity tokens
 	// ─────────────────────────────────────────────────────────────────────────
 
+	// Track current editor content for entity resolution in preview
+	const [editorContent, setEditorContent] = createSignal("");
+
 	// Fetch ALL comments in thread for entity extraction (includes replies)
 	const [allThreadComments] = useQuery(() => {
 		const threadId = thread.threadId();
 		return threadId ? queries.comments.allByThreadId({ threadId }) : null;
 	});
 
-	// Extract entity IDs from ALL comments (roots + replies)
+	// Extract entity IDs from ALL comments (roots + replies) + current editor content
 	const extractedIds = createMemo(() => {
 		const comments = allThreadComments() ?? [];
 		const contents = comments.map((c) => c.content);
+		// Include current editor content for preview resolution
+		const editor = editorContent();
+		if (editor) {
+			contents.push(editor);
+		}
 		return extractEntityIdsFromMultiple(contents);
 	});
 
@@ -170,6 +178,7 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 				getRepliesData={getRepliesData}
 				highlightedCommentId={linkedComment.linkedCommentId()}
 				onHighlightedCommentMounted={handleHighlightedCommentMounted}
+				onEditorContentChange={setEditorContent}
 				search={props.search}
 				byIds={entityByIds}
 			/>
