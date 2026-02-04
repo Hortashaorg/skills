@@ -181,7 +181,7 @@ export const Leaderboard = () => {
 											<Text
 												size="sm"
 												weight={
-													exactMatchRank() && exactMatchRank()! <= 3
+													(exactMatchRank() ?? 0) <= 3 && exactMatchRank()
 														? "semibold"
 														: "normal"
 												}

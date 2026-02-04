@@ -38,9 +38,10 @@ export const searchByMonthlyScore = defineQuery(
 	({ args }) => {
 		let q = zql.contributionScores;
 
-		if (args.query?.trim()) {
+		const trimmedQuery = args.query?.trim();
+		if (trimmedQuery) {
 			q = q.whereExists("account", (a) =>
-				a.where("name", "ILIKE", `%${args.query!.trim()}%`),
+				a.where("name", "ILIKE", `%${trimmedQuery}%`),
 			);
 		}
 
@@ -61,9 +62,10 @@ export const searchByAllTimeScore = defineQuery(
 	({ args }) => {
 		let q = zql.contributionScores;
 
-		if (args.query?.trim()) {
+		const trimmedQuery = args.query?.trim();
+		if (trimmedQuery) {
 			q = q.whereExists("account", (a) =>
-				a.where("name", "ILIKE", `%${args.query!.trim()}%`),
+				a.where("name", "ILIKE", `%${trimmedQuery}%`),
 			);
 		}
 
