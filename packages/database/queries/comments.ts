@@ -42,6 +42,14 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		.one();
 });
 
+/** Get all comments in a thread (for entity extraction, not display) */
+export const allByThreadId = defineQuery(
+	z.object({ threadId: z.string() }),
+	({ args }) => {
+		return zql.comments.where("threadId", args.threadId);
+	},
+);
+
 export const byAuthorId = defineQuery(
 	z.object({
 		authorId: z.string(),

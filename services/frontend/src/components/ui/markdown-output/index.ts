@@ -1,4 +1,5 @@
 export {
+	ENTITY_TOKEN_REGEX,
 	type ExtractedEntityIds,
 	extractEntityIds,
 	extractEntityIdsFromMultiple,

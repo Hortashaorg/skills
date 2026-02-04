@@ -15,6 +15,7 @@ import {
 import type { EntityByIds } from "@/components/composite/markdown-editor/markdown-editor-types";
 import { buildPackageUrl } from "@/lib/url";
 import { cn } from "@/lib/utils";
+import { ENTITY_TOKEN_REGEX } from "./extract-entity-ids";
 import "./markdown-output.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -104,10 +105,6 @@ const processor = unified()
 	.use(rehypeHighlight)
 	.use(rehypeSanitize, sanitizeSchema)
 	.use(rehypeStringify);
-
-// Entity token pattern: $$type:id
-const ENTITY_TOKEN_REGEX =
-	/\$\$(user|project|package|ecosystem):([a-zA-Z0-9_-]+)/g;
 
 function renderMarkdown(markdown: string): string {
 	let html = processor.processSync(markdown).toString();

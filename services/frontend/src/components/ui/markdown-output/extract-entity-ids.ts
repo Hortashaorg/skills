@@ -10,7 +10,8 @@ export type ExtractedEntityIds = {
 	users: string[];
 };
 
-const ENTITY_TOKEN_REGEX =
+/** Regex pattern for entity tokens: $$type:id */
+export const ENTITY_TOKEN_REGEX =
 	/\$\$(user|project|package|ecosystem):([a-zA-Z0-9_-]+)/g;
 
 export function extractEntityIds(content: string): ExtractedEntityIds {

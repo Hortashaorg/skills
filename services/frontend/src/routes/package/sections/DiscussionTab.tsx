@@ -83,9 +83,16 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 	// Entity ID extraction and byIds hooks for resolving entity tokens
 	// ─────────────────────────────────────────────────────────────────────────
 
-	// Extract all entity IDs from comment content
+	// Fetch ALL comments in thread for entity extraction (includes replies)
+	const [allThreadComments] = useQuery(() => {
+		const threadId = thread.threadId();
+		return threadId ? queries.comments.allByThreadId({ threadId }) : null;
+	});
+
+	// Extract entity IDs from ALL comments (roots + replies)
 	const extractedIds = createMemo(() => {
-		const contents = orderedComments().map((c) => c.content);
+		const comments = allThreadComments() ?? [];
+		const contents = comments.map((c) => c.content);
 		return extractEntityIdsFromMultiple(contents);
 	});
 

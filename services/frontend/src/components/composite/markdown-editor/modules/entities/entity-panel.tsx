@@ -20,7 +20,7 @@ interface EntityPanelProps {
 export const EntityPanel = (props: EntityPanelProps) => {
 	const [selectedType, setSelectedType] = createSignal<EntityType>("package");
 
-	const handleInsert = (type: EntityType, id: string, _displayName: string) => {
+	const handleInsert = (type: EntityType, id: string) => {
 		// Insert entity reference in format $$type:id (double $ for uniqueness)
 		props.ctx.insert(`$$${type}:${id}`);
 		props.ctx.closePanel();
@@ -70,7 +70,7 @@ export const EntityPanel = (props: EntityPanelProps) => {
 
 interface SearchProps {
 	ctx: ToolbarContext;
-	onInsert: (type: EntityType, id: string, displayName: string) => void;
+	onInsert: (type: EntityType, id: string) => void;
 }
 
 const PackageSearch = (props: SearchProps) => {
@@ -91,7 +91,7 @@ const PackageSearch = (props: SearchProps) => {
 					<SearchResultItem
 						name={pkg.name}
 						meta={pkg.registry}
-						onClick={() => props.onInsert("package", pkg.id, pkg.name)}
+						onClick={() => props.onInsert("package", pkg.id)}
 					/>
 				)}
 			</For>
@@ -100,7 +100,7 @@ const PackageSearch = (props: SearchProps) => {
 					<SearchResultItem
 						name={pkg.name}
 						meta={pkg.registry}
-						onClick={() => props.onInsert("package", pkg.id, pkg.name)}
+						onClick={() => props.onInsert("package", pkg.id)}
 					/>
 				)}
 			</For>
@@ -128,7 +128,7 @@ const EcosystemSearch = (props: SearchProps) => {
 				{(eco) => (
 					<SearchResultItem
 						name={eco().name}
-						onClick={() => props.onInsert("ecosystem", eco().id, eco().name)}
+						onClick={() => props.onInsert("ecosystem", eco().id)}
 					/>
 				)}
 			</Show>
@@ -136,7 +136,7 @@ const EcosystemSearch = (props: SearchProps) => {
 				{(eco) => (
 					<SearchResultItem
 						name={eco.name}
-						onClick={() => props.onInsert("ecosystem", eco.id, eco.name)}
+						onClick={() => props.onInsert("ecosystem", eco.id)}
 					/>
 				)}
 			</For>
@@ -164,7 +164,7 @@ const ProjectSearch = (props: SearchProps) => {
 				{(proj) => (
 					<SearchResultItem
 						name={proj().name}
-						onClick={() => props.onInsert("project", proj().id, proj().name)}
+						onClick={() => props.onInsert("project", proj().id)}
 					/>
 				)}
 			</Show>
@@ -172,7 +172,7 @@ const ProjectSearch = (props: SearchProps) => {
 				{(proj) => (
 					<SearchResultItem
 						name={proj.name}
-						onClick={() => props.onInsert("project", proj.id, proj.name)}
+						onClick={() => props.onInsert("project", proj.id)}
 					/>
 				)}
 			</For>
@@ -200,9 +200,7 @@ const UserSearch = (props: SearchProps) => {
 				{(user) => (
 					<SearchResultItem
 						name={user().name ?? user().id}
-						onClick={() =>
-							props.onInsert("user", user().id, user().name ?? user().id)
-						}
+						onClick={() => props.onInsert("user", user().id)}
 					/>
 				)}
 			</Show>
@@ -210,9 +208,7 @@ const UserSearch = (props: SearchProps) => {
 				{(user) => (
 					<SearchResultItem
 						name={user.name ?? user.id}
-						onClick={() =>
-							props.onInsert("user", user.id, user.name ?? user.id)
-						}
+						onClick={() => props.onInsert("user", user.id)}
 					/>
 				)}
 			</For>

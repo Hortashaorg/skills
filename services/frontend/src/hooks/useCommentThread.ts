@@ -146,6 +146,7 @@ export function useCommentThread(options: () => UseCommentThreadOptions) {
 
 	return {
 		comments,
+		threadId: () => thread()?.id,
 		isLoading,
 		currentUserId: () => (isLoggedIn() ? zero().userID : undefined),
 		currentUserName: () => account()?.[0]?.name ?? undefined,
