@@ -180,35 +180,37 @@ export function useUserSearch(
 	// Query completion
 	// ─────────────────────────────────────────────────────────────────────────
 
+	// Helper: treat both "complete" and "error" as terminal states
+	const isTerminal = (result: { type: string }) =>
+		result.type === "complete" || result.type === "error";
+
 	const allQueriesComplete = () => {
 		if (!hasSearchTerm()) {
 			if (!showRecentWhenEmpty) return true;
-			if (sortBy === "createdAt") return recentResult().type === "complete";
-			if (sortBy === "monthlyScore")
-				return recentByMonthlyResult().type === "complete";
-			if (sortBy === "allTimeScore")
-				return recentByAllTimeResult().type === "complete";
+			if (sortBy === "createdAt") return isTerminal(recentResult());
+			if (sortBy === "monthlyScore") return isTerminal(recentByMonthlyResult());
+			if (sortBy === "allTimeScore") return isTerminal(recentByAllTimeResult());
 			return true;
 		}
 
 		if (sortBy === "createdAt") {
 			return (
-				searchResultAccount().type === "complete" &&
-				exactMatchAccountStatus().type === "complete"
+				isTerminal(searchResultAccount()) &&
+				isTerminal(exactMatchAccountStatus())
 			);
 		}
 
 		if (sortBy === "monthlyScore") {
 			return (
-				searchByMonthlyResult().type === "complete" &&
-				exactMatchScoreStatus().type === "complete"
+				isTerminal(searchByMonthlyResult()) &&
+				isTerminal(exactMatchScoreStatus())
 			);
 		}
 
 		if (sortBy === "allTimeScore") {
 			return (
-				searchByAllTimeResult().type === "complete" &&
-				exactMatchScoreStatus().type === "complete"
+				isTerminal(searchByAllTimeResult()) &&
+				isTerminal(exactMatchScoreStatus())
 			);
 		}
 

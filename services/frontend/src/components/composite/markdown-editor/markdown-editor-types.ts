@@ -4,7 +4,7 @@ import type {
 	UsePackageSearchResult,
 	UseProjectSearchResult,
 	UseUserSearchResult,
-} from "@/hooks/useEntities";
+} from "@/hooks/use-entities";
 import type { Ecosystem, Package, Project, User } from "./entity-types";
 
 // ─────────────────────────────────────────────────────────────────────────────

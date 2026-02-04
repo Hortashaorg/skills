@@ -304,6 +304,13 @@ export function useEditor(options?: Options) {
 		return el.value.slice(start, end);
 	};
 
+	const cleanup = () => {
+		if (pauseTimeout) {
+			clearTimeout(pauseTimeout);
+			pauseTimeout = null;
+		}
+	};
+
 	return {
 		setTextareaRef,
 		handlers,
@@ -313,5 +320,6 @@ export function useEditor(options?: Options) {
 		saveState,
 		createKeyDownHandler,
 		getSelectedText,
+		cleanup,
 	};
 }

@@ -32,6 +32,7 @@ export const EntityPanel = (props: EntityPanelProps) => {
 			<select
 				value={selectedType()}
 				onChange={(e) => setSelectedType(e.currentTarget.value as EntityType)}
+				aria-label="Entity type"
 				class={cn(
 					"px-2 py-1.5 text-sm rounded-radius border border-outline dark:border-outline-dark",
 					"bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark",
@@ -239,6 +240,7 @@ const SearchCombobox = (props: SearchComboboxProps) => {
 				type="text"
 				size="sm"
 				placeholder={props.placeholder}
+				aria-label={props.placeholder.replace("...", "")}
 				value={props.query}
 				onInput={(e) => props.onQueryChange(e.currentTarget.value)}
 				onFocus={() => setIsFocused(true)}

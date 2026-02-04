@@ -1,4 +1,11 @@
-import { createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import {
+	createSignal,
+	For,
+	type JSX,
+	onCleanup,
+	Show,
+	splitProps,
+} from "solid-js";
 import { Textarea } from "@/components/primitives/textarea";
 import { Button } from "@/components/ui/button";
 import { MarkdownOutput } from "@/components/ui/markdown-output";
@@ -56,6 +63,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 	const minHeight = () => local.minHeight ?? "min-h-32";
 
 	const editor = useEditor({ debug: import.meta.env.DEV });
+	onCleanup(() => editor.cleanup());
 
 	const modules = defaultModules;
 

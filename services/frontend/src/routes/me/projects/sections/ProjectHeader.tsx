@@ -47,12 +47,19 @@ export const ProjectHeader = (props: ProjectHeaderProps) => {
 				</Show>
 				<Text size="sm" color="muted">
 					Created by{" "}
-					<A
-						href={`/user/${props.project.account?.id}`}
-						class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+					<Show
+						when={props.project.account?.id}
+						fallback={<span>{getDisplayName(props.project.account)}</span>}
 					>
-						{getDisplayName(props.project.account)}
-					</A>
+						{(accountId) => (
+							<A
+								href={`/user/${accountId()}`}
+								class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+							>
+								{getDisplayName(props.project.account)}
+							</A>
+						)}
+					</Show>
 				</Text>
 			</Stack>
 			<Show when={props.isOwner}>

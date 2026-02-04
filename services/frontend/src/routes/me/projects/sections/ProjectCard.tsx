@@ -54,14 +54,23 @@ export const ProjectCard = (props: ProjectCardProps) => {
 						>
 							<Text size="xs" color="muted">
 								by{" "}
-								<A
-									href={`/user/${props.project.account?.id}`}
-									class="hover:text-brand dark:hover:text-brand-dark transition-colors"
-									onClick={(e) => e.stopPropagation()}
-									data-author
+								<Show
+									when={props.project.account?.id}
+									fallback={
+										<span>{getDisplayName(props.project.account)}</span>
+									}
 								>
-									{getDisplayName(props.project.account)}
-								</A>
+									{(accountId) => (
+										<A
+											href={`/user/${accountId()}`}
+											class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+											onClick={(e) => e.stopPropagation()}
+											data-author
+										>
+											{getDisplayName(props.project.account)}
+										</A>
+									)}
+								</Show>
 							</Text>
 						</Show>
 					</Flex>

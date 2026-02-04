@@ -1,5 +1,12 @@
 import { A } from "@solidjs/router";
-import { createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import {
+	createMemo,
+	createSignal,
+	For,
+	type JSX,
+	Show,
+	splitProps,
+} from "solid-js";
 import { CommentCard } from "@/components/composite/comment-card";
 import {
 	type EntityByIds,
@@ -283,7 +290,9 @@ export const CommentThread = (props: CommentThreadProps) => {
 		const isReplyingToThisThread = () =>
 			replyTarget()?.rootCommentId === itemProps.comment.id;
 		const showingReplies = () => local.isShowingReplies(itemProps.comment.id);
-		const repliesData = () => local.getRepliesData(itemProps.comment.id);
+		const repliesData = createMemo(() =>
+			local.getRepliesData(itemProps.comment.id),
+		);
 
 		return (
 			<div>
