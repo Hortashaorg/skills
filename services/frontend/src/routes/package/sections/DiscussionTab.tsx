@@ -1,27 +1,27 @@
 import { queries, useQuery } from "@package/database/client";
 import { createEffect, createMemo, Show } from "solid-js";
 import { CommentThread } from "@/components/composite/comment-thread";
-import type {
-	EntityByIds,
-	EntitySearch,
-} from "@/components/composite/markdown-editor";
+import type { EntitySearch } from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { extractEntityIdsFromMultiple } from "@/components/ui/markdown-output";
 import { Spinner } from "@/components/ui/spinner";
+import { useEcosystemByIds } from "@/hooks/ecosystems/useEcosystemByIds";
+import { usePackageByIds } from "@/hooks/packages/usePackageByIds";
+import { useProjectByIds } from "@/hooks/projects/useProjectByIds";
 import {
 	type RootComment,
 	useCommentThread,
 	useReplies,
 } from "@/hooks/useCommentThread";
 import { useLinkedComment } from "@/hooks/useLinkedComment";
+import { useUserByIds } from "@/hooks/users/useUserByIds";
 import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
 
 interface DiscussionTabProps {
 	packageId: string;
 	/** Search hooks for editor toolbar */
 	search: EntitySearch;
-	/** Entity data maps for resolving markdown tokens */
-	byIds: EntityByIds;
 }
 
 export const DiscussionTab = (props: DiscussionTabProps) => {
@@ -79,6 +79,35 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 		return [linked, ...filtered];
 	});
 
+	// ─────────────────────────────────────────────────────────────────────────
+	// Entity ID extraction and byIds hooks for resolving entity tokens
+	// ─────────────────────────────────────────────────────────────────────────
+
+	// Extract all entity IDs from comment content
+	const extractedIds = createMemo(() => {
+		const contents = orderedComments().map((c) => c.content);
+		return extractEntityIdsFromMultiple(contents);
+	});
+
+	// Create byIds hooks with extracted IDs
+	const { packages: packagesByIds } = usePackageByIds(
+		() => extractedIds().packages,
+	);
+	const { ecosystems: ecosystemsByIds } = useEcosystemByIds(
+		() => extractedIds().ecosystems,
+	);
+	const { projects: projectsByIds } = useProjectByIds(
+		() => extractedIds().projects,
+	);
+	const { users: usersByIds } = useUserByIds(() => extractedIds().users);
+
+	const entityByIds = {
+		packages: packagesByIds,
+		ecosystems: ecosystemsByIds,
+		projects: projectsByIds,
+		users: usersByIds,
+	};
+
 	// Auto-expand replies for the linked root comment
 	createEffect(() => {
 		const rootId = linkedRootId();
@@ -135,7 +164,7 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 				highlightedCommentId={linkedComment.linkedCommentId()}
 				onHighlightedCommentMounted={handleHighlightedCommentMounted}
 				search={props.search}
-				byIds={props.byIds}
+				byIds={entityByIds}
 			/>
 		</Show>
 	);

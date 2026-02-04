@@ -435,11 +435,10 @@
 	background-color: oklch(0.35 0.08 250);
 }
 
-/* Entity popover */
-.prose .entity-popover {
-	position: absolute;
-	z-index: 50;
+/* Entity popover - appended to body as portal */
+.entity-popover {
 	width: 18rem;
+	max-width: calc(100vw - 1rem);
 	border-radius: 0.5rem;
 	border: 1px solid var(--color-outline);
 	background-color: var(--color-surface);
@@ -460,72 +459,79 @@
 	}
 }
 
-.prose .entity-popover-content {
-	padding: 1rem;
+.entity-popover-content {
+	padding: 0.75rem;
 }
 
-.prose .entity-popover-header {
+.entity-popover-header {
 	display: flex;
 	align-items: flex-start;
-	gap: 0.75rem;
+	gap: 0.5rem;
 }
 
-.prose .entity-popover-icon {
-	font-size: 1.5rem;
+.entity-popover-icon {
+	font-size: 1.25rem;
 }
 
-.prose .entity-popover-info {
+.entity-popover-info {
 	flex: 1;
 	min-width: 0;
 }
 
-.prose .entity-popover-name {
+.entity-popover-name {
 	font-weight: 500;
+	font-size: 0.875rem;
 	color: var(--color-on-surface);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.prose .entity-popover-meta {
+.entity-popover-meta {
 	font-size: 0.75rem;
 	color: var(--color-on-surface-muted);
 }
 
-.prose .entity-popover-desc {
+.entity-popover-desc {
 	margin-top: 0.5rem;
-	font-size: 0.875rem;
+	font-size: 0.8125rem;
 	color: var(--color-on-surface-muted);
 	display: -webkit-box;
 	line-clamp: 2;
+	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
 
-.prose .entity-popover-empty {
-	padding: 1rem;
+.entity-popover-desc--empty {
+	font-style: italic;
+	opacity: 0.7;
+}
+
+.entity-popover-empty {
+	padding: 0.75rem;
 	text-align: center;
 	font-size: 0.875rem;
 	color: var(--color-on-surface-muted);
 }
 
-.dark .prose .entity-popover {
+.dark .entity-popover {
 	border-color: var(--color-outline-dark);
 	background-color: var(--color-surface-dark);
 }
 
-.dark .prose .entity-popover-name {
+.dark .entity-popover-name {
 	color: var(--color-on-surface-dark);
 }
 
-.dark .prose .entity-popover-meta {
+.dark .entity-popover-meta {
 	color: var(--color-on-surface-dark-muted);
 }
 
-.dark .prose .entity-popover-desc {
+.dark .entity-popover-desc {
 	color: var(--color-on-surface-dark-muted);
 }
 
-.dark .prose .entity-popover-empty {
+.dark .entity-popover-empty {
 	color: var(--color-on-surface-dark-muted);
 }

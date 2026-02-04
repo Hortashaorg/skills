@@ -15,13 +15,9 @@ import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import { useEcosystemByIds } from "@/hooks/ecosystems/useEcosystemByIds";
 import { useEcosystemSearch } from "@/hooks/ecosystems/useEcosystemSearch";
-import { usePackageByIds } from "@/hooks/packages/usePackageByIds";
 import { usePackageSearch } from "@/hooks/packages/usePackageSearch";
-import { useProjectByIds } from "@/hooks/projects/useProjectByIds";
 import { useProjectSearch } from "@/hooks/projects/useProjectSearch";
-import { useUserByIds } from "@/hooks/users/useUserByIds";
 import { useUserSearch } from "@/hooks/users/useUserSearch";
 import { Layout } from "@/layout/Layout";
 import type { Registry } from "@/lib/registries";
@@ -120,20 +116,6 @@ export const Package = () => {
 		ecosystems: ecosystemSearch,
 		projects: projectSearch,
 		users: userSearch,
-	};
-
-	// For byIds, we need to collect IDs from comment content - for now pass empty
-	// This will be enhanced when we parse entity tokens from comments
-	const { packages: packagesByIds } = usePackageByIds(() => []);
-	const { ecosystems: ecosystemsByIds } = useEcosystemByIds(() => []);
-	const { projects: projectsByIds } = useProjectByIds(() => []);
-	const { users: usersByIds } = useUserByIds(() => []);
-
-	const entityByIds = {
-		packages: packagesByIds,
-		ecosystems: ecosystemsByIds,
-		projects: projectsByIds,
-		users: usersByIds,
 	};
 
 	// Get the package (query filters by name + registry, should be 0 or 1 result)
@@ -272,11 +254,7 @@ export const Package = () => {
 									</Match>
 
 									<Match when={tab() === "discussion"}>
-										<DiscussionTab
-											packageId={p.id}
-											search={entitySearch}
-											byIds={entityByIds}
-										/>
+										<DiscussionTab packageId={p.id} search={entitySearch} />
 									</Match>
 								</Switch>
 							</>

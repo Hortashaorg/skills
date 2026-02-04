@@ -47,6 +47,8 @@ export type ToolbarContext = {
 	redo: () => boolean;
 	getSelectedText: () => string;
 	closePanel: () => void;
+	/** Entity search hooks for modules that need to search/insert entity references */
+	search: EntitySearch;
 };
 
 export type Shortcut = { key: string; ctrl?: boolean; shift?: boolean };

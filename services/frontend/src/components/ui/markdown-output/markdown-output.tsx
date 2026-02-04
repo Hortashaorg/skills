@@ -228,11 +228,13 @@ function enhanceEntityTokens(
 		"a.entity-token-link[data-entity-type][data-entity-id]",
 	);
 
-	// Create a single popover element for the whole container
+	// Create a single popover element appended to body (portal-style)
 	const popover = document.createElement("div");
 	popover.className = "entity-popover";
 	popover.style.display = "none";
-	container.appendChild(popover);
+	popover.style.position = "fixed";
+	popover.style.zIndex = "9999";
+	document.body.appendChild(popover);
 
 	let hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -246,14 +248,36 @@ function enhanceEntityTokens(
 		}
 
 		const rect = anchor.getBoundingClientRect();
-		const containerRect = container.getBoundingClientRect();
 
-		popover.style.position = "absolute";
-		popover.style.left = `${rect.left - containerRect.left}px`;
-		popover.style.top = `${rect.bottom - containerRect.top + 4}px`;
+		// Position below the anchor, but check if it would go off-screen
+		let top = rect.bottom + 4;
+		let left = rect.left;
+
+		// Ensure popover doesn't go off right edge
+		const popoverWidth = 280; // approximate max width
+		if (left + popoverWidth > window.innerWidth) {
+			left = window.innerWidth - popoverWidth - 8;
+		}
+
+		// Ensure popover doesn't go off bottom edge - show above if needed
+		const popoverHeight = 120; // approximate max height
+		if (top + popoverHeight > window.innerHeight) {
+			top = rect.top - popoverHeight - 4;
+		}
+
+		popover.style.left = `${left}px`;
+		popover.style.top = `${top}px`;
 		popover.style.display = "block";
 
 		if (data) {
+			// Users don't have descriptions, so only show description section for other types
+			const showDescription = data.type !== "user";
+			const descriptionHtml = showDescription
+				? data.description
+					? `<p class="entity-popover-desc">${escapeHtml(data.description)}</p>`
+					: `<p class="entity-popover-desc entity-popover-desc--empty">&lt;no description&gt;</p>`
+				: "";
+
 			popover.innerHTML = `
 				<div class="entity-popover-content">
 					<div class="entity-popover-header">
@@ -264,7 +288,7 @@ function enhanceEntityTokens(
 							${data.memberSince ? `<div class="entity-popover-meta">Member since ${escapeHtml(data.memberSince)}</div>` : ""}
 						</div>
 					</div>
-					${data.description ? `<p class="entity-popover-desc">${escapeHtml(data.description)}</p>` : ""}
+					${descriptionHtml}
 				</div>
 			`;
 		} else {
@@ -382,7 +406,7 @@ export const MarkdownOutput = (props: MarkdownOutputProps) => {
 	return (
 		<div
 			ref={containerRef}
-			class={cn("prose max-w-none", local.class)}
+			class={cn("prose max-w-none relative", local.class)}
 			innerHTML={html()}
 			{...others}
 		/>

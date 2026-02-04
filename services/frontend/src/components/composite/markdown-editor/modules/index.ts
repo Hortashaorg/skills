@@ -2,6 +2,7 @@ import type { ToolbarItem } from "../markdown-editor-types";
 import { boldModule } from "./bold";
 import { checklistModule } from "./checklist";
 import { codeModule } from "./code";
+import { entitiesModule } from "./entities";
 import { indentModule, outdentModule } from "./indent";
 import { italicModule } from "./italic";
 import { linkModule } from "./link";
@@ -24,6 +25,7 @@ export const defaultModules: ToolbarItem[] = [
 	codeModule,
 	quoteModule,
 	checklistModule,
+	entitiesModule,
 	separator,
 	// Indentation
 	indentModule,

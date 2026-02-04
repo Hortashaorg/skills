@@ -27,14 +27,10 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toast";
-import { useEcosystemByIds } from "@/hooks/ecosystems/useEcosystemByIds";
 import { useEcosystemSearch } from "@/hooks/ecosystems/useEcosystemSearch";
-import { usePackageByIds } from "@/hooks/packages/usePackageByIds";
 import { usePackageSearch } from "@/hooks/packages/usePackageSearch";
 import { useAddToProject } from "@/hooks/projects";
-import { useProjectByIds } from "@/hooks/projects/useProjectByIds";
 import { useProjectSearch } from "@/hooks/projects/useProjectSearch";
-import { useUserByIds } from "@/hooks/users/useUserByIds";
 import { useUserSearch } from "@/hooks/users/useUserSearch";
 import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
 import { useVote } from "@/hooks/useVote";
@@ -98,20 +94,6 @@ export const Ecosystem = () => {
 		ecosystems: ecosystemSearch,
 		projects: projectSearch,
 		users: userSearch,
-	};
-
-	// For byIds, we need to collect IDs from comment content - for now pass empty
-	// This will be enhanced when we parse entity tokens from comments
-	const { packages: packagesByIds } = usePackageByIds(() => []);
-	const { ecosystems: ecosystemsByIds } = useEcosystemByIds(() => []);
-	const { projects: projectsByIds } = useProjectByIds(() => []);
-	const { users: usersByIds } = useUserByIds(() => []);
-
-	const entityByIds = {
-		packages: packagesByIds,
-		ecosystems: ecosystemsByIds,
-		projects: projectsByIds,
-		users: usersByIds,
 	};
 
 	// Upvote logic
@@ -654,7 +636,6 @@ export const Ecosystem = () => {
 											<DiscussionTab
 												ecosystemId={eco().id}
 												search={entitySearch}
-												byIds={entityByIds}
 											/>
 										</Match>
 									</Switch>

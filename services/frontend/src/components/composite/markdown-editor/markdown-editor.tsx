@@ -69,6 +69,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		redo: editor.redo,
 		getSelectedText: editor.getSelectedText,
 		closePanel: () => setActivePanel(null),
+		search: local.search,
 	});
 
 	const handleModuleClick = (module: ToolbarModule) => {
@@ -185,8 +186,8 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 					ref={(el) => {
 						if (!el) return;
 						editor.setTextareaRef(el);
-						el.value = local.value;
 					}}
+					value={local.value}
 					variant="code"
 					class={cn(
 						"border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
