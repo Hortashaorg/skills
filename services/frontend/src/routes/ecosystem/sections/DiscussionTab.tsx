@@ -1,6 +1,10 @@
 import { queries, useQuery } from "@package/database/client";
 import { createEffect, createMemo, Show } from "solid-js";
 import { CommentThread } from "@/components/composite/comment-thread";
+import type {
+	EntityByIds,
+	EntitySearch,
+} from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Spinner } from "@/components/ui/spinner";
@@ -14,6 +18,10 @@ import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
 
 interface DiscussionTabProps {
 	ecosystemId: string;
+	/** Search hooks for editor toolbar */
+	search: EntitySearch;
+	/** Entity data maps for resolving markdown tokens */
+	byIds: EntityByIds;
 }
 
 export const DiscussionTab = (props: DiscussionTabProps) => {
@@ -126,6 +134,8 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 				getRepliesData={getRepliesData}
 				highlightedCommentId={linkedComment.linkedCommentId()}
 				onHighlightedCommentMounted={handleHighlightedCommentMounted}
+				search={props.search}
+				byIds={props.byIds}
 			/>
 		</Show>
 	);

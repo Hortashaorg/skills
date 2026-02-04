@@ -54,6 +54,15 @@ export const byIdWithTags = defineQuery(
 	},
 );
 
+export const byIds = defineQuery(
+	z.object({ ids: z.array(z.string()) }),
+	({ args }) => {
+		return zql.packages
+			.where("id", "IN", args.ids)
+			.related("packageTags", (pt) => pt.related("tag"));
+	},
+);
+
 // All exact matches across registries (for search results - shows all "node" packages)
 export const exactMatches = defineQuery(
 	z.object({

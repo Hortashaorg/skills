@@ -43,6 +43,16 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		.one();
 });
 
+export const byIds = defineQuery(
+	z.object({ ids: z.array(z.string()) }),
+	({ args }) => {
+		return zql.projects
+			.where("id", "IN", args.ids)
+			.related("account")
+			.related("projectPackages");
+	},
+);
+
 export const list = defineQuery(
 	z.object({
 		query: z.string().optional(),
@@ -57,6 +67,52 @@ export const list = defineQuery(
 
 		return q
 			.orderBy("updatedAt", "desc")
+			.limit(args.limit)
+			.related("account")
+			.related("projectPackages");
+	},
+);
+
+// Recently updated projects for default view when no search
+export const recent = defineQuery(
+	z.object({ limit: z.number().default(20) }),
+	({ args }) => {
+		return zql.projects
+			.orderBy("updatedAt", "desc")
+			.orderBy("id", "asc")
+			.limit(args.limit)
+			.related("account")
+			.related("projectPackages");
+	},
+);
+
+// Exact name match (case-insensitive) - floats to top of search results
+export const exactMatch = defineQuery(
+	z.object({ name: z.string() }),
+	({ args }) => {
+		return zql.projects
+			.where("name", "ILIKE", args.name)
+			.related("account")
+			.related("projectPackages");
+	},
+);
+
+// Search projects by name
+export const search = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		limit: z.number().default(50),
+	}),
+	({ args }) => {
+		let q = zql.projects;
+
+		if (args.query?.trim()) {
+			q = q.where("name", "ILIKE", `%${args.query.trim()}%`);
+		}
+
+		return q
+			.orderBy("updatedAt", "desc")
+			.orderBy("name", "asc")
 			.limit(args.limit)
 			.related("account")
 			.related("projectPackages");

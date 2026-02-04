@@ -1,6 +1,15 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import type { EntityByIds } from "@/components/composite/markdown-editor";
 import { createThemedStories } from "@/components/story-helpers";
 import { CommentCard } from "./comment-card";
+
+// Mock byIds for stories
+const createMockByIds = (): EntityByIds => ({
+	packages: () => new Map(),
+	ecosystems: () => new Map(),
+	projects: () => new Map(),
+	users: () => new Map(),
+});
 
 const meta = {
 	title: "Composite/CommentCard",
@@ -24,6 +33,7 @@ const client = createClient({ timeout: 5000 });
 
 Any ideas?`,
 		onReply: () => console.log("Reply clicked"),
+		byIds: createMockByIds(),
 	},
 };
 
@@ -49,6 +59,7 @@ peer = false
 
 Then reinstall. Worked for me.`,
 		onReply: () => console.log("Reply clicked"),
+		byIds: createMockByIds(),
 	},
 };
 
@@ -71,6 +82,7 @@ That worked! Thanks so much. Should we open an issue about this?`,
 		onEdit: () => console.log("Edit clicked"),
 		onDelete: () => console.log("Delete clicked"),
 		onReply: () => console.log("Reply clicked"),
+		byIds: createMockByIds(),
 	},
 };
 
@@ -88,6 +100,7 @@ const deletedBase: Story = {
 		timestamp: "3 hours ago",
 		content: "",
 		isDeleted: true,
+		byIds: createMockByIds(),
 	},
 };
 
@@ -115,6 +128,7 @@ const withAvatarLayoutBase: Story = {
 The avatar is **not** part of the CommentCard - the parent controls positioning.`}
 					onReply={() => console.log("Reply clicked")}
 					onEdit={() => console.log("Edit clicked")}
+					byIds={createMockByIds()}
 				/>
 			</div>
 		</div>

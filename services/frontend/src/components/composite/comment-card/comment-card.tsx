@@ -1,5 +1,6 @@
 import { A } from "@solidjs/router";
 import { type JSX, Show, splitProps } from "solid-js";
+import type { EntityByIds } from "@/components/composite/markdown-editor";
 import { Flex } from "@/components/primitives/flex";
 import { MarkdownOutput } from "@/components/ui/markdown-output";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,8 @@ export type CommentCardProps = Omit<
 	onEdit?: () => void;
 	/** Called when delete button clicked */
 	onDelete?: () => void;
+	/** Entity data maps for resolving markdown tokens */
+	byIds: EntityByIds;
 };
 
 export const CommentCard = (props: CommentCardProps) => {
@@ -48,6 +51,7 @@ export const CommentCard = (props: CommentCardProps) => {
 		"onReply",
 		"onEdit",
 		"onDelete",
+		"byIds",
 		"class",
 	]);
 
@@ -177,7 +181,7 @@ export const CommentCard = (props: CommentCardProps) => {
 						</p>
 					}
 				>
-					<MarkdownOutput content={local.content} />
+					<MarkdownOutput content={local.content} byIds={local.byIds} />
 				</Show>
 			</div>
 		</div>

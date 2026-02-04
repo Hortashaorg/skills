@@ -15,9 +15,9 @@ import { createUrlStringSignal } from "@/hooks/createUrlSignal";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { Layout } from "@/layout/Layout";
 import {
-	PROJECTS_AUTO_LOAD_LIMIT,
-	PROJECTS_INITIAL_LIMIT,
-	PROJECTS_LOAD_MORE_COUNT,
+	SEARCH_AUTO_LOAD_LIMIT,
+	SEARCH_INITIAL_LIMIT,
+	SEARCH_LOAD_MORE_COUNT,
 } from "@/lib/constants";
 import { ProjectCard } from "./sections/ProjectCard";
 
@@ -30,9 +30,9 @@ export const Projects = () => {
 
 	// Infinite scroll state
 	const scroll = useInfiniteScroll({
-		initialLimit: PROJECTS_INITIAL_LIMIT,
-		loadMoreCount: PROJECTS_LOAD_MORE_COUNT,
-		autoLoadLimit: PROJECTS_AUTO_LOAD_LIMIT,
+		initialLimit: SEARCH_INITIAL_LIMIT,
+		loadMoreCount: SEARCH_LOAD_MORE_COUNT,
+		autoLoadLimit: SEARCH_AUTO_LOAD_LIMIT,
 	});
 
 	// Reset limit when search changes

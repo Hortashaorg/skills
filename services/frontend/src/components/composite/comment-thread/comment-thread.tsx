@@ -1,7 +1,11 @@
 import { A } from "@solidjs/router";
 import { createSignal, For, type JSX, Show, splitProps } from "solid-js";
 import { CommentCard } from "@/components/composite/comment-card";
-import { MarkdownEditor } from "@/components/composite/markdown-editor";
+import {
+	type EntityByIds,
+	type EntitySearch,
+	MarkdownEditor,
+} from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -41,6 +45,10 @@ export type CommentThreadProps = Omit<
 	// Linked comment highlighting and scrolling
 	highlightedCommentId?: string | null;
 	onHighlightedCommentMounted?: () => void;
+	/** Search hooks for toolbar modules to insert entity references */
+	search: EntitySearch;
+	/** Entity data maps for resolving markdown tokens */
+	byIds: EntityByIds;
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -76,6 +84,8 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"getRepliesData",
 		"highlightedCommentId",
 		"onHighlightedCommentMounted",
+		"search",
+		"byIds",
 		"class",
 	]);
 
@@ -220,6 +230,8 @@ export const CommentThread = (props: CommentThreadProps) => {
 								submitLabel="Save"
 								placeholder="Edit your comment..."
 								maxLength={MAX_COMMENT_LENGTH}
+								search={local.search}
+								byIds={local.byIds}
 							/>
 						}
 					>
@@ -258,6 +270,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 											)
 									: undefined
 							}
+							byIds={local.byIds}
 						/>
 					</Show>
 				</div>
@@ -368,6 +381,8 @@ export const CommentThread = (props: CommentThreadProps) => {
 										submitLabel="Reply"
 										placeholder="Write a reply..."
 										maxLength={MAX_COMMENT_LENGTH}
+										search={local.search}
+										byIds={local.byIds}
 									/>
 								</div>
 							</div>
@@ -398,6 +413,8 @@ export const CommentThread = (props: CommentThreadProps) => {
 							submitLabel="Comment"
 							placeholder="Write a comment..."
 							maxLength={MAX_COMMENT_LENGTH}
+							search={local.search}
+							byIds={local.byIds}
 						/>
 					</div>
 				</div>

@@ -6,18 +6,16 @@
 
 ## Sprint 13: User Profiles & Comments Expansion
 
-### User Profiles
+### User Profiles ✓
 
 - [x] Profile page route (`/user/:id`)
 - [x] Profile display: name, member since, contribution stats, activity timeline, projects
 - [x] Link to profile from leaderboard
 - [x] Link to profile from comments, suggestions, projects
 
-
 ### Comments Expansion ✓
 
 - [x] Integrate CommentThread on ecosystem pages
-
 - [x] Linkable comments (URL anchors, scroll to comment, deep link support)
 - [x] "Reply to {name}" in activity timeline with clickable author links
 - [x] Reply limit (100 per thread) with UI feedback
@@ -31,14 +29,86 @@
 
 ### Editor & Renderer Enhancements
 
+**Completed:**
 - [x] Replace `execCommand` insert with textarea-range editing (preserve selection + Ctrl+Z/Ctrl+Y)
 - [x] Tab/Shift+Tab indent + outdent (multi-line)
-- [ ] Auto-close brackets/quotes
-- [ ] Renderer: memoize markdown processing to avoid re-processing on unrelated re-renders
-- [ ] Renderer: remove HTML string post-processing for mentions; prefer structured parsing/transforms
-- [ ] Entity token syntax (draft): `$$project:<id>`, `$$user:<id>`, `$$ecosystem:<id>` (unambiguous, ID-based)
-- [ ] Renderer: recognize `$$...` entity tokens and render as safe links (no embedded HTML in markdown)
-- [ ] Editor utility: insert helpers for entity tokens (panel or minimal command), but keep input as plain markdown textarea
+- [x] Memoize markdown processing (LRU cache, max 100 entries)
+- [x] Remove @mention styling (replaced with entity token system)
+- [x] Mermaid diagram support in renderer
+- [x] Code block module: searchable language selection (52 languages + custom input)
+- [x] Link module: smart pre-fill based on selection (URL or text detection)
+
+**In Progress - Entity Token System:**
+
+The entity token system (`$$package:<uuid>`, `$$user:<uuid>`, etc.) is partially implemented but needs architectural cleanup. Current state:
+
+- [x] Regex parsing of `$$type:id` tokens (skips code blocks)
+- [x] Styled rendering with icons (📦 Package, 👤 User, 📁 Project, 🌐 Ecosystem)
+- [x] Hover popover UI (vanilla JS, no SolidJS hydration due to context isolation)
+- [x] `useEntityResolvers` hook that parses content and creates Zero queries
+- [x] Prop drilling through DiscussionTab → CommentThread → CommentCard → MarkdownOutput
+- [x] Working data fetch for posted comments on package Discussion tab
+
+**Remaining - Entity Token Architecture Refactor:**
+
+The current implementation works but is complex. Planned refactor:
+
+1. **Define `EntityFetchers` interface** (required prop for MarkdownOutput)
+   ```typescript
+   interface EntityFetchers {
+     package: (id: string) => EntityData | null;
+     user: (id: string) => EntityData | null;
+     project: (id: string) => EntityData | null;
+     ecosystem: (id: string) => EntityData | null;
+   }
+   ```
+   - Makes dependency explicit (no hidden context)
+   - Stories can mock with dummy data
+   - Page level creates fetchers using Zero queries
+
+2. **Define `EntitySearchers` interface** (for editor module)
+   ```typescript
+   interface EntitySearchers {
+     packages: (query: string) => PickerItem[];
+     users: (query: string) => PickerItem[];
+     projects: (query: string) => PickerItem[];
+     ecosystems: (query: string) => PickerItem[];
+   }
+   ```
+   - Reuse existing `EntityPicker` component pattern
+   - Enables search-and-insert in editor
+
+3. **Editor module for entity insertion**
+   - New toolbar module (📎 or similar icon)
+   - Opens panel with entity type tabs (Package, User, Project, Ecosystem)
+   - Search using `EntitySearchers`
+   - Insert `$$type:uuid` on selection
+   - Uses existing `EntityPicker` component
+
+4. **Wire up ecosystem Discussion tab** (same pattern as package)
+
+5. **Clean up current implementation**
+   - Remove console.log statements
+   - Simplify `useEntityResolvers` or replace with page-level fetcher creation
+   - Consider: fetch on hover only (lazy) vs pre-fetch from content
+
+**Deferred:**
+- [ ] Auto-close brackets/quotes (nice-to-have, not blocking)
+
+**Potential Addition - Search Query Generalization:**
+
+The codebase has multiple places implementing search/query patterns:
+- `EntityPicker` for selecting entities in modals
+- `SearchInput` for package/ecosystem search
+- Project package dropdown search
+- Future: Entity search for markdown editor insertion
+
+Consider investigating how to generalize these patterns so search works consistently across all features. This could involve:
+- Shared query builder utilities
+- Consistent result formatting
+- Reusable search hooks with common options (exact match priority, debounce, etc.)
+
+*Decision: Add to Sprint 13 scope or defer to backlog?*
 
 ---
 

@@ -1,1 +1,6 @@
-export { MarkdownOutput, type MarkdownOutputProps } from "./markdown-output";
+export {
+	type EntityByIds,
+	type EntityType,
+	MarkdownOutput,
+	type MarkdownOutputProps,
+} from "./markdown-output";

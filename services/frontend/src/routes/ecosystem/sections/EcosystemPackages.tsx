@@ -6,7 +6,7 @@ import { PlusIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
-import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { createPackageUpvote } from "@/hooks/packages";
 import { type GroupByTagsResult, groupByTags } from "@/lib/group-by-tags";
 import { buildPackageUrl } from "@/lib/url";
 

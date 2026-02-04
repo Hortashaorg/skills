@@ -28,3 +28,59 @@ export const forUser = defineQuery(
 		return zql.contributionScores.where("accountId", args.accountId).one();
 	},
 );
+
+// Search users by name, sorted by monthly score (for leaderboard with search)
+export const searchByMonthlyScore = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		limit: z.number().default(50),
+	}),
+	({ args }) => {
+		let q = zql.contributionScores;
+
+		if (args.query?.trim()) {
+			q = q.whereExists("account", (a) =>
+				a.where("name", "ILIKE", `%${args.query!.trim()}%`),
+			);
+		}
+
+		return q
+			.orderBy("monthlyScore", "desc")
+			.orderBy("accountId", "asc")
+			.limit(args.limit)
+			.related("account");
+	},
+);
+
+// Search users by name, sorted by all-time score (for leaderboard with search)
+export const searchByAllTimeScore = defineQuery(
+	z.object({
+		query: z.string().optional(),
+		limit: z.number().default(50),
+	}),
+	({ args }) => {
+		let q = zql.contributionScores;
+
+		if (args.query?.trim()) {
+			q = q.whereExists("account", (a) =>
+				a.where("name", "ILIKE", `%${args.query!.trim()}%`),
+			);
+		}
+
+		return q
+			.orderBy("allTimeScore", "desc")
+			.orderBy("accountId", "asc")
+			.limit(args.limit)
+			.related("account");
+	},
+);
+
+// Exact name match for contribution scores (case-insensitive)
+export const exactMatchByName = defineQuery(
+	z.object({ name: z.string() }),
+	({ args }) => {
+		return zql.contributionScores
+			.whereExists("account", (a) => a.where("name", "ILIKE", args.name))
+			.related("account");
+	},
+);

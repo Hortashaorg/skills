@@ -3,7 +3,12 @@ import { Textarea } from "@/components/primitives/textarea";
 import { Button } from "@/components/ui/button";
 import { MarkdownOutput } from "@/components/ui/markdown-output";
 import { cn } from "@/lib/utils";
-import type { ToolbarContext, ToolbarModule } from "./markdown-editor-types";
+import type {
+	EntityByIds,
+	EntitySearch,
+	ToolbarContext,
+	ToolbarModule,
+} from "./markdown-editor-types";
 import { defaultModules } from "./modules";
 import { useEditor } from "./use-editor";
 
@@ -23,6 +28,10 @@ export type MarkdownEditorProps = Omit<
 	placeholder?: string;
 	minHeight?: string;
 	maxLength?: number;
+	/** Search hooks for toolbar modules to insert entity references */
+	search: EntitySearch;
+	/** Entity data maps for resolving tokens in preview */
+	byIds: EntityByIds;
 };
 
 export const MarkdownEditor = (props: MarkdownEditorProps) => {
@@ -36,6 +45,8 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		"placeholder",
 		"minHeight",
 		"maxLength",
+		"search",
+		"byIds",
 		"class",
 	]);
 
@@ -200,7 +211,7 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 							</span>
 						}
 					>
-						<MarkdownOutput content={local.value} />
+						<MarkdownOutput content={local.value} byIds={local.byIds} />
 					</Show>
 				</div>
 			</Show>
