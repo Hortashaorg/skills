@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router";
 import { Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Heading } from "@/components/primitives/heading";
@@ -45,7 +46,20 @@ export const ProjectHeader = (props: ProjectHeaderProps) => {
 					<Text color="muted">{props.project.description}</Text>
 				</Show>
 				<Text size="sm" color="muted">
-					Created by {getDisplayName(props.project.account)}
+					Created by{" "}
+					<Show
+						when={props.project.account?.id}
+						fallback={<span>{getDisplayName(props.project.account)}</span>}
+					>
+						{(accountId) => (
+							<A
+								href={`/user/${accountId()}`}
+								class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+							>
+								{getDisplayName(props.project.account)}
+							</A>
+						)}
+					</Show>
 				</Text>
 			</Stack>
 			<Show when={props.isOwner}>

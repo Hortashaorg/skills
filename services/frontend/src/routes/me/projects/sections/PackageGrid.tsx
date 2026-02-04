@@ -4,7 +4,7 @@ import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
-import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { createPackageUpvote } from "@/hooks/packages";
 import { buildPackageUrl } from "@/lib/url";
 
 type PackageWithUpvotes = {

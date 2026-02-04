@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
@@ -79,7 +80,13 @@ export const SuggestionList = (props: SuggestionListProps) => {
 											</Text>
 										</Show>
 										<Text size="xs" color="muted" class="mt-1">
-											by {suggestion.authorName}
+											by{" "}
+											<A
+												href={`/user/${suggestion.authorId}`}
+												class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+											>
+												{suggestion.authorName}
+											</A>
 										</Text>
 									</div>
 

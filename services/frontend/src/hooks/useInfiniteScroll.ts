@@ -4,9 +4,9 @@ import {
 	BACK_TO_TOP_SCROLL_THRESHOLD,
 	INFINITE_SCROLL_DEBOUNCE_MS,
 	INFINITE_SCROLL_ROOT_MARGIN,
-	PACKAGES_AUTO_LOAD_LIMIT,
-	PACKAGES_INITIAL_LIMIT,
-	PACKAGES_LOAD_MORE_COUNT,
+	SEARCH_AUTO_LOAD_LIMIT,
+	SEARCH_INITIAL_LIMIT,
+	SEARCH_LOAD_MORE_COUNT,
 } from "@/lib/constants";
 
 export interface UseInfiniteScrollOptions {
@@ -88,9 +88,9 @@ export function useInfiniteScroll(
 	options: UseInfiniteScrollOptions = {},
 ): UseInfiniteScrollReturn {
 	const {
-		initialLimit = PACKAGES_INITIAL_LIMIT,
-		loadMoreCount = PACKAGES_LOAD_MORE_COUNT,
-		autoLoadLimit = PACKAGES_AUTO_LOAD_LIMIT,
+		initialLimit = SEARCH_INITIAL_LIMIT,
+		loadMoreCount = SEARCH_LOAD_MORE_COUNT,
+		autoLoadLimit = SEARCH_AUTO_LOAD_LIMIT,
 	} = options;
 
 	const [limit, setLimit] = createSignal(initialLimit);

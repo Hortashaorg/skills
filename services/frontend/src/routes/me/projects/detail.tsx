@@ -13,9 +13,10 @@ import { AlertDialog } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
+import { useEcosystemSearch } from "@/hooks/ecosystems";
+import { usePackageSearch } from "@/hooks/packages";
 import { useModalState } from "@/hooks/useModalState";
 import { Layout } from "@/layout/Layout";
-import { PACKAGE_SEARCH_LIMIT } from "@/lib/constants";
 import { groupByTags } from "@/lib/group-by-tags";
 import { handleMutationError } from "@/lib/mutation-error";
 import { EcosystemGrid } from "./sections/EcosystemGrid";
@@ -40,44 +41,20 @@ export const ProjectDetail = () => {
 	const [editName, setEditName] = createSignal("");
 	const [editDescription, setEditDescription] = createSignal("");
 	const [isSaving, setIsSaving] = createSignal(false);
-	const [packageSearch, setPackageSearch] = createSignal("");
 	const deleteModal = useModalState();
 	const removePackageModal = useModalState<string>();
 	const removeEcosystemModal = useModalState<string>();
 	const [activeTab, setActiveTab] = createSignal<"packages" | "ecosystems">(
 		"packages",
 	);
-	const [ecosystemSearch, setEcosystemSearch] = createSignal("");
 
-	// Search for packages to add
-	const [searchResults, searchResultsStatus] = useQuery(() =>
-		queries.packages.search({
-			query: packageSearch() || undefined,
-			limit: PACKAGE_SEARCH_LIMIT,
-		}),
-	);
+	// Package search hook
+	const packageSearch = usePackageSearch({ showRecentWhenEmpty: false });
 
-	// Exact matches query - returns all packages with exact name across registries
-	const [exactMatchResults] = useQuery(() =>
-		queries.packages.exactMatches({
-			name: packageSearch().trim(),
-		}),
-	);
-
-	// Search for ecosystems to add
-	const [ecosystemSearchResults, ecosystemSearchResultsStatus] = useQuery(() =>
-		queries.ecosystems.search({
-			query: ecosystemSearch() || undefined,
-			limit: 20,
-		}),
-	);
+	// Ecosystem search hook
+	const ecosystemSearch = useEcosystemSearch({ showRecentWhenEmpty: false });
 
 	const isLoading = () => projectResult().type !== "complete";
-	const isSearching = () =>
-		searchResultsStatus().type !== "complete" && packageSearch().length > 0;
-	const isSearchingEcosystems = () =>
-		ecosystemSearchResultsStatus().type !== "complete" &&
-		ecosystemSearch().length > 0;
 	const isOwner = () => {
 		const p = project();
 		return !!(p && zero().userID !== "anon" && p.accountId === zero().userID);
@@ -119,29 +96,43 @@ export const ProjectDetail = () => {
 	);
 
 	const ecosystemSearchResultsFiltered = createMemo((): SearchResultItem[] => {
-		const results = ecosystemSearchResults() ?? [];
+		const results = ecosystemSearch.results();
+		const exactMatch = ecosystemSearch.exactMatch();
 		const existing = existingEcosystemIds();
-		const searchTerm = ecosystemSearch().trim();
+		const searchTerm = ecosystemSearch.query().trim();
 		const items: SearchResultItem[] = [];
 
+		// Add exact match first if exists and not already in project
+		if (exactMatch && !existing.has(exactMatch.id)) {
+			items.push({
+				id: exactMatch.id,
+				primary: exactMatch.name,
+				secondary: exactMatch.description ?? undefined,
+				label: "exact match",
+			});
+		}
+
+		// Add "search on ecosystems page" option when no exact match
+		if (!exactMatch && searchTerm.length > 0) {
+			items.push({
+				id: `${SEARCH_ECOSYSTEMS_PREFIX}${searchTerm}`,
+				primary: `Search "${searchTerm}" on Ecosystems page`,
+				secondary: "Suggest new ecosystems there",
+				label: "→",
+				isAction: true,
+			});
+		}
+
+		// Add other results
 		for (const eco of results) {
 			if (existing.has(eco.id)) continue;
+			// Skip if already added as exact match
+			if (exactMatch && eco.id === exactMatch.id) continue;
 			items.push({
 				id: eco.id,
 				primary: eco.name,
 				secondary: eco.description ?? undefined,
 				label: "ecosystem",
-			});
-		}
-
-		// Add "search on ecosystems page" option when no results
-		if (items.length === 0 && searchTerm.length > 0) {
-			items.push({
-				id: `${SEARCH_ECOSYSTEMS_PREFIX}${searchTerm}`,
-				primary: `Search "${searchTerm}" on Ecosystems page`,
-				secondary: "Browse all ecosystems there",
-				label: "→",
-				isAction: true,
 			});
 		}
 
@@ -171,12 +162,11 @@ export const ProjectDetail = () => {
 	};
 
 	const packageSearchResults = createMemo((): SearchResultItem[] => {
-		const results = searchResults() ?? [];
 		const existing = existingPackageIds();
-		const exactMatches = exactMatchResults() ?? [];
-		const searchTerm = packageSearch().trim();
+		const exactMatches = packageSearch.exactMatches();
+		const results = packageSearch.results();
+		const searchTerm = packageSearch.query().trim();
 		const items: SearchResultItem[] = [];
-		const exactIds = new Set(exactMatches.map((p) => p.id));
 
 		// Add all exact matches first (sorted by upvotes from query)
 		for (const exact of exactMatches) {
@@ -200,10 +190,9 @@ export const ProjectDetail = () => {
 			});
 		}
 
-		// Add rest of search results (excluding exact matches to avoid duplication)
+		// Add rest of search results (already deduplicated by hook)
 		for (const pkg of results) {
 			if (existing.has(pkg.id)) continue;
-			if (exactIds.has(pkg.id)) continue;
 			items.push({
 				id: pkg.id,
 				primary: pkg.name,
@@ -234,7 +223,7 @@ export const ProjectDetail = () => {
 				}),
 			)
 			.client.then(() => {
-				setPackageSearch("");
+				packageSearch.setQuery("");
 			})
 			.catch((err) => {
 				handleMutationError(err, "add package");
@@ -260,7 +249,7 @@ export const ProjectDetail = () => {
 				}),
 			)
 			.client.then(() => {
-				setEcosystemSearch("");
+				ecosystemSearch.setQuery("");
 			})
 			.catch((err) => {
 				handleMutationError(err, "add ecosystem");
@@ -431,10 +420,10 @@ export const ProjectDetail = () => {
 											<Stack spacing="md" class="mt-4">
 												<Show when={isOwner()}>
 													<SearchInput
-														value={ecosystemSearch()}
-														onValueChange={setEcosystemSearch}
+														value={ecosystemSearch.query()}
+														onValueChange={ecosystemSearch.setQuery}
 														results={ecosystemSearchResultsFiltered()}
-														isLoading={isSearchingEcosystems()}
+														isLoading={ecosystemSearch.isLoading()}
 														onSelect={handleAddEcosystem}
 														placeholder="Search ecosystems to add..."
 													/>
@@ -451,10 +440,10 @@ export const ProjectDetail = () => {
 										<Stack spacing="md" class="mt-4">
 											<Show when={isOwner()}>
 												<SearchInput
-													value={packageSearch()}
-													onValueChange={setPackageSearch}
+													value={packageSearch.query()}
+													onValueChange={packageSearch.setQuery}
 													results={packageSearchResults()}
-													isLoading={isSearching()}
+													isLoading={packageSearch.isLoading()}
 													onSelect={handleAddPackage}
 													placeholder="Search packages to add..."
 												/>

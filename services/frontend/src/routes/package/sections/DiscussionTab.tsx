@@ -1,12 +1,27 @@
-import { Show } from "solid-js";
+import { queries, useQuery } from "@package/database/client";
+import { createEffect, createMemo, Show } from "solid-js";
 import { CommentThread } from "@/components/composite/comment-thread";
+import type { EntitySearch } from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { extractEntityIdsFromMultiple } from "@/components/ui/markdown-output";
 import { Spinner } from "@/components/ui/spinner";
-import { useCommentThread, useReplies } from "@/hooks/useCommentThread";
+import { useEcosystemByIds } from "@/hooks/ecosystems/useEcosystemByIds";
+import { usePackageByIds } from "@/hooks/packages/usePackageByIds";
+import { useProjectByIds } from "@/hooks/projects/useProjectByIds";
+import {
+	type RootComment,
+	useCommentThread,
+	useReplies,
+} from "@/hooks/useCommentThread";
+import { useLinkedComment } from "@/hooks/useLinkedComment";
+import { useUserByIds } from "@/hooks/users/useUserByIds";
+import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
 
 interface DiscussionTabProps {
 	packageId: string;
+	/** Search hooks for editor toolbar */
+	search: EntitySearch;
 }
 
 export const DiscussionTab = (props: DiscussionTabProps) => {
@@ -14,15 +29,120 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 		entityType: "package",
 		entityId: props.packageId,
 	}));
+	const linkedComment = useLinkedComment();
+
+	// Fetch the linked comment by ID to determine its root
+	const [linkedCommentData] = useQuery(() => {
+		const id = linkedComment.linkedCommentId();
+		return id ? queries.comments.byId({ id }) : null;
+	});
+
+	// Get the root comment ID (either the comment itself if root, or its rootCommentId)
+	const linkedRootId = createMemo(() => {
+		const data = linkedCommentData();
+		if (!data) return null;
+		return data.rootCommentId ?? data.id;
+	});
+
+	// Fetch the root comment separately (this ensures we always have it)
+	const [linkedRootData] = useQuery(() => {
+		const rootId = linkedRootId();
+		return rootId ? queries.comments.byId({ id: rootId }) : null;
+	});
+
+	// Transform the fetched root to match RootComment type
+	const linkedRootComment = createMemo((): RootComment | null => {
+		const data = linkedRootData();
+		if (!data) return null;
+		return {
+			id: data.id,
+			content: data.content,
+			createdAt: data.createdAt,
+			updatedAt: data.updatedAt,
+			deletedAt: data.deletedAt,
+			replyToId: data.replyToId,
+			rootCommentId: data.rootCommentId,
+			author: data.author,
+			hasReplies: (data.replies?.length ?? 0) > 0,
+		};
+	});
+
+	// Combine: linked root first (if exists), then filter it from normal results
+	const orderedComments = createMemo(() => {
+		const all = thread.comments();
+		const linked = linkedRootComment();
+
+		if (!linked) return all;
+
+		// Filter out the linked root from normal results to avoid duplicate
+		const filtered = all.filter((c) => c.id !== linked.id);
+		return [linked, ...filtered];
+	});
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Entity ID extraction and byIds hooks for resolving entity tokens
+	// ─────────────────────────────────────────────────────────────────────────
+
+	// Fetch ALL comments in thread for entity extraction (includes replies)
+	const [allThreadComments] = useQuery(() => {
+		const threadId = thread.threadId();
+		return threadId ? queries.comments.allByThreadId({ threadId }) : null;
+	});
+
+	// Extract entity IDs from ALL comments (roots + replies)
+	const extractedIds = createMemo(() => {
+		const comments = allThreadComments() ?? [];
+		const contents = comments.map((c) => c.content);
+		return extractEntityIdsFromMultiple(contents);
+	});
+
+	// Create byIds hooks with extracted IDs
+	const { packages: packagesByIds } = usePackageByIds(
+		() => extractedIds().packages,
+	);
+	const { ecosystems: ecosystemsByIds } = useEcosystemByIds(
+		() => extractedIds().ecosystems,
+	);
+	const { projects: projectsByIds } = useProjectByIds(
+		() => extractedIds().projects,
+	);
+	const { users: usersByIds } = useUserByIds(() => extractedIds().users);
+
+	const entityByIds = {
+		packages: packagesByIds,
+		ecosystems: ecosystemsByIds,
+		projects: projectsByIds,
+		users: usersByIds,
+	};
+
+	// Auto-expand replies for the linked root comment
+	createEffect(() => {
+		const rootId = linkedRootId();
+		if (!rootId || thread.isLoading()) return;
+
+		if (!thread.isShowingReplies(rootId)) {
+			thread.showReplies(rootId);
+		}
+	});
+
+	// Scroll when the highlighted comment mounts
+	const handleHighlightedCommentMounted = () => {
+		const commentId = linkedComment.linkedCommentId();
+		if (commentId) {
+			linkedComment.scrollToComment(commentId);
+		}
+	};
 
 	// Create a replies fetcher for each root comment
 	const getRepliesData = (rootCommentId: string) => {
-		const { replies, hasMore } = useReplies(
-			() =>
-				thread.isShowingReplies(rootCommentId) ? rootCommentId : undefined,
-			() => thread.getReplyLimit(rootCommentId),
+		const { replies } = useReplies(() =>
+			thread.isShowingReplies(rootCommentId) ? rootCommentId : undefined,
 		);
-		return { replies: replies(), hasMore: hasMore() };
+		const replyList = replies();
+		return {
+			replies: replyList,
+			isAtMax: replyList.length >= MAX_REPLIES_PER_THREAD,
+		};
 	};
 
 	return (
@@ -38,17 +158,20 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 			}
 		>
 			<CommentThread
-				comments={thread.comments()}
+				comments={orderedComments()}
 				currentUserId={thread.currentUserId()}
 				currentUserName={thread.currentUserName()}
 				onCommentSubmit={thread.onSubmit}
 				onCommentEdit={thread.onEdit}
 				onCommentDelete={thread.onDelete}
 				showReplies={thread.showReplies}
-				loadMoreReplies={thread.loadMoreReplies}
 				hideReplies={thread.hideReplies}
 				isShowingReplies={thread.isShowingReplies}
 				getRepliesData={getRepliesData}
+				highlightedCommentId={linkedComment.linkedCommentId()}
+				onHighlightedCommentMounted={handleHighlightedCommentMounted}
+				search={props.search}
+				byIds={entityByIds}
 			/>
 		</Show>
 	);

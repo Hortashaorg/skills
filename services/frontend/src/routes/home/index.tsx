@@ -1,12 +1,5 @@
 import { queries, useQuery } from "@package/database/client";
-import {
-	batch,
-	createEffect,
-	createMemo,
-	createSignal,
-	on,
-	untrack,
-} from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 import type { FilterOption } from "@/components/composite/entity-filter";
 import { SEO } from "@/components/composite/seo";
 import { Container } from "@/components/primitives/container";
@@ -18,19 +11,16 @@ import {
 	createUrlSignal,
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
+import { usePackageSearch } from "@/hooks/packages";
 import { Layout } from "@/layout/Layout";
-import {
-	PACKAGES_INITIAL_LIMIT,
-	PACKAGES_LOAD_MORE_COUNT,
-} from "@/lib/constants";
-import type { Registry, RegistryFilter } from "@/lib/registries";
-import { type Package, ResultsGrid } from "./sections/ResultsGrid";
+import type { RegistryFilter } from "@/lib/registries";
+import { ResultsGrid } from "./sections/ResultsGrid";
 import { SearchBar } from "./sections/SearchBar";
 
 export const Packages = () => {
-	// URL-synced state
-	const [searchValue, setSearchValue] = createUrlStringSignal("q");
-	const [registryFilter, setRegistryFilter] = createUrlSignal<RegistryFilter>(
+	// URL-synced state (page's concern)
+	const [urlQuery, setUrlQuery] = createUrlStringSignal("q");
+	const [urlRegistry, setUrlRegistry] = createUrlSignal<RegistryFilter>(
 		"registry",
 		"all",
 		{
@@ -38,22 +28,40 @@ export const Packages = () => {
 			serialize: (v) => (v !== "all" ? v : undefined),
 		},
 	);
-	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
+	const [urlTags, setUrlTags] = createUrlArraySignal("tags");
 
-	// Local state for infinite scroll
-	const [limit, setLimit] = createSignal(PACKAGES_INITIAL_LIMIT);
+	// Package search hook
+	const search = usePackageSearch({ showRecentWhenEmpty: true });
 
-	const searchTerm = () => searchValue().trim();
-	const hasSearchTerm = () => searchTerm().length > 0;
-	const hasActiveFilters = () =>
-		hasSearchTerm() ||
-		registryFilter() !== "all" ||
-		selectedTagSlugs().length > 0;
+	// Sync URL → hook state on mount
+	createEffect(() => {
+		const q = urlQuery();
+		if (q !== search.query()) search.setQuery(q);
+	});
+	createEffect(() => {
+		const r = urlRegistry();
+		if (r !== search.registry()) search.setRegistry(r);
+	});
+	createEffect(() => {
+		const t = urlTags();
+		if (JSON.stringify(t) !== JSON.stringify(search.tags())) search.setTags(t);
+	});
 
-	const effectiveRegistry = (): Registry | undefined =>
-		registryFilter() !== "all" ? (registryFilter() as Registry) : undefined;
+	// Sync hook state → URL when user interacts
+	const handleSearchChange = (value: string) => {
+		search.setQuery(value);
+		setUrlQuery(value);
+	};
+	const handleRegistryChange = (value: RegistryFilter) => {
+		search.setRegistry(value);
+		setUrlRegistry(value);
+	};
+	const handleTagsChange = (slugs: string[]) => {
+		search.setTags(slugs);
+		setUrlTags(slugs);
+	};
 
-	// Tags for filter
+	// Tags for filter UI (separate query)
 	const [tagsWithCounts] = useQuery(queries.tags.listWithCounts);
 	const tagOptions = createMemo((): readonly FilterOption[] => {
 		const tags = tagsWithCounts();
@@ -65,188 +73,18 @@ export const Packages = () => {
 		}));
 	});
 
-	// Recent packages when no filters
-	const [recentPackages, recentResult] = useQuery(() =>
-		queries.packages.recent({ limit: limit() }),
-	);
+	// Derived state for UI
+	const hasActiveFilters = () =>
+		search.query().trim().length > 0 ||
+		search.registry() !== "all" ||
+		search.tags().length > 0;
 
-	// Query 1: Exact matches (name === searchTerm) - runs in parallel
-	const [exactMatchResults, exactMatchResult] = useQuery(() =>
-		queries.packages.exactMatches({
-			name: searchTerm(),
-			registry: effectiveRegistry(),
-		}),
-	);
+	const showAddCard = () =>
+		search.query().trim().length > 0 && search.exactMatches().length === 0;
 
-	// Query 2: Search results (partial matches) - runs in parallel
-	// Over-fetch slightly to have room for: exact match duplicates removal + evening out
-	const [searchResults, searchResult] = useQuery(() => {
-		const registry = registryFilter();
-		return queries.packages.search({
-			query: searchTerm() || undefined,
-			registry: registry !== "all" ? (registry as Registry) : undefined,
-			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
-			limit: limit() + 8, // Buffer for exact match overlap + even-ing
-		});
-	});
-
-	// Query completion - both search queries must complete
-	const allQueriesComplete = () => {
-		if (!hasActiveFilters()) {
-			return recentResult().type === "complete";
-		}
-		return (
-			searchResult().type === "complete" &&
-			(!hasSearchTerm() || exactMatchResult().type === "complete")
-		);
-	};
-
-	// Get display packages (search results minus exact matches)
-	const getDisplayPackages = (
-		results: Package[],
-		exactMatches: Package[],
-	): Package[] => {
-		const exactIds = new Set(exactMatches.map((p) => p.id));
-		const others = results.filter((p) => !exactIds.has(p.id));
-
-		// Calculate target count for even total
-		const showAdd = hasSearchTerm() && exactMatches.length === 0;
-		const specialCount = exactMatches.length + (showAdd ? 1 : 0);
-		const targetOthers = Math.max(0, limit() - specialCount);
-
-		const trimmed = others.slice(0, targetOthers);
-		const total = specialCount + trimmed.length;
-
-		// Ensure even total
-		if (total % 2 === 1 && trimmed.length > 0) {
-			return trimmed.slice(0, -1);
-		}
-		return trimmed;
-	};
-
-	// Stable snapshot signals
-	const [stablePackages, setStablePackages] = createSignal<Package[]>([]);
-	const [stableExactMatches, setStableExactMatches] = createSignal<Package[]>(
-		[],
-	);
-	const [stableShowAddCard, setStableShowAddCard] = createSignal(false);
-	const [stableCanLoadMore, setStableCanLoadMore] = createSignal(false);
-
-	// Check if we can load more (search over-fetches by 8, so check against that)
-	const canLoadMore = () => {
-		if (!hasActiveFilters()) {
-			return (recentPackages()?.length ?? 0) >= limit();
-		}
-		// We over-fetch by 8, so if we got the full buffer, there's likely more
-		return (searchResults()?.length ?? 0) >= limit() + 8;
-	};
-
-	// Track filter state for stabilization
-	const [lastFilterKey, setLastFilterKey] = createSignal("");
-	const [lastLimit, setLastLimit] = createSignal(PACKAGES_INITIAL_LIMIT);
-	const currentFilterKey = () =>
-		`${searchValue()}|${registryFilter()}|${selectedTagSlugs().join(",")}`;
-
-	// Stabilize package order: keep existing order, append new items
-	const stabilizePackages = (
-		newPkgs: Package[],
-		oldPkgs: Package[],
-		filtersChanged: boolean,
-	): Package[] => {
-		if (filtersChanged || oldPkgs.length === 0) {
-			return newPkgs;
-		}
-
-		const oldIds = new Set(oldPkgs.map((p) => p.id));
-		const newById = new Map(newPkgs.map((p) => [p.id, p]));
-
-		const result: Package[] = [];
-		for (const old of oldPkgs) {
-			const updated = newById.get(old.id);
-			if (updated) {
-				result.push(updated);
-			}
-		}
-
-		for (const pkg of newPkgs) {
-			if (!oldIds.has(pkg.id)) {
-				result.push(pkg);
-			}
-		}
-
-		return result;
-	};
-
-	// Update snapshots when queries complete
-	createEffect(() => {
-		if (!allQueriesComplete()) return;
-
-		const filterKey = currentFilterKey();
-		const oldFilterKey = untrack(() => lastFilterKey());
-		const filtersChanged = filterKey !== oldFilterKey;
-
-		// Detect load-more action (limit increased without filter change)
-		const currentLimit = limit();
-		const prevLimit = untrack(() => lastLimit());
-		const isLoadMore = !filtersChanged && currentLimit > prevLimit;
-
-		let packages: Package[];
-		let exactMatches: Package[] = [];
-		let showAdd = false;
-
-		if (!hasActiveFilters()) {
-			packages = (recentPackages() as Package[]) ?? [];
-		} else {
-			exactMatches = hasSearchTerm()
-				? ((exactMatchResults() as Package[]) ?? [])
-				: [];
-			const results = (searchResults() as Package[]) ?? [];
-			packages = getDisplayPackages(results, exactMatches);
-			showAdd = hasSearchTerm() && exactMatches.length === 0;
-		}
-
-		const loadMore = canLoadMore();
-		const oldPackages = untrack(() => stablePackages());
-
-		// Only block shorter results during load-more (prevents flicker)
-		// During normal sync, accept deletions
-		if (isLoadMore && packages.length < oldPackages.length) {
-			return;
-		}
-
-		const stabilized = stabilizePackages(packages, oldPackages, filtersChanged);
-
-		batch(() => {
-			setStablePackages(stabilized);
-			setStableExactMatches(exactMatches);
-			setStableShowAddCard(showAdd);
-			setStableCanLoadMore(loadMore);
-			if (filtersChanged) {
-				setLastFilterKey(filterKey);
-			}
-			setLastLimit(currentLimit);
-		});
-	});
-
-	// Track initial load
-	const [hasEverLoaded, setHasEverLoaded] = createSignal(false);
-	const isInitialLoading = () => !hasEverLoaded() && !allQueriesComplete();
-
-	createEffect(() => {
-		if (allQueriesComplete() && !hasEverLoaded()) {
-			setHasEverLoaded(true);
-		}
-	});
-
-	// Reset limit on filter change
-	createEffect(
-		on([searchValue, registryFilter, selectedTagSlugs], () => {
-			setLimit(PACKAGES_INITIAL_LIMIT);
-		}),
-	);
-
-	const handleLoadMore = () => {
-		setLimit((prev) => prev + PACKAGES_LOAD_MORE_COUNT);
+	const effectiveRegistry = () => {
+		const reg = search.registry();
+		return reg !== "all" ? (reg as Exclude<typeof reg, "all">) : undefined;
 	};
 
 	return (
@@ -267,24 +105,24 @@ export const Packages = () => {
 					</Stack>
 
 					<SearchBar
-						searchValue={searchValue()}
-						registryFilter={registryFilter()}
-						selectedTagSlugs={selectedTagSlugs()}
+						searchValue={search.query()}
+						registryFilter={search.registry()}
+						selectedTagSlugs={search.tags()}
 						tagOptions={tagOptions()}
-						onSearchChange={setSearchValue}
-						onRegistryChange={setRegistryFilter}
-						onTagsChange={setSelectedTagSlugs}
+						onSearchChange={handleSearchChange}
+						onRegistryChange={handleRegistryChange}
+						onTagsChange={handleTagsChange}
 					/>
 
 					<ResultsGrid
-						packages={stablePackages()}
-						isLoading={isInitialLoading()}
+						packages={[...search.results()]}
+						isLoading={search.isLoading()}
 						hasActiveFilters={hasActiveFilters()}
-						canLoadMore={stableCanLoadMore()}
-						onLoadMore={handleLoadMore}
-						exactMatches={stableExactMatches()}
-						showAddCard={stableShowAddCard()}
-						searchTerm={searchTerm()}
+						canLoadMore={search.canLoadMore()}
+						onLoadMore={search.loadMore}
+						exactMatches={[...search.exactMatches()]}
+						showAddCard={showAddCard()}
+						searchTerm={search.query().trim()}
 						registry={effectiveRegistry()}
 					/>
 				</Stack>

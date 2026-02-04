@@ -136,7 +136,13 @@ export const Backlog = (props: BacklogProps) => {
 												</Flex>
 												<Flex gap="xs" align="center">
 													<Text size="xs" color="muted">
-														by {getDisplayName(suggestion.account)}
+														by{" "}
+														<A
+															href={`/user/${suggestion.accountId}`}
+															class="hover:text-brand dark:hover:text-brand-dark transition-colors"
+														>
+															{getDisplayName(suggestion.account)}
+														</A>
 													</Text>
 													<Show when={isOwn()}>
 														<Badge variant="warning" size="sm">

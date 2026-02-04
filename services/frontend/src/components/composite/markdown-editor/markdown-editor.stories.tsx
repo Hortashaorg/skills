@@ -2,6 +2,61 @@ import { createSignal } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { createThemedStories } from "@/components/story-helpers";
 import { MarkdownEditor } from "./markdown-editor";
+import type { EntityByIds, EntitySearch } from "./markdown-editor-types";
+
+// Mock search results for stories
+const createMockSearch = (): EntitySearch => ({
+	packages: {
+		query: () => "",
+		registry: () => "all",
+		tags: () => [],
+		results: () => [],
+		exactMatches: () => [],
+		isLoading: () => false,
+		canLoadMore: () => false,
+		loadMore: () => {},
+		setQuery: () => {},
+		setRegistry: () => {},
+		setTags: () => {},
+	},
+	ecosystems: {
+		query: () => "",
+		tags: () => [],
+		results: () => [],
+		exactMatch: () => null,
+		isLoading: () => false,
+		canLoadMore: () => false,
+		loadMore: () => {},
+		setQuery: () => {},
+		setTags: () => {},
+	},
+	projects: {
+		query: () => "",
+		results: () => [],
+		exactMatch: () => null,
+		isLoading: () => false,
+		canLoadMore: () => false,
+		loadMore: () => {},
+		setQuery: () => {},
+	},
+	users: {
+		query: () => "",
+		results: () => [],
+		exactMatch: () => null,
+		isLoading: () => false,
+		canLoadMore: () => false,
+		loadMore: () => {},
+		setQuery: () => {},
+	},
+});
+
+// Mock byIds for stories
+const createMockByIds = (): EntityByIds => ({
+	packages: () => new Map(),
+	ecosystems: () => new Map(),
+	projects: () => new Map(),
+	users: () => new Map(),
+});
 
 const meta = {
 	title: "Composite/MarkdownEditor",
@@ -39,6 +94,8 @@ const defaultBase: Story = {
 				onSubmit={() => console.log("Submit:", value())}
 				placeholder="Write something..."
 				class="max-w-2xl"
+				search={createMockSearch()}
+				byIds={createMockByIds()}
 			/>
 		);
 	},
@@ -73,6 +130,8 @@ console.log(greeting);
 				cancelLabel="Discard"
 				placeholder="Write something..."
 				class="max-w-2xl"
+				search={createMockSearch()}
+				byIds={createMockByIds()}
 			/>
 		);
 	},
@@ -98,6 +157,8 @@ const commentStyleBase: Story = {
 				placeholder="Write a comment..."
 				minHeight="min-h-24"
 				class="max-w-2xl"
+				search={createMockSearch()}
+				byIds={createMockByIds()}
 			/>
 		);
 	},

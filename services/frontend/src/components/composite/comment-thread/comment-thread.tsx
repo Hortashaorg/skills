@@ -1,10 +1,23 @@
-import { createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import { A } from "@solidjs/router";
+import {
+	createMemo,
+	createSignal,
+	For,
+	type JSX,
+	Show,
+	splitProps,
+} from "solid-js";
 import { CommentCard } from "@/components/composite/comment-card";
-import { MarkdownEditor } from "@/components/composite/markdown-editor";
+import {
+	type EntityByIds,
+	type EntitySearch,
+	MarkdownEditor,
+} from "@/components/composite/markdown-editor";
 import { Stack } from "@/components/primitives/stack";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { BaseComment, Reply, RootComment } from "@/hooks/useCommentThread";
+import { MAX_COMMENT_LENGTH } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface ReplyTarget {
@@ -29,14 +42,20 @@ export type CommentThreadProps = Omit<
 	onCommentDelete: (commentId: string) => void;
 	// Replies management
 	showReplies: (rootCommentId: string) => void;
-	loadMoreReplies: (rootCommentId: string) => void;
 	hideReplies: (rootCommentId: string) => void;
 	isShowingReplies: (rootCommentId: string) => boolean;
 	// For fetching replies data
 	getRepliesData: (rootCommentId: string) => {
 		replies: readonly Reply[];
-		hasMore: boolean;
+		isAtMax: boolean;
 	};
+	// Linked comment highlighting and scrolling
+	highlightedCommentId?: string | null;
+	onHighlightedCommentMounted?: () => void;
+	/** Search hooks for toolbar modules to insert entity references */
+	search: EntitySearch;
+	/** Entity data maps for resolving markdown tokens */
+	byIds: EntityByIds;
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -67,10 +86,13 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"onCommentEdit",
 		"onCommentDelete",
 		"showReplies",
-		"loadMoreReplies",
 		"hideReplies",
 		"isShowingReplies",
 		"getRepliesData",
+		"highlightedCommentId",
+		"onHighlightedCommentMounted",
+		"search",
+		"byIds",
 		"class",
 	]);
 
@@ -142,23 +164,65 @@ export const CommentThread = (props: CommentThreadProps) => {
 		rootCommentId: string;
 		isRoot: boolean;
 		replyToAuthorName?: string;
+		replyToAuthorId?: string;
+		isAtMax?: boolean;
 	}) => {
 		const isEditing = () => editingId() === itemProps.comment.id;
 		const isDeleted = () => itemProps.comment.deletedAt !== null;
 		const isOwnComment = () =>
 			local.currentUserId &&
 			itemProps.comment.author?.id === local.currentUserId;
+		const isHighlighted = () =>
+			local.highlightedCommentId === itemProps.comment.id;
+
+		const handleRef = (_el: HTMLDivElement) => {
+			if (isHighlighted() && local.onHighlightedCommentMounted) {
+				local.onHighlightedCommentMounted();
+			}
+		};
 
 		return (
-			<div class="flex gap-3">
+			<div
+				ref={handleRef}
+				id={`comment-${itemProps.comment.id}`}
+				class="flex gap-3"
+			>
 				<div class="hidden sm:block">
-					<Avatar
-						initials={getInitials(itemProps.comment.author?.name)}
-						size={itemProps.isRoot ? "md" : "sm"}
-						variant={
-							isOwnComment() ? "secondary" : isDeleted() ? "muted" : "primary"
+					<Show
+						when={itemProps.comment.author?.id}
+						fallback={
+							<Avatar
+								initials={getInitials(itemProps.comment.author?.name)}
+								size={itemProps.isRoot ? "md" : "sm"}
+								variant={
+									isOwnComment()
+										? "secondary"
+										: isDeleted()
+											? "muted"
+											: "primary"
+								}
+							/>
 						}
-					/>
+					>
+						{(authorId) => (
+							<A
+								href={`/user/${authorId()}`}
+								aria-label={`View ${itemProps.comment.author?.name ?? "user"}'s profile`}
+							>
+								<Avatar
+									initials={getInitials(itemProps.comment.author?.name)}
+									size={itemProps.isRoot ? "md" : "sm"}
+									variant={
+										isOwnComment()
+											? "secondary"
+											: isDeleted()
+												? "muted"
+												: "primary"
+									}
+								/>
+							</A>
+						)}
+					</Show>
 				</div>
 
 				<div class="flex-1 min-w-0">
@@ -172,14 +236,19 @@ export const CommentThread = (props: CommentThreadProps) => {
 								onCancel={cancelEdit}
 								submitLabel="Save"
 								placeholder="Edit your comment..."
+								maxLength={MAX_COMMENT_LENGTH}
+								search={local.search}
+								byIds={local.byIds}
 							/>
 						}
 					>
 						<CommentCard
 							author={itemProps.comment.author?.name ?? "Unknown"}
+							authorId={itemProps.comment.author?.id}
 							timestamp={formatRelativeTime(itemProps.comment.createdAt)}
 							content={itemProps.comment.content}
 							replyToAuthor={itemProps.replyToAuthorName}
+							replyToAuthorId={itemProps.replyToAuthorId}
 							editedAt={
 								!isDeleted() &&
 								itemProps.comment.updatedAt > itemProps.comment.createdAt
@@ -187,6 +256,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 									: undefined
 							}
 							isDeleted={isDeleted()}
+							isHighlighted={isHighlighted()}
 							onEdit={
 								isOwnComment() && !isDeleted()
 									? () => startEdit(itemProps.comment)
@@ -198,7 +268,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 									: undefined
 							}
 							onReply={
-								!isDeleted() && local.currentUserId
+								!isDeleted() && local.currentUserId && !itemProps.isAtMax
 									? () =>
 											startReply(
 												itemProps.rootCommentId,
@@ -207,6 +277,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 											)
 									: undefined
 							}
+							byIds={local.byIds}
 						/>
 					</Show>
 				</div>
@@ -219,7 +290,9 @@ export const CommentThread = (props: CommentThreadProps) => {
 		const isReplyingToThisThread = () =>
 			replyTarget()?.rootCommentId === itemProps.comment.id;
 		const showingReplies = () => local.isShowingReplies(itemProps.comment.id);
-		const repliesData = () => local.getRepliesData(itemProps.comment.id);
+		const repliesData = createMemo(() =>
+			local.getRepliesData(itemProps.comment.id),
+		);
 
 		return (
 			<div>
@@ -227,6 +300,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 					comment={itemProps.comment}
 					rootCommentId={itemProps.comment.id}
 					isRoot={true}
+					isAtMax={repliesData().isAtMax}
 				/>
 
 				{/* Show replies button - when has replies but not showing */}
@@ -259,30 +333,29 @@ export const CommentThread = (props: CommentThreadProps) => {
 									rootCommentId={itemProps.comment.id}
 									isRoot={false}
 									replyToAuthorName={reply.replyTo?.author?.name ?? undefined}
+									replyToAuthorId={reply.replyTo?.author?.id}
+									isAtMax={repliesData().isAtMax}
 								/>
 							)}
 						</For>
 
-						{/* Load more / Collapse buttons */}
+						{/* Max replies message */}
+						<Show when={repliesData().isAtMax}>
+							<p class="text-sm text-on-surface-muted dark:text-on-surface-dark-muted italic">
+								Maximum replies reached (100). No more replies can be added to
+								this thread.
+							</p>
+						</Show>
+
+						{/* Collapse button */}
 						<Show when={showingReplies()}>
-							<div class="flex gap-2">
-								<Show when={repliesData().hasMore}>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => local.loadMoreReplies(itemProps.comment.id)}
-									>
-										Show more replies
-									</Button>
-								</Show>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => local.hideReplies(itemProps.comment.id)}
-								>
-									Collapse
-								</Button>
-							</div>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => local.hideReplies(itemProps.comment.id)}
+							>
+								Collapse
+							</Button>
 						</Show>
 
 						{/* Inline reply editor */}
@@ -316,6 +389,9 @@ export const CommentThread = (props: CommentThreadProps) => {
 										onCancel={cancelReply}
 										submitLabel="Reply"
 										placeholder="Write a reply..."
+										maxLength={MAX_COMMENT_LENGTH}
+										search={local.search}
+										byIds={local.byIds}
 									/>
 								</div>
 							</div>
@@ -345,6 +421,9 @@ export const CommentThread = (props: CommentThreadProps) => {
 							onSubmit={handleNewCommentSubmit}
 							submitLabel="Comment"
 							placeholder="Write a comment..."
+							maxLength={MAX_COMMENT_LENGTH}
+							search={local.search}
+							byIds={local.byIds}
 						/>
 					</div>
 				</div>

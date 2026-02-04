@@ -42,6 +42,42 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		.related("ecosystemTags", (et) => et.related("tag"));
 });
 
+export const byIds = defineQuery(
+	z.object({ ids: z.array(z.string()) }),
+	({ args }) => {
+		return zql.ecosystems
+			.where("id", "IN", args.ids)
+			.related("upvotes")
+			.related("ecosystemTags", (et) => et.related("tag"));
+	},
+);
+
+// Recently updated ecosystems for default view when no search
+export const recent = defineQuery(
+	z.object({ limit: z.number().default(20) }),
+	({ args }) => {
+		return zql.ecosystems
+			.orderBy("updatedAt", "desc")
+			.orderBy("id", "asc")
+			.limit(args.limit)
+			.related("upvotes")
+			.related("ecosystemPackages")
+			.related("ecosystemTags", (et) => et.related("tag"));
+	},
+);
+
+// Exact name match (case-insensitive) - floats to top of search results
+export const exactMatch = defineQuery(
+	z.object({ name: z.string() }),
+	({ args }) => {
+		return zql.ecosystems
+			.where("name", "ILIKE", args.name)
+			.related("upvotes")
+			.related("ecosystemPackages")
+			.related("ecosystemTags", (et) => et.related("tag"));
+	},
+);
+
 export const search = defineQuery(
 	z.object({
 		query: z.string().optional(),

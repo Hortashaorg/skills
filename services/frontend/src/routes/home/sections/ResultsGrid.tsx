@@ -22,14 +22,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Select } from "@/components/ui/select";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { Spinner } from "@/components/ui/spinner";
-import { createPackageRequest } from "@/hooks/createPackageRequest";
-import { createPackageUpvote } from "@/hooks/createPackageUpvote";
+import { createPackageRequest, createPackageUpvote } from "@/hooks/packages";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import {
 	BACK_TO_TOP_SCROLL_THRESHOLD,
 	INFINITE_SCROLL_DEBOUNCE_MS,
 	INFINITE_SCROLL_ROOT_MARGIN,
-	PACKAGES_AUTO_LOAD_LIMIT,
+	SEARCH_AUTO_LOAD_LIMIT,
 } from "@/lib/constants";
 import { REGISTRY_OPTIONS, type Registry } from "@/lib/registries";
 import { buildPackageUrl } from "@/lib/url";
@@ -103,9 +102,39 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 	const showResults = () =>
 		props.packages.length > 0 || hasExactMatches() || props.showAddCard;
 
+	// When canLoadMore is true, trim packages to make total grid cards divisible by 6
+	// (works for both 2 and 3 column layouts)
+	const displayPackages = () => {
+		const packages = props.packages;
+		if (!props.canLoadMore) {
+			// No more to load - show everything
+			return packages;
+		}
+
+		// Count fixed cards: exact matches + add card (if shown)
+		const exactMatchCount = props.exactMatches?.length ?? 0;
+		const addCardCount = props.showAddCard ? 1 : 0;
+		const fixedCards = exactMatchCount + addCardCount;
+
+		const total = fixedCards + packages.length;
+		const remainder = total % 6;
+
+		if (remainder === 0) {
+			return packages;
+		}
+
+		// Trim packages to make total divisible by 6
+		const trimCount = remainder;
+		if (packages.length > trimCount) {
+			return packages.slice(0, packages.length - trimCount);
+		}
+
+		return packages;
+	};
+
 	// Stop auto-loading after limit, require manual "Load more"
 	const pastAutoLoadLimit = () =>
-		props.packages.length >= PACKAGES_AUTO_LOAD_LIMIT;
+		props.packages.length >= SEARCH_AUTO_LOAD_LIMIT;
 
 	// Debounced load more to prevent rapid-fire calls
 	let loadMoreTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -217,7 +246,7 @@ export const ResultsGrid = (props: ResultsGridProps) => {
 						</Show>
 
 						{/* Rest of the packages */}
-						<For each={props.packages}>
+						<For each={displayPackages()}>
 							{(pkg) => <PackageCardWrapper pkg={pkg} />}
 						</For>
 

@@ -1,10 +1,26 @@
-import { createSignal, For, type JSX, Show, splitProps } from "solid-js";
+import {
+	createSignal,
+	For,
+	type JSX,
+	onCleanup,
+	Show,
+	splitProps,
+} from "solid-js";
 import { Textarea } from "@/components/primitives/textarea";
 import { Button } from "@/components/ui/button";
 import { MarkdownOutput } from "@/components/ui/markdown-output";
 import { cn } from "@/lib/utils";
-import type { ToolbarContext, ToolbarModule } from "./markdown-editor-types";
+import type {
+	EntityByIds,
+	EntitySearch,
+	ToolbarContext,
+	ToolbarModule,
+} from "./markdown-editor-types";
 import { defaultModules } from "./modules";
+import { useEditor } from "./use-editor";
+
+const isModule = (item: unknown): item is ToolbarModule =>
+	typeof item === "object" && item !== null && "id" in item;
 
 export type MarkdownEditorProps = Omit<
 	JSX.IntrinsicElements["div"],
@@ -18,6 +34,11 @@ export type MarkdownEditorProps = Omit<
 	cancelLabel?: string;
 	placeholder?: string;
 	minHeight?: string;
+	maxLength?: number;
+	/** Search hooks for toolbar modules to insert entity references */
+	search: EntitySearch;
+	/** Entity data maps for resolving tokens in preview */
+	byIds: EntityByIds;
 };
 
 export const MarkdownEditor = (props: MarkdownEditorProps) => {
@@ -30,40 +51,57 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 		"cancelLabel",
 		"placeholder",
 		"minHeight",
+		"maxLength",
+		"search",
+		"byIds",
 		"class",
 	]);
 
-	let textareaRef: HTMLTextAreaElement | undefined;
 	const [activeTab, setActiveTab] = createSignal<"write" | "preview">("write");
 	const [activePanel, setActivePanel] = createSignal<string | null>(null);
 
 	const minHeight = () => local.minHeight ?? "min-h-32";
 
-	const insertAtCursor = (text: string) => {
-		if (!textareaRef) return;
-
-		textareaRef.focus();
-		document.execCommand("insertText", false, text);
-		local.onInput(textareaRef.value);
-	};
+	const editor = useEditor({ debug: import.meta.env.DEV });
+	onCleanup(() => editor.cleanup());
 
 	const modules = defaultModules;
 
 	const createContext = (): ToolbarContext => ({
-		insert: insertAtCursor,
+		insert: editor.mutators.insert,
+		insertBlock: editor.mutators.insertBlock,
+		wrap: editor.mutators.wrap,
+		indent: editor.mutators.indent,
+		outdent: editor.mutators.outdent,
+		undo: editor.undo,
+		redo: editor.redo,
+		getSelectedText: editor.getSelectedText,
 		closePanel: () => setActivePanel(null),
+		search: local.search,
 	});
 
 	const handleModuleClick = (module: ToolbarModule) => {
+		// If action exists, try it first - if it returns true, it handled everything
+		if (module.action) {
+			const handled = module.action(createContext());
+			if (handled) return;
+		}
+
+		// Otherwise toggle the panel (if exists)
 		if (module.panel) {
 			setActivePanel(activePanel() === module.id ? null : module.id);
-		} else if (module.action) {
-			module.action(createContext());
 		}
 	};
 
+	const toolbarModules = modules.filter(isModule);
+
+	const handleKeyDown = editor.createKeyDownHandler(
+		toolbarModules,
+		createContext,
+	);
+
 	const activeModule = () =>
-		modules.find((m) => m.id === activePanel() && m.panel);
+		toolbarModules.find((m) => m.id === activePanel() && m.panel);
 
 	return (
 		<div
@@ -75,9 +113,9 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			{...others}
 		>
 			{/* Header: Tabs + Toolbar */}
-			<div class="flex flex-wrap items-center justify-between gap-2 px-2 py-1.5 border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">
+			<div class="border-b border-outline dark:border-outline-dark bg-surface-alt/50 dark:bg-surface-dark-alt/50">
 				{/* Tab buttons */}
-				<div class="flex gap-1">
+				<div class="flex gap-1 px-2 pt-1.5 pb-1">
 					<button
 						type="button"
 						onClick={() => setActiveTab("write")}
@@ -104,29 +142,38 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 					</button>
 				</div>
 
-				{/* Toolbar buttons - only show in write mode */}
-				<Show when={activeTab() === "write" && modules.length > 0}>
-					<div class="flex gap-0.5">
+				{/* Toolbar buttons - always visible, disabled in preview mode */}
+				<Show when={modules.length > 0}>
+					<div
+						class={cn(
+							"flex gap-0.5 px-2 pb-1.5",
+							activeTab() === "preview" && "opacity-50 pointer-events-none",
+						)}
+					>
 						<For each={modules}>
-							{(module) => (
-								<button
-									type="button"
-									onClick={() => handleModuleClick(module)}
-									title={module.label}
-									class={cn(
-										"p-1.5 rounded-radius transition-colors",
-										"text-on-surface-muted dark:text-on-surface-dark-muted",
-										"hover:text-on-surface dark:hover:text-on-surface-dark",
-										"hover:bg-surface dark:hover:bg-surface-dark",
-										activePanel() === module.id &&
-											"bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark",
-									)}
-								>
-									{module.icon?.() ?? (
-										<span class="text-xs font-medium">{module.label}</span>
-									)}
-								</button>
-							)}
+							{(item) =>
+								"separator" in item ? (
+									<div class="w-px h-5 mx-1 bg-outline/50 dark:bg-outline-dark/50 self-center" />
+								) : (
+									<button
+										type="button"
+										onClick={() => handleModuleClick(item)}
+										title={item.label}
+										class={cn(
+											"p-1.5 rounded-radius transition-colors",
+											"text-on-surface-muted dark:text-on-surface-dark-muted",
+											"hover:text-on-surface dark:hover:text-on-surface-dark",
+											"hover:bg-surface dark:hover:bg-surface-dark",
+											activePanel() === item.id &&
+												"bg-surface dark:bg-surface-dark text-on-surface dark:text-on-surface-dark",
+										)}
+									>
+										{item.icon?.() ?? (
+											<span class="text-xs font-medium">{item.label}</span>
+										)}
+									</button>
+								)
+							}
 						</For>
 					</div>
 				</Show>
@@ -145,15 +192,20 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 			<Show when={activeTab() === "write"}>
 				<Textarea
 					ref={(el) => {
-						textareaRef = el;
+						if (!el) return;
+						editor.setTextareaRef(el);
 					}}
+					value={local.value}
 					variant="code"
 					class={cn(
 						"border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
 						minHeight(),
 					)}
-					value={local.value}
 					onInput={(e) => local.onInput(e.currentTarget.value)}
+					onSelect={editor.handlers.onSelect}
+					onKeyDown={handleKeyDown}
+					onKeyUp={editor.handlers.onKeyUp}
+					onMouseUp={editor.handlers.onMouseUp}
 					placeholder={local.placeholder}
 				/>
 			</Show>
@@ -168,22 +220,56 @@ export const MarkdownEditor = (props: MarkdownEditorProps) => {
 							</span>
 						}
 					>
-						<MarkdownOutput content={local.value} />
+						<MarkdownOutput content={local.value} byIds={local.byIds} />
 					</Show>
 				</div>
 			</Show>
 
-			{/* Footer with submit/cancel */}
-			<Show when={local.onSubmit}>
-				<div class="flex justify-end gap-2 px-3 py-2 border-t border-outline dark:border-outline-dark bg-surface-alt/30 dark:bg-surface-dark-alt/30">
-					<Show when={local.onCancel}>
-						<Button onClick={local.onCancel} size="sm" variant="ghost">
-							{local.cancelLabel ?? "Cancel"}
-						</Button>
+			{/* Footer with character count and submit/cancel */}
+			<Show when={local.onSubmit || local.maxLength}>
+				<div class="flex items-center justify-between gap-2 px-3 py-2 border-t border-outline dark:border-outline-dark bg-surface-alt/30 dark:bg-surface-dark-alt/30">
+					{/* Character count */}
+					<Show when={local.maxLength} fallback={<div />}>
+						{(max) => {
+							const count = () => local.value.length;
+							const isOverLimit = () => count() > max();
+							const isNearLimit = () => count() > max() * 0.9;
+							return (
+								<span
+									class={cn(
+										"text-xs",
+										isOverLimit()
+											? "text-danger dark:text-danger-dark font-medium"
+											: isNearLimit()
+												? "text-warning dark:text-warning-dark"
+												: "text-on-surface-muted dark:text-on-surface-dark-muted",
+									)}
+								>
+									{count().toLocaleString()} / {max().toLocaleString()}
+								</span>
+							);
+						}}
 					</Show>
-					<Button onClick={local.onSubmit} size="sm">
-						{local.submitLabel ?? "Submit"}
-					</Button>
+
+					{/* Submit/cancel buttons */}
+					<Show when={local.onSubmit}>
+						<div class="flex gap-2">
+							<Show when={local.onCancel}>
+								<Button onClick={local.onCancel} size="sm" variant="ghost">
+									{local.cancelLabel ?? "Cancel"}
+								</Button>
+							</Show>
+							<Button
+								onClick={local.onSubmit}
+								size="sm"
+								disabled={
+									local.maxLength ? local.value.length > local.maxLength : false
+								}
+							>
+								{local.submitLabel ?? "Submit"}
+							</Button>
+						</div>
+					</Show>
 				</div>
 			</Show>
 		</div>

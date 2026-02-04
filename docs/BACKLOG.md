@@ -22,6 +22,12 @@ Current: npm, jsr, nuget, dockerhub, homebrew (formulas), archlinux (official re
 
 ---
 
+## Curation
+
+- [ ] Curator points for auto-approved suggestions (admins: no points, curators: get points)
+
+---
+
 ## Polish
 
 - [ ] Zero preloading on link hover

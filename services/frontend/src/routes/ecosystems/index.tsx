@@ -1,4 +1,3 @@
-import type { Row } from "@package/database/client";
 import { queries, useQuery, useZero } from "@package/database/client";
 import {
 	createEffect,
@@ -6,7 +5,7 @@ import {
 	createSignal,
 	For,
 	Index,
-	on,
+	onCleanup,
 	Show,
 } from "solid-js";
 import { ActionCard } from "@/components/composite/action-card";
@@ -23,6 +22,7 @@ import { PlusIcon } from "@/components/primitives/icon";
 import { Input } from "@/components/primitives/input";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
@@ -32,69 +32,57 @@ import {
 	TextFieldLabel,
 } from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
-import { createEcosystemUpvote } from "@/hooks/createEcosystemUpvote";
 import {
 	createUrlArraySignal,
 	createUrlStringSignal,
 } from "@/hooks/createUrlSignal";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import {
+	createEcosystemUpvote,
+	type Ecosystem,
+	useEcosystemSearch,
+} from "@/hooks/ecosystems";
 import { useSuggestionSubmit } from "@/hooks/useSuggestionSubmit";
 import { Layout } from "@/layout/Layout";
 import { getAuthorizationUrl, saveReturnUrl } from "@/lib/auth-url";
 import {
-	ECOSYSTEMS_AUTO_LOAD_LIMIT,
-	ECOSYSTEMS_INITIAL_LIMIT,
-	ECOSYSTEMS_LOAD_MORE_COUNT,
+	BACK_TO_TOP_SCROLL_THRESHOLD,
+	INFINITE_SCROLL_DEBOUNCE_MS,
+	INFINITE_SCROLL_ROOT_MARGIN,
+	SEARCH_AUTO_LOAD_LIMIT,
 } from "@/lib/constants";
-
-type EcosystemTag = Row["ecosystemTags"] & {
-	tag?: Row["tags"];
-};
-
-type Ecosystem = Row["ecosystems"] & {
-	upvotes?: readonly Row["ecosystemUpvotes"][];
-	ecosystemPackages?: readonly Row["ecosystemPackages"][];
-	ecosystemTags?: readonly EcosystemTag[];
-};
 
 export const Ecosystems = () => {
 	const zero = useZero();
 	const isLoggedIn = () => zero().userID !== "anon";
 
-	const [searchValue, setSearchValue] = createUrlStringSignal("q");
-	const [selectedTagSlugs, setSelectedTagSlugs] = createUrlArraySignal("tags");
-	const searchTerm = () => searchValue().trim();
+	// URL-synced state (page's concern)
+	const [urlQuery, setUrlQuery] = createUrlStringSignal("q");
+	const [urlTags, setUrlTags] = createUrlArraySignal("tags");
 
-	// Infinite scroll state
-	const scroll = useInfiniteScroll({
-		initialLimit: ECOSYSTEMS_INITIAL_LIMIT,
-		loadMoreCount: ECOSYSTEMS_LOAD_MORE_COUNT,
-		autoLoadLimit: ECOSYSTEMS_AUTO_LOAD_LIMIT,
+	// Ecosystem search hook
+	const search = useEcosystemSearch({ showRecentWhenEmpty: true });
+
+	// Sync URL → hook state on mount
+	createEffect(() => {
+		const q = urlQuery();
+		if (q !== search.query()) search.setQuery(q);
+	});
+	createEffect(() => {
+		const t = urlTags();
+		if (JSON.stringify(t) !== JSON.stringify(search.tags())) search.setTags(t);
 	});
 
-	// Track if we've ever completed loading - prevents flicker on re-sync
-	const [hasLoadedOnce, setHasLoadedOnce] = createSignal(false);
+	// Sync hook state → URL when user interacts
+	const handleSearchChange = (value: string) => {
+		search.setQuery(value);
+		setUrlQuery(value);
+	};
+	const handleTagsChange = (slugs: string[]) => {
+		search.setTags(slugs);
+		setUrlTags(slugs);
+	};
 
-	// Reset limit and loading state when filters change
-	createEffect(
-		on([searchValue, selectedTagSlugs], () => {
-			scroll.resetLimit();
-			setHasLoadedOnce(false);
-		}),
-	);
-
-	const [ecosystems, ecosystemsResult] = useQuery(() =>
-		queries.ecosystems.search({
-			query: searchTerm() || undefined,
-			tagSlugs: selectedTagSlugs().length > 0 ? selectedTagSlugs() : undefined,
-			limit: scroll.limit(),
-		}),
-	);
-	const [pendingSuggestions] = useQuery(() =>
-		queries.suggestions.pendingCreateEcosystem(),
-	);
-
-	// Tags for filter
+	// Tags for filter UI (separate query)
 	const [tagsWithCounts] = useQuery(queries.tags.listWithEcosystemCounts);
 	const tagOptions = createMemo((): readonly FilterOption[] => {
 		const tags = tagsWithCounts();
@@ -106,16 +94,10 @@ export const Ecosystems = () => {
 		}));
 	});
 
-	const isLoading = () => ecosystemsResult().type !== "complete";
-	const ecosystemCount = () => ecosystems()?.length ?? 0;
-	const canLoadMore = () => scroll.canLoadMore(ecosystemCount());
-
-	// Set loaded once when query completes
-	createEffect(() => {
-		if (!isLoading()) {
-			setHasLoadedOnce(true);
-		}
-	});
+	// Pending suggestions (separate query)
+	const [pendingSuggestions] = useQuery(() =>
+		queries.suggestions.pendingCreateEcosystem(),
+	);
 
 	const pendingEcosystems = () =>
 		(pendingSuggestions() ?? [])
@@ -134,12 +116,125 @@ export const Ecosystems = () => {
 			})
 			.filter((p) => p.name && p.slug);
 
+	// Derived state for UI
+	const hasActiveFilters = () =>
+		search.query().trim().length > 0 || search.tags().length > 0;
+
 	// Hide pending ecosystems when filtering by tags (they don't have tags yet)
-	const hasTagFilter = () => selectedTagSlugs().length > 0;
+	const hasTagFilter = () => search.tags().length > 0;
+
+	// Show suggest card when searching and no exact match
+	const showSuggestCard = () =>
+		search.query().trim().length > 0 && !search.exactMatch();
 
 	// Dynamic suggest card text based on search
-	const suggestCardText = () =>
-		searchTerm() ? `Add "${searchTerm()}"` : "Suggest Ecosystem";
+	const suggestCardText = () => {
+		const term = search.query().trim();
+		return term ? `Add "${term}"` : "Suggest Ecosystem";
+	};
+
+	// When canLoadMore is true, trim results to make total grid cards divisible by 6
+	// (works for both 2 and 3 column layouts)
+	const displayEcosystems = () => {
+		const results = search.results();
+		if (!search.canLoadMore()) {
+			// No more to load - show everything
+			return results;
+		}
+
+		// Count fixed cards
+		const exactMatchCount = search.exactMatch() ? 1 : 0;
+		const suggestCardCount = showSuggestCard() ? 1 : 0;
+		const defaultSuggestCardCount = !hasActiveFilters() ? 1 : 0;
+		const pendingCount = !hasTagFilter() ? pendingEcosystems().length : 0;
+		const fixedCards =
+			exactMatchCount +
+			suggestCardCount +
+			defaultSuggestCardCount +
+			pendingCount;
+
+		const total = fixedCards + results.length;
+		const remainder = total % 6;
+
+		if (remainder === 0) {
+			return results;
+		}
+
+		// Trim results to make total divisible by 6
+		const trimCount = remainder;
+		if (results.length > trimCount) {
+			return results.slice(0, results.length - trimCount);
+		}
+
+		return results;
+	};
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Infinite scroll (same pattern as packages ResultsGrid)
+	// ─────────────────────────────────────────────────────────────────────────
+
+	const [sentinelRef, setSentinelRef] = createSignal<HTMLDivElement | null>(
+		null,
+	);
+	const [showBackToTop, setShowBackToTop] = createSignal(false);
+
+	const pastAutoLoadLimit = () =>
+		search.results().length >= SEARCH_AUTO_LOAD_LIMIT;
+
+	// Debounced load more
+	let loadMoreTimeout: ReturnType<typeof setTimeout> | undefined;
+	const loadMoreDebounced = () => {
+		if (loadMoreTimeout) return;
+		loadMoreTimeout = setTimeout(() => {
+			loadMoreTimeout = undefined;
+			if (search.canLoadMore() && !pastAutoLoadLimit()) {
+				search.loadMore();
+			}
+		}, INFINITE_SCROLL_DEBOUNCE_MS);
+	};
+
+	// IntersectionObserver for auto-loading
+	createEffect(() => {
+		const sentinel = sentinelRef();
+		if (!sentinel) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0]?.isIntersecting) {
+					loadMoreDebounced();
+				}
+			},
+			{ rootMargin: INFINITE_SCROLL_ROOT_MARGIN },
+		);
+
+		observer.observe(sentinel);
+
+		onCleanup(() => {
+			observer.disconnect();
+			if (loadMoreTimeout) {
+				clearTimeout(loadMoreTimeout);
+				loadMoreTimeout = undefined;
+			}
+		});
+	});
+
+	// Back to top button
+	createEffect(() => {
+		const handleScroll = () => {
+			setShowBackToTop(window.scrollY > BACK_TO_TOP_SCROLL_THRESHOLD);
+		};
+
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		onCleanup(() => window.removeEventListener("scroll", handleScroll));
+	});
+
+	const scrollToTop = () => {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
+
+	// ─────────────────────────────────────────────────────────────────────────
+	// Suggest dialog
+	// ─────────────────────────────────────────────────────────────────────────
 
 	const [dialogOpen, setDialogOpen] = createSignal(false);
 	const [name, setName] = createSignal("");
@@ -176,6 +271,10 @@ export const Ecosystems = () => {
 		setDialogOpen(true);
 	};
 
+	// ─────────────────────────────────────────────────────────────────────────
+	// Render
+	// ─────────────────────────────────────────────────────────────────────────
+
 	return (
 		<Layout>
 			<SEO
@@ -196,52 +295,87 @@ export const Ecosystems = () => {
 					<Flex gap="sm" align="stretch">
 						<EntityFilter
 							options={tagOptions()}
-							selectedSlugs={selectedTagSlugs()}
-							onSelectionChange={setSelectedTagSlugs}
+							selectedSlugs={search.tags()}
+							onSelectionChange={handleTagsChange}
 						/>
 						<Input
 							type="text"
-							value={searchValue()}
-							onInput={(e) => setSearchValue(e.currentTarget.value)}
+							value={search.query()}
+							onInput={(e) => handleSearchChange(e.currentTarget.value)}
 							placeholder="Search ecosystems..."
 							aria-label="Search ecosystems"
 							class="flex-1"
 						/>
 					</Flex>
 
-					{/* Initial loading skeleton - only show if never loaded */}
-					<Show when={isLoading() && !hasLoadedOnce()}>
+					{/* Initial loading skeleton */}
+					<Show when={search.isLoading()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 							<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 						</div>
 					</Show>
 
-					{/* Results - show once we've loaded at least once */}
-					<Show when={hasLoadedOnce()}>
+					{/* Results */}
+					<Show when={!search.isLoading()}>
 						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-							{/* Suggest ecosystem card - always visible */}
-							<ActionCard
-								icon={
-									<PlusIcon
-										size="sm"
-										class="text-primary dark:text-primary-dark"
-									/>
-								}
-								title={suggestCardText()}
-								description={
-									isLoggedIn()
-										? "Propose a new ecosystem"
-										: "Sign in to suggest"
-								}
-								onClick={() => {
-									if (isLoggedIn()) {
-										openSuggestDialog(searchTerm() || undefined);
-									} else {
-										saveReturnUrl();
-										window.location.href = getAuthorizationUrl();
+							{/* Exact match first (floated to top) */}
+							<Show when={search.exactMatch()}>
+								{(ecosystem) => (
+									<EcosystemCardWrapper ecosystem={ecosystem()} isExactMatch />
+								)}
+							</Show>
+
+							{/* Suggest card when searching and no exact match */}
+							<Show when={showSuggestCard()}>
+								<ActionCard
+									icon={
+										<PlusIcon
+											size="sm"
+											class="text-primary dark:text-primary-dark"
+										/>
 									}
-								}}
-							/>
+									title={suggestCardText()}
+									description={
+										isLoggedIn()
+											? "Propose a new ecosystem"
+											: "Sign in to suggest"
+									}
+									onClick={() => {
+										if (isLoggedIn()) {
+											openSuggestDialog(search.query().trim() || undefined);
+										} else {
+											saveReturnUrl();
+											window.location.href = getAuthorizationUrl();
+										}
+									}}
+								/>
+							</Show>
+
+							{/* Suggest card when NOT searching (always visible) */}
+							<Show when={!hasActiveFilters()}>
+								<ActionCard
+									icon={
+										<PlusIcon
+											size="sm"
+											class="text-primary dark:text-primary-dark"
+										/>
+									}
+									title="Suggest Ecosystem"
+									description={
+										isLoggedIn()
+											? "Propose a new ecosystem"
+											: "Sign in to suggest"
+									}
+									onClick={() => {
+										if (isLoggedIn()) {
+											openSuggestDialog();
+										} else {
+											saveReturnUrl();
+											window.location.href = getAuthorizationUrl();
+										}
+									}}
+								/>
+							</Show>
 
 							{/* Pending suggestions - hide when filtering by tags */}
 							<Show when={!hasTagFilter()}>
@@ -261,33 +395,33 @@ export const Ecosystems = () => {
 								</For>
 							</Show>
 
-							{/* Existing ecosystems */}
-							<For each={ecosystems()}>
+							{/* Search results (exact match filtered out by hook) */}
+							<For each={displayEcosystems()}>
 								{(ecosystem) => <EcosystemCardWrapper ecosystem={ecosystem} />}
 							</For>
 
 							{/* Auto-load skeletons */}
-							<Show when={canLoadMore() && !scroll.pastAutoLoadLimit()}>
+							<Show when={search.canLoadMore() && !pastAutoLoadLimit()}>
 								<Index each={Array(6)}>{() => <SkeletonCard />}</Index>
 							</Show>
 						</div>
 
-						{/* Manual load more button */}
-						<Show when={canLoadMore() && scroll.pastAutoLoadLimit()}>
+						{/* Manual load more button (after auto-load limit) */}
+						<Show when={search.canLoadMore() && pastAutoLoadLimit()}>
 							<div class="flex justify-center pt-4">
-								<Button variant="outline" onClick={scroll.loadMore}>
+								<Button variant="outline" onClick={search.loadMore}>
 									Load more ecosystems
 								</Button>
 							</div>
 						</Show>
 
 						{/* Sentinel for intersection observer */}
-						<div ref={scroll.setSentinelRef} class="h-1" />
+						<div ref={setSentinelRef} class="h-1" />
 
 						{/* Back to top button */}
-						<Show when={scroll.showBackToTop()}>
+						<Show when={showBackToTop()}>
 							<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-								<Button variant="info" size="md" onClick={scroll.scrollToTop}>
+								<Button variant="info" size="md" onClick={scrollToTop}>
 									↑ Back to top
 								</Button>
 							</div>
@@ -354,7 +488,10 @@ export const Ecosystems = () => {
 	);
 };
 
-const EcosystemCardWrapper = (props: { ecosystem: Ecosystem }) => {
+const EcosystemCardWrapper = (props: {
+	ecosystem: Ecosystem;
+	isExactMatch?: boolean;
+}) => {
 	const upvote = createEcosystemUpvote(() => props.ecosystem);
 
 	const tags = () =>
@@ -367,7 +504,7 @@ const EcosystemCardWrapper = (props: { ecosystem: Ecosystem }) => {
 				slug: et.tag.slug,
 			})) ?? [];
 
-	return (
+	const card = (
 		<EcosystemCard
 			name={props.ecosystem.name}
 			description={props.ecosystem.description}
@@ -380,6 +517,21 @@ const EcosystemCardWrapper = (props: { ecosystem: Ecosystem }) => {
 			packageCount={props.ecosystem.ecosystemPackages?.length ?? 0}
 		/>
 	);
+
+	if (props.isExactMatch) {
+		return (
+			<div class="relative">
+				<div class="absolute -top-2 left-2 z-10">
+					<Badge variant="info" size="sm">
+						Exact match
+					</Badge>
+				</div>
+				{card}
+			</div>
+		);
+	}
+
+	return card;
 };
 
 export default Ecosystems;

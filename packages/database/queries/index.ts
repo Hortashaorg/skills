@@ -3,6 +3,7 @@ import "../types/context.ts";
 import * as accountQueries from "./account.ts";
 import * as channelDependenciesQueries from "./channel-dependencies.ts";
 import * as commentsQueries from "./comments.ts";
+import * as contributionEventsQueries from "./contribution-events.ts";
 import * as contributionScoresQueries from "./contribution-scores.ts";
 import * as ecosystemsQueries from "./ecosystems.ts";
 import * as notificationsQueries from "./notifications.ts";
@@ -19,10 +20,16 @@ export const queries = defineQueries({
 	account: {
 		myAccount: accountQueries.myAccount,
 		allAccounts: accountQueries.allAccounts,
+		byId: accountQueries.byId,
+		byIds: accountQueries.byIds,
+		recent: accountQueries.recent,
+		exactMatch: accountQueries.exactMatch,
+		search: accountQueries.search,
 	},
 	packages: {
 		list: packagesQueries.list,
 		byId: packagesQueries.byId,
+		byIds: packagesQueries.byIds,
 		byNameWithChannels: packagesQueries.byNameWithChannels,
 		byIdWithChannels: packagesQueries.byIdWithChannels,
 		byIdWithTags: packagesQueries.byIdWithTags,
@@ -59,7 +66,12 @@ export const queries = defineQueries({
 	projects: {
 		mine: projectsQueries.mine,
 		byId: projectsQueries.byId,
+		byIds: projectsQueries.byIds,
 		list: projectsQueries.list,
+		byAccountId: projectsQueries.byAccountId,
+		recent: projectsQueries.recent,
+		exactMatch: projectsQueries.exactMatch,
+		search: projectsQueries.search,
 	},
 	suggestions: {
 		pendingForPackage: suggestionsQueries.pendingForPackage,
@@ -73,6 +85,12 @@ export const queries = defineQueries({
 		leaderboardMonthly: contributionScoresQueries.leaderboardMonthly,
 		leaderboardAllTime: contributionScoresQueries.leaderboardAllTime,
 		forUser: contributionScoresQueries.forUser,
+		searchByMonthlyScore: contributionScoresQueries.searchByMonthlyScore,
+		searchByAllTimeScore: contributionScoresQueries.searchByAllTimeScore,
+		exactMatchByName: contributionScoresQueries.exactMatchByName,
+	},
+	contributionEvents: {
+		forUser: contributionEventsQueries.forUser,
 	},
 	notifications: {
 		mine: notificationsQueries.mine,
@@ -82,6 +100,9 @@ export const queries = defineQueries({
 		list: ecosystemsQueries.list,
 		bySlug: ecosystemsQueries.bySlug,
 		byId: ecosystemsQueries.byId,
+		byIds: ecosystemsQueries.byIds,
+		recent: ecosystemsQueries.recent,
+		exactMatch: ecosystemsQueries.exactMatch,
 		search: ecosystemsQueries.search,
 		byPackageId: ecosystemsQueries.byPackageId,
 	},
@@ -94,6 +115,7 @@ export const queries = defineQueries({
 	comments: {
 		rootsByThreadId: commentsQueries.rootsByThreadId,
 		repliesByRootId: commentsQueries.repliesByRootId,
+		allByThreadId: commentsQueries.allByThreadId,
 		byId: commentsQueries.byId,
 		byAuthorId: commentsQueries.byAuthorId,
 	},

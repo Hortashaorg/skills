@@ -3,6 +3,7 @@ export {
 	ArrowUpIcon,
 	BellIcon,
 	CheckIcon,
+	ChecklistIcon,
 	ChevronDownIcon,
 	ChevronRightIcon,
 	ChevronUpIcon,

@@ -1,4 +1,6 @@
+import { A } from "@solidjs/router";
 import { type JSX, Show, splitProps } from "solid-js";
+import type { EntityByIds } from "@/components/composite/markdown-editor";
 import { Flex } from "@/components/primitives/flex";
 import { MarkdownOutput } from "@/components/ui/markdown-output";
 import { cn } from "@/lib/utils";
@@ -9,35 +11,47 @@ export type CommentCardProps = Omit<
 > & {
 	/** Author display name */
 	author: string;
+	/** Author ID for profile link */
+	authorId?: string;
 	/** Timestamp display string */
 	timestamp: string;
 	/** Markdown content of the comment */
 	content: string;
 	/** If replying to someone, show their name */
 	replyToAuthor?: string;
+	/** Reply-to author ID for profile link */
+	replyToAuthorId?: string;
 	/** Show edited indicator */
 	editedAt?: string;
 	/** Whether the comment is deleted (show placeholder) */
 	isDeleted?: boolean;
+	/** Whether this comment is highlighted (linked from URL) */
+	isHighlighted?: boolean;
 	/** Called when reply button clicked */
 	onReply?: () => void;
 	/** Called when edit button clicked */
 	onEdit?: () => void;
 	/** Called when delete button clicked */
 	onDelete?: () => void;
+	/** Entity data maps for resolving markdown tokens */
+	byIds: EntityByIds;
 };
 
 export const CommentCard = (props: CommentCardProps) => {
 	const [local, others] = splitProps(props, [
 		"author",
+		"authorId",
 		"timestamp",
 		"content",
 		"replyToAuthor",
+		"replyToAuthorId",
 		"editedAt",
 		"isDeleted",
+		"isHighlighted",
 		"onReply",
 		"onEdit",
 		"onDelete",
+		"byIds",
 		"class",
 	]);
 
@@ -50,12 +64,31 @@ export const CommentCard = (props: CommentCardProps) => {
 			{...others}
 		>
 			{/* Header */}
-			<div class="px-4 py-2 bg-surface-alt/50 dark:bg-surface-dark-alt/50 border-b border-outline dark:border-outline-dark">
+			<div
+				class={cn(
+					"px-4 py-2 border-b border-outline dark:border-outline-dark",
+					local.isHighlighted
+						? "bg-success/20 dark:bg-success-dark/20"
+						: "bg-surface-alt/50 dark:bg-surface-dark-alt/50",
+				)}
+			>
 				<Flex gap="sm" align="center" justify="between">
 					<Flex gap="sm" align="center" class="flex-wrap">
-						<span class="font-medium text-sm text-on-surface dark:text-on-surface-dark">
-							{local.author}
-						</span>
+						<Show
+							when={local.authorId}
+							fallback={
+								<span class="font-medium text-sm text-on-surface dark:text-on-surface-dark">
+									{local.author}
+								</span>
+							}
+						>
+							<A
+								href={`/user/${local.authorId}`}
+								class="font-medium text-sm text-on-surface dark:text-on-surface-dark hover:text-brand dark:hover:text-brand-dark transition-colors"
+							>
+								{local.author}
+							</A>
+						</Show>
 						<Show when={local.replyToAuthor}>
 							{(author) => (
 								<span class="text-xs text-on-surface-muted dark:text-on-surface-dark-muted flex items-center gap-1">
@@ -74,7 +107,17 @@ export const CommentCard = (props: CommentCardProps) => {
 										<polyline points="9 17 4 12 9 7" />
 										<path d="M20 18v-2a4 4 0 0 0-4-4H4" />
 									</svg>
-									<span class="font-medium">{author()}</span>
+									<Show
+										when={local.replyToAuthorId}
+										fallback={<span class="font-medium">{author()}</span>}
+									>
+										<A
+											href={`/user/${local.replyToAuthorId}`}
+											class="font-medium hover:text-brand dark:hover:text-brand-dark transition-colors"
+										>
+											{author()}
+										</A>
+									</Show>
 								</span>
 							)}
 						</Show>
@@ -138,7 +181,7 @@ export const CommentCard = (props: CommentCardProps) => {
 						</p>
 					}
 				>
-					<MarkdownOutput content={local.content} />
+					<MarkdownOutput content={local.content} byIds={local.byIds} />
 				</Show>
 			</div>
 		</div>

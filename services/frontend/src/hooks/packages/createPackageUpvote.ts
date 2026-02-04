@@ -1,4 +1,4 @@
-import { createUpvote, type UpvotableEntity } from "./createUpvote";
+import { createUpvote, type UpvotableEntity } from "@/hooks/createUpvote";
 
 type PackageWithUpvotes = UpvotableEntity;
 

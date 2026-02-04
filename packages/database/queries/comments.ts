@@ -21,7 +21,7 @@ export const rootsByThreadId = defineQuery(
 export const repliesByRootId = defineQuery(
 	z.object({
 		rootCommentId: z.string(),
-		limit: z.number().default(20),
+		limit: z.number().default(100),
 	}),
 	({ args }) => {
 		return zql.comments
@@ -42,16 +42,27 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		.one();
 });
 
+/** Get all comments in a thread (for entity extraction, not display) */
+export const allByThreadId = defineQuery(
+	z.object({ threadId: z.string() }),
+	({ args }) => {
+		return zql.comments.where("threadId", args.threadId);
+	},
+);
+
 export const byAuthorId = defineQuery(
 	z.object({
 		authorId: z.string(),
-		limit: z.number().default(50),
+		limit: z.number().default(20),
 	}),
 	({ args }) => {
 		return zql.comments
 			.where("authorId", args.authorId)
 			.orderBy("createdAt", "desc")
 			.limit(args.limit)
-			.related("thread");
+			.related("replyTo", (r) => r.related("author"))
+			.related("thread", (t) =>
+				t.related("package").related("ecosystem").related("project"),
+			);
 	},
 );
