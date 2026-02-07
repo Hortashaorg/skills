@@ -7,6 +7,7 @@ import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { createClickOutside } from "@/hooks/useClickOutside";
 import { Layout } from "@/layout/Layout";
 import { ProjectDetailSkeleton } from "@/routes/me/projects/sections/ProjectDetailSkeleton";
 import { CardPanel } from "./components/card-panel";
@@ -31,6 +32,15 @@ export const ProjectDetailV2 = () => {
 		card: KanbanCard;
 		columnId: string;
 	} | null>(null);
+
+	let boardRef: HTMLElement | undefined;
+	let panelRef: HTMLElement | undefined;
+
+	createClickOutside({
+		refs: () => [boardRef, panelRef],
+		onClickOutside: () => setSelectedCard(null),
+		enabled: () => selectedCard() !== null,
+	});
 
 	const handleCardClick = (card: KanbanCard, columnId: string) => {
 		setSelectedCard({ card, columnId });
@@ -108,7 +118,9 @@ export const ProjectDetailV2 = () => {
 										columns={columns()}
 										onCardMove={handleCardMove}
 										onCardClick={handleCardClick}
-										onBackgroundClick={() => setSelectedCard(null)}
+										ref={(el) => {
+											boardRef = el;
+										}}
 									/>
 								</>
 							)}
@@ -126,6 +138,9 @@ export const ProjectDetailV2 = () => {
 						columns={columns()}
 						onStatusChange={handleCardMove}
 						onClose={() => setSelectedCard(null)}
+						ref={(el) => {
+							panelRef = el;
+						}}
 					/>
 				)}
 			</Show>

@@ -16,6 +16,7 @@ type CardPanelProps = {
 		toColumnId: string,
 	) => void;
 	onClose: () => void;
+	ref?: (el: HTMLElement) => void;
 };
 
 export const CardPanel = (props: CardPanelProps) => {
@@ -32,7 +33,12 @@ export const CardPanel = (props: CardPanelProps) => {
 	};
 
 	return (
-		<SidePanel open={true} onClose={props.onClose} title={props.card.name}>
+		<SidePanel
+			open={true}
+			onClose={props.onClose}
+			title={props.card.name}
+			ref={props.ref}
+		>
 			<Stack spacing="lg">
 				{/* Status */}
 				<div>

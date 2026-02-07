@@ -49,6 +49,8 @@ export type SidePanelProps = {
 	children?: JSX.Element;
 	/** Additional CSS classes for the panel container */
 	class?: string;
+	/** Ref callback to access the panel DOM element (e.g. for click-outside detection) */
+	ref?: (el: HTMLElement) => void;
 } & Omit<VariantProps<typeof sidePanelVariants>, "side">;
 
 export const SidePanel = (props: SidePanelProps) => {
@@ -59,10 +61,11 @@ export const SidePanel = (props: SidePanelProps) => {
 		"title",
 		"children",
 		"class",
+		"ref",
 	]);
 
 	const handleKeyDown = (e: KeyboardEvent) => {
-		if (e.key === "Escape") local.onClose();
+		if (e.key === "Escape" && local.open) local.onClose();
 	};
 
 	onMount(() => {
@@ -78,6 +81,7 @@ export const SidePanel = (props: SidePanelProps) => {
 	return (
 		<Portal>
 			<aside
+				ref={(el) => local.ref?.(el)}
 				aria-label={local.title}
 				class={cn(
 					sidePanelVariants({ side: local.side ?? "right" }),

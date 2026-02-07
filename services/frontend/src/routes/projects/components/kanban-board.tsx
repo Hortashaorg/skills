@@ -28,14 +28,14 @@ type KanbanBoardProps = {
 		toColumnId: string,
 	) => void;
 	onCardClick?: (card: KanbanCard, columnId: string) => void;
-	onBackgroundClick?: () => void;
+	ref?: (el: HTMLElement) => void;
 };
 
 const columnTypeColors: Record<KanbanColumn["type"], string> = {
-	considering: "border-t-blue-400",
-	using: "border-t-green-400",
-	deprecated: "border-t-amber-400",
-	rejected: "border-t-red-400",
+	considering: "border-t-info",
+	using: "border-t-success",
+	deprecated: "border-t-warning",
+	rejected: "border-t-danger",
 };
 
 export const KanbanBoard = (props: KanbanBoardProps) => {
@@ -43,21 +43,9 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 		onDrop: (itemId, from, to) => props.onCardMove?.(itemId, from, to),
 	});
 
-	let cardClicked = false;
-
 	return (
 		<div
-			ref={(el) => {
-				el.addEventListener("click", () => {
-					// Runs after card onClick sets cardClicked = true
-					setTimeout(() => {
-						if (!cardClicked) {
-							props.onBackgroundClick?.();
-						}
-						cardClicked = false;
-					}, 0);
-				});
-			}}
+			ref={(el) => props.ref?.(el)}
 			class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
 		>
 			<For each={props.columns}>
@@ -86,7 +74,6 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 										{...dnd.draggable(card.id, column.id)}
 										onClick={() => {
 											if (!dnd.wasDragged()) {
-												cardClicked = true;
 												props.onCardClick?.(card, column.id);
 											}
 										}}
