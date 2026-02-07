@@ -10,7 +10,20 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 
 **Projects V2 (new route, parallel to existing):**
 
-*Phase 1: Schema & Basic Kanban*
+*Phase 1: UI Prototyping (mock data, no schema changes yet)*
+- [x] New route: `/projects/:id` for V2, old route moved to `/projects-old/:id`
+- [x] Kanban board layout with status columns (mock data)
+- [x] Drag-and-drop between columns (native HTML5 DnD API)
+- [x] Reusable `createDragAndDrop` hook (`hooks/useDragAndDrop.ts`)
+- [x] Click card → side panel with status dropdown
+- [x] Reusable `SidePanel` component (`components/ui/side-panel/`)
+- [x] Reusable `createClickOutside` hook (`hooks/useClickOutside.ts`)
+- [x] Click-outside and Escape to close panel
+- [ ] Make `ResourceCard` support optional href/upvote (kanban cards should look like cards elsewhere)
+- [ ] Wire kanban cards to use `PackageCard`/`EcosystemCard` with mock data
+- [ ] Mobile: dropdown fallback for status change (currently sidebar handles this)
+
+*Phase 2: Schema & Data*
 - [ ] Schema: `projectStatusType` enum (`considering`, `using`, `deprecated`, `rejected`)
 - [ ] Schema: `projectMemberRole` enum (`owner`, `contributor`)
 - [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
@@ -20,30 +33,24 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [ ] Migration: Seed default statuses for all existing projects
 - [ ] Default statuses + owner member on project creation (mutator)
 - [ ] V2 reads ownership from `projectMembers`, not `projects.accountId`
-- [ ] New route: `/projects-v2/[id]` (parallel development)
-- [ ] Kanban board layout (status columns)
-- [ ] Cards with tag labels displayed
-- [ ] Drag-and-drop between columns (desktop)
-- [ ] Mobile: dropdown fallback for status change
+- [ ] Wire kanban board to real data (replace mock data)
 
-*Phase 2: Card Details Panel*
-- [ ] Click card → side panel (desktop: slide-in, mobile: full overlay)
+*Phase 3: Card Details & Notes*
 - [ ] View/edit decision note (markdown)
-- [ ] Status dropdown in panel
 - [ ] Link to package/ecosystem page
 
-*Phase 3: Discussion & Collaboration*
+*Phase 4: Discussion & Collaboration*
 - [ ] CommentThread on cards (per projectPackage/projectEcosystem)
 - [ ] Comment count indicator on cards
 - [ ] Note indicator on cards
 - [ ] Roles: owner (full control), contributor (edit/comment)
 
-*Phase 4: Filtering & Polish*
+*Phase 5: Filtering & Polish*
 - [ ] Tag filtering
 - [ ] URL reflects filter state for sharing
 - [ ] Search to add packages (in panel or board)
 
-*Phase 5: Swap & Cleanup*
+*Phase 6: Swap & Cleanup*
 - [ ] Compare V2 with existing implementation
 - [ ] Migrate `/projects/[id]` to V2
 - [ ] Remove old project detail code
