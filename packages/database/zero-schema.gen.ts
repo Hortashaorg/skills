@@ -687,15 +687,75 @@ const projectEcosystemsTable = {
       customType: null as unknown as string,
       serverName: "ecosystem_id",
     },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "approved"
+        | "rejected"
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "adopted"
+        | "phasing_out"
+        | "dropped",
+    },
     createdAt: {
       type: "number",
       optional: false,
       customType: null as unknown as number,
       serverName: "created_at",
     },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
   },
   primaryKey: ["id"],
   serverName: "project_ecosystems",
+} as const;
+const projectMembersTable = {
+  name: "projectMembers",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    role: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as "owner" | "contributor",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_members",
 } as const;
 const projectPackagesTable = {
   name: "projectPackages",
@@ -717,11 +777,30 @@ const projectPackagesTable = {
       customType: null as unknown as string,
       serverName: "package_id",
     },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "approved"
+        | "rejected"
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "adopted"
+        | "phasing_out"
+        | "dropped",
+    },
     createdAt: {
       type: "number",
       optional: false,
       customType: null as unknown as number,
       serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
     },
   },
   primaryKey: ["id"],
@@ -1379,6 +1458,24 @@ const projectEcosystemsRelationships = {
     },
   ],
 } as const;
+const projectMembersRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+} as const;
 const projectPackagesRelationships = {
   project: [
     {
@@ -1419,6 +1516,14 @@ const projectsRelationships = {
       sourceField: ["id"],
       destField: ["projectId"],
       destSchema: "projectEcosystems",
+      cardinality: "many",
+    },
+  ],
+  projectMembers: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectMembers",
       cardinality: "many",
     },
   ],
@@ -1557,6 +1662,7 @@ export const schema = {
     packageUpvotes: packageUpvotesTable,
     packages: packagesTable,
     projectEcosystems: projectEcosystemsTable,
+    projectMembers: projectMembersTable,
     projectPackages: projectPackagesTable,
     projects: projectsTable,
     suggestionVotes: suggestionVotesTable,
@@ -1581,6 +1687,7 @@ export const schema = {
     packageUpvotes: packageUpvotesRelationships,
     packages: packagesRelationships,
     projectEcosystems: projectEcosystemsRelationships,
+    projectMembers: projectMembersRelationships,
     projectPackages: projectPackagesRelationships,
     projects: projectsRelationships,
     suggestionVotes: suggestionVotesRelationships,
@@ -1691,6 +1798,11 @@ export type Package = Row<(typeof schema)["tables"]["packages"]>;
 export type ProjectEcosystem = Row<
   (typeof schema)["tables"]["projectEcosystems"]
 >;
+/**
+ * Represents a row from the "projectMembers" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type ProjectMember = Row<(typeof schema)["tables"]["projectMembers"]>;
 /**
  * Represents a row from the "projectPackages" table.
  * This type is auto-generated from your Drizzle schema definition.

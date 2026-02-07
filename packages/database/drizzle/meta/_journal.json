@@ -281,6 +281,20 @@
       "when": 1769962716617,
       "tag": "0039_supreme_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1770492367755,
+      "tag": "0040_jittery_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1770492511071,
+      "tag": "0041_soft_king_bedlam",
+      "breakpoints": true
     }
   ]
 }
