@@ -24,6 +24,7 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [ ] Kanban board: fixed card width, horizontal scroll (no responsive column wrapping)
 - [ ] List view: vertical cards grouped by status or tag (collapsible sections)
 - [ ] View switcher: Kanban / List toggle, "Group by" dropdown for list view (status, tag)
+- [ ] Search/filter bar: filter cards by name or tag across all columns/sections (shared by both views)
 - [ ] Both views share card click → side panel behavior
 
 *Phase 2: Schema & Data*
@@ -49,8 +50,7 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [ ] Roles: owner (full control), contributor (edit/comment)
 
 *Phase 5: Filtering & Polish*
-- [ ] Tag filtering
-- [ ] URL reflects filter state for sharing
+- [ ] URL reflects view/filter state for sharing
 - [ ] Search to add packages (in panel or board)
 
 *Phase 6: Swap & Cleanup*
