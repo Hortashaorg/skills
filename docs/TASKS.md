@@ -21,7 +21,10 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [x] Click-outside and Escape to close panel
 - [ ] Make `ResourceCard` support optional href/upvote (kanban cards should look like cards elsewhere)
 - [ ] Wire kanban cards to use `PackageCard`/`EcosystemCard` with mock data
-- [ ] Mobile: dropdown fallback for status change (currently sidebar handles this)
+- [ ] Kanban board: fixed card width, horizontal scroll (no responsive column wrapping)
+- [ ] List view: vertical cards grouped by status or tag (collapsible sections)
+- [ ] View switcher: Kanban / List toggle, "Group by" dropdown for list view (status, tag)
+- [ ] Both views share card click → side panel behavior
 
 *Phase 2: Schema & Data*
 - [ ] Schema: `projectStatusType` enum (`considering`, `using`, `deprecated`, `rejected`)
