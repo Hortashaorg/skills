@@ -1,6 +1,6 @@
 import { queries, useQuery } from "@package/database/client";
 import { A, useParams } from "@solidjs/router";
-import { Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -9,6 +9,13 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Layout } from "@/layout/Layout";
 import { ProjectDetailSkeleton } from "@/routes/me/projects/sections/ProjectDetailSkeleton";
+import { CardPanel } from "./components/card-panel";
+import {
+	KanbanBoard,
+	type KanbanCard,
+	type KanbanColumn,
+} from "./components/kanban-board";
+import { mockColumns } from "./components/mock-data";
 
 export const ProjectDetailV2 = () => {
 	const params = useParams<{ id: string }>();
@@ -18,6 +25,44 @@ export const ProjectDetailV2 = () => {
 	);
 
 	const isLoading = () => projectResult().type !== "complete";
+
+	const [columns, setColumns] = createSignal<KanbanColumn[]>(mockColumns);
+	const [selectedCard, setSelectedCard] = createSignal<{
+		card: KanbanCard;
+		columnId: string;
+	} | null>(null);
+
+	const handleCardClick = (card: KanbanCard, columnId: string) => {
+		setSelectedCard({ card, columnId });
+	};
+
+	const handleCardMove = (
+		cardId: string,
+		fromColumnId: string,
+		toColumnId: string,
+	) => {
+		setColumns((prev) => {
+			const fromCol = prev.find((c) => c.id === fromColumnId);
+			const card = fromCol?.cards.find((c) => c.id === cardId);
+			if (!card) return prev;
+
+			return prev.map((col) => {
+				if (col.id === fromColumnId) {
+					return { ...col, cards: col.cards.filter((c) => c.id !== cardId) };
+				}
+				if (col.id === toColumnId) {
+					return { ...col, cards: [...col.cards, card] };
+				}
+				return col;
+			});
+		});
+
+		// Keep panel in sync if the moved card is selected
+		const sel = selectedCard();
+		if (sel && sel.card.id === cardId) {
+			setSelectedCard({ card: sel.card, columnId: toColumnId });
+		}
+	};
 
 	return (
 		<Layout>
@@ -59,12 +104,31 @@ export const ProjectDetailV2 = () => {
 										</div>
 									</Card>
 									<Heading level="h1">{p().name}</Heading>
+									<KanbanBoard
+										columns={columns()}
+										onCardMove={handleCardMove}
+										onCardClick={handleCardClick}
+										onBackgroundClick={() => setSelectedCard(null)}
+									/>
 								</>
 							)}
 						</Show>
 					</Show>
 				</Stack>
 			</Container>
+
+			{/* Side panel */}
+			<Show when={selectedCard()}>
+				{(sel) => (
+					<CardPanel
+						card={sel().card}
+						currentColumnId={sel().columnId}
+						columns={columns()}
+						onStatusChange={handleCardMove}
+						onClose={() => setSelectedCard(null)}
+					/>
+				)}
+			</Show>
 		</Layout>
 	);
 };
