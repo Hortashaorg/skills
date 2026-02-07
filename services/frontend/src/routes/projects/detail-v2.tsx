@@ -1,0 +1,72 @@
+import { queries, useQuery } from "@package/database/client";
+import { A, useParams } from "@solidjs/router";
+import { Show } from "solid-js";
+import { Container } from "@/components/primitives/container";
+import { Heading } from "@/components/primitives/heading";
+import { Stack } from "@/components/primitives/stack";
+import { Text } from "@/components/primitives/text";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Layout } from "@/layout/Layout";
+import { ProjectDetailSkeleton } from "@/routes/me/projects/sections/ProjectDetailSkeleton";
+
+export const ProjectDetailV2 = () => {
+	const params = useParams<{ id: string }>();
+
+	const [project, projectResult] = useQuery(() =>
+		queries.projects.byId({ id: params.id }),
+	);
+
+	const isLoading = () => projectResult().type !== "complete";
+
+	return (
+		<Layout>
+			<Container size="lg">
+				<Stack spacing="lg" class="py-8">
+					<Show when={!isLoading()} fallback={<ProjectDetailSkeleton />}>
+						<Show
+							when={project()}
+							fallback={
+								<Card padding="lg">
+									<Stack spacing="md" align="center">
+										<Heading level="h2">Project not found</Heading>
+										<Text color="muted">
+											This project doesn't exist or has been deleted.
+										</Text>
+										<A
+											href="/projects"
+											class={buttonVariants({ variant: "secondary" })}
+										>
+											Back to Projects
+										</A>
+									</Stack>
+								</Card>
+							}
+						>
+							{(p) => (
+								<>
+									<Card padding="sm">
+										<div class="flex items-center justify-between">
+											<Text color="muted" size="sm">
+												Projects V2 (dev)
+											</Text>
+											<A
+												href={`/projects-old/${params.id}`}
+												class="text-sm text-blue-500 hover:underline"
+											>
+												Switch to V1
+											</A>
+										</div>
+									</Card>
+									<Heading level="h1">{p().name}</Heading>
+								</>
+							)}
+						</Show>
+					</Show>
+				</Stack>
+			</Container>
+		</Layout>
+	);
+};
+
+export default ProjectDetailV2;
