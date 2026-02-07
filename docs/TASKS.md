@@ -11,9 +11,15 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 **Projects V2 (new route, parallel to existing):**
 
 *Phase 1: Schema & Basic Kanban*
+- [ ] Schema: `projectStatusType` enum (`considering`, `using`, `deprecated`, `rejected`)
+- [ ] Schema: `projectMemberRole` enum (`owner`, `contributor`)
 - [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
-- [ ] Schema: Add `statusId`, `note` to `projectPackages` and `projectEcosystems`
-- [ ] Default statuses on project creation (Evaluating, Using, Phasing Out, Rejected)
+- [ ] Schema: `projectMembers` table (id, projectId, accountId, role)
+- [ ] Schema: Add `statusId`, `note`, `updatedAt` to `projectPackages` and `projectEcosystems`
+- [ ] Migration: Seed `projectMembers` owner row from `projects.accountId` for all existing projects
+- [ ] Migration: Seed default statuses for all existing projects
+- [ ] Default statuses + owner member on project creation (mutator)
+- [ ] V2 reads ownership from `projectMembers`, not `projects.accountId`
 - [ ] New route: `/projects-v2/[id]` (parallel development)
 - [ ] Kanban board layout (status columns)
 - [ ] Cards with tag labels displayed
@@ -28,9 +34,8 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 
 *Phase 3: Discussion & Collaboration*
 - [ ] CommentThread on cards (per projectPackage/projectEcosystem)
-- [ ] Comment count indicator on cards (💬 3)
-- [ ] Note indicator on cards (📝)
-- [ ] Schema: `projectMembers` table (projectId, accountId, role)
+- [ ] Comment count indicator on cards
+- [ ] Note indicator on cards
 - [ ] Roles: owner (full control), contributor (edit/comment)
 
 *Phase 4: Filtering & Polish*
@@ -42,6 +47,7 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [ ] Compare V2 with existing implementation
 - [ ] Migrate `/projects/[id]` to V2
 - [ ] Remove old project detail code
+- [ ] Drop `accountId` from `projects` table (ownership fully in `projectMembers`)
 
 **Bug Fixes & Polish:**
 - [ ] Code module: fix dark mode color contrast for language dropdown
