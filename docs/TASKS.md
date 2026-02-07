@@ -8,18 +8,40 @@
 
 See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 
-**Projects Kanban:**
-- [ ] Integrate CommentThread on project pages
+**Projects V2 (new route, parallel to existing):**
+
+*Phase 1: Schema & Basic Kanban*
 - [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
 - [ ] Schema: Add `statusId`, `note` to `projectPackages` and `projectEcosystems`
-- [ ] Default statuses on project creation
+- [ ] Default statuses on project creation (Evaluating, Using, Phasing Out, Rejected)
+- [ ] New route: `/projects-v2/[id]` (parallel development)
 - [ ] Kanban board layout (status columns)
-- [ ] Drag-and-drop between columns
+- [ ] Cards with tag labels displayed
+- [ ] Drag-and-drop between columns (desktop)
 - [ ] Mobile: dropdown fallback for status change
-- [ ] Tag labels on cards
+
+*Phase 2: Card Details Panel*
+- [ ] Click card → side panel (desktop: slide-in, mobile: full overlay)
+- [ ] View/edit decision note (markdown)
+- [ ] Status dropdown in panel
+- [ ] Link to package/ecosystem page
+
+*Phase 3: Discussion & Collaboration*
+- [ ] CommentThread on cards (per projectPackage/projectEcosystem)
+- [ ] Comment count indicator on cards (💬 3)
+- [ ] Note indicator on cards (📝)
+- [ ] Schema: `projectMembers` table (projectId, accountId, role)
+- [ ] Roles: owner (full control), contributor (edit/comment)
+
+*Phase 4: Filtering & Polish*
 - [ ] Tag filtering
-- [ ] Card expansion (notes, details)
-- [ ] Shareable URLs with filter state
+- [ ] URL reflects filter state for sharing
+- [ ] Search to add packages (in panel or board)
+
+*Phase 5: Swap & Cleanup*
+- [ ] Compare V2 with existing implementation
+- [ ] Migrate `/projects/[id]` to V2
+- [ ] Remove old project detail code
 
 **Bug Fixes & Polish:**
 - [ ] Code module: fix dark mode color contrast for language dropdown
