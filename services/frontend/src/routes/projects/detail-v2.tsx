@@ -5,8 +5,12 @@ import {
 	useQuery,
 	useZero,
 } from "@package/database/client";
-import { A, useParams } from "@solidjs/router";
+import { A, useNavigate, useParams } from "@solidjs/router";
 import { createMemo, createSignal, Show } from "solid-js";
+import {
+	SearchInput,
+	type SearchResultItem,
+} from "@/components/composite/search-input";
 import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
@@ -14,6 +18,8 @@ import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useEcosystemSearch } from "@/hooks/ecosystems/useEcosystemSearch";
+import { usePackageSearch } from "@/hooks/packages/usePackageSearch";
 import { createClickOutside } from "@/hooks/useClickOutside";
 import { useModalState } from "@/hooks/useModalState";
 import { Layout } from "@/layout/Layout";
@@ -48,9 +54,13 @@ const ALL_STATUSES: ProjectStatus[] = [
 	"dropped",
 ];
 
+const SEARCH_PACKAGES_PREFIX = "SEARCH_PACKAGES:";
+const SEARCH_ECOSYSTEMS_PREFIX = "SEARCH_ECOSYSTEMS:";
+
 export const ProjectDetailV2 = () => {
 	const params = useParams<{ id: string }>();
 	const zero = useZero();
+	const navigate = useNavigate();
 
 	const [project, projectResult] = useQuery(() =>
 		queries.projects.byId({ id: params.id }),
@@ -149,6 +159,134 @@ export const ProjectDetailV2 = () => {
 		null,
 	);
 	const removeCardModal = useModalState<KanbanCard>();
+
+	// Unified search for adding packages and ecosystems
+	const packageSearch = usePackageSearch({ showRecentWhenEmpty: false });
+	const ecosystemSearch = useEcosystemSearch({ showRecentWhenEmpty: false });
+
+	const searchQuery = () => packageSearch.query();
+	const setSearchQuery = (value: string) => {
+		packageSearch.setQuery(value);
+		ecosystemSearch.setQuery(value);
+	};
+
+	const existingPackageIds = createMemo(
+		() => new Set((project()?.projectPackages ?? []).map((pp) => pp.packageId)),
+	);
+	const existingEcosystemIds = createMemo(
+		() =>
+			new Set((project()?.projectEcosystems ?? []).map((pe) => pe.ecosystemId)),
+	);
+
+	const searchResults = createMemo((): SearchResultItem[] => {
+		const existing = existingPackageIds();
+		const existingEco = existingEcosystemIds();
+		const term = searchQuery().trim();
+		if (!term) return [];
+
+		const items: SearchResultItem[] = [];
+
+		// Package exact matches first
+		for (const exact of packageSearch.exactMatches()) {
+			if (existing.has(exact.id)) continue;
+			items.push({
+				id: `pkg:${exact.id}`,
+				primary: exact.name,
+				secondary: exact.description ?? undefined,
+				label: exact.registry,
+			});
+		}
+
+		// Ecosystem exact match
+		const ecoExact = ecosystemSearch.exactMatch();
+		if (ecoExact && !existingEco.has(ecoExact.id)) {
+			items.push({
+				id: `eco:${ecoExact.id}`,
+				primary: ecoExact.name,
+				secondary: ecoExact.description ?? undefined,
+				label: "ecosystem",
+			});
+		}
+
+		// Package search results
+		for (const pkg of packageSearch.results()) {
+			if (existing.has(pkg.id)) continue;
+			items.push({
+				id: `pkg:${pkg.id}`,
+				primary: pkg.name,
+				secondary: pkg.description ?? undefined,
+				label: pkg.registry,
+			});
+		}
+
+		// Ecosystem search results
+		for (const eco of ecosystemSearch.results()) {
+			if (existingEco.has(eco.id)) continue;
+			if (ecoExact && eco.id === ecoExact.id) continue;
+			items.push({
+				id: `eco:${eco.id}`,
+				primary: eco.name,
+				secondary: eco.description ?? undefined,
+				label: "ecosystem",
+			});
+		}
+
+		// Fallback actions if no results
+		if (items.length === 0 && term.length > 0) {
+			items.push({
+				id: `${SEARCH_PACKAGES_PREFIX}${term}`,
+				primary: `Search "${term}" on Packages page`,
+				secondary: "Request new packages there",
+				label: "→",
+				isAction: true,
+			});
+			items.push({
+				id: `${SEARCH_ECOSYSTEMS_PREFIX}${term}`,
+				primary: `Search "${term}" on Ecosystems page`,
+				secondary: "Suggest new ecosystems there",
+				label: "→",
+				isAction: true,
+			});
+		}
+
+		return items;
+	});
+
+	const handleSearchSelect = (item: SearchResultItem) => {
+		if (item.id.startsWith(SEARCH_PACKAGES_PREFIX)) {
+			const term = item.id.slice(SEARCH_PACKAGES_PREFIX.length);
+			navigate(`/packages?q=${encodeURIComponent(term)}`);
+			return;
+		}
+		if (item.id.startsWith(SEARCH_ECOSYSTEMS_PREFIX)) {
+			const term = item.id.slice(SEARCH_ECOSYSTEMS_PREFIX.length);
+			navigate(`/ecosystems?q=${encodeURIComponent(term)}`);
+			return;
+		}
+
+		const p = project();
+		if (!p) return;
+
+		if (item.id.startsWith("pkg:")) {
+			const packageId = item.id.slice(4);
+			zero().mutate(
+				mutators.projectPackages.add({
+					projectId: p.id,
+					packageId,
+				}),
+			);
+		} else if (item.id.startsWith("eco:")) {
+			const ecosystemId = item.id.slice(4);
+			zero().mutate(
+				mutators.projectEcosystems.add({
+					projectId: p.id,
+					ecosystemId,
+				}),
+			);
+		}
+
+		setSearchQuery("");
+	};
 
 	let boardRef: HTMLElement | undefined;
 	let panelRef: HTMLElement | undefined;
@@ -389,6 +527,18 @@ export const ProjectDetailV2 = () => {
 										</div>
 									</Card>
 									<Heading level="h1">{p().name}</Heading>
+									<Show when={isOwner()}>
+										<SearchInput
+											value={searchQuery()}
+											onValueChange={setSearchQuery}
+											results={searchResults()}
+											isLoading={
+												packageSearch.isLoading() || ecosystemSearch.isLoading()
+											}
+											onSelect={handleSearchSelect}
+											placeholder="Search packages or ecosystems to add..."
+										/>
+									</Show>
 									<Show
 										when={columns().length > 0}
 										fallback={
@@ -397,10 +547,12 @@ export const ProjectDetailV2 = () => {
 													<Text color="muted">
 														No packages or ecosystems added yet.
 													</Text>
-													<Text size="sm" color="muted">
-														Add packages or ecosystems from the V1 view to see
-														them here.
-													</Text>
+													<Show when={isOwner()}>
+														<Text size="sm" color="muted">
+															Use the search above to add packages or
+															ecosystems.
+														</Text>
+													</Show>
 												</Stack>
 											</Card>
 										}
