@@ -95,6 +95,19 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 										<Card
 											padding="sm"
 											class={`relative hover:shadow-md transition-shadow ${props.readonly ? "cursor-default" : "cursor-grab active:cursor-grabbing"}`}
+											onClick={() => {
+												if (!dnd.wasDragged()) {
+													props.onCardClick?.(card, column.id);
+												}
+											}}
+											onKeyDown={(e) => {
+												if (e.key === "Enter" || e.key === " ") {
+													e.preventDefault();
+													props.onCardClick?.(card, column.id);
+												}
+											}}
+											role="button"
+											tabIndex={0}
 										>
 											{/* Remove button */}
 											<Show when={!props.readonly && props.onRemove}>
@@ -126,52 +139,33 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 												</div>
 											</Show>
 
-											{/* Clickable area */}
-											<button
-												type="button"
-												onClick={() => {
-													if (!dnd.wasDragged()) {
-														props.onCardClick?.(card, column.id);
-													}
-												}}
-												onKeyDown={(e) => {
-													if (e.key === "Enter" || e.key === " ") {
-														e.preventDefault();
-														props.onCardClick?.(card, column.id);
-													}
-												}}
-												class="w-full text-left"
-											>
-												<Stack spacing="xs">
-													{/* Title row */}
-													<div class="flex items-center gap-1.5">
-														<Badge
-															variant={
-																card.kind === "package"
-																	? "primary"
-																	: "secondary"
-															}
-															size="sm"
-														>
-															{card.kind === "package" ? "pkg" : "eco"}
-														</Badge>
-														<Text
-															weight="semibold"
-															size="sm"
-															class={`truncate ${!props.readonly && props.onRemove ? "pr-5" : ""}`}
-														>
-															{card.name}
-														</Text>
-													</div>
+											<Stack spacing="xs">
+												{/* Title row */}
+												<div class="flex items-center gap-1.5">
+													<Badge
+														variant={
+															card.kind === "package" ? "primary" : "secondary"
+														}
+														size="sm"
+													>
+														{card.kind === "package" ? "pkg" : "eco"}
+													</Badge>
+													<Text
+														weight="semibold"
+														size="sm"
+														class={`truncate ${!props.readonly && props.onRemove ? "pr-5" : ""}`}
+													>
+														{card.name}
+													</Text>
+												</div>
 
-													{/* Description */}
-													<Show when={card.description}>
-														<Text size="sm" color="muted" class="line-clamp-2">
-															{card.description}
-														</Text>
-													</Show>
-												</Stack>
-											</button>
+												{/* Description */}
+												<Show when={card.description}>
+													<Text size="sm" color="muted" class="line-clamp-2">
+														{card.description}
+													</Text>
+												</Show>
+											</Stack>
 
 											{/* Footer: tags + registry + upvote */}
 											<div class="flex items-end justify-between gap-2 mt-2">
@@ -194,7 +188,12 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 														</Text>
 													</Show>
 												</div>
-												<div class="shrink-0">
+												{/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation wrapper, not interactive */}
+												{/* biome-ignore lint/a11y/noStaticElementInteractions: stopPropagation wrapper, not interactive */}
+												<div
+													class="shrink-0"
+													onClick={(e) => e.stopPropagation()}
+												>
 													<UpvoteButton
 														count={card.upvoteCount}
 														isUpvoted={card.isUpvoted}
