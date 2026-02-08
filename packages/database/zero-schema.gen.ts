@@ -854,6 +854,36 @@ const projectStatusesTable = {
   primaryKey: ["id"],
   serverName: "project_statuses",
 } as const;
+const projectUpvotesTable = {
+  name: "projectUpvotes",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_upvotes",
+} as const;
 const projectsTable = {
   name: "projects",
   columns: {
@@ -877,6 +907,12 @@ const projectsTable = {
       optional: false,
       customType: null as unknown as string,
       serverName: "account_id",
+    },
+    upvoteCount: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "upvote_count",
     },
     createdAt: {
       type: "number",
@@ -1104,6 +1140,14 @@ const accountRelationships = {
       sourceField: ["id"],
       destField: ["accountId"],
       destSchema: "ecosystemUpvotes",
+      cardinality: "many",
+    },
+  ],
+  projectUpvotes: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "projectUpvotes",
       cardinality: "many",
     },
   ],
@@ -1552,6 +1596,24 @@ const projectStatusesRelationships = {
     },
   ],
 } as const;
+const projectUpvotesRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
+} as const;
 const projectsRelationships = {
   account: [
     {
@@ -1590,6 +1652,14 @@ const projectsRelationships = {
       sourceField: ["id"],
       destField: ["projectId"],
       destSchema: "projectMembers",
+      cardinality: "many",
+    },
+  ],
+  upvotes: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectUpvotes",
       cardinality: "many",
     },
   ],
@@ -1731,6 +1801,7 @@ export const schema = {
     projectMembers: projectMembersTable,
     projectPackages: projectPackagesTable,
     projectStatuses: projectStatusesTable,
+    projectUpvotes: projectUpvotesTable,
     projects: projectsTable,
     suggestionVotes: suggestionVotesTable,
     suggestions: suggestionsTable,
@@ -1757,6 +1828,7 @@ export const schema = {
     projectMembers: projectMembersRelationships,
     projectPackages: projectPackagesRelationships,
     projectStatuses: projectStatusesRelationships,
+    projectUpvotes: projectUpvotesRelationships,
     projects: projectsRelationships,
     suggestionVotes: suggestionVotesRelationships,
     suggestions: suggestionsRelationships,
@@ -1881,6 +1953,11 @@ export type ProjectPackage = Row<(typeof schema)["tables"]["projectPackages"]>;
  * This type is auto-generated from your Drizzle schema definition.
  */
 export type ProjectStatus = Row<(typeof schema)["tables"]["projectStatuses"]>;
+/**
+ * Represents a row from the "projectUpvotes" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type ProjectUpvote = Row<(typeof schema)["tables"]["projectUpvotes"]>;
 /**
  * Represents a row from the "projects" table.
  * This type is auto-generated from your Drizzle schema definition.

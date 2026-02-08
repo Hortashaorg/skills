@@ -41,6 +41,7 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 		)
 		.related("projectStatuses")
 		.related("projectMembers")
+		.related("upvotes")
 		.related("account")
 		.one();
 });

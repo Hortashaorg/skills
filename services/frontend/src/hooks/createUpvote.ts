@@ -6,7 +6,7 @@ export type UpvotableEntity = {
 	upvotes?: readonly { id: string; accountId: string }[];
 };
 
-export type EntityType = "package" | "ecosystem";
+export type EntityType = "package" | "ecosystem" | "project";
 
 export function createUpvote<T extends UpvotableEntity>(
 	entity: () => T,
@@ -47,7 +47,7 @@ export function createUpvote<T extends UpvotableEntity>(
 					).client;
 					if (res.type === "error") throw res.error;
 				}
-			} else {
+			} else if (entityType === "ecosystem") {
 				if (existingUpvote) {
 					const res = await zero().mutate(
 						mutators.ecosystemUpvotes.remove({
@@ -59,6 +59,21 @@ export function createUpvote<T extends UpvotableEntity>(
 				} else {
 					const res = await zero().mutate(
 						mutators.ecosystemUpvotes.create({ ecosystemId: entity().id }),
+					).client;
+					if (res.type === "error") throw res.error;
+				}
+			} else {
+				if (existingUpvote) {
+					const res = await zero().mutate(
+						mutators.projectUpvotes.remove({
+							id: existingUpvote.id,
+							projectId: entity().id,
+						}),
+					).client;
+					if (res.type === "error") throw res.error;
+				} else {
+					const res = await zero().mutate(
+						mutators.projectUpvotes.create({ projectId: entity().id }),
 					).client;
 					if (res.type === "error") throw res.error;
 				}

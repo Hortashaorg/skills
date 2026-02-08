@@ -50,7 +50,7 @@ loadConfig().then(() => {
 							<Route path="/me/projects" component={Projects} />
 							<Route path="/me/projects/new" component={NewProject} />
 							<Route path="/projects" component={BrowseProjects} />
-							<Route path="/projects/:id" component={ProjectDetail} />
+							<Route path="/projects/:id/*tab" component={ProjectDetail} />
 							<Route path="/user/:id" component={UserProfile} />
 							<Route path="/curation" component={Curation} />
 							<Route path="/privacy" component={Privacy} />

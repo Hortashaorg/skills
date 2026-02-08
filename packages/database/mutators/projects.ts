@@ -26,6 +26,7 @@ export const create = defineMutator(
 			name: args.name,
 			description: args.description ?? null,
 			accountId: ctx.userID,
+			upvoteCount: 0,
 			createdAt: record.now,
 			updatedAt: record.now,
 		});
@@ -120,6 +121,13 @@ export const remove = defineMutator(
 		);
 		for (const pm of projectMembers) {
 			await tx.mutate.projectMembers.delete({ id: pm.id });
+		}
+
+		const projectUpvotes = await tx.run(
+			zql.projectUpvotes.where("projectId", args.id),
+		);
+		for (const pu of projectUpvotes) {
+			await tx.mutate.projectUpvotes.delete({ id: pu.id });
 		}
 
 		await tx.mutate.projects.delete({ id: args.id });

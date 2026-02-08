@@ -18,9 +18,28 @@ export const projects = pgTable("projects", {
 	accountId: uuid()
 		.notNull()
 		.references(() => account.id),
+	upvoteCount: integer().notNull(),
 	createdAt: timestamp().notNull(),
 	updatedAt: timestamp().notNull(),
 });
+
+export const projectUpvotes = pgTable(
+	"project_upvotes",
+	{
+		id: uuid().primaryKey(),
+		projectId: uuid()
+			.notNull()
+			.references(() => projects.id),
+		accountId: uuid()
+			.notNull()
+			.references(() => account.id),
+		createdAt: timestamp().notNull(),
+	},
+	(table) => [
+		unique().on(table.projectId, table.accountId),
+		index("idx_project_upvotes_project_id").on(table.projectId),
+	],
+);
 
 export const projectStatuses = pgTable(
 	"project_statuses",
