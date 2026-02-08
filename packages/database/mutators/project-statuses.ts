@@ -1,0 +1,136 @@
+import { z } from "@package/common";
+import { defineMutator } from "@rocicorp/zero";
+import { zql } from "../zero-schema.gen.ts";
+import { newRecord, now } from "./helpers.ts";
+
+export const add = defineMutator(
+	z.object({
+		projectId: z.string(),
+		status: z.enum([
+			"aware",
+			"evaluating",
+			"trialing",
+			"approved",
+			"adopted",
+			"rejected",
+			"phasing_out",
+			"dropped",
+		]),
+	}),
+	async ({ tx, args, ctx }) => {
+		if (ctx.userID === "anon") {
+			throw new Error("Must be logged in to add a status column");
+		}
+
+		const project = await tx.run(
+			zql.projects.one().where("id", "=", args.projectId),
+		);
+		if (!project || project.accountId !== ctx.userID) {
+			throw new Error("Not authorized to modify this project");
+		}
+
+		const existing = await tx.run(
+			zql.projectStatuses
+				.where("projectId", args.projectId)
+				.where("status", args.status),
+		);
+		if (existing.length > 0) {
+			throw new Error("Status column already exists");
+		}
+
+		const allStatuses = await tx.run(
+			zql.projectStatuses.where("projectId", args.projectId),
+		);
+		const maxPosition = allStatuses.reduce(
+			(max, s) => Math.max(max, s.position),
+			-1,
+		);
+
+		const record = newRecord();
+		await tx.mutate.projectStatuses.insert({
+			id: record.id,
+			projectId: args.projectId,
+			status: args.status,
+			position: maxPosition + 1,
+			createdAt: record.now,
+			updatedAt: record.now,
+		});
+
+		await tx.mutate.projects.update({
+			id: args.projectId,
+			updatedAt: now(),
+		});
+	},
+);
+
+export const remove = defineMutator(
+	z.object({
+		id: z.string(),
+		projectId: z.string(),
+	}),
+	async ({ tx, args, ctx }) => {
+		if (ctx.userID === "anon") {
+			throw new Error("Must be logged in to remove a status column");
+		}
+
+		const project = await tx.run(
+			zql.projects.one().where("id", "=", args.projectId),
+		);
+		if (!project || project.accountId !== ctx.userID) {
+			throw new Error("Not authorized to modify this project");
+		}
+
+		await tx.mutate.projectStatuses.delete({ id: args.id });
+
+		await tx.mutate.projects.update({
+			id: args.projectId,
+			updatedAt: now(),
+		});
+	},
+);
+
+export const swapPositions = defineMutator(
+	z.object({
+		projectId: z.string(),
+		statusIdA: z.string(),
+		statusIdB: z.string(),
+	}),
+	async ({ tx, args, ctx }) => {
+		if (ctx.userID === "anon") {
+			throw new Error("Must be logged in to reorder status columns");
+		}
+
+		const project = await tx.run(
+			zql.projects.one().where("id", "=", args.projectId),
+		);
+		if (!project || project.accountId !== ctx.userID) {
+			throw new Error("Not authorized to modify this project");
+		}
+
+		const allStatuses = await tx.run(
+			zql.projectStatuses.where("projectId", args.projectId),
+		);
+
+		const a = allStatuses.find((s) => s.id === args.statusIdA);
+		const b = allStatuses.find((s) => s.id === args.statusIdB);
+		if (!a || !b) {
+			throw new Error("Status not found");
+		}
+
+		await tx.mutate.projectStatuses.update({
+			id: a.id,
+			position: b.position,
+			updatedAt: now(),
+		});
+		await tx.mutate.projectStatuses.update({
+			id: b.id,
+			position: a.position,
+			updatedAt: now(),
+		});
+
+		await tx.mutate.projects.update({
+			id: args.projectId,
+			updatedAt: now(),
+		});
+	},
+);

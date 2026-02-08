@@ -1,3 +1,4 @@
+import { Popover } from "@kobalte/core/popover";
 import type { ProjectStatus } from "@package/database/client";
 import { For, Show } from "solid-js";
 import { Heading } from "@/components/primitives/heading";
@@ -7,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
 import { createDragAndDrop } from "@/hooks/useDragAndDrop";
+import { cn } from "@/lib/utils";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -24,6 +26,7 @@ export type KanbanCard = {
 
 export type KanbanColumn = {
 	id: ProjectStatus;
+	statusRecordId?: string;
 	label: string;
 	cards: KanbanCard[];
 };
@@ -32,6 +35,8 @@ type KanbanBoardProps = {
 	columns: KanbanColumn[];
 	readonly?: boolean;
 	upvoteDisabled?: boolean;
+	availableStatuses?: ProjectStatus[];
+	statusLabels?: Record<ProjectStatus, string>;
 	onCardMove?: (
 		cardId: string,
 		fromColumnId: string,
@@ -40,6 +45,9 @@ type KanbanBoardProps = {
 	onCardClick?: (card: KanbanCard, columnId: string) => void;
 	onUpvote?: (card: KanbanCard) => void;
 	onRemove?: (card: KanbanCard) => void;
+	onMoveColumn?: (columnId: string, direction: "left" | "right") => void;
+	onAddStatus?: (status: ProjectStatus) => void;
+	onRemoveColumn?: (columnId: string) => void;
 	ref?: (el: HTMLElement) => void;
 };
 
@@ -62,7 +70,7 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 	return (
 		<div ref={(el) => props.ref?.(el)} class="flex gap-4 overflow-x-auto pb-4">
 			<For each={props.columns}>
-				{(column) => (
+				{(column, index) => (
 					<div
 						{...(props.readonly ? {} : dnd.droppable(column.id))}
 						class={`w-88 shrink-0 rounded-lg border-t-4 ${statusColors[column.id]} p-3 transition-colors ${
@@ -71,13 +79,100 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 								: "bg-surface dark:bg-surface-dark"
 						}`}
 					>
-						<div class="mb-3 flex items-center justify-between">
-							<Heading level="h3" class="text-sm">
-								{column.label}
-							</Heading>
-							<Text size="sm" color="muted">
-								{column.cards.length}
-							</Text>
+						<div class="mb-3 flex items-center justify-between gap-1">
+							<div class="flex items-center gap-1 min-w-0">
+								<Show
+									when={!props.readonly && props.onMoveColumn && index() > 0}
+								>
+									<button
+										type="button"
+										onClick={() => props.onMoveColumn?.(column.id, "left")}
+										class="p-0.5 rounded cursor-pointer text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark hover:bg-surface-raised dark:hover:bg-surface-raised-dark transition"
+										title="Move left"
+									>
+										<svg
+											class="h-3.5 w-3.5"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											viewBox="0 0 24 24"
+										>
+											<title>Move left</title>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M15 19l-7-7 7-7"
+											/>
+										</svg>
+									</button>
+								</Show>
+								<Heading level="h3" class="text-sm truncate">
+									{column.label}
+								</Heading>
+								<Show
+									when={
+										!props.readonly &&
+										props.onMoveColumn &&
+										index() < props.columns.length - 1
+									}
+								>
+									<button
+										type="button"
+										onClick={() => props.onMoveColumn?.(column.id, "right")}
+										class="p-0.5 rounded cursor-pointer text-on-surface-muted dark:text-on-surface-dark-muted hover:text-on-surface dark:hover:text-on-surface-dark hover:bg-surface-raised dark:hover:bg-surface-raised-dark transition"
+										title="Move right"
+									>
+										<svg
+											class="h-3.5 w-3.5"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											viewBox="0 0 24 24"
+										>
+											<title>Move right</title>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M9 5l7 7-7 7"
+											/>
+										</svg>
+									</button>
+								</Show>
+							</div>
+							<div class="flex items-center gap-1">
+								<Text size="sm" color="muted">
+									{column.cards.length}
+								</Text>
+								<Show
+									when={
+										!props.readonly &&
+										props.onRemoveColumn &&
+										column.cards.length === 0
+									}
+								>
+									<button
+										type="button"
+										onClick={() => props.onRemoveColumn?.(column.id)}
+										class="p-0.5 rounded cursor-pointer text-on-surface-muted dark:text-on-surface-dark-muted hover:text-danger dark:hover:text-danger hover:bg-danger/10 dark:hover:bg-danger/10 transition"
+										title="Remove column"
+									>
+										<svg
+											class="h-3.5 w-3.5"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											viewBox="0 0 24 24"
+										>
+											<title>Remove column</title>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M6 18L18 6M6 6l12 12"
+											/>
+										</svg>
+									</button>
+								</Show>
+							</div>
 						</div>
 						<Stack spacing="sm">
 							<For each={column.cards}>
@@ -211,6 +306,71 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 					</div>
 				)}
 			</For>
+
+			{/* Add Status button */}
+			<Show
+				when={
+					!props.readonly &&
+					props.onAddStatus &&
+					(props.availableStatuses?.length ?? 0) > 0
+				}
+			>
+				<div class="shrink-0">
+					<Popover>
+						<Popover.Trigger
+							class={cn(
+								"h-8 w-8 flex items-center justify-center rounded-lg border-2 border-dashed cursor-pointer transition",
+								"border-outline dark:border-outline-dark",
+								"text-on-surface-muted dark:text-on-surface-dark-muted",
+								"hover:border-primary dark:hover:border-primary-dark",
+								"hover:text-primary dark:hover:text-primary-dark",
+							)}
+							title="Add status column"
+						>
+							<svg
+								class="h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								viewBox="0 0 24 24"
+							>
+								<title>Add status</title>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M12 4v16m8-8H4"
+								/>
+							</svg>
+						</Popover.Trigger>
+						<Popover.Portal>
+							<Popover.Content
+								class={cn(
+									"z-50 w-48 rounded-radius border shadow-lg p-1",
+									"border-outline dark:border-outline-dark",
+									"bg-surface dark:bg-surface-dark",
+									"ui-expanded:animate-in ui-expanded:fade-in-0 ui-expanded:zoom-in-95",
+									"ui-closed:animate-out ui-closed:fade-out-0 ui-closed:zoom-out-95",
+								)}
+							>
+								<For each={props.availableStatuses}>
+									{(status) => (
+										<Popover.CloseButton
+											class={cn(
+												"w-full text-left px-3 py-1.5 rounded-sm cursor-pointer text-sm transition-colors",
+												"text-on-surface dark:text-on-surface-dark",
+												"hover:bg-surface-alt dark:hover:bg-surface-dark-alt",
+											)}
+											onClick={() => props.onAddStatus?.(status)}
+										>
+											{props.statusLabels?.[status] ?? status}
+										</Popover.CloseButton>
+									)}
+								</For>
+							</Popover.Content>
+						</Popover.Portal>
+					</Popover>
+				</div>
+			</Show>
 		</div>
 	);
 };

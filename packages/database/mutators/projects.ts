@@ -3,6 +3,12 @@ import { defineMutator } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
+const DEFAULT_STATUSES = [
+	{ status: "evaluating" as const, position: 0 },
+	{ status: "adopted" as const, position: 1 },
+	{ status: "dropped" as const, position: 2 },
+];
+
 export const create = defineMutator(
 	z.object({
 		name: z.string().min(1).max(100),
@@ -20,6 +26,26 @@ export const create = defineMutator(
 			name: args.name,
 			description: args.description ?? null,
 			accountId: ctx.userID,
+			createdAt: record.now,
+			updatedAt: record.now,
+		});
+
+		for (const def of DEFAULT_STATUSES) {
+			await tx.mutate.projectStatuses.insert({
+				id: crypto.randomUUID(),
+				projectId: record.id,
+				status: def.status,
+				position: def.position,
+				createdAt: record.now,
+				updatedAt: record.now,
+			});
+		}
+
+		await tx.mutate.projectMembers.insert({
+			id: crypto.randomUUID(),
+			projectId: record.id,
+			accountId: ctx.userID,
+			role: "owner",
 			createdAt: record.now,
 			updatedAt: record.now,
 		});
@@ -67,12 +93,33 @@ export const remove = defineMutator(
 			throw new Error("Not authorized to delete this project");
 		}
 
-		// Delete associated packages first (FK constraint)
+		// Delete associated records first (FK constraints)
 		const projectPackages = await tx.run(
 			zql.projectPackages.where("projectId", args.id),
 		);
 		for (const pp of projectPackages) {
 			await tx.mutate.projectPackages.delete({ id: pp.id });
+		}
+
+		const projectEcosystems = await tx.run(
+			zql.projectEcosystems.where("projectId", args.id),
+		);
+		for (const pe of projectEcosystems) {
+			await tx.mutate.projectEcosystems.delete({ id: pe.id });
+		}
+
+		const projectStatuses = await tx.run(
+			zql.projectStatuses.where("projectId", args.id),
+		);
+		for (const ps of projectStatuses) {
+			await tx.mutate.projectStatuses.delete({ id: ps.id });
+		}
+
+		const projectMembers = await tx.run(
+			zql.projectMembers.where("projectId", args.id),
+		);
+		for (const pm of projectMembers) {
+			await tx.mutate.projectMembers.delete({ id: pm.id });
 		}
 
 		await tx.mutate.projects.delete({ id: args.id });

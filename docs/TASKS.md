@@ -28,16 +28,20 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [ ] Both views share card click → side panel behavior
 
 *Phase 2: Schema & Data*
-- [ ] Schema: `projectStatusType` enum (`considering`, `using`, `deprecated`, `rejected`)
-- [ ] Schema: `projectMemberRole` enum (`owner`, `contributor`)
-- [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
-- [ ] Schema: `projectMembers` table (id, projectId, accountId, role)
-- [ ] Schema: Add `statusId`, `note`, `updatedAt` to `projectPackages` and `projectEcosystems`
-- [ ] Migration: Seed `projectMembers` owner row from `projects.accountId` for all existing projects
-- [ ] Migration: Seed default statuses for all existing projects
+- [x] Schema: `projectStatusEnum` (aware, evaluating, trialing, approved, adopted, rejected, phasing_out, dropped)
+- [x] Schema: `projectMemberRoleEnum` (owner, contributor)
+- [x] Schema: `projectStatuses` table (id, projectId, status, position) with unique (projectId, status)
+- [x] Schema: `projectMembers` table (id, projectId, accountId, role) with unique (projectId, accountId)
+- [x] Schema: Add `status` enum column to `projectPackages` and `projectEcosystems`
+- [x] Migration: Idempotent seed script (`scripts/seed-project-defaults.ts`) runs on `pnpm database migrate`
+- [x] Migration: Seeds owner `projectMembers` from `projects.accountId`
+- [x] Migration: Seeds 3 default `projectStatuses` (evaluating, adopted, dropped) per project
+- [x] `updateStatus` mutators for projectPackages and projectEcosystems
+- [x] Wire kanban board to real data (replace mock data)
+- [x] Auth-aware: readonly mode for non-owners, disabled drag-and-drop
+- [x] Cards match ResourceCard style (upvotes, tags, registry badge, remove button)
 - [ ] Default statuses + owner member on project creation (mutator)
-- [ ] V2 reads ownership from `projectMembers`, not `projects.accountId`
-- [ ] Wire kanban board to real data (replace mock data)
+- [ ] V2 reads columns from `projectStatuses` table (not derived from card data)
 
 *Phase 3: Card Details & Notes*
 - [ ] View/edit decision note (markdown)
@@ -53,11 +57,14 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [ ] URL reflects view/filter state for sharing
 - [ ] Search to add packages (in panel or board)
 
-*Phase 6: Swap & Cleanup*
+*Phase 6: Swap & Cleanup (after successful rollout)*
 - [ ] Compare V2 with existing implementation
 - [ ] Migrate `/projects/[id]` to V2
 - [ ] Remove old project detail code
-- [ ] Drop `accountId` from `projects` table (ownership fully in `projectMembers`)
+- [ ] Remove `scripts/seed-project-defaults.ts` and revert `migrate` script in `package.json` to plain `drizzle-kit migrate`
+- [ ] Drop `accountId` from `projects` table (migration + remove column from schema)
+- [ ] Update all code reading `projects.accountId` to use `projectMembers` table instead
+- [ ] Remove mock-data.ts if still present
 
 **Bug Fixes & Polish:**
 - [ ] Code module: fix dark mode color contrast for language dropdown

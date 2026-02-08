@@ -1,5 +1,6 @@
 import {
 	index,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -20,6 +21,24 @@ export const projects = pgTable("projects", {
 	createdAt: timestamp().notNull(),
 	updatedAt: timestamp().notNull(),
 });
+
+export const projectStatuses = pgTable(
+	"project_statuses",
+	{
+		id: uuid().primaryKey(),
+		projectId: uuid()
+			.notNull()
+			.references(() => projects.id),
+		status: projectStatusEnum().notNull(),
+		position: integer().notNull(),
+		createdAt: timestamp().notNull(),
+		updatedAt: timestamp().notNull(),
+	},
+	(table) => [
+		unique().on(table.projectId, table.status),
+		index("idx_project_statuses_project_id").on(table.projectId),
+	],
+);
 
 export const projectMembers = pgTable(
 	"project_members",

@@ -24,7 +24,12 @@ import {
 	packageUpvotes,
 	tags,
 } from "./packages.ts";
-import { projectMembers, projectPackages, projects } from "./projects.ts";
+import {
+	projectMembers,
+	projectPackages,
+	projectStatuses,
+	projects,
+} from "./projects.ts";
 
 export const accountRelations = relations(account, ({ many, one }) => ({
 	projects: many(projects),
@@ -125,6 +130,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 	}),
 	projectPackages: many(projectPackages),
 	projectEcosystems: many(projectEcosystems),
+	projectStatuses: many(projectStatuses),
 	projectMembers: many(projectMembers),
 	thread: one(threads, {
 		fields: [projects.id],
@@ -142,6 +148,16 @@ export const projectPackagesRelations = relations(
 		package: one(packages, {
 			fields: [projectPackages.packageId],
 			references: [packages.id],
+		}),
+	}),
+);
+
+export const projectStatusesRelations = relations(
+	projectStatuses,
+	({ one }) => ({
+		project: one(projects, {
+			fields: [projectStatuses.projectId],
+			references: [projects.id],
 		}),
 	}),
 );

@@ -5,7 +5,7 @@
 	"scripts": {
 		"typecheck": "tsc",
 		"generate": "drizzle-kit generate",
-		"migrate": "drizzle-kit migrate",
+		"migrate": "drizzle-kit migrate && node scripts/seed-project-defaults.ts",
 		"zero": "drizzle-zero generate --format"
 	},
 	"author": "Martin Eide",

@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
 	dropped: "Dropped",
 };
 
-const STATUS_ORDER: ProjectStatus[] = [
+const ALL_STATUSES: ProjectStatus[] = [
 	"aware",
 	"evaluating",
 	"trialing",
@@ -45,8 +45,6 @@ const STATUS_ORDER: ProjectStatus[] = [
 	"phasing_out",
 	"dropped",
 ];
-
-const DEFAULT_STATUSES: ProjectStatus[] = ["evaluating", "adopted", "dropped"];
 
 export const ProjectDetailV2 = () => {
 	const params = useParams<{ id: string }>();
@@ -60,8 +58,25 @@ export const ProjectDetailV2 = () => {
 	const isAnon = () => zero().userID === "anon";
 	const isOwner = () => {
 		const p = project();
-		return p !== undefined && !isAnon() && p.accountId === zero().userID;
+		if (!p || isAnon()) return false;
+		const members = p.projectMembers ?? [];
+		return members.some(
+			(m) => m.accountId === zero().userID && m.role === "owner",
+		);
 	};
+
+	const sortedStatuses = createMemo(() => {
+		const p = project();
+		if (!p) return [];
+		return [...(p.projectStatuses ?? [])].sort(
+			(a, b) => a.position - b.position,
+		);
+	});
+
+	const availableStatuses = createMemo((): ProjectStatus[] => {
+		const active = new Set(sortedStatuses().map((s) => s.status));
+		return ALL_STATUSES.filter((s) => !active.has(s as ProjectStatus));
+	});
 
 	const columns = createMemo((): KanbanColumn[] => {
 		const p = project();
@@ -119,14 +134,11 @@ export const ProjectDetailV2 = () => {
 			columnMap.set(status, existing);
 		}
 
-		const visibleStatuses = STATUS_ORDER.filter(
-			(s) => columnMap.has(s) || DEFAULT_STATUSES.includes(s),
-		);
-
-		return visibleStatuses.map((status) => ({
-			id: status,
-			label: STATUS_LABELS[status],
-			cards: columnMap.get(status) ?? [],
+		return sortedStatuses().map((ps) => ({
+			id: ps.status as ProjectStatus,
+			statusRecordId: ps.id,
+			label: STATUS_LABELS[ps.status as ProjectStatus] ?? ps.status,
+			cards: columnMap.get(ps.status as ProjectStatus) ?? [],
 		}));
 	});
 
@@ -244,6 +256,59 @@ export const ProjectDetailV2 = () => {
 		}
 	};
 
+	const handleMoveColumn = (columnId: string, direction: "left" | "right") => {
+		const p = project();
+		if (!p) return;
+
+		const cols = columns();
+		const idx = cols.findIndex((c) => c.id === columnId);
+		if (idx < 0) return;
+
+		const swapIdx = direction === "left" ? idx - 1 : idx + 1;
+		if (swapIdx < 0 || swapIdx >= cols.length) return;
+
+		const a = cols[idx];
+		const b = cols[swapIdx];
+		if (!a?.statusRecordId || !b?.statusRecordId) return;
+
+		zero().mutate(
+			mutators.projectStatuses.swapPositions({
+				projectId: p.id,
+				statusIdA: a.statusRecordId,
+				statusIdB: b.statusRecordId,
+			}),
+		);
+	};
+
+	const handleAddStatus = (status: ProjectStatus) => {
+		const p = project();
+		if (!p) return;
+
+		zero().mutate(
+			mutators.projectStatuses.add({
+				projectId: p.id,
+				status,
+			}),
+		);
+	};
+
+	const handleRemoveColumn = (columnId: string) => {
+		const p = project();
+		if (!p) return;
+
+		const col = columns().find((c) => c.id === columnId);
+		if (!col?.statusRecordId) return;
+
+		if (col.cards.length > 0) return;
+
+		zero().mutate(
+			mutators.projectStatuses.remove({
+				id: col.statusRecordId,
+				projectId: p.id,
+			}),
+		);
+	};
+
 	const handleRemove = async (card: KanbanCard) => {
 		const p = project();
 		if (!p) return;
@@ -335,10 +400,15 @@ export const ProjectDetailV2 = () => {
 											columns={columns()}
 											readonly={!isOwner()}
 											upvoteDisabled={isAnon()}
+											availableStatuses={availableStatuses()}
+											statusLabels={STATUS_LABELS}
 											onCardMove={handleCardMove}
 											onCardClick={handleCardClick}
 											onUpvote={handleUpvote}
 											onRemove={isOwner() ? handleRemove : undefined}
+											onMoveColumn={handleMoveColumn}
+											onAddStatus={handleAddStatus}
+											onRemoveColumn={handleRemoveColumn}
 											ref={(el) => {
 												boardRef = el;
 											}}

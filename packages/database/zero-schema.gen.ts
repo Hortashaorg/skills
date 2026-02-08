@@ -806,6 +806,54 @@ const projectPackagesTable = {
   primaryKey: ["id"],
   serverName: "project_packages",
 } as const;
+const projectStatusesTable = {
+  name: "projectStatuses",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "approved"
+        | "rejected"
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "adopted"
+        | "phasing_out"
+        | "dropped",
+    },
+    position: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_statuses",
+} as const;
 const projectsTable = {
   name: "projects",
   columns: {
@@ -1494,6 +1542,16 @@ const projectPackagesRelationships = {
     },
   ],
 } as const;
+const projectStatusesRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+} as const;
 const projectsRelationships = {
   account: [
     {
@@ -1516,6 +1574,14 @@ const projectsRelationships = {
       sourceField: ["id"],
       destField: ["projectId"],
       destSchema: "projectEcosystems",
+      cardinality: "many",
+    },
+  ],
+  projectStatuses: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectStatuses",
       cardinality: "many",
     },
   ],
@@ -1664,6 +1730,7 @@ export const schema = {
     projectEcosystems: projectEcosystemsTable,
     projectMembers: projectMembersTable,
     projectPackages: projectPackagesTable,
+    projectStatuses: projectStatusesTable,
     projects: projectsTable,
     suggestionVotes: suggestionVotesTable,
     suggestions: suggestionsTable,
@@ -1689,6 +1756,7 @@ export const schema = {
     projectEcosystems: projectEcosystemsRelationships,
     projectMembers: projectMembersRelationships,
     projectPackages: projectPackagesRelationships,
+    projectStatuses: projectStatusesRelationships,
     projects: projectsRelationships,
     suggestionVotes: suggestionVotesRelationships,
     suggestions: suggestionsRelationships,
@@ -1808,6 +1876,11 @@ export type ProjectMember = Row<(typeof schema)["tables"]["projectMembers"]>;
  * This type is auto-generated from your Drizzle schema definition.
  */
 export type ProjectPackage = Row<(typeof schema)["tables"]["projectPackages"]>;
+/**
+ * Represents a row from the "projectStatuses" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type ProjectStatus = Row<(typeof schema)["tables"]["projectStatuses"]>;
 /**
  * Represents a row from the "projects" table.
  * This type is auto-generated from your Drizzle schema definition.
