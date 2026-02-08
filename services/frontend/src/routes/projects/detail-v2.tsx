@@ -56,19 +56,6 @@ export const ProjectDetailV2 = () => {
 						>
 							{(p) => (
 								<>
-									<Card padding="sm">
-										<div class="flex items-center justify-between">
-											<Text color="muted" size="sm">
-												Projects V2 (dev)
-											</Text>
-											<A
-												href={`/projects-old/${params.id}`}
-												class="text-sm text-blue-500 hover:underline"
-											>
-												Switch to V1
-											</A>
-										</div>
-									</Card>
 									<Heading level="h1">{p().name}</Heading>
 									<BoardSection project={p()} isOwner={isOwner()} />
 								</>
