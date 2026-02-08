@@ -4,7 +4,7 @@ import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { SidePanel } from "@/components/ui/side-panel";
-import type { KanbanCard, KanbanColumn } from "./kanban-board";
+import type { KanbanCard, KanbanColumn } from "../types";
 
 type CardPanelProps = {
 	card: KanbanCard;

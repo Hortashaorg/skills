@@ -1,4 +1,4 @@
-export type { ReadonlyJSONObject, Row } from "@rocicorp/zero";
+export type { QueryRowType, ReadonlyJSONObject, Row } from "@rocicorp/zero";
 export {
 	useConnectionState,
 	useQuery,
