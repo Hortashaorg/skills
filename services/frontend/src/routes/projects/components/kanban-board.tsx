@@ -94,7 +94,7 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 									>
 										<Card
 											padding="sm"
-											class={`relative hover:shadow-md transition-shadow ${props.readonly ? "cursor-default" : "cursor-grab active:cursor-grabbing"}`}
+											class={`relative hover:shadow-md transition-shadow ${props.readonly ? "cursor-default" : "cursor-pointer active:cursor-grabbing"}`}
 											onClick={() => {
 												if (!dnd.wasDragged()) {
 													props.onCardClick?.(card, column.id);
