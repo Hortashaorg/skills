@@ -452,7 +452,7 @@ export const ProjectDetailV2 = () => {
 				open={removeCardModal.isOpen()}
 				onOpenChange={(open) => !open && removeCardModal.close()}
 				title={`Remove ${removeCardModal.data()?.kind === "package" ? "Package" : "Ecosystem"}`}
-				description={`Remove "${removeCardModal.data()?.name}" from this project? The ${removeCardModal.data()?.kind === "package" ? "package" : "ecosystem"} itself won't be deleted.`}
+				description={`Remove "${removeCardModal.data()?.name}" from this project? Its status and any project-specific notes will be lost.`}
 				confirmText="Remove"
 				variant="danger"
 				onConfirm={confirmRemoveCard}
