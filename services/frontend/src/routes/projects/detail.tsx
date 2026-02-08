@@ -14,7 +14,7 @@ import { useProjectSearch } from "@/hooks/projects/useProjectSearch";
 import { useUserSearch } from "@/hooks/users/useUserSearch";
 import { Layout } from "@/layout/Layout";
 import { handleMutationError } from "@/lib/mutation-error";
-import { ProjectDetailSkeleton } from "@/routes/me/projects/sections/ProjectDetailSkeleton";
+import { ProjectDetailSkeleton } from "./sections/ProjectDetailSkeleton";
 import { BoardSection } from "./sections/BoardSection";
 import { DiscussionTab } from "./sections/DiscussionTab";
 import { Header } from "./sections/Header";
