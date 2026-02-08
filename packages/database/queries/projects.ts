@@ -85,7 +85,8 @@ export const recent = defineQuery(
 			.orderBy("id", "asc")
 			.limit(args.limit)
 			.related("account")
-			.related("projectPackages");
+			.related("projectPackages")
+			.related("upvotes");
 	},
 );
 
@@ -96,7 +97,8 @@ export const exactMatch = defineQuery(
 		return zql.projects
 			.where("name", "ILIKE", args.name)
 			.related("account")
-			.related("projectPackages");
+			.related("projectPackages")
+			.related("upvotes");
 	},
 );
 
@@ -118,7 +120,8 @@ export const search = defineQuery(
 			.orderBy("name", "asc")
 			.limit(args.limit)
 			.related("account")
-			.related("projectPackages");
+			.related("projectPackages")
+			.related("upvotes");
 	},
 );
 

@@ -13,6 +13,7 @@ import { SEARCH_INITIAL_LIMIT, SEARCH_LOAD_MORE_COUNT } from "@/lib/constants";
 export type Project = Row["projects"] & {
 	account?: Row["account"];
 	projectPackages?: readonly Row["projectPackages"][];
+	upvotes?: readonly Row["projectUpvotes"][];
 };
 
 export interface UseProjectSearchOptions {

@@ -6,6 +6,7 @@ import { Flex } from "@/components/primitives/flex";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
+import { UpvoteButton } from "@/components/ui/upvote-button";
 import { getDisplayName } from "@/lib/account";
 
 type ProjectWithPackages = Row["projects"] & {
@@ -16,6 +17,10 @@ type ProjectWithPackages = Row["projects"] & {
 interface ProjectCardProps {
 	project: ProjectWithPackages;
 	showAuthor?: boolean;
+	upvoteCount?: number;
+	isUpvoted?: boolean;
+	upvoteDisabled?: boolean;
+	onUpvote?: () => void;
 }
 
 export const ProjectCard = (props: ProjectCardProps) => {
@@ -28,9 +33,22 @@ export const ProjectCard = (props: ProjectCardProps) => {
 				class="h-full hover:bg-surface-alt dark:hover:bg-surface-dark-alt has-[[data-author]:hover]:bg-transparent dark:has-[[data-author]:hover]:bg-transparent transition-colors cursor-pointer"
 			>
 				<Stack spacing="sm">
-					<Text weight="semibold" class="truncate">
-						{props.project.name}
-					</Text>
+					<Flex gap="sm" align="center" class="min-w-0">
+						<Text weight="semibold" class="truncate min-w-0 flex-1">
+							{props.project.name}
+						</Text>
+						<Show when={props.onUpvote}>
+							{(onUpvote) => (
+								<UpvoteButton
+									count={props.upvoteCount ?? 0}
+									isUpvoted={props.isUpvoted ?? false}
+									disabled={props.upvoteDisabled ?? true}
+									onClick={onUpvote()}
+									size="sm"
+								/>
+							)}
+						</Show>
+					</Flex>
 					<Show when={props.project.description}>
 						<Text size="sm" color="muted" class="line-clamp-2">
 							{props.project.description}
