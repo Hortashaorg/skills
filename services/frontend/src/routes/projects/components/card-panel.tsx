@@ -10,6 +10,7 @@ type CardPanelProps = {
 	card: KanbanCard;
 	currentColumnId: string;
 	columns: KanbanColumn[];
+	readonly?: boolean;
 	onStatusChange: (
 		cardId: string,
 		fromColumnId: string,
@@ -23,7 +24,7 @@ export const CardPanel = (props: CardPanelProps) => {
 	const statusOptions = (): SelectOption<string>[] =>
 		props.columns.map((col) => ({
 			value: col.id,
-			label: col.name,
+			label: col.label,
 		}));
 
 	const handleStatusChange = (newColumnId: string) => {
@@ -40,6 +41,19 @@ export const CardPanel = (props: CardPanelProps) => {
 			ref={props.ref}
 		>
 			<Stack spacing="lg">
+				{/* Type */}
+				<div>
+					<Text size="sm" weight="semibold" class="mb-2">
+						Type
+					</Text>
+					<Badge
+						variant={props.card.kind === "package" ? "primary" : "secondary"}
+						size="sm"
+					>
+						{props.card.kind === "package" ? "Package" : "Ecosystem"}
+					</Badge>
+				</div>
+
 				{/* Status */}
 				<div>
 					<Text size="sm" weight="semibold" class="mb-2">
@@ -49,6 +63,7 @@ export const CardPanel = (props: CardPanelProps) => {
 						options={statusOptions()}
 						value={props.currentColumnId}
 						onChange={handleStatusChange}
+						disabled={props.readonly}
 						aria-label="Card status"
 						size="sm"
 					/>

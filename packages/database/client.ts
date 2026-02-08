@@ -11,6 +11,7 @@ export type {
 	DependencyType,
 	FetchStatus,
 	PackageStatus,
+	ProjectStatus,
 	Registry,
 	SuggestionStatus,
 	SuggestionType,

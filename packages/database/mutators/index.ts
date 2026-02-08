@@ -41,6 +41,7 @@ export const mutators = defineMutators({
 	projectPackages: {
 		add: projectPackagesMutators.add,
 		remove: projectPackagesMutators.remove,
+		updateStatus: projectPackagesMutators.updateStatus,
 	},
 	suggestions: {
 		create: suggestionsMutators.create,
@@ -72,7 +73,9 @@ export const mutators = defineMutators({
 	projectEcosystems: {
 		add: projectEcosystemsMutators.add,
 		remove: projectEcosystemsMutators.remove,
+		updateStatus: projectEcosystemsMutators.updateStatus,
 	},
+	projectMembers: {},
 	threads: {},
 	comments: {
 		create: commentsMutators.create,
