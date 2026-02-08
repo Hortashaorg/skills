@@ -10,61 +10,86 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 
 **Projects V2 (new route, parallel to existing):**
 
-*Phase 1: UI Prototyping (mock data, no schema changes yet)*
+*Completed: Foundation*
 - [x] New route: `/projects/:id` for V2, old route moved to `/projects-old/:id`
-- [x] Kanban board layout with status columns (mock data)
-- [x] Drag-and-drop between columns (native HTML5 DnD API)
-- [x] Reusable `createDragAndDrop` hook (`hooks/useDragAndDrop.ts`)
+- [x] Kanban board layout with status columns, horizontal scroll
+- [x] Drag-and-drop between columns (native HTML5 DnD API, `createDragAndDrop` hook)
 - [x] Click card → side panel with status dropdown
-- [x] Reusable `SidePanel` component (`components/ui/side-panel/`)
-- [x] Reusable `createClickOutside` hook (`hooks/useClickOutside.ts`)
-- [x] Click-outside and Escape to close panel
-- [ ] Make `ResourceCard` support optional href/upvote (kanban cards should look like cards elsewhere)
-- [ ] Wire kanban cards to use `PackageCard`/`EcosystemCard` with mock data
-- [ ] Kanban board: fixed card width, horizontal scroll (no responsive column wrapping)
-- [ ] List view: vertical cards grouped by status or tag (collapsible sections)
-- [ ] View switcher: Kanban / List toggle, "Group by" dropdown for list view (status, tag)
-- [ ] Search/filter bar: filter cards by name or tag across all columns/sections (shared by both views)
-- [ ] Both views share card click → side panel behavior
+- [x] Reusable `SidePanel` component + `createClickOutside` hook
+- [x] Schema: `projectStatusEnum`, `projectMemberRoleEnum`, `projectStatuses`, `projectMembers` tables
+- [x] Status column management: add/remove columns, arrow reordering (swap positions)
+- [x] Idempotent seed script for existing projects (runs on `pnpm database migrate`)
+- [x] Default statuses + owner member seeded on project creation
+- [x] Wire kanban board to real data from `projectStatuses` table
+- [x] Auth-aware: readonly for non-owners, disabled drag-and-drop
+- [x] Cards with upvotes, tags, registry badge, remove button (with confirmation dialog)
+- [x] Unified search to add packages and ecosystems (single SearchInput, both hooks)
+- [x] Subtle status dots instead of colored bars (consistent with site design)
+- [x] Ownership via `projectMembers` table, not `projects.accountId`
 
-*Phase 2: Schema & Data*
-- [x] Schema: `projectStatusEnum` (aware, evaluating, trialing, approved, adopted, rejected, phasing_out, dropped)
-- [x] Schema: `projectMemberRoleEnum` (owner, contributor)
-- [x] Schema: `projectStatuses` table (id, projectId, status, position) with unique (projectId, status)
-- [x] Schema: `projectMembers` table (id, projectId, accountId, role) with unique (projectId, accountId)
-- [x] Schema: Add `status` enum column to `projectPackages` and `projectEcosystems`
-- [x] Migration: Idempotent seed script (`scripts/seed-project-defaults.ts`) runs on `pnpm database migrate`
-- [x] Migration: Seeds owner `projectMembers` from `projects.accountId`
-- [x] Migration: Seeds 3 default `projectStatuses` (evaluating, adopted, dropped) per project
-- [x] `updateStatus` mutators for projectPackages and projectEcosystems
-- [x] Wire kanban board to real data (replace mock data)
-- [x] Auth-aware: readonly mode for non-owners, disabled drag-and-drop
-- [x] Cards match ResourceCard style (upvotes, tags, registry badge, remove button)
-- [ ] Default statuses + owner member on project creation (mutator)
-- [ ] V2 reads columns from `projectStatuses` table (not derived from card data)
+*Phase 3: Tabbed Page Structure*
 
-*Phase 3: Card Details & Notes*
-- [ ] View/edit decision note (markdown)
-- [ ] Link to package/ecosystem page
+Restructure project detail into a multi-tab page (like package/ecosystem detail pages).
+File structure: `routes/projects/detail-v2.tsx` → `routes/projects/index.tsx` + `sections/`.
 
-*Phase 4: Discussion & Collaboration*
-- [ ] CommentThread on cards (per projectPackage/projectEcosystem)
-- [ ] Comment count indicator on cards
-- [ ] Note indicator on cards
-- [ ] Roles: owner (full control), contributor (edit/comment)
+```
+routes/projects/
+├── detail-v2.tsx          → index.tsx (tab routing, data loading)
+└── sections/
+    ├── BoardTab.tsx        (kanban board, search, card management)
+    ├── SettingsTab.tsx     (project info, member management)
+    ├── DiscussionTab.tsx   (project-level comment threads)
+    └── CardPanel.tsx       (side panel for card details + decision comments)
+```
 
-*Phase 5: Filtering & Polish*
+Tabs:
+- [ ] Split `detail-v2.tsx` into `index.tsx` + section components
+- [ ] Tab routing: `/projects/:id` (Board), `/projects/:id/settings`, `/projects/:id/discussion`
+- [ ] Board tab: kanban board + search (extract from current `detail-v2.tsx`)
+- [ ] Settings tab: edit project name/description
+- [ ] Discussion tab: project-level `CommentThread` (reuse existing pattern)
+- [ ] URL-driven tab state (navigate between tabs updates URL)
+
+*Phase 4: Card Side Panel — Decision Context*
+
+The side panel becomes the decision record for each package/ecosystem in the project.
+
+- [ ] Link to full package/ecosystem page from panel
+- [ ] Decision note: markdown editor (per projectPackage/projectEcosystem)
+  - Schema: add `note` text column to `projectPackages` and `projectEcosystems`
+  - View/edit with MarkdownInput in the panel
+- [ ] Simple flat comment thread per card (no nesting)
+  - Schema: thread per projectPackage/projectEcosystem (new thread type or reuse existing)
+  - Lightweight discussion about this specific decision
+  - No reply nesting — keeps it focused on "why did we pick/drop this?"
+- [ ] Note indicator on kanban cards (small icon when note exists)
+- [ ] Comment count indicator on kanban cards
+
+*Phase 5: Member Management (Settings Tab)*
+
+- [ ] List current members with roles
+- [ ] Invite members by username search
+- [ ] Role assignment: owner (full control), contributor (edit/comment)
+- [ ] Remove members (owner only)
+- [ ] Contributors can: move cards, add notes, comment
+- [ ] Contributors cannot: delete project, manage members, add/remove status columns
+
+*Phase 6: Filtering & Views*
+
+- [ ] Filter cards by name or tag across all columns
+- [ ] List view: vertical cards grouped by status (collapsible sections)
+- [ ] View switcher: Kanban / List toggle
 - [ ] URL reflects view/filter state for sharing
-- [ ] Search to add packages (in panel or board)
+- [ ] "Group by" dropdown for list view (status, tag)
 
-*Phase 6: Swap & Cleanup (after successful rollout)*
+*Phase 7: Swap & Cleanup (after successful rollout)*
 - [ ] Compare V2 with existing implementation
-- [ ] Migrate `/projects/[id]` to V2
+- [ ] Migrate `/projects/[id]` to V2 (replace old route)
 - [ ] Remove old project detail code
-- [ ] Remove `scripts/seed-project-defaults.ts` and revert `migrate` script in `package.json` to plain `drizzle-kit migrate`
+- [ ] Remove `scripts/seed-project-defaults.ts` and revert `migrate` script to plain `drizzle-kit migrate`
 - [ ] Drop `accountId` from `projects` table (migration + remove column from schema)
-- [ ] Update all code reading `projects.accountId` to use `projectMembers` table instead
-- [ ] Remove mock-data.ts if still present
+- [ ] Update all code reading `projects.accountId` to use `projectMembers` table
+- [ ] Clean up unused files (mock-data.ts, etc.)
 
 **Bug Fixes & Polish:**
 - [ ] Code module: fix dark mode color contrast for language dropdown
