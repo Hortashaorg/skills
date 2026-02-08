@@ -27,28 +27,45 @@ See [Feature-Projects.md](./Feature-Projects.md) for full spec.
 - [x] Subtle status dots instead of colored bars (consistent with site design)
 - [x] Ownership via `projectMembers` table, not `projects.accountId`
 
-*Phase 3: Tabbed Page Structure*
+*Completed: Code Cleanup & V1 Removal*
+- [x] Extract kanban sub-components: `kanban-card-item`, `kanban-column-header`, `add-status-popover`
+- [x] Extract `BoardSection` from detail page (all board logic in `sections/BoardSection.tsx`)
+- [x] Extract shared types to `routes/projects/types.ts` (`KanbanCard`, `KanbanColumn`)
+- [x] Move constants to `lib/constants.ts` using database enums as source of truth
+- [x] Use `QueryRowType` from Zero for type inference (no manual type duplication)
+- [x] Remove V1 project detail page and `/projects-old/:id` route
+- [x] Rename `detail-v2.tsx` → `detail.tsx`, `ProjectDetailV2` → `ProjectDetail`
 
-Restructure project detail into a multi-tab page (like package/ecosystem detail pages).
-File structure: `routes/projects/detail-v2.tsx` → `routes/projects/index.tsx` + `sections/`.
+*Completed: Tabbed Page Structure + Upvotes*
+- [x] Project upvotes: `projectUpvotes` table, `upvoteCount` column, mutators, relations
+- [x] `createProjectUpvote` hook + `"project"` entity type in `createUpvote`
+- [x] Presentational `Header` section (name, description, upvote button, member count)
+- [x] `DiscussionTab` section (reuses `useCommentThread` with `entityType: "project"`)
+- [x] Tabbed layout: Board (default), Discussion, Settings (placeholder)
+- [x] Route: `/projects/:id/*tab` with URL-driven tab state
+- [x] Breadcrumbs work on all tabs (regex updated for optional tab suffix)
+- [x] Upvote button on `/projects` browse page (matching ecosystem/package card pattern)
+- [x] `ProjectCard` follows `ResourceCard` pattern (absolute link, pointer-events, data-upvote)
+- [x] `.related("upvotes")` on project search/recent/exactMatch queries
 
 ```
 routes/projects/
-├── detail-v2.tsx          → index.tsx (tab routing, data loading)
+├── detail.tsx             (tab routing, data loading, upvote state, header)
+├── types.ts               (KanbanCard, KanbanColumn shared types)
+├── components/
+│   ├── kanban-board.tsx    (board layout, composes sub-components)
+│   ├── kanban-card-item.tsx
+│   ├── kanban-column-header.tsx
+│   ├── add-status-popover.tsx
+│   └── card-panel.tsx      (side panel for card details)
 └── sections/
-    ├── BoardTab.tsx        (kanban board, search, card management)
-    ├── SettingsTab.tsx     (project info, member management)
+    ├── BoardSection.tsx    (kanban board, search, card management)
     ├── DiscussionTab.tsx   (project-level comment threads)
-    └── CardPanel.tsx       (side panel for card details + decision comments)
+    └── Header.tsx          (project header with upvote)
 ```
 
-Tabs:
-- [ ] Split `detail-v2.tsx` into `index.tsx` + section components
-- [ ] Tab routing: `/projects/:id` (Board), `/projects/:id/settings`, `/projects/:id/discussion`
-- [ ] Board tab: kanban board + search (extract from current `detail-v2.tsx`)
-- [ ] Settings tab: edit project name/description
-- [ ] Discussion tab: project-level `CommentThread` (reuse existing pattern)
-- [ ] URL-driven tab state (navigate between tabs updates URL)
+Remaining:
+- [ ] Settings tab: edit project name/description (currently placeholder)
 
 *Phase 4: Card Side Panel — Decision Context*
 
@@ -82,10 +99,10 @@ The side panel becomes the decision record for each package/ecosystem in the pro
 - [ ] URL reflects view/filter state for sharing
 - [ ] "Group by" dropdown for list view (status, tag)
 
-*Phase 7: Swap & Cleanup (after successful rollout)*
-- [ ] Compare V2 with existing implementation
-- [ ] Migrate `/projects/[id]` to V2 (replace old route)
-- [ ] Remove old project detail code
+*Phase 7: Cleanup (remaining)*
+- [x] Compare V2 with existing implementation
+- [x] Migrate `/projects/:id` to V2 (replaced old route)
+- [x] Remove old project detail code
 - [ ] Remove `scripts/seed-project-defaults.ts` and revert `migrate` script to plain `drizzle-kit migrate`
 - [ ] Drop `accountId` from `projects` table (migration + remove column from schema)
 - [ ] Update all code reading `projects.accountId` to use `projectMembers` table
