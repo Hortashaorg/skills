@@ -65,7 +65,7 @@ routes/projects/
 ```
 
 Remaining:
-- [ ] Settings tab: edit project name/description (currently placeholder)
+- [x] Inline editing: project name/description (pencil icon in header, edit-in-place)
 
 *Phase 4: Card Side Panel — Decision Context*
 

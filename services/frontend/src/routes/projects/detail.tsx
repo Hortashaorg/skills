@@ -14,10 +14,10 @@ import { useProjectSearch } from "@/hooks/projects/useProjectSearch";
 import { useUserSearch } from "@/hooks/users/useUserSearch";
 import { Layout } from "@/layout/Layout";
 import { handleMutationError } from "@/lib/mutation-error";
-import { ProjectDetailSkeleton } from "./sections/ProjectDetailSkeleton";
 import { BoardSection } from "./sections/BoardSection";
 import { DiscussionTab } from "./sections/DiscussionTab";
 import { Header } from "./sections/Header";
+import { ProjectDetailSkeleton } from "./sections/ProjectDetailSkeleton";
 
 export const ProjectDetail = () => {
 	const params = useParams<{ id: string; tab?: string }>();
@@ -90,6 +90,23 @@ export const ProjectDetail = () => {
 		users: userSearch,
 	};
 
+	// Inline edit save
+	const handleSave = (name: string, description: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projects.update({
+					id: p.id,
+					name,
+					description: description || undefined,
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "update project");
+		}
+	};
+
 	return (
 		<Layout>
 			<Container size="lg">
@@ -124,6 +141,8 @@ export const ProjectDetail = () => {
 										hasUpvoted={!!userUpvote()}
 										isLoggedIn={isLoggedIn()}
 										onUpvote={handleUpvote}
+										canEdit={isOwner()}
+										onSave={handleSave}
 									/>
 
 									<Tabs.Root
