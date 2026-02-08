@@ -11,9 +11,11 @@ import { Container } from "@/components/primitives/container";
 import { Heading } from "@/components/primitives/heading";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createClickOutside } from "@/hooks/useClickOutside";
+import { useModalState } from "@/hooks/useModalState";
 import { Layout } from "@/layout/Layout";
 import { handleMutationError } from "@/lib/mutation-error";
 import { ProjectDetailSkeleton } from "@/routes/me/projects/sections/ProjectDetailSkeleton";
@@ -146,6 +148,7 @@ export const ProjectDetailV2 = () => {
 	const [selectedCard, setSelectedCard] = createSignal<SelectedCard | null>(
 		null,
 	);
+	const removeCardModal = useModalState<KanbanCard>();
 
 	let boardRef: HTMLElement | undefined;
 	let panelRef: HTMLElement | undefined;
@@ -309,9 +312,14 @@ export const ProjectDetailV2 = () => {
 		);
 	};
 
-	const handleRemove = async (card: KanbanCard) => {
+	const handleRemove = (card: KanbanCard) => {
+		removeCardModal.open(card);
+	};
+
+	const confirmRemoveCard = async () => {
+		const card = removeCardModal.data();
 		const p = project();
-		if (!p) return;
+		if (!card || !p) return;
 
 		try {
 			if (card.kind === "package") {
@@ -338,6 +346,7 @@ export const ProjectDetailV2 = () => {
 		if (selectedCard()?.card.id === card.id) {
 			setSelectedCard(null);
 		}
+		removeCardModal.close();
 	};
 
 	return (
@@ -437,6 +446,17 @@ export const ProjectDetailV2 = () => {
 					/>
 				)}
 			</Show>
+
+			{/* Remove card confirmation */}
+			<AlertDialog
+				open={removeCardModal.isOpen()}
+				onOpenChange={(open) => !open && removeCardModal.close()}
+				title={`Remove ${removeCardModal.data()?.kind === "package" ? "Package" : "Ecosystem"}`}
+				description={`Remove "${removeCardModal.data()?.name}" from this project? The ${removeCardModal.data()?.kind === "package" ? "package" : "ecosystem"} itself won't be deleted.`}
+				confirmText="Remove"
+				variant="danger"
+				onConfirm={confirmRemoveCard}
+			/>
 		</Layout>
 	);
 };
