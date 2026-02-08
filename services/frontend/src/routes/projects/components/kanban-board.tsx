@@ -51,15 +51,15 @@ type KanbanBoardProps = {
 	ref?: (el: HTMLElement) => void;
 };
 
-const statusColors: Record<ProjectStatus, string> = {
-	aware: "border-t-outline dark:border-t-outline-dark",
-	evaluating: "border-t-info",
-	trialing: "border-t-info",
-	approved: "border-t-success",
-	adopted: "border-t-success",
-	rejected: "border-t-danger",
-	phasing_out: "border-t-warning",
-	dropped: "border-t-danger",
+const statusDotColors: Record<ProjectStatus, string> = {
+	aware: "bg-outline-strong dark:bg-outline-dark-strong",
+	evaluating: "bg-info",
+	trialing: "bg-info",
+	approved: "bg-success",
+	adopted: "bg-success",
+	rejected: "bg-danger",
+	phasing_out: "bg-warning",
+	dropped: "bg-danger",
 };
 
 export const KanbanBoard = (props: KanbanBoardProps) => {
@@ -73,14 +73,17 @@ export const KanbanBoard = (props: KanbanBoardProps) => {
 				{(column, index) => (
 					<div
 						{...(props.readonly ? {} : dnd.droppable(column.id))}
-						class={`w-88 shrink-0 rounded-lg border-t-4 ${statusColors[column.id]} p-3 transition-colors ${
+						class={`w-88 shrink-0 rounded-lg p-3 transition-colors ${
 							!props.readonly && dnd.isOver(column.id)
 								? "bg-primary/5 dark:bg-primary-dark/10 ring-2 ring-primary/30 dark:ring-primary-dark/30"
-								: "bg-surface dark:bg-surface-dark"
+								: "bg-surface-alt/50 dark:bg-surface-dark-alt/50"
 						}`}
 					>
 						<div class="mb-3 flex items-center justify-between gap-1">
-							<div class="flex items-center gap-1 min-w-0">
+							<div class="flex items-center gap-1.5 min-w-0">
+								<span
+									class={`h-2 w-2 shrink-0 rounded-full ${statusDotColors[column.id]}`}
+								/>
 								<Show
 									when={!props.readonly && props.onMoveColumn && index() > 0}
 								>
