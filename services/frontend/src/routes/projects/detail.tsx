@@ -11,7 +11,7 @@ import { Layout } from "@/layout/Layout";
 import { ProjectDetailSkeleton } from "@/routes/me/projects/sections/ProjectDetailSkeleton";
 import { BoardSection } from "./sections/BoardSection";
 
-export const ProjectDetailV2 = () => {
+export const ProjectDetail = () => {
 	const params = useParams<{ id: string }>();
 	const zero = useZero();
 
@@ -68,4 +68,4 @@ export const ProjectDetailV2 = () => {
 	);
 };
 
-export default ProjectDetailV2;
+export default ProjectDetail;

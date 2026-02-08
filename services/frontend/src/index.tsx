@@ -19,7 +19,7 @@ const Notifications = lazy(() => import("@/routes/me/notifications"));
 const Projects = lazy(() => import("@/routes/me/projects"));
 const NewProject = lazy(() => import("@/routes/me/projects/new"));
 const BrowseProjects = lazy(() => import("@/routes/projects"));
-const ProjectDetailV2 = lazy(() => import("@/routes/projects/detail-v2"));
+const ProjectDetail = lazy(() => import("@/routes/projects/detail"));
 const UserProfile = lazy(() => import("@/routes/user"));
 const Curation = lazy(() => import("@/routes/curation"));
 const Privacy = lazy(() => import("@/routes/privacy"));
@@ -50,7 +50,7 @@ loadConfig().then(() => {
 							<Route path="/me/projects" component={Projects} />
 							<Route path="/me/projects/new" component={NewProject} />
 							<Route path="/projects" component={BrowseProjects} />
-							<Route path="/projects/:id" component={ProjectDetailV2} />
+							<Route path="/projects/:id" component={ProjectDetail} />
 							<Route path="/user/:id" component={UserProfile} />
 							<Route path="/curation" component={Curation} />
 							<Route path="/privacy" component={Privacy} />
