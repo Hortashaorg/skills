@@ -8,7 +8,6 @@ import { UpvoteButton } from "@/components/ui/upvote-button";
 import { getDisplayName } from "@/lib/account";
 
 type ProjectWithPackages = Row["projects"] & {
-	projectPackages?: readonly Row["projectPackages"][];
 	account?: Row["account"] | null;
 };
 
@@ -22,8 +21,6 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard = (props: ProjectCardProps) => {
-	const packageCount = () => props.project.projectPackages?.length ?? 0;
-
 	return (
 		<Card
 			padding="md"
@@ -49,9 +46,6 @@ export const ProjectCard = (props: ProjectCardProps) => {
 
 				<div class="flex items-end justify-between gap-2 mt-auto pt-1">
 					<div class="flex items-center gap-1.5 min-w-0">
-						<Text size="xs" color="muted">
-							{packageCount()} package{packageCount() !== 1 ? "s" : ""}
-						</Text>
 						<Show
 							when={props.showAuthor}
 							fallback={
