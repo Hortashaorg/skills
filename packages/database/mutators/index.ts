@@ -80,6 +80,7 @@ export const mutators = defineMutators({
 	},
 	projectMembers: {
 		add: projectMembersMutators.add,
+		updateRole: projectMembersMutators.updateRole,
 		remove: projectMembersMutators.remove,
 	},
 	projectUpvotes: {

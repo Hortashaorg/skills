@@ -7,7 +7,7 @@ export const add = defineMutator(
 	z.object({
 		projectId: z.string(),
 		accountId: z.string(),
-		role: z.enum(["contributor"]).default("contributor"),
+		role: z.enum(["owner", "contributor"]).default("contributor"),
 	}),
 	async ({ tx, args, ctx }) => {
 		if (ctx.userID === "anon") {
@@ -37,6 +37,51 @@ export const add = defineMutator(
 			role: args.role,
 			createdAt: record.now,
 			updatedAt: record.now,
+		});
+
+		await tx.mutate.projects.update({
+			id: args.projectId,
+			updatedAt: now(),
+		});
+	},
+);
+
+export const updateRole = defineMutator(
+	z.object({
+		id: z.string(),
+		projectId: z.string(),
+		role: z.enum(["owner", "contributor"]),
+	}),
+	async ({ tx, args, ctx }) => {
+		if (ctx.userID === "anon") {
+			throw new Error("Must be logged in to update member role");
+		}
+
+		const members = await tx.run(
+			zql.projectMembers.where("projectId", args.projectId),
+		);
+
+		const callerMember = members.find((m) => m.accountId === ctx.userID);
+		if (!callerMember || callerMember.role !== "owner") {
+			throw new Error("Not authorized: must be project owner");
+		}
+
+		const targetMember = members.find((m) => m.id === args.id);
+		if (!targetMember) {
+			throw new Error("Member not found");
+		}
+
+		if (targetMember.role === "owner" && args.role === "contributor") {
+			const ownerCount = members.filter((m) => m.role === "owner").length;
+			if (ownerCount <= 1) {
+				throw new Error("Cannot demote the last owner");
+			}
+		}
+
+		await tx.mutate.projectMembers.update({
+			id: args.id,
+			role: args.role,
+			updatedAt: now(),
 		});
 
 		await tx.mutate.projects.update({

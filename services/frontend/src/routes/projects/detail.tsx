@@ -92,7 +92,10 @@ export const ProjectDetail = () => {
 	};
 
 	// Member management
-	const handleAddMember = (accountId: string) => {
+	const handleAddMember = (
+		accountId: string,
+		role: "owner" | "contributor",
+	) => {
 		const p = project();
 		if (!p) return;
 		try {
@@ -100,10 +103,30 @@ export const ProjectDetail = () => {
 				mutators.projectMembers.add({
 					projectId: p.id,
 					accountId,
+					role,
 				}),
 			);
 		} catch (err) {
 			handleMutationError(err, "add member");
+		}
+	};
+
+	const handleUpdateRole = (
+		memberId: string,
+		role: "owner" | "contributor",
+	) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projectMembers.updateRole({
+					id: memberId,
+					projectId: p.id,
+					role,
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "update member role");
 		}
 	};
 
@@ -213,6 +236,7 @@ export const ProjectDetail = () => {
 												isOwner={isOwner()}
 												currentUserId={zero().userID}
 												onAddMember={handleAddMember}
+												onUpdateRole={handleUpdateRole}
 												onRemoveMember={handleRemoveMember}
 											/>
 										</Match>
