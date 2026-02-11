@@ -245,22 +245,24 @@ export const SettingsTab = (props: SettingsTabProps) => {
 												</Flex>
 											</Dropdown.Trigger>
 											<Dropdown.Content width="sm">
-												<Dropdown.GroupLabel>Role</Dropdown.GroupLabel>
-												<Dropdown.Item
-													onSelect={() =>
-														props.onUpdateRole(member.id, oppositeRole())
-													}
-													disabled={isOnlyOwner()}
-												>
-													<Flex align="center" gap="sm">
-														<Text size="sm">Make {oppositeRole()}</Text>
-														<Show when={isOnlyOwner()}>
-															<Text size="xs" color="muted">
-																(last owner)
-															</Text>
-														</Show>
-													</Flex>
-												</Dropdown.Item>
+												<Dropdown.Group>
+													<Dropdown.GroupLabel>Role</Dropdown.GroupLabel>
+													<Dropdown.Item
+														onSelect={() =>
+															props.onUpdateRole(member.id, oppositeRole())
+														}
+														disabled={isOnlyOwner()}
+													>
+														<Flex align="center" gap="sm">
+															<Text size="sm">Make {oppositeRole()}</Text>
+															<Show when={isOnlyOwner()}>
+																<Text size="xs" color="muted">
+																	(last owner)
+																</Text>
+															</Show>
+														</Flex>
+													</Dropdown.Item>
+												</Dropdown.Group>
 												<Dropdown.Separator />
 												<Dropdown.Item
 													onSelect={() =>
