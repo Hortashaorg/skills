@@ -61,7 +61,8 @@ routes/projects/
 └── sections/
     ├── BoardSection.tsx    (kanban board, search, card management)
     ├── DiscussionTab.tsx   (project-level comment threads)
-    └── Header.tsx          (project header with upvote)
+    ├── Header.tsx          (project header with upvote)
+    └── SettingsTab.tsx     (member management)
 ```
 
 Remaining:
@@ -84,10 +85,13 @@ The side panel becomes the decision record for each package/ecosystem in the pro
 
 *Phase 5: Member Management (Settings Tab)*
 
-- [ ] List current members with roles
-- [ ] Invite members by username search
+- [x] List current members with roles (avatar, name, role badge)
+- [x] Add members by username search (owner only)
+- [x] Remove members (owner only, cannot remove last owner)
+- [x] `projectMembers` mutators: add, remove (auth via projectMembers table)
+- [x] Filter deleted users from account search queries
+- [ ] Replace direct add with invite system (send invite, user accepts/declines)
 - [ ] Role assignment: owner (full control), contributor (edit/comment)
-- [ ] Remove members (owner only)
 - [ ] Contributors can: move cards, add notes, comment
 - [ ] Contributors cannot: delete project, manage members, add/remove status columns
 

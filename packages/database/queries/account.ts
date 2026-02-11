@@ -26,6 +26,7 @@ export const recent = defineQuery(
 	z.object({ limit: z.number().default(20) }),
 	({ args }) => {
 		return zql.account
+			.where("deletedAt", "IS", null)
 			.orderBy("createdAt", "desc")
 			.orderBy("id", "asc")
 			.limit(args.limit)
@@ -38,6 +39,7 @@ export const exactMatch = defineQuery(
 	z.object({ name: z.string() }),
 	({ args }) => {
 		return zql.account
+			.where("deletedAt", "IS", null)
 			.where("name", "ILIKE", args.name)
 			.related("contributionScore");
 	},
@@ -50,7 +52,7 @@ export const search = defineQuery(
 		limit: z.number().default(50),
 	}),
 	({ args }) => {
-		let q = zql.account;
+		let q = zql.account.where("deletedAt", "IS", null);
 
 		if (args.query?.trim()) {
 			q = q.where("name", "ILIKE", `%${args.query.trim()}%`);

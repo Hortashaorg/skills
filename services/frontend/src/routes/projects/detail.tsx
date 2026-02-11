@@ -18,6 +18,7 @@ import { BoardSection } from "./sections/BoardSection";
 import { DiscussionTab } from "./sections/DiscussionTab";
 import { Header } from "./sections/Header";
 import { ProjectDetailSkeleton } from "./sections/ProjectDetailSkeleton";
+import { SettingsTab } from "./sections/SettingsTab";
 
 export const ProjectDetail = () => {
 	const params = useParams<{ id: string; tab?: string }>();
@@ -88,6 +89,37 @@ export const ProjectDetail = () => {
 		ecosystems: ecosystemSearch,
 		projects: projectSearch,
 		users: userSearch,
+	};
+
+	// Member management
+	const handleAddMember = (accountId: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projectMembers.add({
+					projectId: p.id,
+					accountId,
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "add member");
+		}
+	};
+
+	const handleRemoveMember = (memberId: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projectMembers.remove({
+					id: memberId,
+					projectId: p.id,
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "remove member");
+		}
 	};
 
 	// Inline edit save
@@ -176,13 +208,13 @@ export const ProjectDetail = () => {
 										</Match>
 
 										<Match when={tab() === "settings"}>
-											<Card padding="lg">
-												<Stack spacing="sm" align="center">
-													<Text color="muted">
-														Project settings are coming soon.
-													</Text>
-												</Stack>
-											</Card>
+											<SettingsTab
+												members={p().projectMembers ?? []}
+												isOwner={isOwner()}
+												currentUserId={zero().userID}
+												onAddMember={handleAddMember}
+												onRemoveMember={handleRemoveMember}
+											/>
 										</Match>
 									</Switch>
 								</>

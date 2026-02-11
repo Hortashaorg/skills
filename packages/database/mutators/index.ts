@@ -9,6 +9,7 @@ import * as notificationsMutators from "./notifications.ts";
 import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packagesMutators from "./packages.ts";
 import * as projectEcosystemsMutators from "./project-ecosystems.ts";
+import * as projectMembersMutators from "./project-members.ts";
 import * as projectPackagesMutators from "./project-packages.ts";
 import * as projectStatusesMutators from "./project-statuses.ts";
 import * as projectUpvotesMutators from "./project-upvotes.ts";
@@ -77,7 +78,10 @@ export const mutators = defineMutators({
 		remove: projectEcosystemsMutators.remove,
 		updateStatus: projectEcosystemsMutators.updateStatus,
 	},
-	projectMembers: {},
+	projectMembers: {
+		add: projectMembersMutators.add,
+		remove: projectMembersMutators.remove,
+	},
 	projectUpvotes: {
 		create: projectUpvotesMutators.create,
 		remove: projectUpvotesMutators.remove,
