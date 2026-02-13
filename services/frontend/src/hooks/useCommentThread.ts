@@ -2,7 +2,12 @@ import { mutators, queries, useQuery, useZero } from "@package/database/client";
 import { createSignal } from "solid-js";
 import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
 
-export type EntityType = "package" | "ecosystem" | "project";
+export type EntityType =
+	| "package"
+	| "ecosystem"
+	| "project"
+	| "projectPackage"
+	| "projectEcosystem";
 
 export interface UseCommentThreadOptions {
 	entityType: EntityType;
@@ -70,12 +75,38 @@ export function useCommentThread(options: () => UseCommentThreadOptions) {
 			: null;
 	});
 
+	const [projectPackageThread, projectPackageThreadResult] = useQuery(() => {
+		const { entityType, entityId } = options();
+		return entityType === "projectPackage"
+			? queries.threads.byProjectPackageId({ projectPackageId: entityId })
+			: null;
+	});
+
+	const [projectEcosystemThread, projectEcosystemThreadResult] = useQuery(
+		() => {
+			const { entityType, entityId } = options();
+			return entityType === "projectEcosystem"
+				? queries.threads.byProjectEcosystemId({
+						projectEcosystemId: entityId,
+					})
+				: null;
+		},
+	);
+
 	// Combine thread results
-	const thread = () => packageThread() ?? ecosystemThread() ?? projectThread();
+	const thread = () =>
+		packageThread() ??
+		ecosystemThread() ??
+		projectThread() ??
+		projectPackageThread() ??
+		projectEcosystemThread();
 	const threadResult = () => {
 		const { entityType } = options();
 		if (entityType === "package") return packageThreadResult();
 		if (entityType === "ecosystem") return ecosystemThreadResult();
+		if (entityType === "projectPackage") return projectPackageThreadResult();
+		if (entityType === "projectEcosystem")
+			return projectEcosystemThreadResult();
 		return projectThreadResult();
 	};
 

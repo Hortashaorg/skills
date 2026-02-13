@@ -111,6 +111,8 @@ export const queries = defineQueries({
 		byPackageId: threadsQueries.byPackageId,
 		byEcosystemId: threadsQueries.byEcosystemId,
 		byProjectId: threadsQueries.byProjectId,
+		byProjectPackageId: threadsQueries.byProjectPackageId,
+		byProjectEcosystemId: threadsQueries.byProjectEcosystemId,
 	},
 	comments: {
 		rootsByThreadId: commentsQueries.rootsByThreadId,

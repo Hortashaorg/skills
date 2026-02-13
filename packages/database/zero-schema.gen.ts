@@ -691,12 +691,12 @@ const projectEcosystemsTable = {
       type: "string",
       optional: false,
       customType: null as unknown as
-        | "approved"
-        | "rejected"
         | "aware"
         | "evaluating"
         | "trialing"
+        | "approved"
         | "adopted"
+        | "rejected"
         | "phasing_out"
         | "dropped",
     },
@@ -781,12 +781,12 @@ const projectPackagesTable = {
       type: "string",
       optional: false,
       customType: null as unknown as
-        | "approved"
-        | "rejected"
         | "aware"
         | "evaluating"
         | "trialing"
+        | "approved"
         | "adopted"
+        | "rejected"
         | "phasing_out"
         | "dropped",
     },
@@ -824,12 +824,12 @@ const projectStatusesTable = {
       type: "string",
       optional: false,
       customType: null as unknown as
-        | "approved"
-        | "rejected"
         | "aware"
         | "evaluating"
         | "trialing"
+        | "approved"
         | "adopted"
+        | "rejected"
         | "phasing_out"
         | "dropped",
     },
@@ -1022,7 +1022,7 @@ const suggestionsTable = {
     status: {
       type: "string",
       optional: false,
-      customType: null as unknown as "pending" | "approved" | "rejected",
+      customType: null as unknown as "approved" | "rejected" | "pending",
     },
     createdAt: {
       type: "number",
@@ -1108,6 +1108,18 @@ const threadsTable = {
       optional: true,
       customType: null as unknown as string,
       serverName: "project_id",
+    },
+    projectPackageId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "project_package_id",
+    },
+    projectEcosystemId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "project_ecosystem_id",
     },
     createdAt: {
       type: "number",
@@ -1764,6 +1776,22 @@ const threadsRelationships = {
       sourceField: ["projectId"],
       destField: ["id"],
       destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  projectPackage: [
+    {
+      sourceField: ["projectPackageId"],
+      destField: ["id"],
+      destSchema: "projectPackages",
+      cardinality: "one",
+    },
+  ],
+  projectEcosystem: [
+    {
+      sourceField: ["projectEcosystemId"],
+      destField: ["id"],
+      destSchema: "projectEcosystems",
       cardinality: "one",
     },
   ],

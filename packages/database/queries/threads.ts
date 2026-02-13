@@ -32,6 +32,26 @@ export const byProjectId = defineQuery(
 	},
 );
 
+export const byProjectPackageId = defineQuery(
+	z.object({ projectPackageId: z.string() }),
+	({ args }) => {
+		return zql.threads
+			.where("projectPackageId", args.projectPackageId)
+			.related("comments", (c) => c.related("author").related("replies"))
+			.one();
+	},
+);
+
+export const byProjectEcosystemId = defineQuery(
+	z.object({ projectEcosystemId: z.string() }),
+	({ args }) => {
+		return zql.threads
+			.where("projectEcosystemId", args.projectEcosystemId)
+			.related("comments", (c) => c.related("author").related("replies"))
+			.one();
+	},
+);
+
 export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.threads
 		.where("id", args.id)

@@ -316,6 +316,13 @@
       "when": 1770560748267,
       "tag": "0044_flawless_miek",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1771010787127,
+      "tag": "0045_curved_lilandra",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,13 @@ import { defineMutator } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
 import { newRecord, now } from "./helpers.ts";
 
-const entityTypeSchema = z.enum(["package", "ecosystem", "project"]);
+const entityTypeSchema = z.enum([
+	"package",
+	"ecosystem",
+	"project",
+	"projectPackage",
+	"projectEcosystem",
+]);
 
 export const create = defineMutator(
 	z
@@ -71,6 +77,30 @@ export const create = defineMutator(
 				);
 				if (!entity) throw new Error("Project not found");
 			}
+		} else if (args.entityType === "projectPackage") {
+			const thread = await tx.run(
+				zql.threads.one().where("projectPackageId", args.entityId),
+			);
+			if (thread) {
+				threadId = thread.id;
+			} else {
+				const entity = await tx.run(
+					zql.projectPackages.one().where("id", args.entityId),
+				);
+				if (!entity) throw new Error("Project package not found");
+			}
+		} else if (args.entityType === "projectEcosystem") {
+			const thread = await tx.run(
+				zql.threads.one().where("projectEcosystemId", args.entityId),
+			);
+			if (thread) {
+				threadId = thread.id;
+			} else {
+				const entity = await tx.run(
+					zql.projectEcosystems.one().where("id", args.entityId),
+				);
+				if (!entity) throw new Error("Project ecosystem not found");
+			}
 		}
 
 		// Create thread if it doesn't exist
@@ -81,6 +111,10 @@ export const create = defineMutator(
 				packageId: args.entityType === "package" ? args.entityId : null,
 				ecosystemId: args.entityType === "ecosystem" ? args.entityId : null,
 				projectId: args.entityType === "project" ? args.entityId : null,
+				projectPackageId:
+					args.entityType === "projectPackage" ? args.entityId : null,
+				projectEcosystemId:
+					args.entityType === "projectEcosystem" ? args.entityId : null,
 				createdAt: threadRecord.now,
 			});
 			threadId = threadRecord.id;

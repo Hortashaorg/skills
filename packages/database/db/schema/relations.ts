@@ -326,6 +326,14 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
 		fields: [threads.projectId],
 		references: [projects.id],
 	}),
+	projectPackage: one(projectPackages, {
+		fields: [threads.projectPackageId],
+		references: [projectPackages.id],
+	}),
+	projectEcosystem: one(projectEcosystems, {
+		fields: [threads.projectEcosystemId],
+		references: [projectEcosystems.id],
+	}),
 	comments: many(comments),
 }));
 

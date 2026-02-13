@@ -7,9 +7,9 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { account } from "./account.ts";
-import { ecosystems } from "./ecosystems.ts";
+import { ecosystems, projectEcosystems } from "./ecosystems.ts";
 import { packages } from "./packages.ts";
-import { projects } from "./projects.ts";
+import { projectPackages, projects } from "./projects.ts";
 
 export const threads = pgTable(
 	"threads",
@@ -18,12 +18,16 @@ export const threads = pgTable(
 		packageId: uuid().references(() => packages.id),
 		ecosystemId: uuid().references(() => ecosystems.id),
 		projectId: uuid().references(() => projects.id),
+		projectPackageId: uuid().references(() => projectPackages.id),
+		projectEcosystemId: uuid().references(() => projectEcosystems.id),
 		createdAt: timestamp().notNull(),
 	},
 	(table) => [
 		index("idx_threads_package_id").on(table.packageId),
 		index("idx_threads_ecosystem_id").on(table.ecosystemId),
 		index("idx_threads_project_id").on(table.projectId),
+		index("idx_threads_project_package_id").on(table.projectPackageId),
+		index("idx_threads_project_ecosystem_id").on(table.projectEcosystemId),
 	],
 );
 
