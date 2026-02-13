@@ -5,15 +5,9 @@ import { Show } from "solid-js";
 import { Text } from "@/components/primitives/text";
 import { Card } from "@/components/ui/card";
 import { UpvoteButton } from "@/components/ui/upvote-button";
-import { getDisplayName } from "@/lib/account";
-
-type ProjectWithPackages = Row["projects"] & {
-	account?: Row["account"] | null;
-};
 
 interface ProjectCardProps {
-	project: ProjectWithPackages;
-	showAuthor?: boolean;
+	project: Row["projects"];
 	upvoteCount?: number;
 	isUpvoted?: boolean;
 	upvoteDisabled?: boolean;
@@ -45,37 +39,9 @@ export const ProjectCard = (props: ProjectCardProps) => {
 				</Show>
 
 				<div class="flex items-end justify-between gap-2 mt-auto pt-1">
-					<div class="flex items-center gap-1.5 min-w-0">
-						<Show
-							when={props.showAuthor}
-							fallback={
-								<Text size="xs" color="muted">
-									{formatShortDate(props.project.updatedAt)}
-								</Text>
-							}
-						>
-							<Text size="xs" color="muted">
-								by{" "}
-								<Show
-									when={props.project.account?.id}
-									fallback={
-										<span>{getDisplayName(props.project.account)}</span>
-									}
-								>
-									{(accountId) => (
-										<A
-											href={`/user/${accountId()}`}
-											class="pointer-events-auto hover:text-brand dark:hover:text-brand-dark transition-colors"
-											onClick={(e) => e.stopPropagation()}
-											data-author
-										>
-											{getDisplayName(props.project.account)}
-										</A>
-									)}
-								</Show>
-							</Text>
-						</Show>
-					</div>
+					<Text size="xs" color="muted">
+						{formatShortDate(props.project.updatedAt)}
+					</Text>
 
 					<Show when={props.onUpvote}>
 						{(onUpvote) => (

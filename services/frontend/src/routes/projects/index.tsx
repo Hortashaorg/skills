@@ -273,7 +273,6 @@ const ProjectCardWrapper = (props: {
 	const card = (
 		<ProjectCard
 			project={props.project}
-			showAuthor
 			upvoteCount={upvote.upvoteCount()}
 			isUpvoted={upvote.isUpvoted()}
 			upvoteDisabled={upvote.isDisabled()}
