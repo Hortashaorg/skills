@@ -58,7 +58,7 @@ export const Header = (props: ProjectHeaderProps) => {
 									<button
 										type="button"
 										onClick={startEditing}
-										class="inline-flex items-center justify-center rounded-radius border border-outline-strong text-on-surface text-sm font-medium transition hover:border-primary hover:text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-outline-dark-strong dark:text-on-surface-dark dark:hover:border-primary-dark dark:hover:text-primary-dark dark:hover:bg-primary-dark/10 dark:focus-visible:outline-primary-dark aspect-square h-[34px]"
+										class="inline-flex items-center justify-center rounded-radius border border-outline-strong text-on-surface text-sm font-medium transition hover:border-primary hover:text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-outline-dark-strong dark:text-on-surface-dark dark:hover:border-primary-dark dark:hover:text-primary-dark dark:hover:bg-primary-dark/10 dark:focus-visible:outline-primary-dark aspect-square h-8.5"
 									>
 										<PencilIcon size="xs" />
 									</button>
@@ -107,14 +107,14 @@ export const Header = (props: ProjectHeaderProps) => {
 								type="button"
 								onClick={saveEditing}
 								disabled={!editName().trim()}
-								class="inline-flex items-center justify-center rounded-radius border border-primary bg-primary text-on-primary transition hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed dark:border-primary-dark dark:bg-primary-dark dark:text-on-primary-dark dark:hover:bg-primary-dark/90 dark:focus-visible:outline-primary-dark h-[34px] aspect-square"
+								class="inline-flex items-center justify-center rounded-radius border border-primary bg-primary text-on-primary transition hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed dark:border-primary-dark dark:bg-primary-dark dark:text-on-primary-dark dark:hover:bg-primary-dark/90 dark:focus-visible:outline-primary-dark h-8.5 aspect-square"
 							>
 								<CheckIcon size="xs" />
 							</button>
 							<button
 								type="button"
 								onClick={cancelEditing}
-								class="inline-flex items-center justify-center rounded-radius border border-outline-strong text-on-surface transition hover:border-danger hover:text-danger hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-outline-dark-strong dark:text-on-surface-dark dark:hover:border-danger-dark dark:hover:text-danger-dark dark:hover:bg-danger-dark/10 dark:focus-visible:outline-primary-dark h-[34px] aspect-square"
+								class="inline-flex items-center justify-center rounded-radius border border-outline-strong text-on-surface transition hover:border-danger hover:text-danger hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-outline-dark-strong dark:text-on-surface-dark dark:hover:border-danger-dark dark:hover:text-danger-dark dark:hover:bg-danger-dark/10 dark:focus-visible:outline-primary-dark h-8.5 aspect-square"
 							>
 								<XIcon size="xs" />
 							</button>
