@@ -21,6 +21,7 @@ import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
 interface DiscussionTabProps {
 	projectId: string;
 	search: EntitySearch;
+	isMember: boolean;
 }
 
 export const DiscussionTab = (props: DiscussionTabProps) => {
@@ -148,8 +149,8 @@ export const DiscussionTab = (props: DiscussionTabProps) => {
 		>
 			<CommentThread
 				comments={orderedComments()}
-				currentUserId={thread.currentUserId()}
-				currentUserName={thread.currentUserName()}
+				currentUserId={props.isMember ? thread.currentUserId() : undefined}
+				currentUserName={props.isMember ? thread.currentUserName() : undefined}
 				onCommentSubmit={thread.onSubmit}
 				onCommentEdit={thread.onEdit}
 				onCommentDelete={thread.onDelete}

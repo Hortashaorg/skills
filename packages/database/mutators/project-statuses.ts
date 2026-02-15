@@ -1,7 +1,7 @@
 import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
-import { newRecord, now } from "./helpers.ts";
+import { newRecord, now, requireProjectMember } from "./helpers.ts";
 
 export const add = defineMutator(
 	z.object({
@@ -18,16 +18,7 @@ export const add = defineMutator(
 		]),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to add a status column");
-		}
-
-		const project = await tx.run(
-			zql.projects.one().where("id", "=", args.projectId),
-		);
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to modify this project");
-		}
+		await requireProjectMember(tx, args.projectId, ctx.userID, "owner");
 
 		const existing = await tx.run(
 			zql.projectStatuses
@@ -69,16 +60,7 @@ export const remove = defineMutator(
 		projectId: z.string(),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to remove a status column");
-		}
-
-		const project = await tx.run(
-			zql.projects.one().where("id", "=", args.projectId),
-		);
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to modify this project");
-		}
+		await requireProjectMember(tx, args.projectId, ctx.userID, "owner");
 
 		await tx.mutate.projectStatuses.delete({ id: args.id });
 
@@ -96,16 +78,7 @@ export const swapPositions = defineMutator(
 		statusIdB: z.string(),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to reorder status columns");
-		}
-
-		const project = await tx.run(
-			zql.projects.one().where("id", "=", args.projectId),
-		);
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to modify this project");
-		}
+		await requireProjectMember(tx, args.projectId, ctx.userID, "owner");
 
 		const allStatuses = await tx.run(
 			zql.projectStatuses.where("projectId", args.projectId),

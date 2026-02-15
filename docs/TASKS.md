@@ -86,10 +86,13 @@ The side panel becomes the decision record for each package/ecosystem in the pro
 - [x] Remove members (owner only, cannot remove last owner)
 - [x] `projectMembers` mutators: add, remove (auth via projectMembers table)
 - [x] Filter deleted users from account search queries
-- [ ] Replace direct add with invite system (send invite, user accepts/declines)
-- [ ] Role assignment: owner (full control), contributor (edit/comment)
-- [ ] Contributors can: move cards, add notes, comment
-- [ ] Contributors cannot: delete project, manage members, add/remove status columns
+- [x] Role assignment: owners can promote/demote members
+- [x] Contributor permissions (enforced at mutator level, not just UI):
+  - Can: move cards, add cards, comment
+  - Cannot: delete project, manage members, add/remove status columns
+- [x] Cascade delete: removing a card from project deletes its thread and comments
+- [x] Comment permissions: project membership required to comment on project entities
+- [x] FK-safe cascade: replies deleted before root comments to respect foreign key constraints
 
 *Phase 6: Filtering & Views*
 

@@ -206,8 +206,12 @@ export const CardPanel = (props: CardPanelProps) => {
 						<CommentThread
 							compact
 							comments={thread.comments()}
-							currentUserId={thread.currentUserId()}
-							currentUserName={thread.currentUserName()}
+							currentUserId={
+								props.readonly ? undefined : thread.currentUserId()
+							}
+							currentUserName={
+								props.readonly ? undefined : thread.currentUserName()
+							}
 							onCommentSubmit={thread.onSubmit}
 							onCommentEdit={thread.onEdit}
 							onCommentDelete={thread.onDelete}

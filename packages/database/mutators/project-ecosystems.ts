@@ -1,7 +1,12 @@
 import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
-import { newRecord, now } from "./helpers.ts";
+import {
+	deleteThreadWithComments,
+	newRecord,
+	now,
+	requireProjectMember,
+} from "./helpers.ts";
 
 export const add = defineMutator(
 	z.object({
@@ -9,16 +14,7 @@ export const add = defineMutator(
 		ecosystemId: z.string(),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to add ecosystem to project");
-		}
-
-		const project = await tx.run(
-			zql.projects.one().where("id", "=", args.projectId),
-		);
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to modify this project");
-		}
+		await requireProjectMember(tx, args.projectId, ctx.userID);
 
 		const record = newRecord();
 
@@ -54,16 +50,7 @@ export const updateStatus = defineMutator(
 		]),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to update ecosystem status");
-		}
-
-		const project = await tx.run(
-			zql.projects.one().where("id", "=", args.projectId),
-		);
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to modify this project");
-		}
+		await requireProjectMember(tx, args.projectId, ctx.userID);
 
 		await tx.mutate.projectEcosystems.update({
 			id: args.id,
@@ -84,15 +71,15 @@ export const remove = defineMutator(
 		projectId: z.string(),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to remove ecosystem from project");
-		}
+		await requireProjectMember(tx, args.projectId, ctx.userID);
 
-		const project = await tx.run(
-			zql.projects.one().where("id", "=", args.projectId),
+		// Cascade delete thread and comments
+		const threads = await tx.run(
+			zql.threads.where("projectEcosystemId", args.id),
 		);
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to modify this project");
+		const thread = threads[0];
+		if (thread) {
+			await deleteThreadWithComments(tx, thread.id);
 		}
 
 		await tx.mutate.projectEcosystems.delete({ id: args.id });

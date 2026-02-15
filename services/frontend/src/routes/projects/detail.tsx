@@ -42,6 +42,12 @@ export const ProjectDetail = () => {
 			(m) => m.accountId === zero().userID && m.role === "owner",
 		);
 	};
+	const isMember = () => {
+		const p = project();
+		if (!p || !isLoggedIn()) return false;
+		const members = p.projectMembers ?? [];
+		return members.some((m) => m.accountId === zero().userID);
+	};
 
 	// Upvote
 	const userUpvote = createMemo(() => {
@@ -223,11 +229,19 @@ export const ProjectDetail = () => {
 
 									<Switch>
 										<Match when={tab() === "board"}>
-											<BoardSection project={p()} isOwner={isOwner()} />
+											<BoardSection
+												project={p()}
+												isOwner={isOwner()}
+												isMember={isMember()}
+											/>
 										</Match>
 
 										<Match when={tab() === "discussion"}>
-											<DiscussionTab projectId={p().id} search={entitySearch} />
+											<DiscussionTab
+												projectId={p().id}
+												search={entitySearch}
+												isMember={isMember()}
+											/>
 										</Match>
 
 										<Match when={tab() === "settings"}>

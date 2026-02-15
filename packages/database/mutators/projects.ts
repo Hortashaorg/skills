@@ -1,7 +1,12 @@
 import { z } from "@package/common";
 import { defineMutator } from "@rocicorp/zero";
 import { zql } from "../zero-schema.gen.ts";
-import { newRecord, now } from "./helpers.ts";
+import {
+	deleteThreadWithComments,
+	newRecord,
+	now,
+	requireProjectMember,
+} from "./helpers.ts";
 
 const DEFAULT_STATUSES = [
 	{ status: "evaluating" as const, position: 0 },
@@ -60,14 +65,7 @@ export const update = defineMutator(
 		description: z.string().max(500).optional(),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to update a project");
-		}
-
-		const project = await tx.run(zql.projects.one().where("id", "=", args.id));
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to update this project");
-		}
+		await requireProjectMember(tx, args.id, ctx.userID, "owner");
 
 		await tx.mutate.projects.update({
 			id: args.id,
@@ -85,20 +83,19 @@ export const remove = defineMutator(
 		id: z.string(),
 	}),
 	async ({ tx, args, ctx }) => {
-		if (ctx.userID === "anon") {
-			throw new Error("Must be logged in to delete a project");
-		}
+		await requireProjectMember(tx, args.id, ctx.userID, "owner");
 
-		const project = await tx.run(zql.projects.one().where("id", "=", args.id));
-		if (!project || project.accountId !== ctx.userID) {
-			throw new Error("Not authorized to delete this project");
-		}
-
-		// Delete associated records first (FK constraints)
+		// Delete threads and comments for all cards
 		const projectPackages = await tx.run(
 			zql.projectPackages.where("projectId", args.id),
 		);
 		for (const pp of projectPackages) {
+			const threads = await tx.run(
+				zql.threads.where("projectPackageId", pp.id),
+			);
+			for (const thread of threads) {
+				await deleteThreadWithComments(tx, thread.id);
+			}
 			await tx.mutate.projectPackages.delete({ id: pp.id });
 		}
 
@@ -106,7 +103,21 @@ export const remove = defineMutator(
 			zql.projectEcosystems.where("projectId", args.id),
 		);
 		for (const pe of projectEcosystems) {
+			const threads = await tx.run(
+				zql.threads.where("projectEcosystemId", pe.id),
+			);
+			for (const thread of threads) {
+				await deleteThreadWithComments(tx, thread.id);
+			}
 			await tx.mutate.projectEcosystems.delete({ id: pe.id });
+		}
+
+		// Delete project-level thread
+		const projectThreads = await tx.run(
+			zql.threads.where("projectId", args.id),
+		);
+		for (const thread of projectThreads) {
+			await deleteThreadWithComments(tx, thread.id);
 		}
 
 		const projectStatuses = await tx.run(

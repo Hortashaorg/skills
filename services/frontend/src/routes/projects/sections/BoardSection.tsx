@@ -33,6 +33,7 @@ const SEARCH_ECOSYSTEMS_PREFIX = "SEARCH_ECOSYSTEMS:";
 type BoardSectionProps = {
 	project: ProjectData;
 	isOwner: boolean;
+	isMember: boolean;
 };
 
 export const BoardSection = (props: BoardSectionProps) => {
@@ -436,7 +437,7 @@ export const BoardSection = (props: BoardSectionProps) => {
 
 	return (
 		<>
-			<Show when={props.isOwner}>
+			<Show when={props.isMember}>
 				<SearchInput
 					value={searchQuery()}
 					onValueChange={setSearchQuery}
@@ -453,7 +454,7 @@ export const BoardSection = (props: BoardSectionProps) => {
 					<Card padding="lg">
 						<Stack spacing="sm" align="center">
 							<Text color="muted">No packages or ecosystems added yet.</Text>
-							<Show when={props.isOwner}>
+							<Show when={props.isMember}>
 								<Text size="sm" color="muted">
 									Use the search above to add packages or ecosystems.
 								</Text>
@@ -464,16 +465,16 @@ export const BoardSection = (props: BoardSectionProps) => {
 			>
 				<KanbanBoard
 					columns={columns()}
-					readonly={!props.isOwner}
+					readonly={!props.isMember}
 					upvoteDisabled={isAnon()}
 					availableStatuses={availableStatuses()}
 					onCardMove={handleCardMove}
 					onCardClick={handleCardClick}
 					onUpvote={handleUpvote}
-					onRemove={props.isOwner ? handleRemove : undefined}
-					onMoveColumn={handleMoveColumn}
-					onAddStatus={handleAddStatus}
-					onRemoveColumn={handleRemoveColumn}
+					onRemove={props.isMember ? handleRemove : undefined}
+					onMoveColumn={props.isOwner ? handleMoveColumn : undefined}
+					onAddStatus={props.isOwner ? handleAddStatus : undefined}
+					onRemoveColumn={props.isOwner ? handleRemoveColumn : undefined}
 					ref={(el) => {
 						boardRef = el;
 					}}
@@ -487,7 +488,7 @@ export const BoardSection = (props: BoardSectionProps) => {
 						card={sel().card}
 						currentColumnId={sel().columnId}
 						columns={columns()}
-						readonly={!props.isOwner}
+						readonly={!props.isMember}
 						onStatusChange={handleCardMove}
 						onClose={() => setSelectedCard(null)}
 						ref={(el) => {

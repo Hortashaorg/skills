@@ -56,6 +56,7 @@ Building at `/projects-v2/[id]` alongside existing implementation.
 - [ ] Drop `accountId` from `projects` table (ownership fully in `projectMembers`)
 
 ### Future
+- [ ] Invite system (send invite, user accepts/declines — replaces direct add)
 - [ ] Custom status names (mapping to fixed types)
 - [ ] Link cards to comparisons
 - [ ] Package.json import
