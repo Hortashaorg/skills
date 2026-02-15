@@ -18,6 +18,7 @@ export const projects = pgTable("projects", {
 	accountId: uuid()
 		.notNull()
 		.references(() => account.id),
+	defaultStatus: projectStatusEnum(),
 	upvoteCount: integer().notNull(),
 	createdAt: timestamp().notNull(),
 	updatedAt: timestamp().notNull(),

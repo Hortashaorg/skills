@@ -13,6 +13,7 @@ import { usePackageSearch } from "@/hooks/packages/usePackageSearch";
 import { useProjectSearch } from "@/hooks/projects/useProjectSearch";
 import { useUserSearch } from "@/hooks/users/useUserSearch";
 import { Layout } from "@/layout/Layout";
+import { ALL_PROJECT_STATUSES } from "@/lib/constants";
 import { handleMutationError } from "@/lib/mutation-error";
 import { BoardSection } from "./sections/BoardSection";
 import { DiscussionTab } from "./sections/DiscussionTab";
@@ -168,6 +169,95 @@ export const ProjectDetail = () => {
 		}
 	};
 
+	// Status management
+	const activeStatuses = createMemo(() => {
+		const p = project();
+		if (!p) return [];
+		const statuses = [...(p.projectStatuses ?? [])].sort(
+			(a, b) => a.position - b.position,
+		);
+		const pkgs = p.projectPackages ?? [];
+		const ecos = p.projectEcosystems ?? [];
+		return statuses.map((s) => ({
+			id: s.id,
+			status: s.status,
+			position: s.position,
+			cardCount:
+				pkgs.filter((pp) => pp.status === s.status).length +
+				ecos.filter((pe) => pe.status === s.status).length,
+		}));
+	});
+
+	const availableStatuses = createMemo(() => {
+		const active = new Set(activeStatuses().map((s) => s.status));
+		return ALL_PROJECT_STATUSES.filter((s) => !active.has(s));
+	});
+
+	const handleSetDefaultStatus = (status: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projects.update({
+					id: p.id,
+					defaultStatus: status as Parameters<
+						typeof mutators.projects.update
+					>[0]["defaultStatus"],
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "set default status");
+		}
+	};
+
+	const handleAddStatus = (status: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projectStatuses.add({
+					projectId: p.id,
+					status: status as Parameters<
+						typeof mutators.projectStatuses.add
+					>[0]["status"],
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "add status");
+		}
+	};
+
+	const handleRemoveStatus = (statusRecordId: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projectStatuses.remove({
+					id: statusRecordId,
+					projectId: p.id,
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "remove status");
+		}
+	};
+
+	const handleSwapStatuses = (statusIdA: string, statusIdB: string) => {
+		const p = project();
+		if (!p) return;
+		try {
+			zero().mutate(
+				mutators.projectStatuses.swapPositions({
+					projectId: p.id,
+					statusIdA,
+					statusIdB,
+				}),
+			);
+		} catch (err) {
+			handleMutationError(err, "reorder statuses");
+		}
+	};
+
 	return (
 		<Layout>
 			<Container size="lg">
@@ -252,6 +342,13 @@ export const ProjectDetail = () => {
 												onAddMember={handleAddMember}
 												onUpdateRole={handleUpdateRole}
 												onRemoveMember={handleRemoveMember}
+												activeStatuses={activeStatuses()}
+												availableStatuses={availableStatuses()}
+												defaultStatus={p().defaultStatus ?? null}
+												onSetDefaultStatus={handleSetDefaultStatus}
+												onAddStatus={handleAddStatus}
+												onRemoveStatus={handleRemoveStatus}
+												onSwapStatuses={handleSwapStatuses}
 											/>
 										</Match>
 									</Switch>

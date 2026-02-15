@@ -58,6 +58,9 @@ Current: npm, jsr, nuget, dockerhub, homebrew (formulas), archlinux (official re
 - [ ] Surface errors to users - 16+ places log errors without user feedback
 - [ ] Add error type system for worker/backend (retry-able vs permanent)
 
+### Dependencies
+- [ ] Remove `as any` cast in `packages/database/server.ts` — `@rocicorp/zero` pins `postgres@3.4.7` while we need `3.4.8` for drizzle-kit migrations. When Zero upgrades its postgres dep, remove the cast at `zeroPostgresJS(schema, sqlClient as any)`
+
 ### Ops
 - [ ] Zero distributed deployment (retry - had issues with multi-replica setup)
 

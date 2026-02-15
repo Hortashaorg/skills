@@ -908,6 +908,20 @@ const projectsTable = {
       customType: null as unknown as string,
       serverName: "account_id",
     },
+    defaultStatus: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "approved"
+        | "adopted"
+        | "rejected"
+        | "phasing_out"
+        | "dropped",
+      serverName: "default_status",
+    },
     upvoteCount: {
       type: "number",
       optional: false,

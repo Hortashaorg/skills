@@ -63,15 +63,42 @@ export const update = defineMutator(
 		id: z.string(),
 		name: z.string().min(1).max(100).optional(),
 		description: z.string().max(500).optional(),
+		defaultStatus: z
+			.enum([
+				"aware",
+				"evaluating",
+				"trialing",
+				"approved",
+				"adopted",
+				"rejected",
+				"phasing_out",
+				"dropped",
+			])
+			.nullable()
+			.optional(),
 	}),
 	async ({ tx, args, ctx }) => {
 		await requireProjectMember(tx, args.id, ctx.userID, "owner");
+
+		if (args.defaultStatus) {
+			const active = await tx.run(
+				zql.projectStatuses
+					.where("projectId", args.id)
+					.where("status", args.defaultStatus),
+			);
+			if (active.length === 0) {
+				throw new Error("Default status must be an active status column");
+			}
+		}
 
 		await tx.mutate.projects.update({
 			id: args.id,
 			...(args.name !== undefined && { name: args.name }),
 			...(args.description !== undefined && {
 				description: args.description.trim() || null,
+			}),
+			...(args.defaultStatus !== undefined && {
+				defaultStatus: args.defaultStatus,
 			}),
 			updatedAt: now(),
 		});

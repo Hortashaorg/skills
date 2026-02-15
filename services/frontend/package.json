@@ -52,7 +52,7 @@
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.2",
 		"solid-js": "^1.9.11",
-		"tailwind-merge": "^3.4.0",
+		"tailwind-merge": "^3.4.1",
 		"tailwindcss-animate": "^1.0.7",
 		"unified": "^11.0.5"
 	}

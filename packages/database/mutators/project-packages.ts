@@ -6,6 +6,7 @@ import {
 	newRecord,
 	now,
 	requireProjectMember,
+	resolveDefaultStatus,
 } from "./helpers.ts";
 
 export const add = defineMutator(
@@ -17,12 +18,13 @@ export const add = defineMutator(
 		await requireProjectMember(tx, args.projectId, ctx.userID);
 
 		const record = newRecord();
+		const status = await resolveDefaultStatus(tx, args.projectId);
 
 		await tx.mutate.projectPackages.insert({
 			id: record.id,
 			projectId: args.projectId,
 			packageId: args.packageId,
-			status: "evaluating",
+			status,
 			createdAt: record.now,
 			updatedAt: record.now,
 		});

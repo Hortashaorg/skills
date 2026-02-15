@@ -62,6 +62,23 @@ export const remove = defineMutator(
 	async ({ tx, args, ctx }) => {
 		await requireProjectMember(tx, args.projectId, ctx.userID, "owner");
 
+		// If the removed status was the default, clear it
+		const statusRecords = await tx.run(
+			zql.projectStatuses.where("id", args.id),
+		);
+		const statusRecord = statusRecords[0];
+		if (statusRecord) {
+			const projects = await tx.run(zql.projects.where("id", args.projectId));
+			const project = projects[0];
+			if (project && project.defaultStatus === statusRecord.status) {
+				await tx.mutate.projects.update({
+					id: args.projectId,
+					defaultStatus: null,
+					updatedAt: now(),
+				});
+			}
+		}
+
 		await tx.mutate.projectStatuses.delete({ id: args.id });
 
 		await tx.mutate.projects.update({
