@@ -7,5 +7,7 @@ node_modules/
 storybook-static
 services/frontend/coverage
 
+*.tsbuildinfo
+
 # MCP config (contains secrets) - see .example files for structure
 .mcp.json

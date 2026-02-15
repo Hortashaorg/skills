@@ -1,3 +1,4 @@
+export { createProjectUpvote } from "./createProjectUpvote";
 export type {
 	UseAddToProjectOptions,
 	UseAddToProjectResult,

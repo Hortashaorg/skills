@@ -58,7 +58,7 @@ const configs: BreadcrumbConfig[] = [
 		],
 	},
 	{
-		pattern: /^\/projects\/([^/]+)$/,
+		pattern: /^\/projects\/([^/]+)(\/.*)?$/,
 		segments: [
 			{ label: "Home", href: "/" },
 			{ label: "Projects", href: "/projects" },

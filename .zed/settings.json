@@ -1,5 +1,29 @@
 {
 	"lsp": {
+		"vtsls": {
+			"initialization_options": {
+				"typescript": {
+					"tsdk": "node_modules/typescript/lib"
+				},
+				"vtsls": {
+					"autoUseWorkspaceTsdk": true
+				}
+			},
+			"settings": {
+				"vtsls": {
+					"autoUseWorkspaceTsdk": true
+				},
+				"typescript": {
+					"tsdk": "node_modules/typescript/lib",
+					"tsserver": {
+						"maxTsServerMemory": 8192
+					},
+					"preferences": {
+						"includePackageJsonAutoImports": "on"
+					}
+				}
+			}
+		},
 		"tailwindcss-language-server": {
 			"settings": {
 				"classFunctions": ["tw", "cva", "clsx", "cn"],
@@ -27,6 +51,13 @@
 			}
 		},
 		"TypeScript": {
+			"language_servers": [
+				"vtsls",
+				"!tsgo",
+				"!deno",
+				"!typescript-language-server",
+				"..."
+			],
 			"formatter": { "language_server": { "name": "biome" } },
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,
@@ -34,6 +65,13 @@
 			}
 		},
 		"TSX": {
+			"language_servers": [
+				"vtsls",
+				"!tsgo",
+				"!deno",
+				"!typescript-language-server",
+				"..."
+			],
 			"formatter": { "language_server": { "name": "biome" } },
 			"code_actions_on_format": {
 				"source.fixAll.biome": true,

@@ -59,6 +59,7 @@ export type CommentThreadProps = Omit<
 	byIds: EntityByIds;
 	/** Called when editor content changes (for entity token resolution in preview) */
 	onEditorContentChange?: (content: string) => void;
+	compact?: boolean;
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -97,6 +98,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 		"search",
 		"byIds",
 		"onEditorContentChange",
+		"compact",
 		"class",
 	]);
 
@@ -204,7 +206,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 				id={`comment-${itemProps.comment.id}`}
 				class="flex gap-3"
 			>
-				<div class="hidden sm:block">
+				<div class={local.compact ? "hidden" : "hidden sm:block"}>
 					<Show
 						when={itemProps.comment.author?.id}
 						fallback={
@@ -328,7 +330,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 						!isReplyingToThisThread()
 					}
 				>
-					<div class="mt-2 sm:ml-12">
+					<div class={local.compact ? "mt-2" : "mt-2 sm:ml-12"}>
 						<Button
 							variant="ghost"
 							size="sm"
@@ -341,7 +343,13 @@ export const CommentThread = (props: CommentThreadProps) => {
 
 				{/* Replies section - when showing */}
 				<Show when={showingReplies() || isReplyingToThisThread()}>
-					<div class="mt-4 pl-4 sm:pl-0 sm:ml-12 space-y-3 border-l-2 sm:border-l-0 border-outline/30 dark:border-outline-dark/30">
+					<div
+						class={
+							local.compact
+								? "mt-4 pl-4 space-y-3 border-l-2 border-outline/30 dark:border-outline-dark/30"
+								: "mt-4 pl-4 sm:pl-0 sm:ml-12 space-y-3 border-l-2 sm:border-l-0 border-outline/30 dark:border-outline-dark/30"
+						}
+					>
 						{/* Replies list */}
 						<For each={repliesData().replies}>
 							{(reply) => (
@@ -386,7 +394,7 @@ export const CommentThread = (props: CommentThreadProps) => {
 									});
 								}}
 							>
-								<div class="hidden sm:block">
+								<div class={local.compact ? "hidden" : "hidden sm:block"}>
 									<Avatar
 										initials={getInitials(local.currentUserName)}
 										size="sm"
@@ -420,11 +428,14 @@ export const CommentThread = (props: CommentThreadProps) => {
 	};
 
 	return (
-		<div class={cn("space-y-6", local.class)} {...others}>
+		<div
+			class={cn(local.compact ? "space-y-4" : "space-y-6", local.class)}
+			{...others}
+		>
 			{/* New comment input */}
 			<Show when={local.currentUserId}>
 				<div class="flex gap-3">
-					<div class="hidden sm:block">
+					<div class={local.compact ? "hidden" : "hidden sm:block"}>
 						<Avatar
 							initials={getInitials(local.currentUserName)}
 							size="md"

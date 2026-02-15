@@ -26,30 +26,33 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.projects
 		.where("id", args.id)
 		.related("projectPackages", (pp) =>
-			pp.related("package", (pkg) =>
-				pkg
-					.related("packageTags", (pt) => pt.related("tag"))
-					.related("upvotes"),
-			),
+			pp
+				.related("package", (pkg) =>
+					pkg
+						.related("packageTags", (pt) => pt.related("tag"))
+						.related("upvotes"),
+				)
+				.related("thread"),
 		)
 		.related("projectEcosystems", (pe) =>
-			pe.related("ecosystem", (eco) =>
-				eco
-					.related("ecosystemTags", (et) => et.related("tag"))
-					.related("upvotes"),
-			),
+			pe
+				.related("ecosystem", (eco) =>
+					eco
+						.related("ecosystemTags", (et) => et.related("tag"))
+						.related("upvotes"),
+				)
+				.related("thread"),
 		)
-		.related("account")
+		.related("projectStatuses")
+		.related("projectMembers", (pm) => pm.related("account"))
+		.related("upvotes")
 		.one();
 });
 
 export const byIds = defineQuery(
 	z.object({ ids: z.array(z.string()) }),
 	({ args }) => {
-		return zql.projects
-			.where("id", "IN", args.ids)
-			.related("account")
-			.related("projectPackages");
+		return zql.projects.where("id", "IN", args.ids).related("projectPackages");
 	},
 );
 
@@ -68,7 +71,6 @@ export const list = defineQuery(
 		return q
 			.orderBy("updatedAt", "desc")
 			.limit(args.limit)
-			.related("account")
 			.related("projectPackages");
 	},
 );
@@ -81,8 +83,8 @@ export const recent = defineQuery(
 			.orderBy("updatedAt", "desc")
 			.orderBy("id", "asc")
 			.limit(args.limit)
-			.related("account")
-			.related("projectPackages");
+			.related("projectPackages")
+			.related("upvotes");
 	},
 );
 
@@ -92,8 +94,8 @@ export const exactMatch = defineQuery(
 	({ args }) => {
 		return zql.projects
 			.where("name", "ILIKE", args.name)
-			.related("account")
-			.related("projectPackages");
+			.related("projectPackages")
+			.related("upvotes");
 	},
 );
 
@@ -114,8 +116,8 @@ export const search = defineQuery(
 			.orderBy("updatedAt", "desc")
 			.orderBy("name", "asc")
 			.limit(args.limit)
-			.related("account")
-			.related("projectPackages");
+			.related("projectPackages")
+			.related("upvotes");
 	},
 );
 
@@ -126,7 +128,6 @@ export const byAccountId = defineQuery(
 			.where("accountId", args.accountId)
 			.orderBy("updatedAt", "desc")
 			.limit(args.limit)
-			.related("projectPackages")
-			.related("account");
+			.related("projectPackages");
 	},
 );

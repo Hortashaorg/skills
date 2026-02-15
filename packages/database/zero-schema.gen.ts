@@ -687,15 +687,75 @@ const projectEcosystemsTable = {
       customType: null as unknown as string,
       serverName: "ecosystem_id",
     },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "approved"
+        | "adopted"
+        | "rejected"
+        | "phasing_out"
+        | "dropped",
+    },
     createdAt: {
       type: "number",
       optional: false,
       customType: null as unknown as number,
       serverName: "created_at",
     },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
   },
   primaryKey: ["id"],
   serverName: "project_ecosystems",
+} as const;
+const projectMembersTable = {
+  name: "projectMembers",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
+    role: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as "owner" | "contributor",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_members",
 } as const;
 const projectPackagesTable = {
   name: "projectPackages",
@@ -717,6 +777,103 @@ const projectPackagesTable = {
       customType: null as unknown as string,
       serverName: "package_id",
     },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "approved"
+        | "adopted"
+        | "rejected"
+        | "phasing_out"
+        | "dropped",
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_packages",
+} as const;
+const projectStatusesTable = {
+  name: "projectStatuses",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    status: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "approved"
+        | "adopted"
+        | "rejected"
+        | "phasing_out"
+        | "dropped",
+    },
+    position: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+    },
+    createdAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "created_at",
+    },
+    updatedAt: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "updated_at",
+    },
+  },
+  primaryKey: ["id"],
+  serverName: "project_statuses",
+} as const;
+const projectUpvotesTable = {
+  name: "projectUpvotes",
+  columns: {
+    id: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+    },
+    projectId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "project_id",
+    },
+    accountId: {
+      type: "string",
+      optional: false,
+      customType: null as unknown as string,
+      serverName: "account_id",
+    },
     createdAt: {
       type: "number",
       optional: false,
@@ -725,7 +882,7 @@ const projectPackagesTable = {
     },
   },
   primaryKey: ["id"],
-  serverName: "project_packages",
+  serverName: "project_upvotes",
 } as const;
 const projectsTable = {
   name: "projects",
@@ -750,6 +907,26 @@ const projectsTable = {
       optional: false,
       customType: null as unknown as string,
       serverName: "account_id",
+    },
+    defaultStatus: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as
+        | "aware"
+        | "evaluating"
+        | "trialing"
+        | "approved"
+        | "adopted"
+        | "rejected"
+        | "phasing_out"
+        | "dropped",
+      serverName: "default_status",
+    },
+    upvoteCount: {
+      type: "number",
+      optional: false,
+      customType: null as unknown as number,
+      serverName: "upvote_count",
     },
     createdAt: {
       type: "number",
@@ -859,7 +1036,7 @@ const suggestionsTable = {
     status: {
       type: "string",
       optional: false,
-      customType: null as unknown as "pending" | "approved" | "rejected",
+      customType: null as unknown as "approved" | "rejected" | "pending",
     },
     createdAt: {
       type: "number",
@@ -946,6 +1123,18 @@ const threadsTable = {
       customType: null as unknown as string,
       serverName: "project_id",
     },
+    projectPackageId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "project_package_id",
+    },
+    projectEcosystemId: {
+      type: "string",
+      optional: true,
+      customType: null as unknown as string,
+      serverName: "project_ecosystem_id",
+    },
     createdAt: {
       type: "number",
       optional: false,
@@ -977,6 +1166,14 @@ const accountRelationships = {
       sourceField: ["id"],
       destField: ["accountId"],
       destSchema: "ecosystemUpvotes",
+      cardinality: "many",
+    },
+  ],
+  projectUpvotes: [
+    {
+      sourceField: ["id"],
+      destField: ["accountId"],
+      destSchema: "projectUpvotes",
       cardinality: "many",
     },
   ],
@@ -1378,6 +1575,32 @@ const projectEcosystemsRelationships = {
       cardinality: "one",
     },
   ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["projectEcosystemId"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const projectMembersRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
+      cardinality: "one",
+    },
+  ],
 } as const;
 const projectPackagesRelationships = {
   project: [
@@ -1393,6 +1616,42 @@ const projectPackagesRelationships = {
       sourceField: ["packageId"],
       destField: ["id"],
       destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["projectPackageId"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const projectStatusesRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+} as const;
+const projectUpvotesRelationships = {
+  project: [
+    {
+      sourceField: ["projectId"],
+      destField: ["id"],
+      destSchema: "projects",
+      cardinality: "one",
+    },
+  ],
+  account: [
+    {
+      sourceField: ["accountId"],
+      destField: ["id"],
+      destSchema: "account",
       cardinality: "one",
     },
   ],
@@ -1419,6 +1678,30 @@ const projectsRelationships = {
       sourceField: ["id"],
       destField: ["projectId"],
       destSchema: "projectEcosystems",
+      cardinality: "many",
+    },
+  ],
+  projectStatuses: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectStatuses",
+      cardinality: "many",
+    },
+  ],
+  projectMembers: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectMembers",
+      cardinality: "many",
+    },
+  ],
+  upvotes: [
+    {
+      sourceField: ["id"],
+      destField: ["projectId"],
+      destSchema: "projectUpvotes",
       cardinality: "many",
     },
   ],
@@ -1526,6 +1809,22 @@ const threadsRelationships = {
       cardinality: "one",
     },
   ],
+  projectPackage: [
+    {
+      sourceField: ["projectPackageId"],
+      destField: ["id"],
+      destSchema: "projectPackages",
+      cardinality: "one",
+    },
+  ],
+  projectEcosystem: [
+    {
+      sourceField: ["projectEcosystemId"],
+      destField: ["id"],
+      destSchema: "projectEcosystems",
+      cardinality: "one",
+    },
+  ],
   comments: [
     {
       sourceField: ["id"],
@@ -1557,7 +1856,10 @@ export const schema = {
     packageUpvotes: packageUpvotesTable,
     packages: packagesTable,
     projectEcosystems: projectEcosystemsTable,
+    projectMembers: projectMembersTable,
     projectPackages: projectPackagesTable,
+    projectStatuses: projectStatusesTable,
+    projectUpvotes: projectUpvotesTable,
     projects: projectsTable,
     suggestionVotes: suggestionVotesTable,
     suggestions: suggestionsTable,
@@ -1581,7 +1883,10 @@ export const schema = {
     packageUpvotes: packageUpvotesRelationships,
     packages: packagesRelationships,
     projectEcosystems: projectEcosystemsRelationships,
+    projectMembers: projectMembersRelationships,
     projectPackages: projectPackagesRelationships,
+    projectStatuses: projectStatusesRelationships,
+    projectUpvotes: projectUpvotesRelationships,
     projects: projectsRelationships,
     suggestionVotes: suggestionVotesRelationships,
     suggestions: suggestionsRelationships,
@@ -1692,10 +1997,25 @@ export type ProjectEcosystem = Row<
   (typeof schema)["tables"]["projectEcosystems"]
 >;
 /**
+ * Represents a row from the "projectMembers" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type ProjectMember = Row<(typeof schema)["tables"]["projectMembers"]>;
+/**
  * Represents a row from the "projectPackages" table.
  * This type is auto-generated from your Drizzle schema definition.
  */
 export type ProjectPackage = Row<(typeof schema)["tables"]["projectPackages"]>;
+/**
+ * Represents a row from the "projectStatuses" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type ProjectStatus = Row<(typeof schema)["tables"]["projectStatuses"]>;
+/**
+ * Represents a row from the "projectUpvotes" table.
+ * This type is auto-generated from your Drizzle schema definition.
+ */
+export type ProjectUpvote = Row<(typeof schema)["tables"]["projectUpvotes"]>;
 /**
  * Represents a row from the "projects" table.
  * This type is auto-generated from your Drizzle schema definition.

@@ -24,12 +24,19 @@ import {
 	packageUpvotes,
 	tags,
 } from "./packages.ts";
-import { projectPackages, projects } from "./projects.ts";
+import {
+	projectMembers,
+	projectPackages,
+	projectStatuses,
+	projects,
+	projectUpvotes,
+} from "./projects.ts";
 
 export const accountRelations = relations(account, ({ many, one }) => ({
 	projects: many(projects),
 	upvotes: many(packageUpvotes),
 	ecosystemUpvotes: many(ecosystemUpvotes),
+	projectUpvotes: many(projectUpvotes),
 	suggestions: many(suggestions),
 	suggestionVotes: many(suggestionVotes),
 	contributionEvents: many(contributionEvents),
@@ -125,6 +132,9 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 	}),
 	projectPackages: many(projectPackages),
 	projectEcosystems: many(projectEcosystems),
+	projectStatuses: many(projectStatuses),
+	projectMembers: many(projectMembers),
+	upvotes: many(projectUpvotes),
 	thread: one(threads, {
 		fields: [projects.id],
 		references: [threads.projectId],
@@ -142,8 +152,44 @@ export const projectPackagesRelations = relations(
 			fields: [projectPackages.packageId],
 			references: [packages.id],
 		}),
+		thread: one(threads, {
+			fields: [projectPackages.id],
+			references: [threads.projectPackageId],
+		}),
 	}),
 );
+
+export const projectStatusesRelations = relations(
+	projectStatuses,
+	({ one }) => ({
+		project: one(projects, {
+			fields: [projectStatuses.projectId],
+			references: [projects.id],
+		}),
+	}),
+);
+
+export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
+	project: one(projects, {
+		fields: [projectMembers.projectId],
+		references: [projects.id],
+	}),
+	account: one(account, {
+		fields: [projectMembers.accountId],
+		references: [account.id],
+	}),
+}));
+
+export const projectUpvotesRelations = relations(projectUpvotes, ({ one }) => ({
+	project: one(projects, {
+		fields: [projectUpvotes.projectId],
+		references: [projects.id],
+	}),
+	account: one(account, {
+		fields: [projectUpvotes.accountId],
+		references: [account.id],
+	}),
+}));
 
 export const suggestionsRelations = relations(suggestions, ({ one, many }) => ({
 	package: one(packages, {
@@ -268,6 +314,10 @@ export const projectEcosystemsRelations = relations(
 			fields: [projectEcosystems.ecosystemId],
 			references: [ecosystems.id],
 		}),
+		thread: one(threads, {
+			fields: [projectEcosystems.id],
+			references: [threads.projectEcosystemId],
+		}),
 	}),
 );
 
@@ -283,6 +333,14 @@ export const threadsRelations = relations(threads, ({ one, many }) => ({
 	project: one(projects, {
 		fields: [threads.projectId],
 		references: [projects.id],
+	}),
+	projectPackage: one(projectPackages, {
+		fields: [threads.projectPackageId],
+		references: [projectPackages.id],
+	}),
+	projectEcosystem: one(projectEcosystems, {
+		fields: [threads.projectEcosystemId],
+		references: [projectEcosystems.id],
 	}),
 	comments: many(comments),
 }));

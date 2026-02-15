@@ -6,33 +6,61 @@
 
 ## Scope
 
-### Core (Existing)
+### Core (Existing - V1)
 - [x] Project CRUD (create, read, update, delete)
 - [x] Add packages to projects
 - [x] Add ecosystems to projects
 - [x] Public project sharing (URL)
 - [x] Group by tags view
 
-### Core (Kanban Rework)
-- [ ] Kanban board layout (status columns)
-- [ ] Drag-and-drop to change status
-- [ ] Status types (considering, using, deprecated, rejected)
-- [ ] Custom status names per project (mapping to fixed types)
-- [ ] Default statuses for new projects
-- [ ] Tag labels displayed on cards
-- [ ] Tag filtering
-- [ ] Tag-based ordering within columns
-- [ ] URL reflects filter state for sharing
-- [ ] Card expansion (notes, details) on click
+### V2 Rework (Parallel Development)
 
-### Core (Notes)
-- [ ] Notes on cards (plain text initially)
-- [ ] Note indicator icon on cards
+Building at `/projects-v2/[id]` alongside existing implementation.
+
+**Phase 1: Schema & Basic Kanban**
+- [ ] Schema: `projectStatusType` enum (`considering`, `using`, `deprecated`, `rejected`)
+- [ ] Schema: `projectMemberRole` enum (`owner`, `contributor`)
+- [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
+- [ ] Schema: `projectMembers` table (id, projectId, accountId, role)
+- [ ] Schema: Add `statusId`, `note`, `updatedAt` to `projectPackages`/`projectEcosystems`
+- [ ] Migration: Seed `projectMembers` owner row from `projects.accountId` for all existing projects
+- [ ] Migration: Seed default statuses for all existing projects
+- [ ] Default statuses + owner member on project creation (mutator)
+- [ ] V2 reads ownership from `projectMembers`, not `projects.accountId`
+- [ ] New route: `/projects-v2/[id]` (parallel development)
+- [ ] Kanban board layout (status columns)
+- [ ] Cards with tag labels
+- [ ] Drag-and-drop (desktop)
+- [ ] Dropdown status change (mobile)
+
+**Phase 2: Card Details Panel**
+- [ ] Side panel on card click (desktop: slide-in, mobile: full overlay)
+- [ ] View/edit decision note (markdown)
+- [ ] Status dropdown in panel
+- [ ] Link to package/ecosystem page
+
+**Phase 3: Discussion & Collaboration**
+- [ ] CommentThread per card
+- [ ] Comment/note indicators on cards
+- [ ] Roles: owner (full control), contributor (edit/comment)
+
+**Phase 4: Filtering & Polish**
+- [ ] Tag filtering
+- [ ] Shareable URLs with filter state
+- [ ] Search to add packages
+
+**Phase 5: Swap & Cleanup**
+- [ ] Compare with V1
+- [ ] Migrate routes
+- [ ] Remove V1 code
+- [ ] Drop `accountId` from `projects` table (ownership fully in `projectMembers`)
 
 ### Future
-- [ ] Rich text notes (when RichText feature is available)
+- [ ] Invite system (send invite, user accepts/declines — replaces direct add)
+- [ ] Custom status names (mapping to fixed types)
 - [ ] Link cards to comparisons
 - [ ] Package.json import
+- [ ] Status change history
 
 ---
 
@@ -183,7 +211,7 @@ projectPackages (existing, modified)
   - projectId: uuid (FK)
   - packageId: uuid (FK)
   - statusId: uuid (FK to projectStatuses) ← NEW
-  - note: text? ← NEW
+  - note: text? ← NEW (markdown decision note)
   - createdAt: timestamp
   - updatedAt: timestamp
 
@@ -192,9 +220,21 @@ projectEcosystems (same pattern)
   - projectId: uuid (FK)
   - ecosystemId: uuid (FK)
   - statusId: uuid (FK to projectStatuses) ← NEW
-  - note: text? ← NEW
+  - note: text? ← NEW (markdown decision note)
   - createdAt: timestamp
   - updatedAt: timestamp
+
+projectMembers ← NEW
+  - id: uuid
+  - projectId: uuid (FK)
+  - accountId: uuid (FK)
+  - role: enum - owner | contributor
+  - createdAt: timestamp
+  - updatedAt: timestamp
+
+commentThreads (existing, extended)
+  - entityType now includes: 'projectPackage' | 'projectEcosystem'
+  - Enables per-card discussions
 ```
 
 ### Default Statuses
@@ -208,11 +248,39 @@ New projects get one status per type:
 | Phasing Out | deprecated |
 | Rejected | rejected |
 
-Users can rename these. Adding/removing statuses TBD.
+### Roles
+
+| Role | Permissions |
+|------|-------------|
+| **Owner** | Full control, manage members, delete project |
+| **Contributor** | Add/remove items, change statuses, edit notes, comment |
+
+All projects are public (anyone can view). Roles control who can edit.
 
 ---
 
 ## Additional Notes
+
+### Migration Strategy
+
+**Ownership migration (`projects.accountId` → `projectMembers`):**
+
+The V1 `projects` table has `accountId` directly on it. V2 introduces `projectMembers` with roles. Since V1 and V2 coexist during parallel development, we migrate ownership in two steps:
+
+1. **Phase 1:** Create `projectMembers` table. Seed an `owner` row for every existing project from `projects.accountId`. Keep `accountId` on `projects` — V1 still reads it.
+2. **Phase 5:** Once V2 is live and all ownership reads come from `projectMembers`, drop `accountId` from `projects`.
+
+During the overlap period, project creation mutators must write to **both** `projects.accountId` (for V1) and `projectMembers` (for V2) to keep them in sync.
+
+**Schema additions are additive and nullable:**
+
+All new columns (`statusId`, `note`, `updatedAt` on join tables) are nullable. V1 code never reads them, so existing functionality is unaffected. No breaking changes until Phase 5 cleanup.
+
+**Seed data in migration:**
+
+Drizzle generates DDL only. The migration SQL must be manually extended with DML to:
+- Insert `projectMembers` owner rows from `projects.accountId`
+- Insert default `projectStatuses` (Evaluating, Using, Phasing Out, Rejected) for each existing project
 
 ### Design Principles
 
@@ -221,18 +289,41 @@ Users can rename these. Adding/removing statuses TBD.
 - **Stay in context** - Clicking cards expands details, doesn't navigate away
 - **Consistent with site** - Cards look similar to elsewhere, but interaction differs in project context
 - **Mobile-first interactions** - No hover dependencies
+- **Collaboration-ready** - Teams can document stacks together
 
 ### Decided
 
 - **Layout:** Kanban board with status columns (not tag grouping as primary)
 - **Tags:** Labels on cards, filtering/ordering, not structural grouping
-- **Drag-and-drop:** Primary interaction for changing status
+- **Drag-and-drop:** Primary interaction for changing status (desktop)
+- **Card click:** Opens side panel (desktop: slide-in from right, mobile: full overlay)
+- **Discussion:** Per-card comments using existing CommentThread
+- **Collaboration:** Owner/Contributor roles, all projects public
+- **Development approach:** Build V2 at `/projects-v2/[id]`, compare, then swap
 
-### Open Questions
+### Card UI
 
-**Expand behavior:** When clicking a card, does it:
-- Expand inline (accordion style)?
-- Open a side panel?
-- Open a modal?
+Cards display:
+- Package/ecosystem name
+- Brief description (truncated)
+- Tags as badges
+- Registry badge
+- Note indicator (📝) if has decision note
+- Comment count (💬 3) if has discussion
+- Upvote count from the package
 
-**History tracking:** Do we track status changes over time? (Adds complexity, maybe future)
+### Side Panel Contents
+
+When card is clicked:
+- Package/ecosystem name and description
+- Status dropdown (change status without dragging)
+- Decision note (markdown editor)
+- Discussion thread (CommentThread component)
+- Link to full package/ecosystem page
+
+### Future Considerations
+
+- Custom status names (mapping to fixed types for analytics)
+- Status change history/timeline
+- Project-level description/README
+- Invite flow for contributors

@@ -10,7 +10,7 @@
 		"@package/common": "workspace:*",
 		"@package/database": "workspace:*",
 		"@package/instrumentation": "workspace:*",
-		"@types/node": "^25.1.0",
+		"@types/node": "^25.2.3",
 		"ky": "^1.14.3"
 	}
 }

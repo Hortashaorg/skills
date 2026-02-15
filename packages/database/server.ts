@@ -41,7 +41,8 @@ export const db = drizzle(sqlClient, {
 // Export schema tables for bulk operations
 export { dbSchema };
 
-export const dbProvider = zeroPostgresJS(schema, sqlClient);
+// biome-ignore lint/suspicious/noExplicitAny: postgres version mismatch with @rocicorp/zero
+export const dbProvider = zeroPostgresJS(schema, sqlClient as any);
 
 // Shared account operations
 export {

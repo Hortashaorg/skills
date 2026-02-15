@@ -17,7 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { createUrlStringSignal } from "@/hooks/createUrlSignal";
-import { type Project, useProjectSearch } from "@/hooks/projects";
+import {
+	createProjectUpvote,
+	type Project,
+	useProjectSearch,
+} from "@/hooks/projects";
 import { Layout } from "@/layout/Layout";
 import {
 	BACK_TO_TOP_SCROLL_THRESHOLD,
@@ -264,7 +268,17 @@ const ProjectCardWrapper = (props: {
 	project: Project;
 	isExactMatch?: boolean;
 }) => {
-	const card = <ProjectCard project={props.project} showAuthor />;
+	const upvote = createProjectUpvote(() => props.project);
+
+	const card = (
+		<ProjectCard
+			project={props.project}
+			upvoteCount={upvote.upvoteCount()}
+			isUpvoted={upvote.isUpvoted()}
+			upvoteDisabled={upvote.isDisabled()}
+			onUpvote={upvote.toggle}
+		/>
+	);
 
 	if (props.isExactMatch) {
 		return (

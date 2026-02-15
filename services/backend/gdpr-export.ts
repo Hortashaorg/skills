@@ -6,7 +6,7 @@ import { getAuthContext } from "./util.ts";
 const logger = createLogger("gdpr-export");
 
 // Tables with user data (update when adding new user-related tables):
-// - account, projects, projectPackages, packageUpvotes
+// - account, projects, projectUpvotes, projectMembers, projectPackages, packageUpvotes
 // - suggestions, suggestionVotes, contributionEvents, contributionScores, notifications
 
 export const handleGdprExport = async (c: Context) => {
@@ -40,6 +40,18 @@ export const handleGdprExport = async (c: Context) => {
 						.from(dbSchema.projectPackages)
 						.where(inArray(dbSchema.projectPackages.projectId, projectIds))
 				: [];
+
+		// Project upvotes
+		const projectUpvotes = await db
+			.select()
+			.from(dbSchema.projectUpvotes)
+			.where(eq(dbSchema.projectUpvotes.accountId, userId));
+
+		// Project members
+		const projectMembers = await db
+			.select()
+			.from(dbSchema.projectMembers)
+			.where(eq(dbSchema.projectMembers.accountId, userId));
 
 		// Package upvotes
 		const upvotes = await db
@@ -81,6 +93,8 @@ export const handleGdprExport = async (c: Context) => {
 			exportedAt: new Date().toISOString(),
 			account: account ?? null,
 			projects,
+			projectUpvotes,
+			projectMembers,
 			projectPackages,
 			upvotes,
 			suggestions,

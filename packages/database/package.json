@@ -5,13 +5,13 @@
 	"scripts": {
 		"typecheck": "tsc",
 		"generate": "drizzle-kit generate",
-		"migrate": "drizzle-kit migrate",
+		"migrate": "drizzle-kit migrate && node scripts/seed-project-defaults.ts",
 		"zero": "drizzle-zero generate --format"
 	},
 	"author": "Martin Eide",
 	"devDependencies": {
-		"@types/node": "^25.1.0",
-		"drizzle-kit": "^0.31.8"
+		"@types/node": "^25.2.3",
+		"drizzle-kit": "^0.31.9"
 	},
 	"exports": {
 		"./client": "./client.ts",
@@ -21,10 +21,10 @@
 	},
 	"dependencies": {
 		"@package/common": "workspace:*",
-		"@rocicorp/zero": "^0.25.11",
+		"@rocicorp/zero": "^0.25.12",
 		"drizzle-orm": "^0.45.1",
 		"drizzle-zero": "0.17.3",
 		"jose": "^6.1.3",
-		"postgres": "3.4.7"
+		"postgres": "3.4.8"
 	}
 }

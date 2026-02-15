@@ -292,4 +292,36 @@ export const ChecklistIcon = (props: IconComponentProps) => {
 	);
 };
 
+export const MessageIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Comments"} {...others}>
+			<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+		</Icon>
+	);
+};
+
+export const LayoutGridIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Grid view"} {...others}>
+			<rect width="7" height="7" x="3" y="3" rx="1" />
+			<rect width="7" height="7" x="14" y="3" rx="1" />
+			<rect width="7" height="7" x="14" y="14" rx="1" />
+			<rect width="7" height="7" x="3" y="14" rx="1" />
+		</Icon>
+	);
+};
+
+export const ListIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "List view"} {...others}>
+			<path d="M3 12h18" />
+			<path d="M3 18h18" />
+			<path d="M3 6h18" />
+		</Icon>
+	);
+};
+
 export type { IconComponentProps };

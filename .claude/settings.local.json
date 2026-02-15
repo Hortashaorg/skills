@@ -1,4 +1,7 @@
 {
 	"enableAllProjectMcpServers": true,
-	"enabledMcpjsonServers": ["grafana"]
+	"enabledMcpjsonServers": ["grafana"],
+	"permissions": {
+		"allow": []
+	}
 }

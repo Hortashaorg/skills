@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ALTER COLUMN "upvote_count" DROP DEFAULT;

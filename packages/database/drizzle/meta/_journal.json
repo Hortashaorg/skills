@@ -281,6 +281,55 @@
       "when": 1769962716617,
       "tag": "0039_supreme_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1770492367755,
+      "tag": "0040_jittery_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1770492511071,
+      "tag": "0041_soft_king_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1770554740556,
+      "tag": "0042_third_crusher_hogan",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1770560667505,
+      "tag": "0043_marvelous_romulus",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1770560748267,
+      "tag": "0044_flawless_miek",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1771010787127,
+      "tag": "0045_curved_lilandra",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1771168150189,
+      "tag": "0046_dusty_namora",
+      "breakpoints": true
     }
   ]
 }

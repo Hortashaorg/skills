@@ -58,3 +58,19 @@ export const notificationTypeEnum = pgEnum("notification_type", [
 	"suggestion_approved",
 	"suggestion_rejected",
 ]);
+
+export const projectStatusEnum = pgEnum("project_status", [
+	"aware",
+	"evaluating",
+	"trialing",
+	"approved",
+	"adopted",
+	"rejected",
+	"phasing_out",
+	"dropped",
+]);
+
+export const projectMemberRoleEnum = pgEnum("project_member_role", [
+	"owner",
+	"contributor",
+]);

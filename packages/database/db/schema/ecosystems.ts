@@ -8,6 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { account } from "./account.ts";
+import { projectStatusEnum } from "./enums.ts";
 import { packages, tags } from "./packages.ts";
 import { projects } from "./projects.ts";
 
@@ -73,7 +74,9 @@ export const projectEcosystems = pgTable(
 		ecosystemId: uuid()
 			.notNull()
 			.references(() => ecosystems.id),
+		status: projectStatusEnum().notNull(),
 		createdAt: timestamp().notNull(),
+		updatedAt: timestamp().notNull(),
 	},
 	(table) => [
 		unique().on(table.projectId, table.ecosystemId),

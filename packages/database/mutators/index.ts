@@ -9,7 +9,10 @@ import * as notificationsMutators from "./notifications.ts";
 import * as packageUpvotesMutators from "./package-upvotes.ts";
 import * as packagesMutators from "./packages.ts";
 import * as projectEcosystemsMutators from "./project-ecosystems.ts";
+import * as projectMembersMutators from "./project-members.ts";
 import * as projectPackagesMutators from "./project-packages.ts";
+import * as projectStatusesMutators from "./project-statuses.ts";
+import * as projectUpvotesMutators from "./project-upvotes.ts";
 import * as projectsMutators from "./projects.ts";
 import * as suggestionVotesMutators from "./suggestion-votes.ts";
 import * as suggestionsMutators from "./suggestions.ts";
@@ -41,6 +44,7 @@ export const mutators = defineMutators({
 	projectPackages: {
 		add: projectPackagesMutators.add,
 		remove: projectPackagesMutators.remove,
+		updateStatus: projectPackagesMutators.updateStatus,
 	},
 	suggestions: {
 		create: suggestionsMutators.create,
@@ -72,6 +76,21 @@ export const mutators = defineMutators({
 	projectEcosystems: {
 		add: projectEcosystemsMutators.add,
 		remove: projectEcosystemsMutators.remove,
+		updateStatus: projectEcosystemsMutators.updateStatus,
+	},
+	projectMembers: {
+		add: projectMembersMutators.add,
+		updateRole: projectMembersMutators.updateRole,
+		remove: projectMembersMutators.remove,
+	},
+	projectUpvotes: {
+		create: projectUpvotesMutators.create,
+		remove: projectUpvotesMutators.remove,
+	},
+	projectStatuses: {
+		add: projectStatusesMutators.add,
+		remove: projectStatusesMutators.remove,
+		swapPositions: projectStatusesMutators.swapPositions,
 	},
 	threads: {},
 	comments: {

@@ -4,22 +4,49 @@
 
 ---
 
-## Sprint 14: Projects Kanban Rework
+## Sprint 15: Post-Deploy Cleanup & Polish
 
-See [Feature-Projects.md](./Feature-Projects.md) for full spec.
+**Projects Cleanup (requires Sprint 14 production deployment first):**
+- [ ] Remove `scripts/seed-project-defaults.ts` and revert `migrate` script to plain `drizzle-kit migrate`
+- [ ] Drop `accountId` from `projects` table (migration + remove column from schema)
+- [ ] Update all code reading `projects.accountId` to use `projectMembers` table
+- [ ] Clean up unused files (mock-data.ts, etc.)
 
-- [ ] Integrate CommentThread on project pages
+**Bug Fixes & Polish:**
+- [ ] Code module: fix dark mode color contrast for language dropdown
+- [ ] Entity module: add keyboard shortcut (evaluate Ctrl+2 or alternative)
+- [ ] Bold/Italic toggle: Ctrl+B/Ctrl+I should unwrap if already inside markup
+- [ ] Entity token regex: validate UUID format, don't style invalid `$$type:notauuid` syntax
+- [ ] Form inputs: auto-focus on modal/dialog open
+- [ ] Keyboard navigation: audit tab order across flows
+- [ ] Mobile toolbar: handle overflow (collapse menu, scrollable, or priority icons)
+- [ ] Mobile entity popover: prevent browser context menu on long-press
+- [ ] Editor state: fix text disappearing on tab switch (consider localStorage drafts)
+- [ ] Loading states: investigate pages stuck in loading after navigation
+- [ ] Entity tokens: wait for Zero fetch before rendering (shows ID until data loads)
 
-- [ ] Schema: `projectStatuses` table (id, projectId, name, type, position)
-- [ ] Schema: Add `statusId`, `note` to `projectPackages` and `projectEcosystems`
-- [ ] Default statuses on project creation
-- [ ] Kanban board layout (status columns)
-- [ ] Drag-and-drop between columns
-- [ ] Mobile: dropdown fallback for status change
-- [ ] Tag labels on cards
-- [ ] Tag filtering
-- [ ] Card expansion (notes, details)
-- [ ] Shareable URLs with filter state
+**Architecture: Hook + Component Composability:**
+- [ ] Audit and reorganize hooks by domain (search, byId, byIds, mutations, UI state)
+- [ ] Standardize hook return signatures (data, isLoading, isError, isEmpty patterns)
+- [ ] Components receive resolved data, hooks own loading/error states
+- [ ] Extract reusable "data container" patterns (handle loading/error/empty uniformly)
+- [ ] Document hook composition patterns in CLAUDE.md
+
+**UX Polish:**
+- [ ] Copy/Share: one-click copy markdown reference (`$$package:id`) or URL to clipboard
+- [ ] Share menu on entities (package, ecosystem, project, user, comment)
+- [ ] Toast feedback on copy actions
+- [ ] Breadcrumb consistency across all detail pages
+- [ ] Empty states: helpful messaging + suggested actions (not just "No results")
+- [ ] Skeleton loading consistency (same patterns everywhere)
+- [ ] Optimistic UI for upvotes/mutations (instant feedback before sync)
+- [ ] Search: recent searches or suggestions when empty
+- [ ] Keyboard shortcuts help modal (Ctrl+? or similar)
+- [ ] Responsive typography audit (readable on all screen sizes)
+- [ ] Hover states consistency (interactive elements should all feel clickable)
+- [ ] Error boundaries with friendly recovery UI (not blank screens)
+- [ ] Offline indicator when Zero disconnects
+- [ ] Documentation audit: review and update all docs/ files to match current implementation
 
 ---
 
@@ -30,6 +57,37 @@ See [BACKLOG.md](./BACKLOG.md) for full list.
 ---
 
 ## Completed (Previous Sprints)
+
+### Sprint 14: Projects Kanban Rework
+
+**Kanban Board:**
+- Full kanban board with drag-and-drop, status columns, horizontal scroll
+- Card side panel with status dropdown, comment threads, clickable titles
+- Unified search to add packages and ecosystems
+- Status column management: add/remove/reorder (owner only)
+- Inline editing: project name/description
+
+**Tabbed Page Structure:**
+- Board, Discussion, Settings tabs with URL-driven state
+- Project upvotes, `ProjectCard` on browse page
+- Extracted sub-components: kanban-card-item, kanban-column-header, add-status-popover
+
+**Member Management:**
+- Owner/contributor roles with permission enforcement at mutator level
+- Add/remove members, role promotion/demotion
+- Cascade delete: cards → threads → comments (FK-safe ordering)
+- Comment permissions: project membership required
+
+**Views & Grouping:**
+- List view with collapsible sections, reusing KanbanCardItem
+- View switcher (Kanban/List) and group-by toggle (Status/Tags)
+- URL-driven view state (`?view=list&group=tag`)
+- Tag grouping is read-only (no drag between tags)
+
+**Settings:**
+- Default status for new cards (configurable per project)
+- Status column management from Settings tab (add/remove/reorder)
+- `resolveDefaultStatus` helper with server-side validation
 
 ### Sprint 13: User Profiles & Comments Expansion
 
