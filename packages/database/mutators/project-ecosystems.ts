@@ -79,8 +79,7 @@ export const remove = defineMutator(
 		const threads = await tx.run(
 			zql.threads.where("projectEcosystemId", args.id),
 		);
-		const thread = threads[0];
-		if (thread) {
+		for (const thread of threads) {
 			await deleteThreadWithComments(tx, thread.id);
 		}
 
