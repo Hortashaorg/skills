@@ -18,6 +18,6 @@
 			"@sb/*": ["./.storybook/*"]
 		}
 	},
-	"exclude": ["dist"],
+	"exclude": ["dist", "node_modules"],
 	"extends": "../../tsconfig.json"
 }

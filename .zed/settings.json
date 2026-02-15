@@ -1,5 +1,20 @@
 {
 	"lsp": {
+		"vtsls": {
+			"settings": {
+				"vtsls": {
+					"autoUseWorkspaceTsdk": true
+				},
+				"typescript": {
+					"tsserver": {
+						"maxTsServerMemory": 8192
+					},
+					"preferences": {
+						"includePackageJsonAutoImports": "on"
+					}
+				}
+			}
+		},
 		"tailwindcss-language-server": {
 			"settings": {
 				"classFunctions": ["tw", "cva", "clsx", "cn"],

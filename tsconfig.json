@@ -28,7 +28,8 @@
 		"useUnknownInCatchVariables": true,
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
-		"moduleResolution": "nodenext",
-		"module": "NodeNext"
-	}
+		"moduleResolution": "bundler",
+		"module": "ESNext"
+	},
+	"exclude": ["node_modules", "dist", "**/node_modules"]
 }
