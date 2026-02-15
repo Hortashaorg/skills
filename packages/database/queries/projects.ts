@@ -26,18 +26,22 @@ export const byId = defineQuery(z.object({ id: z.string() }), ({ args }) => {
 	return zql.projects
 		.where("id", args.id)
 		.related("projectPackages", (pp) =>
-			pp.related("package", (pkg) =>
-				pkg
-					.related("packageTags", (pt) => pt.related("tag"))
-					.related("upvotes"),
-			),
+			pp
+				.related("package", (pkg) =>
+					pkg
+						.related("packageTags", (pt) => pt.related("tag"))
+						.related("upvotes"),
+				)
+				.related("thread"),
 		)
 		.related("projectEcosystems", (pe) =>
-			pe.related("ecosystem", (eco) =>
-				eco
-					.related("ecosystemTags", (et) => et.related("tag"))
-					.related("upvotes"),
-			),
+			pe
+				.related("ecosystem", (eco) =>
+					eco
+						.related("ecosystemTags", (et) => et.related("tag"))
+						.related("upvotes"),
+				)
+				.related("thread"),
 		)
 		.related("projectStatuses")
 		.related("projectMembers", (pm) => pm.related("account"))

@@ -12,6 +12,7 @@ export {
 	FolderIcon,
 	GlobeIcon,
 	MenuIcon,
+	MessageIcon,
 	MoonIcon,
 	PackageIcon,
 	PencilIcon,

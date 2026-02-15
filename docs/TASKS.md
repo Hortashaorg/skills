@@ -72,16 +72,12 @@ Remaining:
 
 The side panel becomes the decision record for each package/ecosystem in the project.
 
-- [ ] Link to full package/ecosystem page from panel
-- [ ] Decision note: markdown editor (per projectPackage/projectEcosystem)
-  - Schema: add `note` text column to `projectPackages` and `projectEcosystems`
-  - View/edit with MarkdownInput in the panel
-- [ ] Simple flat comment thread per card (no nesting)
+- [x] Link to full package/ecosystem page from panel (clickable title in SidePanel)
+- [x] Simple flat comment thread per card (no nesting)
   - Schema: thread per projectPackage/projectEcosystem (new thread type or reuse existing)
   - Lightweight discussion about this specific decision
   - No reply nesting — keeps it focused on "why did we pick/drop this?"
-- [ ] Note indicator on kanban cards (small icon when note exists)
-- [ ] Comment count indicator on kanban cards
+- [x] Comment indicator on kanban cards (icon when discussion exists)
 
 *Phase 5: Member Management (Settings Tab)*
 

@@ -152,6 +152,10 @@ export const projectPackagesRelations = relations(
 			fields: [projectPackages.packageId],
 			references: [packages.id],
 		}),
+		thread: one(threads, {
+			fields: [projectPackages.id],
+			references: [threads.projectPackageId],
+		}),
 	}),
 );
 
@@ -309,6 +313,10 @@ export const projectEcosystemsRelations = relations(
 		ecosystem: one(ecosystems, {
 			fields: [projectEcosystems.ecosystemId],
 			references: [ecosystems.id],
+		}),
+		thread: one(threads, {
+			fields: [projectEcosystems.id],
+			references: [threads.projectEcosystemId],
 		}),
 	}),
 );

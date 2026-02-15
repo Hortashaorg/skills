@@ -1561,6 +1561,14 @@ const projectEcosystemsRelationships = {
       cardinality: "one",
     },
   ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["projectEcosystemId"],
+      destSchema: "threads",
+      cardinality: "one",
+    },
+  ],
 } as const;
 const projectMembersRelationships = {
   project: [
@@ -1594,6 +1602,14 @@ const projectPackagesRelationships = {
       sourceField: ["packageId"],
       destField: ["id"],
       destSchema: "packages",
+      cardinality: "one",
+    },
+  ],
+  thread: [
+    {
+      sourceField: ["id"],
+      destField: ["projectPackageId"],
+      destSchema: "threads",
       cardinality: "one",
     },
   ],

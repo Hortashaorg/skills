@@ -74,6 +74,7 @@ export const BoardSection = (props: BoardSectionProps) => {
 				registry: pkg.registry,
 				upvoteCount: pkg.upvotes?.length ?? 0,
 				isUpvoted: pkg.upvotes?.some((u) => u.accountId === userId) ?? false,
+				hasComments: !!pp.thread,
 			};
 
 			const existing = columnMap.get(status) ?? [];
@@ -96,8 +97,10 @@ export const BoardSection = (props: BoardSectionProps) => {
 				description: eco.description ?? undefined,
 				tags: tags as string[],
 				kind: "ecosystem",
+				slug: eco.slug,
 				upvoteCount: eco.upvotes?.length ?? 0,
 				isUpvoted: eco.upvotes?.some((u) => u.accountId === userId) ?? false,
+				hasComments: !!pe.thread,
 			};
 
 			const existing = columnMap.get(status) ?? [];

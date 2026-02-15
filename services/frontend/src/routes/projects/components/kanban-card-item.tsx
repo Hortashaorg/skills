@@ -1,4 +1,5 @@
 import { For, Show } from "solid-js";
+import { MessageIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { Badge } from "@/components/ui/badge";
@@ -117,16 +118,24 @@ export const KanbanCardItem = (props: KanbanCardItemProps) => {
 							</Text>
 						</Show>
 					</div>
-					{/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation wrapper, not interactive */}
-					{/* biome-ignore lint/a11y/noStaticElementInteractions: stopPropagation wrapper, not interactive */}
-					<div class="shrink-0" onClick={(e) => e.stopPropagation()}>
-						<UpvoteButton
-							count={props.card.upvoteCount}
-							isUpvoted={props.card.isUpvoted}
-							disabled={props.upvoteDisabled}
-							onClick={() => props.onUpvote?.(props.card)}
-							size="sm"
-						/>
+					<div class="flex items-center gap-1.5 shrink-0">
+						<Show when={props.card.hasComments}>
+							<MessageIcon
+								size="xs"
+								class="text-on-surface-muted dark:text-on-surface-dark-muted"
+							/>
+						</Show>
+						{/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation wrapper, not interactive */}
+						{/* biome-ignore lint/a11y/noStaticElementInteractions: stopPropagation wrapper, not interactive */}
+						<div onClick={(e) => e.stopPropagation()}>
+							<UpvoteButton
+								count={props.card.upvoteCount}
+								isUpvoted={props.card.isUpvoted}
+								disabled={props.upvoteDisabled}
+								onClick={() => props.onUpvote?.(props.card)}
+								size="sm"
+							/>
+						</div>
 					</div>
 				</div>
 			</Card>

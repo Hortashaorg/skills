@@ -8,8 +8,10 @@ export type KanbanCard = {
 	tags: string[];
 	kind: "package" | "ecosystem";
 	registry?: string;
+	slug?: string;
 	upvoteCount: number;
 	isUpvoted: boolean;
+	hasComments: boolean;
 };
 
 export type KanbanColumn = {

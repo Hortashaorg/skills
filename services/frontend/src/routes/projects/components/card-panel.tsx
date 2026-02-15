@@ -19,6 +19,7 @@ import { useCommentThread, useReplies } from "@/hooks/useCommentThread";
 import { useUserByIds } from "@/hooks/users/useUserByIds";
 import { useUserSearch } from "@/hooks/users/useUserSearch";
 import { MAX_REPLIES_PER_THREAD } from "@/lib/constants";
+import { buildPackageUrl } from "@/lib/url";
 import type { KanbanCard, KanbanColumn } from "../types";
 
 type CardPanelProps = {
@@ -123,6 +124,11 @@ export const CardPanel = (props: CardPanelProps) => {
 			open={true}
 			onClose={props.onClose}
 			title={props.card.name}
+			titleHref={
+				props.card.kind === "package"
+					? buildPackageUrl(props.card.registry ?? "", props.card.name)
+					: `/ecosystem/${encodeURIComponent(props.card.slug ?? props.card.name)}`
+			}
 			ref={props.ref}
 		>
 			<Stack spacing="lg">

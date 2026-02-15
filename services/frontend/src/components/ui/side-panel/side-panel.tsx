@@ -1,5 +1,6 @@
+import { A } from "@solidjs/router";
 import { cva, type VariantProps } from "class-variance-authority";
-import { type JSX, onCleanup, onMount, splitProps } from "solid-js";
+import { type JSX, onCleanup, onMount, Show, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 import { Heading } from "@/components/primitives/heading";
 import { XIcon } from "@/components/primitives/icon";
@@ -45,6 +46,8 @@ export type SidePanelProps = {
 	side?: "left" | "right";
 	/** Panel heading, also used as accessible label */
 	title: string;
+	/** Optional link for the title (makes title clickable) */
+	titleHref?: string;
 	/** Panel content */
 	children?: JSX.Element;
 	/** Additional CSS classes for the panel container */
@@ -59,6 +62,7 @@ export const SidePanel = (props: SidePanelProps) => {
 		"onClose",
 		"side",
 		"title",
+		"titleHref",
 		"children",
 		"class",
 		"ref",
@@ -91,7 +95,16 @@ export const SidePanel = (props: SidePanelProps) => {
 				{...others}
 			>
 				<div class="flex items-start justify-between gap-4 border-b border-outline dark:border-outline-dark p-4">
-					<Heading level="h2">{local.title}</Heading>
+					<Show
+						when={local.titleHref}
+						fallback={<Heading level="h2">{local.title}</Heading>}
+					>
+						{(href) => (
+							<A href={href()} class="hover:underline">
+								<Heading level="h2">{local.title}</Heading>
+							</A>
+						)}
+					</Show>
 					<button
 						type="button"
 						onClick={local.onClose}
