@@ -301,4 +301,27 @@ export const MessageIcon = (props: IconComponentProps) => {
 	);
 };
 
+export const LayoutGridIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "Grid view"} {...others}>
+			<rect width="7" height="7" x="3" y="3" rx="1" />
+			<rect width="7" height="7" x="14" y="3" rx="1" />
+			<rect width="7" height="7" x="14" y="14" rx="1" />
+			<rect width="7" height="7" x="3" y="14" rx="1" />
+		</Icon>
+	);
+};
+
+export const ListIcon = (props: IconComponentProps) => {
+	const [local, others] = splitProps(props, ["title"]);
+	return (
+		<Icon title={local.title ?? "List view"} {...others}>
+			<path d="M3 12h18" />
+			<path d="M3 18h18" />
+			<path d="M3 6h18" />
+		</Icon>
+	);
+};
+
 export type { IconComponentProps };

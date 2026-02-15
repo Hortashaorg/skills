@@ -11,6 +11,8 @@ export {
 	ExternalLinkIcon,
 	FolderIcon,
 	GlobeIcon,
+	LayoutGridIcon,
+	ListIcon,
 	MenuIcon,
 	MessageIcon,
 	MoonIcon,

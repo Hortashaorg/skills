@@ -5,12 +5,13 @@ import {
 	type queries,
 	useZero,
 } from "@package/database/client";
-import { useNavigate } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import { createMemo, createSignal, Show } from "solid-js";
 import {
 	SearchInput,
 	type SearchResultItem,
 } from "@/components/composite/search-input";
+import { LayoutGridIcon, ListIcon } from "@/components/primitives/icon";
 import { Stack } from "@/components/primitives/stack";
 import { Text } from "@/components/primitives/text";
 import { AlertDialog } from "@/components/ui/alert-dialog";
@@ -20,9 +21,11 @@ import { usePackageSearch } from "@/hooks/packages/usePackageSearch";
 import { createClickOutside } from "@/hooks/useClickOutside";
 import { useModalState } from "@/hooks/useModalState";
 import { ALL_PROJECT_STATUSES, PROJECT_STATUS_LABELS } from "@/lib/constants";
+import { groupByTags } from "@/lib/group-by-tags";
 import { handleMutationError } from "@/lib/mutation-error";
 import { CardPanel } from "../components/card-panel";
 import { KanbanBoard } from "../components/kanban-board";
+import { type ListGroup, ListView } from "../components/list-view";
 import type { KanbanCard, KanbanColumn } from "../types";
 
 type ProjectData = NonNullable<QueryRowType<typeof queries.projects.byId>>;
@@ -36,10 +39,25 @@ type BoardSectionProps = {
 	isMember: boolean;
 };
 
+type ViewMode = "kanban" | "list";
+type GroupBy = "status" | "tag";
+
 export const BoardSection = (props: BoardSectionProps) => {
 	const zero = useZero();
 	const navigate = useNavigate();
 	const isAnon = () => zero().userID === "anon";
+
+	// View state from URL search params
+	const [searchParams, setSearchParams] = useSearchParams();
+	const viewMode = (): ViewMode =>
+		searchParams.view === "list" ? "list" : "kanban";
+	const groupBy = (): GroupBy =>
+		searchParams.group === "tag" ? "tag" : "status";
+
+	const setViewMode = (mode: ViewMode) =>
+		setSearchParams({ view: mode === "kanban" ? undefined : mode });
+	const setGroupBy = (group: GroupBy) =>
+		setSearchParams({ group: group === "status" ? undefined : group });
 
 	// Column derivation from project statuses
 	const sortedStatuses = createMemo(() => {
@@ -53,19 +71,20 @@ export const BoardSection = (props: BoardSectionProps) => {
 		return ALL_PROJECT_STATUSES.filter((s) => !active.has(s as ProjectStatus));
 	});
 
-	const columns = createMemo((): KanbanColumn[] => {
+	// Flat list of all cards with status
+	type CardWithStatus = KanbanCard & { status: ProjectStatus };
+	const cards = createMemo((): CardWithStatus[] => {
 		const userId = zero().userID;
-		const columnMap = new Map<ProjectStatus, KanbanCard[]>();
+		const result: CardWithStatus[] = [];
 
 		for (const pp of props.project.projectPackages ?? []) {
-			const status = pp.status as ProjectStatus;
 			const pkg = pp.package;
 			if (!pkg) continue;
 
 			const tags =
 				pkg.packageTags?.map((pt) => pt.tag?.name).filter(Boolean) ?? [];
 
-			const card: KanbanCard = {
+			result.push({
 				id: pp.id,
 				entityId: pkg.id,
 				name: pkg.name,
@@ -76,22 +95,18 @@ export const BoardSection = (props: BoardSectionProps) => {
 				upvoteCount: pkg.upvotes?.length ?? 0,
 				isUpvoted: pkg.upvotes?.some((u) => u.accountId === userId) ?? false,
 				hasComments: !!pp.thread,
-			};
-
-			const existing = columnMap.get(status) ?? [];
-			existing.push(card);
-			columnMap.set(status, existing);
+				status: pp.status as ProjectStatus,
+			});
 		}
 
 		for (const pe of props.project.projectEcosystems ?? []) {
-			const status = pe.status as ProjectStatus;
 			const eco = pe.ecosystem;
 			if (!eco) continue;
 
 			const tags =
 				eco.ecosystemTags?.map((et) => et.tag?.name).filter(Boolean) ?? [];
 
-			const card: KanbanCard = {
+			result.push({
 				id: pe.id,
 				entityId: eco.id,
 				name: eco.name,
@@ -102,20 +117,71 @@ export const BoardSection = (props: BoardSectionProps) => {
 				upvoteCount: eco.upvotes?.length ?? 0,
 				isUpvoted: eco.upvotes?.some((u) => u.accountId === userId) ?? false,
 				hasComments: !!pe.thread,
-			};
+				status: pe.status as ProjectStatus,
+			});
+		}
 
-			const existing = columnMap.get(status) ?? [];
+		return result;
+	});
+
+	// Group cards by status into kanban columns
+	const columns = createMemo((): KanbanColumn[] => {
+		const cardsByStatus = new Map<ProjectStatus, KanbanCard[]>();
+		for (const card of cards()) {
+			const existing = cardsByStatus.get(card.status) ?? [];
 			existing.push(card);
-			columnMap.set(status, existing);
+			cardsByStatus.set(card.status, existing);
 		}
 
 		return sortedStatuses().map((ps) => ({
 			id: ps.status as ProjectStatus,
 			statusRecordId: ps.id,
 			label: PROJECT_STATUS_LABELS[ps.status as ProjectStatus] ?? ps.status,
-			cards: columnMap.get(ps.status as ProjectStatus) ?? [],
+			cards: cardsByStatus.get(ps.status as ProjectStatus) ?? [],
 		}));
 	});
+
+	// Group cards by tag
+	const tagGroups = createMemo((): ListGroup[] => {
+		const { groups, sortedTags, uncategorized } = groupByTags(cards(), (card) =>
+			card.tags.map((name) => ({ tag: { name } })),
+		);
+		const result: ListGroup[] = sortedTags.map((tag) => ({
+			id: `tag:${tag}`,
+			label: tag,
+			cards: groups[tag] ?? [],
+		}));
+		if (uncategorized.length > 0) {
+			result.push({
+				id: "tag:uncategorized",
+				label: "Untagged",
+				cards: uncategorized,
+			});
+		}
+		return result;
+	});
+
+	// Unified groups for list view
+	const groups = createMemo((): ListGroup[] => {
+		if (groupBy() === "tag") return tagGroups();
+		return columns().map((col) => ({
+			id: col.id,
+			label: col.label,
+			cards: col.cards,
+		}));
+	});
+
+	// Tag groups shaped as KanbanColumn[] for kanban + tag view
+	const tagColumnsAsKanban = createMemo((): KanbanColumn[] =>
+		tagGroups().map((g) => ({
+			id: g.id as ProjectStatus,
+			label: g.label,
+			cards: g.cards,
+		})),
+	);
+
+	const isTagGrouping = () => groupBy() === "tag";
+	const hasCards = () => cards().length > 0 || columns().length > 0;
 
 	// Card selection + side panel
 	type SelectedCard = { card: KanbanCard; columnId: string };
@@ -437,19 +503,78 @@ export const BoardSection = (props: BoardSectionProps) => {
 
 	return (
 		<>
-			<Show when={props.isMember}>
-				<SearchInput
-					value={searchQuery()}
-					onValueChange={setSearchQuery}
-					results={searchResults()}
-					isLoading={packageSearch.isLoading() || ecosystemSearch.isLoading()}
-					onSelect={handleSearchSelect}
-					placeholder="Search packages or ecosystems to add..."
-				/>
-			</Show>
+			{/* Toolbar: search + view controls */}
+			<div class="flex flex-wrap items-center gap-3">
+				<Show when={props.isMember}>
+					<div class="min-w-48 max-w-sm flex-1">
+						<SearchInput
+							value={searchQuery()}
+							onValueChange={setSearchQuery}
+							results={searchResults()}
+							isLoading={
+								packageSearch.isLoading() || ecosystemSearch.isLoading()
+							}
+							onSelect={handleSearchSelect}
+							placeholder="Add packages or ecosystems..."
+						/>
+					</div>
+				</Show>
+				<div class="flex items-center gap-2 flex-1 justify-end">
+					<div class="flex items-center h-8 rounded-lg border border-outline dark:border-outline-dark overflow-hidden">
+						<button
+							type="button"
+							onClick={() => setViewMode("kanban")}
+							class={`px-1.5 h-full flex items-center transition-colors cursor-pointer ${
+								viewMode() === "kanban"
+									? "bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark"
+									: "text-on-surface-muted dark:text-on-surface-dark-muted hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+							}`}
+							title="Kanban view"
+						>
+							<LayoutGridIcon size="sm" />
+						</button>
+						<button
+							type="button"
+							onClick={() => setViewMode("list")}
+							class={`px-1.5 h-full flex items-center transition-colors cursor-pointer border-l border-outline dark:border-outline-dark ${
+								viewMode() === "list"
+									? "bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark"
+									: "text-on-surface-muted dark:text-on-surface-dark-muted hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+							}`}
+							title="List view"
+						>
+							<ListIcon size="sm" />
+						</button>
+					</div>
+					<div class="flex items-center h-8 rounded-lg border border-outline dark:border-outline-dark overflow-hidden text-xs font-medium">
+						<button
+							type="button"
+							onClick={() => setGroupBy("status")}
+							class={`px-2.5 h-full flex items-center transition-colors cursor-pointer ${
+								groupBy() === "status"
+									? "bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark"
+									: "text-on-surface-muted dark:text-on-surface-dark-muted hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+							}`}
+						>
+							Status
+						</button>
+						<button
+							type="button"
+							onClick={() => setGroupBy("tag")}
+							class={`px-2.5 h-full flex items-center transition-colors cursor-pointer border-l border-outline dark:border-outline-dark ${
+								groupBy() === "tag"
+									? "bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark"
+									: "text-on-surface-muted dark:text-on-surface-dark-muted hover:bg-surface-alt dark:hover:bg-surface-dark-alt"
+							}`}
+						>
+							Tags
+						</button>
+					</div>
+				</div>
+			</div>
 
 			<Show
-				when={columns().length > 0}
+				when={hasCards()}
 				fallback={
 					<Card padding="lg">
 						<Stack spacing="sm" align="center">
@@ -463,22 +588,44 @@ export const BoardSection = (props: BoardSectionProps) => {
 					</Card>
 				}
 			>
-				<KanbanBoard
-					columns={columns()}
-					readonly={!props.isMember}
-					upvoteDisabled={isAnon()}
-					availableStatuses={availableStatuses()}
-					onCardMove={handleCardMove}
-					onCardClick={handleCardClick}
-					onUpvote={handleUpvote}
-					onRemove={props.isMember ? handleRemove : undefined}
-					onMoveColumn={props.isOwner ? handleMoveColumn : undefined}
-					onAddStatus={props.isOwner ? handleAddStatus : undefined}
-					onRemoveColumn={props.isOwner ? handleRemoveColumn : undefined}
-					ref={(el) => {
-						boardRef = el;
-					}}
-				/>
+				<Show
+					when={viewMode() === "kanban"}
+					fallback={
+						<ListView
+							groups={groups()}
+							readonly={!props.isMember}
+							upvoteDisabled={isAnon()}
+							onCardClick={handleCardClick}
+							onUpvote={handleUpvote}
+							onRemove={props.isMember ? handleRemove : undefined}
+						/>
+					}
+				>
+					<KanbanBoard
+						columns={isTagGrouping() ? tagColumnsAsKanban() : columns()}
+						readonly={!props.isMember || isTagGrouping()}
+						upvoteDisabled={isAnon()}
+						availableStatuses={
+							isTagGrouping() ? undefined : availableStatuses()
+						}
+						onCardMove={isTagGrouping() ? undefined : handleCardMove}
+						onCardClick={handleCardClick}
+						onUpvote={handleUpvote}
+						onRemove={props.isMember ? handleRemove : undefined}
+						onMoveColumn={
+							!isTagGrouping() && props.isOwner ? handleMoveColumn : undefined
+						}
+						onAddStatus={
+							!isTagGrouping() && props.isOwner ? handleAddStatus : undefined
+						}
+						onRemoveColumn={
+							!isTagGrouping() && props.isOwner ? handleRemoveColumn : undefined
+						}
+						ref={(el) => {
+							boardRef = el;
+						}}
+					/>
+				</Show>
 			</Show>
 
 			{/* Side panel */}
