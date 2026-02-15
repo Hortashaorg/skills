@@ -12,7 +12,7 @@ const sidePanelVariants = cva(
 		"z-40",
 		"h-full",
 		"w-full",
-		"max-w-md",
+		"max-w-lg",
 		"border-outline",
 		"dark:border-outline-dark",
 		"bg-surface",
