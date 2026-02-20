@@ -12,6 +12,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     npm install -g node-gyp
 
+# PNPM
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 ENV PATH="/root/.local/share/pnpm:$PATH"
 
