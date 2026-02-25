@@ -1,52 +1,89 @@
 # Tasks
 
 > Current work and backlog. See [BACKLOG.md](./BACKLOG.md) for deferred items.
+>
+> Ordered by impact/effort ratio. Dependent tasks are grouped so the most
+> disruptive change comes first and related cleanup rides along.
 
 ---
 
-## Sprint 15: Post-Deploy Cleanup & Polish
+## Sprint 15: Stabilization & Tech Debt
 
-**Projects Cleanup (requires Sprint 14 production deployment first):**
-- [ ] Remove `scripts/seed-project-defaults.ts` and revert `migrate` script to plain `drizzle-kit migrate`
-- [ ] Drop `accountId` from `projects` table (migration + remove column from schema)
-- [ ] Update all code reading `projects.accountId` to use `projectMembers` table
-- [ ] Clean up unused files (mock-data.ts, etc.)
+### Big Impact + Easy
 
-**Bug Fixes & Polish:**
-- [ ] Code module: fix dark mode color contrast for language dropdown
-- [ ] Entity module: add keyboard shortcut (evaluate Ctrl+2 or alternative)
+- [ ] **Remove production console.log from auth flow** — ~20 console statements in `auth-api.ts`, `ConnectionStatus.tsx`, `app-provider.tsx`. Strip or gate behind `import.meta.env.DEV`
+- [ ] **Remove seed script & clean up migrate** — delete `scripts/seed-project-defaults.ts`, revert `migrate` script to plain `drizzle-kit migrate`
+- [ ] **Delete dead `use-entities.ts` hook** — 198-line abstraction with no imports. Verify and remove
+- [ ] **Fix hardcoded localhost in CORS** — `"http://localhost:4321"` in `backend/index.ts` is unconditionally included. Gate behind `NODE_ENV`
+- [ ] **Add Zod validation to `/login` endpoint** — raw `c.req.json()` without schema validation, use `zValidator` like other endpoints
+- [ ] **Validate Zitadel token response shape** — `tokenResponse.id_token` accessed without checking the response, add Zod parse
+
+### Big Impact + Medium
+
+- [ ] **Extract generic `useEntitySearch` hook** — `usePackageSearch` (331 lines), `useEcosystemSearch` (324 lines), `useUserSearch` (434 lines) share ~900 lines of duplicated stabilization, pagination, and exact-match logic. Extract shared core, keep entity-specific config
+- [ ] **Drop `accountId` from projects** — migration + schema change + update queries (`mine`, `byAccountId`), mutators (`create`), and frontend (`user/index.tsx`) to use `projectMembers`. Do this together with seed script removal above
+- [ ] **Split `ecosystem/index.tsx` (855 lines)** — extract `useEcosystemSuggestions` hook (tag/package suggestion state, ~8 modal handlers) and break render into section components
+- [ ] **Split `BoardSection.tsx` (660 lines)** — extract `useBoardData` (cards/columns/groups derivations) and `useBoardActions` (event handlers) hooks
+
+### Medium Impact + Easy
+
+- [ ] **Move hardcoded constants to config** — `COOLDOWN_MS` in worker, `REFRESH_BUFFER_MS` in ConnectionStatus, `MAX_CACHE_SIZE` and popover dimensions in markdown-output, grid `% 6` magic number
+- [ ] **Standardize modal state** — ecosystem/index.tsx uses 6+ bare `createSignal<boolean>` instead of existing `useModalState` hook. Adopt everywhere
+- [ ] **Use existing `useInfiniteScroll` hook** — `ecosystems/index.tsx` and `home/ResultsGrid.tsx` manually duplicate IntersectionObserver logic. Replace with the hook
+- [ ] **Fix silent JSON parse failures** — `me/index.tsx` lines 110, 205: `.catch(() => ({}))` hides API errors. Add error logging or user feedback
+- [ ] **Consistent error response format in backend** — auth endpoints use `c.json({ error })`, others use `HTTPException`. Pick one pattern
+- [ ] **Entity token regex: validate UUID format** — don't style invalid `$$type:notauuid` syntax
+- [ ] **Loading states: investigate pages stuck in loading** — after navigation, some pages stay in loading state
+- [ ] **Entity tokens: wait for Zero fetch before rendering** — shows raw ID until data loads
+
+### Big Impact + Hard
+
+- [ ] **Add transient vs permanent error distinction in worker** — network timeouts/503s currently mark packages as permanently failed. Add retry logic for transient errors, only mark permanent for 404/schema errors
+- [ ] **Fix non-atomic transaction in worker** — `process-fetch.ts:231`: package update and fetch-completed marking happen in separate transactions. If marking fails, data is inconsistent
+- [ ] **Add rate limiting to auth endpoints** — `/login` and `/refresh` have no rate limiting
+
+### Medium Impact + Medium
+
+- [ ] **Split `package/sections/Header.tsx` (488 lines)** — extract `usePackageActions` hook for upvotes, tags, queue polling, modals
+- [ ] **Split `me/index.tsx` (432 lines)** — extract sections for profile editing, account deletion, data export
+- [ ] **Extract shared `usePendingSuggestions` pattern** — duplicated across ecosystem and package pages for pending tag/remove state
+- [ ] **Add indexes on `projects` table** — missing indexes on `upvoteCount` and `updatedAt` despite being used for sorting/ordering
+- [ ] **Share username validation** — regex in `me/index.tsx:153` should be a shared Zod schema
+- [ ] **Editor state: fix text disappearing on tab switch** — consider localStorage drafts
+- [ ] **Code module: fix dark mode color contrast** — language dropdown unreadable in dark mode
+
+### Lower Priority
+
+**Bug fixes:**
 - [ ] Bold/Italic toggle: Ctrl+B/Ctrl+I should unwrap if already inside markup
-- [ ] Entity token regex: validate UUID format, don't style invalid `$$type:notauuid` syntax
 - [ ] Form inputs: auto-focus on modal/dialog open
-- [ ] Keyboard navigation: audit tab order across flows
 - [ ] Mobile toolbar: handle overflow (collapse menu, scrollable, or priority icons)
 - [ ] Mobile entity popover: prevent browser context menu on long-press
-- [ ] Editor state: fix text disappearing on tab switch (consider localStorage drafts)
-- [ ] Loading states: investigate pages stuck in loading after navigation
-- [ ] Entity tokens: wait for Zero fetch before rendering (shows ID until data loads)
 
-**Architecture: Hook + Component Composability:**
-- [ ] Audit and reorganize hooks by domain (search, byId, byIds, mutations, UI state)
-- [ ] Standardize hook return signatures (data, isLoading, isError, isEmpty patterns)
-- [ ] Components receive resolved data, hooks own loading/error states
+**Architecture polish:**
+- [ ] Standardize hook return signatures (`data`, `isLoading`, `isError`, `isEmpty` patterns)
 - [ ] Extract reusable "data container" patterns (handle loading/error/empty uniformly)
+- [ ] Add cleanup job for orphaned placeholder packages in worker
+- [ ] Update outdated GDPR export comment (`gdpr-export.ts:13-14`)
 - [ ] Document hook composition patterns in CLAUDE.md
 
-**UX Polish:**
-- [ ] Copy/Share: one-click copy markdown reference (`$$package:id`) or URL to clipboard
-- [ ] Share menu on entities (package, ecosystem, project, user, comment)
-- [ ] Toast feedback on copy actions
+**UX polish:**
 - [ ] Breadcrumb consistency across all detail pages
-- [ ] Empty states: helpful messaging + suggested actions (not just "No results")
+- [ ] Empty states: helpful messaging + suggested actions
 - [ ] Skeleton loading consistency (same patterns everywhere)
-- [ ] Optimistic UI for upvotes/mutations (instant feedback before sync)
-- [ ] Search: recent searches or suggestions when empty
-- [ ] Keyboard shortcuts help modal (Ctrl+? or similar)
-- [ ] Responsive typography audit (readable on all screen sizes)
-- [ ] Hover states consistency (interactive elements should all feel clickable)
-- [ ] Error boundaries with friendly recovery UI (not blank screens)
+- [ ] Optimistic UI for upvotes/mutations
+- [ ] Error boundaries with friendly recovery UI
+- [ ] Hover states consistency
 - [ ] Offline indicator when Zero disconnects
-- [ ] Documentation audit: review and update all docs/ files to match current implementation
+- [ ] Copy/Share: one-click copy markdown reference or URL
+- [ ] Share menu on entities
+- [ ] Toast feedback on copy actions
+- [ ] Search: recent searches or suggestions when empty
+- [ ] Keyboard shortcuts help modal
+- [ ] Responsive typography audit
+- [ ] Entity module: add keyboard shortcut (evaluate Ctrl+2 or alternative)
+- [ ] Keyboard navigation: audit tab order across flows
+- [ ] Documentation audit: review and update docs/ to match current implementation
 
 ---
 
